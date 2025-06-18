@@ -7,7 +7,7 @@ function YouthPolicyList() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/welfare-curl/youth-policy", {
+      .get("http://localhost:80/api/welfare-curl/youth-policy", {
         params: {
           pageNum: 1,
           pageSize: 10,
