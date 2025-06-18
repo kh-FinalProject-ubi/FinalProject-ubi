@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RestController // responseBody + controller (모든 메서드에 자동 @responseBody 붙여주는 역할)
 @CrossOrigin(origins = "http://localhost:5173"/*, allowCredentials = "true"*/)
-//  allowCredentials = "true" 클라이언트로부터 들어오는 쿠키 허용 그리고 확인
+//  allowCredentials = "true" 클라이언트로부터 들어오는 쿠키 허용
 @RequestMapping("admin")
 @Slf4j
 @RequiredArgsConstructor // + final 붙여서 의존성 주입하고 싶다
