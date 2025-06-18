@@ -1,6 +1,7 @@
 import WelfareMap from "./welfaremap";
 import PublicDataMap from "./PublicDataMap";
 import YouthPolicyList from "./YouthPolicyList";
+import SeoulWelfare from "./components/SeoulWelfare";
 
 function App() {
   return (
@@ -14,6 +15,9 @@ function App() {
       </div>
       <div>
         <YouthPolicyList />
+      </div>
+      <div>
+        <SeoulWelfare />
       </div>
     </>
   );
