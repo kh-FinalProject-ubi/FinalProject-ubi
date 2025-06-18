@@ -1,0 +1,73 @@
+{
+  "경기도 고양특례시": [
+    {
+      "service_no": 101,
+      "service_name": "출산 지원금",
+      "category": "아동",
+      "agency": "고양시청",
+      "reception_method": "방문 또는 온라인 신청",
+      "reception_start": "2024-01-01",
+      "reception_end": "2024-12-31",
+      "description": "출산 시 100만 원 지원",
+      "region_no": 1101
+    },
+    {
+      "service_no": 102,
+      "service_name": "청년 월세 지원",
+      "category": "일반",
+      "agency": "고양시 복지과",
+      "reception_method": "온라인",
+      "reception_start": "2024-03-01",
+      "reception_end": "2024-12-31",
+      "description": "월 최대 20만 원, 최대 12개월 지원",
+      "region_no": 1101
+    },
+    {
+      "service_no": 103,
+      "service_name": "노인 기초연금",
+      "category": "노인",
+      "agency": "고양시 노인복지과",
+      "reception_method": "방문",
+      "reception_start": "상시",
+      "reception_end": "",
+      "description": "만 65세 이상 노인에 월 최대 30만 원 지급",
+      "region_no": 1101
+    }
+  ],
+
+  "경기도 용인특례시": [
+    {
+      "service_no": 201,
+      "service_name": "출산 축하금",
+      "category": "아동",
+      "agency": "용인시청",
+      "reception_method": "방문 또는 온라인 신청",
+      "reception_start": "2024-01-01",
+      "reception_end": "2024-12-31",
+      "description": "출산 시 120만 원 지원",
+      "region_no": 1201
+    },
+    {
+      "service_no": 202,
+      "service_name": "청년 구직 지원금",
+      "category": "일반",
+      "agency": "용인시 청년지원센터",
+      "reception_method": "온라인",
+      "reception_start": "2024-05-01",
+      "reception_end": "2024-12-31",
+      "description": "취업 준비 청년에 월 30만 원, 최대 6개월 지원",
+      "region_no": 1201
+    },
+    {
+      "service_no": 203,
+      "service_name": "장애인 활동 지원",
+      "category": "장애우",
+      "agency": "용인시 복지정책과",
+      "reception_method": "방문 신청",
+      "reception_start": "상시",
+      "reception_end": "",
+      "description": "중증 장애인에 월 50시간 활동보조 서비스 제공",
+      "region_no": 1201
+    }
+  ]
+}
