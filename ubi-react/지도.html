@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>VWorld 지도 테스트</title>
+    <style>
+      #vmap {
+        width: 100%;
+        height: 600px;
+        border: 1px solid #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>VWorld 지도 테스트</h1>
+    <div id="vmap"></div>
+
+    <!-- VWorld API Script -->
+    <script src="https://map.vworld.kr/js/vworldMapInit.js.do?version=2.0&apiKey=3E730203-99F6-3B7E-8DED-879E725F5801"></script>
+
+    <script>
+      let retryCount = 0;
+      const maxRetries = 10;
+
+      function initVMap() {
+        if (window.vworld && window.vworld.Map) {
+          console.log("✅ VWorld API 로드 완료");
+
+          const vMap = new vworld.Map("vmap", {
+            basemapType: vworld.BaseMapType.GRAPHIC,
+            controlDensity: vworld.DensityType.FULL,
+            interactionDensity: vworld.DensityType.FULL,
+            mapMode: vworld.MapMode.NORMAL,
+            controlAutoArrange: true,
+            homePosition: vworld.LatLng(37.5665, 126.978),
+            homeZoom: 7,
+          });
+
+          const adminLayer = new vworld.Layer.AdminDong({
+            style: vworld.Style.ADMIN_NORMAL,
+            showLabel: true,
+          });
+
+          vMap.addLayer(adminLayer);
+
+          vMap.events.register("click", vMap, function (e) {
+            const lonlat = vMap.getLonLatFromPixel(e.xy);
+            console.log("지도 클릭 좌표:", lonlat.lon, lonlat.lat);
+          });
+        } else if (retryCount < maxRetries) {
+          retryCount += 1;
+          console.warn(
+            `⏳ VWorld API 로드 대기중... (${retryCount}/${maxRetries})`
+          );
+          setTimeout(initVMap, 300); // 0.3초 후 재시도
+        } else {
+          console.error("❌ VWorld API 로드 실패. 최대 재시도 횟수 초과.");
+        }
+      }
+
+      window.onload = function () {
+        setTimeout(initVMap, 300);
+      };
+    </script>
+  </body>
+</html>
