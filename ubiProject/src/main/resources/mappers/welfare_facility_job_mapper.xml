@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper
-	namespace="edu.kh.project.welfarefacility.mapper.WelfareFacilityJobMapper">
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<resultMap id="welfareJobMap" type="edu.kh.project.welfarefacility.dto.WelfareFacilityJob">
+<mapper namespace="edu.kh.project.welfarefacility.mapper.WelfareFacilityJobMapper">
+
+  <resultMap id="welfareJobMap" type="edu.kh.project.welfarefacility.dto.WelfareFacilityJob">
     <result column="JOB_TITLE" property="jobTitle"/>
     <result column="JOB_START_DATE" property="jobStartDate"/>
     <result column="JOB_END_DATE" property="jobEndDate"/>
@@ -15,47 +17,43 @@
     <result column="JOB_ADDRESS" property="jobAddress"/>
     <result column="REGION_CITY" property="regionCity"/>
     <result column="REGION_DISTRICT" property="regionDistrict"/>
-        <result column="API_SOURCE" property="apiSource"/>
-</resultMap>
+    <result column="API_SOURCE" property="apiSource"/>
+  </resultMap>
 
+  <insert id="insertWelfareJob" parameterType="edu.kh.project.welfarefacility.dto.WelfareFacilityJob">
+    INSERT INTO WELFARE_FACILITY_JOB (
+      JOB_TITLE,
+      JOB_START_DATE,
+      JOB_END_DATE,
+      JOB_SALARY,
+      JOB_POSITION,
+      JOB_CONTACT,
+      JOB_CONTACT_TEL,
+      JOB_REQUIREMENT,
+      JOB_ADDRESS,
+      REGION_CITY,
+      REGION_DISTRICT,
+      API_SOURCE
+    )
+    VALUES (
+      #{jobTitle},
+      #{jobStartDate},
+      #{jobEndDate},
+      #{jobSalary},
+      #{jobPosition},
+      #{jobContact},
+      #{jobContactTel},
+      #{jobRequirement},
+      #{jobAddress},
+      #{regionCity},
+      #{regionDistrict},
+      #{apiSource}
+    )
+  </insert>
 
-
-<insert id="insertWelfareJob" parameterType="edu.kh.project.welfarefacility.dto.WelfareFacilityJob">
-   >
-        INSERT INTO WELFARE_FACILITY_JOB (
-            JOB_TITLE,
-            JOB_START_DATE,
-            JOB_END_DATE,
-            JOB_SALARY,
-            JOB_POSITION,
-            JOB_CONTACT,
-            JOB_CONTACT_TEL,
-            JOB_REQUIREMENT,
-            JOB_ADDRESS,
-            REGION_CITY,
-            REGION_DISTRICT,
-            API_SOURCE
-        )
-        VALUES (
-            #{jobTitle},
-            #{jobStartDate},
-            #{jobEndDate},
-            #{jobSalary},
-            #{jobPosition},
-            #{jobContact},
-            #{jobContactTel},
-            #{jobRequirement},
-            #{jobAddress},
-            #{regionCity},
-            #{regionDistrict},
-            #{apiSource}
-        )
-</insert>
-
-<select id="selectAll" resultMap="edu.kh.project.welfarefacility.dto.WelfareFacilityJob">
-     SELECT *
-        FROM WELFARE_FACILITY_JOB
-</select>
-
+  <select id="selectAll" resultMap="welfareJobMap">
+    SELECT *
+    FROM WELFARE_FACILITY_JOB
+  </select>
 
 </mapper>
