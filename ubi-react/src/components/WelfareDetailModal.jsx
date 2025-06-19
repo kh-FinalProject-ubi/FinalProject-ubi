@@ -1,5 +1,5 @@
 import React from "react";
-import "./WelfareDetailModal.css";
+import "../styles/WelfareDetailModal.css";
 
 const WelfareDetailModal = ({ detail, onClose }) => {
   if (!detail) return null;
