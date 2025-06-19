@@ -5,7 +5,7 @@ import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
 import XYZ from "ol/source/XYZ";
 import TileWMS from "ol/source/TileWMS";
-import CrimeLegend from "./components/CrimeLegend";
+import CrimeLegend from "./CrimeLegend";
 
 // 🌍 배경 지도 URL 설정 (VWorld 키 반영됨)
 const baseMapUrls = {
