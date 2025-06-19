@@ -1,0 +1,82 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 한 줄에 5개 */
+  gap: 24px; /* 카드 간 간격 */
+  margin-bottom: 2rem;
+}
+
+.box {
+  border: 1px;
+  border-color: gray;
+  border-radius: 10;
+}
+
+.bg-white {
+  padding: 20px;
+  border: 1px solid #d1d5db; /* light gray */
+  border-radius: 20px;
+}
+
+.badge {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: bold;
+  display: inline-block;
+}
+.badge-yellow {
+  background-color: #fde68a;
+  color: #92400e;
+}
+.badge-blue {
+  background-color: #bfdbfe;
+  color: #1e3a8a;
+}
+.badge-gray {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+.content {
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* 최대 3줄 표시 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal; /* 줄바꿈 허용 */
+  max-width: 70%;
+  font-size: 0.875rem; /* text-sm 대응 */
+  line-height: 1.25rem; /* 적절한 줄간격 */
+}
+
+#image img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.pagination-btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  background-color: #f3f4f6;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+.pagination-btn.active {
+  background-color: #3b82f6;
+  color: white;
+}
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+}
