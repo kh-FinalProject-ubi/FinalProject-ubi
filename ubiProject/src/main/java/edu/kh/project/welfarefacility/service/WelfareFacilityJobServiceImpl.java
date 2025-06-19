@@ -35,10 +35,10 @@ public class WelfareFacilityJobServiceImpl implements WelfareFacilityJobService{
     public List<WelfareFacilityJob> getAllJobs() {
         List<WelfareFacilityJob> result = new ArrayList<>();
 
-//        for (String id : getJobIdListFromApi1()) {
-//            WelfareFacilityJob detail = getJobDetailFromApi1(id);
-//            if (detail != null) result.add(detail);
-//        }
+        for (String id : getJobIdListFromApi1()) {
+            WelfareFacilityJob detail = getJobDetailFromApi1(id);
+            if (detail != null) result.add(detail);
+       }
 
         for (Map<String, Object> item : callApi2()) {
             result.add(fromApi2(item));
@@ -109,77 +109,77 @@ public class WelfareFacilityJobServiceImpl implements WelfareFacilityJobService{
     
     // 목록 조회 http://apis.data.go.kr/B552474/SenuriService/getJobList?ServiceKey=인증키&numOfRows=1&pageNo=1
     
-//    private List<String> getJobIdListFromApi1() {
-//        try {
-//            String url = "http://apis.data.go.kr/B552474/SenuriService/getJobList?"
-//                       + "ServiceKey=" + serviceKey1
-//                       + "&numOfRows=10&pageNo=1";
-//
-//            String xml = restTemplate.getForObject(url, String.class);
-//            JSONObject json = XML.toJSONObject(xml);
-//
-//            Object itemObj = json.getJSONObject("response")
-//                                 .getJSONObject("body")
-//                                 .getJSONObject("items")
-//                                 .get("item");
-//
-//            List<String> ids = new ArrayList<>();
-//            if (itemObj instanceof JSONArray items) {
-//                for (int i = 0; i < items.length(); i++) {
-//                    ids.add(items.getJSONObject(i).optString("rno"));
-//                }
-//            } else if (itemObj instanceof JSONObject item) {
-//                ids.add(item.optString("rno"));
-//            }
-//
-//            return ids;
-//        } catch (Exception e) {
-//        	   System.out.println("🔥 API1 목록 조회 실패: " + e.getMessage());
-//            e.printStackTrace();
-//            return List.of();
-//        }
-//    }
-//
-//    
-//    // 상세조회 http:// apis.data.go.kr/B552474/SenuriService/getJobInfo?ServiceKey=인증키&id=채용공고ID
-//
-//    private WelfareFacilityJob getJobDetailFromApi1(String rno) {
-//        try {
-//            String url = "http:// apis.data.go.kr/B552474/SenuriService/getJobInfo?"
-//                       + "ServiceKey=" + serviceKey1 + "&id=" + rno;
-//
-//            String xml = restTemplate.getForObject(url, String.class);
-//            JSONObject item = XML.toJSONObject(xml)
-//                    .getJSONObject("response")
-//                    .getJSONObject("body")
-//                    .getJSONObject("items")
-//                    .getJSONObject("item");
-//
-//            String address = item.optString("plDetAddr", "");
-//            String[] parts = address.split("\\s+");
-//
-//            return WelfareFacilityJob.builder()
-//                    .jobTitle(item.optString("wantedTitle"))
-//                    .jobStartDate(item.optString("frAcptDd"))
-//                    .jobEndDate(item.optString("toAcptDd"))
-//                    .jobSalary("문의바람")
-//                    .jobPosition("노년층")
-//                    .jobContact(item.optString("repr"))
-//                    .jobContactTel(item.optString("clerkContt"))
-//                    .jobRequirement(item.optString("etcItm"))
-//                    .regionDistrict(parts.length > 1 ? parts[1] : "")
-//                    .regionCity(parts.length > 0 ? parts[0] : "")
-//                    .jobAddress(address)
-//                    .apiSource("API1")
-//                    .build();
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            System.out.println("🔥 API1 목록 조회 실패: " + e.getMessage());
-//            return null;
-//        }
-//        
-//    }
+    private List<String> getJobIdListFromApi1() {
+        try {
+            String url = "http://apis.data.go.kr/B552474/SenuriService/getJobList?"
+                       + "ServiceKey=" + serviceKey1
+                       + "&numOfRows=10&pageNo=1";
+
+            String xml = restTemplate.getForObject(url, String.class);
+            JSONObject json = XML.toJSONObject(xml);
+
+            Object itemObj = json.getJSONObject("response")
+                                 .getJSONObject("body")
+                                 .getJSONObject("items")
+                                 .get("item");
+
+            List<String> ids = new ArrayList<>();
+            if (itemObj instanceof JSONArray items) {
+                for (int i = 0; i < items.length(); i++) {
+                    ids.add(items.getJSONObject(i).optString("rno"));
+                }
+            } else if (itemObj instanceof JSONObject item) {
+                ids.add(item.optString("rno"));
+            }
+
+            return ids;
+        } catch (Exception e) {
+        	   System.out.println("🔥 API1 목록 조회 실패: " + e.getMessage());
+            e.printStackTrace();
+            return List.of();
+        }
+    }
+
+    
+    // 상세조회 http:// apis.data.go.kr/B552474/SenuriService/getJobInfo?ServiceKey=인증키&id=채용공고ID
+
+    private WelfareFacilityJob getJobDetailFromApi1(String rno) {
+        try {
+            String url = "http://apis.data.go.kr/B552474/SenuriService/getJobInfo?"
+                       + "ServiceKey=" + serviceKey1 + "&id=" + rno;
+
+            String xml = restTemplate.getForObject(url, String.class);
+            JSONObject item = XML.toJSONObject(xml)
+                    .getJSONObject("response")
+                    .getJSONObject("body")
+                    .getJSONObject("items")
+                    .getJSONObject("item");
+
+            String address = item.optString("plDetAddr", "");
+            String[] parts = address.split("\\s+");
+
+            return WelfareFacilityJob.builder()
+                    .jobTitle(item.optString("wantedTitle"))
+                    .jobStartDate(item.optString("frAcptDd"))
+                    .jobEndDate(item.optString("toAcptDd"))
+                    .jobSalary("문의바람")
+                    .jobPosition("노년층")
+                    .jobContact(item.optString("repr"))
+                    .jobContactTel(item.optString("clerkContt"))
+                    .jobRequirement(item.optString("etcItm"))
+                    .regionDistrict(parts.length > 1 ? parts[1] : "")
+                    .regionCity(parts.length > 0 ? parts[0] : "")
+                    .jobAddress(address)
+                    .apiSource("API1")
+                    .build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("🔥 API1 목록 조회 실패: " + e.getMessage());
+            return null;
+        }
+      
+    }
 
 
     private List<Map<String, Object>> callApi2() {
