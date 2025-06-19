@@ -1,5 +1,6 @@
 package edu.kh.project.welfarefacility.service;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,6 +10,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.XML;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,7 +23,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WelfareFacilityJobServiceImpl implements WelfareFacilityJobService{
 
-	private final RestTemplate restTemplate = new RestTemplate();
+	private final RestTemplate restTemplate;
+	
+    
 	
 	 // 노년계층 
     @Value("${api.job1.service-key}")
@@ -46,67 +51,7 @@ public class WelfareFacilityJobServiceImpl implements WelfareFacilityJobService{
 
         return result;
     }
-//http://apis.data.go.kr/B552474/SenuriService/getJobList?ServiceKey=인증키&numOfRows=1&pageNo=1
-//    private List<String> getJobIdListFromApi1() {
-//        try {
-//            String url = "http://apis.data.go.kr/B552474/SenuriService/getJobList?"
-//                    + "serviceKey=" + serviceKey1 + "numOfRows=1&pageNo=1";
-//
-//            String xml = restTemplate.getForObject(url, String.class);
-//            JSONObject json = XML.toJSONObject(xml);
-//            JSONArray items = json.getJSONObject("response")
-//                    .getJSONObject("body")
-//                    .getJSONObject("items")
-//                    .optJSONArray("item");
-//
-//            List<String> ids = new ArrayList<>();
-//            if (items != null) {
-//                for (int i = 0; i < items.length(); i++) {
-//                    ids.add(items.getJSONObject(i).optString("rno"));
-//                }
-//            }
-//            return ids;
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return List.of();
-//        }
-//    }
-//
-//    private WelfareFacilityJob getJobDetailFromApi1(String rno) {
-//        try {
-//            String url = "https://apis.data.go.kr/B552474/JobInfo/getJobInfo?"
-//                    + "serviceKey=" + serviceKey1 + "&id=" + rno;
-//
-//            String xml = restTemplate.getForObject(url, String.class);
-//            JSONObject item = XML.toJSONObject(xml)
-//                    .getJSONObject("response")
-//                    .getJSONObject("body")
-//                    .getJSONObject("items")
-//                    .getJSONObject("item");
-//
-//            String address = item.optString("plDetAddr", "");
-//            String[] parts = address.split("\\s+");
-//
-//            return WelfareFacilityJob.builder()
-//                    .jobTitle(item.optString("wantedTitle"))
-//                    .jobStartDate(item.optString("frAcptDd"))
-//                    .jobEndDate(item.optString("toAcptDd"))
-//                    .jobSalary("문의바람")
-//                    .jobPosition("노년층")
-//                    .jobContact(item.optString("repr"))
-//                    .jobContactTel(item.optString("clerkContt"))
-//                    .jobRequirement(item.optString("etcItm"))
-//                    .regionDistrict(parts.length > 1 ? parts[1] : "")
-//                    .regionCity(parts.length > 0 ? parts[0] : "")
-//                    .jobAddress(address)
-//                    .apiSource("API1")
-//                    .build();
-//
-//        } catch (Exception e) {
-//            return null;
-//        }
-//    }
-    
+
     // 목록 조회 http://apis.data.go.kr/B552474/SenuriService/getJobList?ServiceKey=인증키&numOfRows=1&pageNo=1
     
     private List<String> getJobIdListFromApi1() {
@@ -126,10 +71,10 @@ public class WelfareFacilityJobServiceImpl implements WelfareFacilityJobService{
             List<String> ids = new ArrayList<>();
             if (itemObj instanceof JSONArray items) {
                 for (int i = 0; i < items.length(); i++) {
-                    ids.add(items.getJSONObject(i).optString("rno"));
+                    ids.add(items.getJSONObject(i).optString("jobId"));
                 }
             } else if (itemObj instanceof JSONObject item) {
-                ids.add(item.optString("rno"));
+                ids.add(item.optString("jobId"));
             }
 
             return ids;
@@ -143,10 +88,10 @@ public class WelfareFacilityJobServiceImpl implements WelfareFacilityJobService{
     
     // 상세조회 http:// apis.data.go.kr/B552474/SenuriService/getJobInfo?ServiceKey=인증키&id=채용공고ID
 
-    private WelfareFacilityJob getJobDetailFromApi1(String rno) {
+    private WelfareFacilityJob getJobDetailFromApi1(String jobId) {
         try {
             String url = "http://apis.data.go.kr/B552474/SenuriService/getJobInfo?"
-                       + "ServiceKey=" + serviceKey1 + "&id=" + rno;
+                       + "ServiceKey=" + serviceKey1 + "&id=" + jobId;
 
             String xml = restTemplate.getForObject(url, String.class);
             JSONObject item = XML.toJSONObject(xml)
@@ -154,7 +99,7 @@ public class WelfareFacilityJobServiceImpl implements WelfareFacilityJobService{
                     .getJSONObject("body")
                     .getJSONObject("items")
                     .getJSONObject("item");
-
+            System.out.println(xml);
             String address = item.optString("plDetAddr", "");
             String[] parts = address.split("\\s+");
 
@@ -178,6 +123,8 @@ public class WelfareFacilityJobServiceImpl implements WelfareFacilityJobService{
             System.out.println("🔥 API1 목록 조회 실패: " + e.getMessage());
             return null;
         }
+        
+      
       
     }
 

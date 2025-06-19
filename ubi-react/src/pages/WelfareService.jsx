@@ -4,6 +4,7 @@ import Footer from "../components/Footer";
 import YouthPolicyList from "../components/YouthPolicyList";
 import SeoulWelfare from "../components/SeoulWelfare";
 import PublicDataMap from "../components/PublicDataMap";
+import WelfareFacilityJobList from "../components/WelfareFacilityJobList";
 
 const WelfareService = () => {
   return (
@@ -33,6 +34,9 @@ const WelfareService = () => {
         <SeoulWelfare />
 
         <PublicDataMap />
+
+        {/* ✅ 취약계층 구인정보 */}
+        <WelfareFacilityJobList/>
       </div>
       <Footer />
     </>
