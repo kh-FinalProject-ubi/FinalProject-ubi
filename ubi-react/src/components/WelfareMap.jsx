@@ -9,8 +9,8 @@ import VectorSource from "ol/source/Vector";
 import GeoJSON from "ol/format/GeoJSON";
 import { toLonLat } from "ol/proj";
 import { Style, Stroke, Fill } from "ol/style";
-import WelfareCompareView from "./components/WelfareCompareView";
-import WelfareBenefitView from "./components/WelfareBenefitView";
+import WelfareCompareView from "./WelfareCompareView";
+import WelfareBenefitView from "./WelfareBenefitView";
 
 // ✅ 특례시 매핑 (정규화용)
 const specialCityNames = {

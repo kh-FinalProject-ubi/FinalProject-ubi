@@ -1,6 +1,7 @@
 package edu.kh.project.main.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -112,7 +113,7 @@ public class WelfareProxyController {
         return ResponseEntity.ok(response.toString());
     }
     @GetMapping("/youth-policy")
-    public ResponseEntity<String> proxyYouthPolicy(
+    public ResponseEntity<Map<String, Object>> proxyYouthPolicy(
             @RequestParam(name = "pageNum", defaultValue = "1") String pageNum,
             @RequestParam(name = "pageSize", defaultValue = "10") String pageSize
     ) throws Exception {
@@ -140,8 +141,21 @@ public class WelfareProxyController {
         }
         in.close();
 
-        return ResponseEntity.ok(response.toString());
-        
+        // JSON 문자열을 JsonNode로 파싱
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode root = objectMapper.readTree(response.toString());
+
+        // 필요한 데이터만 골라서 반환 (예: result.totalCount, result.youthPolicyList)
+        JsonNode resultNode = root.path("result");
+        int totalCount = resultNode.path("totalCount").asInt();
+        JsonNode list = resultNode.path("youthPolicyList");
+
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("result", Map.of(
+            "totalCount", totalCount,
+            "youthPolicyList", objectMapper.convertValue(list, List.class)
+        ));
+        return ResponseEntity.ok(resultMap);
     }
     
     @GetMapping("/welfare-detail")
