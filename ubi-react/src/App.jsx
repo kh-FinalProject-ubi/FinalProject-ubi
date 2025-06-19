@@ -1,25 +1,21 @@
-import WelfareMap from "./welfaremap";
-import PublicDataMap from "./PublicDataMap";
-import YouthPolicyList from "./YouthPolicyList";
-import SeoulWelfare from "./components/SeoulWelfare";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import MainPage from "./pages/MainPage";
+import OurSigunguGood from "./pages/OurSigunguGood";
+import AskBoard from "./pages/AskBoard";
+import NoticeBoard from "./pages/NoticeBoard";
+import WelfareService from "./pages/WelfareService";
 
 function App() {
   return (
-    <>
-      <div>
-        <h1>복지 서비스 지도</h1>
-        <WelfareMap />
-      </div>
-      <div>
-        <PublicDataMap />
-      </div>
-      <div>
-        <YouthPolicyList />
-      </div>
-      <div>
-        <SeoulWelfare />
-      </div>
-    </>
+    <Router>
+      <Routes>
+        <Route path="/" element={<MainPage />} />
+        <Route path="/welfareService" element={<WelfareService />} />
+        <Route path="/ourSigunguGood" element={<OurSigunguGood />} />
+        <Route path="/askBoard" element={<AskBoard />} />
+        <Route path="/noticeBoard" element={<NoticeBoard />} />
+      </Routes>
+    </Router>
   );
 }
 

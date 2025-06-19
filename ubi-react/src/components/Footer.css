@@ -1,0 +1,30 @@
+.site-footer {
+  background-color: #ffdd44; /* 피그마 노란색 */
+  color: #333;
+  padding: 2rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.site-footer-inner {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.site-footer-column {
+  flex: 1 1 250px;
+  margin-bottom: 1rem;
+}
+
+.site-footer a {
+  text-decoration: none;
+  color: #222;
+  font-weight: 500;
+}
+
+.site-footer a:hover {
+  text-decoration: underline;
+}
