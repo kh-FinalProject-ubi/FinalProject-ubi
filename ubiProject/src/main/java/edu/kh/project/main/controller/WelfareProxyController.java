@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @CrossOrigin(origins = "*")
@@ -91,26 +92,33 @@ public class WelfareProxyController {
 
     
     @GetMapping("/reverse-geocode")
-    public ResponseEntity<String> reverseGeocode(@RequestParam("lon") double lon, @RequestParam("lat") double lat) throws Exception {
+    public ResponseEntity<String> reverseGeocode(
+        @RequestParam("lon") double lon, 
+        @RequestParam("lat") double lat
+    ) throws IOException {
         String apiKey = "6D96057A-FC81-30BE-B98E-39266237CBD1";
-        String url = "https://api.vworld.kr/req/address?service=address&request=getAddress" +
+
+        String url = "https://api.vworld.kr/req/address?service=address" +
+                     "&request=getAddress" +
                      "&version=2.0&format=json&type=PARCEL" +
                      "&point=" + lon + "," + lat +
                      "&crs=epsg:4326&key=" + apiKey;
 
-        URL requestUrl = new URL(url);
-        HttpURLConnection conn = (HttpURLConnection) requestUrl.openConnection();
+        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
         conn.setRequestMethod("GET");
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-        StringBuilder response = new StringBuilder();
-        String line;
-        while ((line = in.readLine()) != null) {
-            response.append(line);
-        }
-        in.close();
+        try (BufferedReader in = new BufferedReader(
+                new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
 
-        return ResponseEntity.ok(response.toString());
+            StringBuilder response = new StringBuilder();
+            String line;
+
+            while ((line = in.readLine()) != null) {
+                response.append(line);
+            }
+
+            return ResponseEntity.ok(response.toString());
+        }
     }
     @GetMapping("/youth-policy")
     public ResponseEntity<Map<String, Object>> proxyYouthPolicy(

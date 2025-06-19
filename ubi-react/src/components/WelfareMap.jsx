@@ -11,8 +11,9 @@ import { toLonLat } from "ol/proj";
 import { Style, Stroke, Fill } from "ol/style";
 import WelfareCompareView from "./WelfareCompareView";
 import WelfareBenefitView from "./WelfareBenefitView";
+import Spinner from "./Spinner.jsx";
 
-// ✅ 특례시 매핑 (정규화용)
+// 특례시 매핑
 const specialCityNames = {
   수원시: "수원특례시",
   용인시: "용인특례시",
@@ -26,7 +27,6 @@ const specialCityNames = {
   청주시: "청주시",
 };
 
-// ✅ 행정구역 이름 정규화 함수
 const mapCleanFullName = (fullName) => {
   const tokens = fullName.split(" ");
   if (tokens.length < 2) return fullName;
@@ -41,41 +41,31 @@ const WelfareMap = () => {
   const [selectedDistricts, setSelectedDistricts] = useState([]);
   const selectedDistrictsRef = useRef([]);
   const [benefitsData, setBenefitsData] = useState({});
-
-  // ✅ 복지데이터 API 호출 → 지자체 기준 그룹화
-  const groupByDistrict = (items) => {
-    const grouped = {};
-    items.forEach((item) => {
-      let fullName;
-      if (item.ctpvNm === "세종특별자치시") {
-        fullName = "세종특별자치시"; // ✅ 세종 예외 처리
-      } else {
-        fullName = item.sggNm ? `${item.ctpvNm} ${item.sggNm}` : item.ctpvNm;
-      }
-
-      const cleanFullName = mapCleanFullName(fullName).trim();
-      console.log("📌 복지 데이터 지역 키 생성됨:", cleanFullName);
-      if (!grouped[cleanFullName]) grouped[cleanFullName] = [];
-      grouped[cleanFullName].push(item);
-    });
-    console.log("📦 최종 benefitsData keys:", Object.keys(grouped));
-
-    return grouped;
-  };
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/welfare-curl/welfare-list/all")
       .then((res) => res.json())
       .then((data) => {
+        const grouped = {};
         const items = data?.servList;
         if (Array.isArray(items)) {
-          const groupedData = groupByDistrict(items);
-          setBenefitsData(groupedData);
+          items.forEach((item) => {
+            const fullName =
+              item.ctpvNm === "세종특별자치시"
+                ? "세종특별자치시"
+                : item.sggNm
+                ? `${item.ctpvNm} ${item.sggNm}`
+                : item.ctpvNm;
+            const clean = mapCleanFullName(fullName).trim();
+            if (!grouped[clean]) grouped[clean] = [];
+            grouped[clean].push(item);
+          });
+          setBenefitsData(grouped);
         }
       })
       .catch((err) => console.error("❌ 복지API 호출 실패:", err))
-      .finally(() => setIsLoading(false)); // ✅ 로딩 완료
+      .finally(() => setIsLoading(false));
   }, []);
 
   useEffect(() => {
@@ -98,10 +88,9 @@ const WelfareMap = () => {
     });
 
     mapRef.current = map;
-
     map.on("click", (evt) => {
-      const lonLat = toLonLat(evt.coordinate);
-      reverseGeocode(lonLat[0], lonLat[1]);
+      const [lon, lat] = toLonLat(evt.coordinate);
+      reverseGeocode(lon, lat);
     });
 
     return () => map.setTarget(null);
@@ -121,9 +110,21 @@ const WelfareMap = () => {
         const fullName = `${structure.level1} ${structure.level2}`;
         const cleanFullName = mapCleanFullName(fullName);
 
-        if (selectedDistrictsRef.current.includes(cleanFullName)) return;
+        const alreadyIndex =
+          selectedDistrictsRef.current.indexOf(cleanFullName);
 
-        displayPolygon(cleanFullName);
+        if (alreadyIndex !== -1) {
+          const removedLayer = selectedLayersRef.current[alreadyIndex];
+          mapRef.current.removeLayer(removedLayer);
+          selectedLayersRef.current.splice(alreadyIndex, 1);
+          setSelectedDistricts((prev) => {
+            const copy = [...prev];
+            copy.splice(alreadyIndex, 1);
+            return copy;
+          });
+        } else {
+          displayPolygon(cleanFullName);
+        }
       })
       .catch((err) => console.error("지오코딩 실패:", err));
   };
@@ -135,7 +136,6 @@ const WelfareMap = () => {
         const features = geojson.features.filter(
           (f) => f.properties.FULL_NM_CLEAN?.trim() === fullNameClean.trim()
         );
-
         if (features.length === 0) return;
 
         const currentIndex =
@@ -175,25 +175,20 @@ const WelfareMap = () => {
         setSelectedDistricts((prev) => [...prev, fullNameClean]);
       });
   };
+
   return (
     <div>
+      {isLoading && <Spinner />}
       <h2>복지 지도</h2>
       <div ref={mapElement} style={{ width: "100%", height: "600px" }}></div>
       <div style={{ marginTop: "10px" }}>
-        {isLoading ? (
-          <p>복지 데이터를 불러오는 중입니다...</p>
-        ) : (
-          <>
-            <h3>선택한 지자체:</h3>
-            <ul>
-              {selectedDistricts.map((d, i) => (
-                <li key={i}>{d}</li>
-              ))}
-            </ul>
-          </>
-        )}
+        <h3>선택한 지자체:</h3>
+        <ul>
+          {selectedDistricts.map((d, i) => (
+            <li key={i}>{d}</li>
+          ))}
+        </ul>
       </div>
-
       {selectedDistricts.length === 1 && (
         <WelfareBenefitView
           district={selectedDistricts[0]}
