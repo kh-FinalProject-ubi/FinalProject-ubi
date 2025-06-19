@@ -3,6 +3,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import YouthPolicyList from "../components/YouthPolicyList";
 import SeoulWelfare from "../components/SeoulWelfare";
+import PublicDataMap from "../components/PublicDataMap";
 
 const WelfareService = () => {
   return (
@@ -30,6 +31,8 @@ const WelfareService = () => {
 
         {/* ✅ 서울시 공공서비스 컴포넌트 */}
         <SeoulWelfare />
+
+        <PublicDataMap />
       </div>
       <Footer />
     </>
