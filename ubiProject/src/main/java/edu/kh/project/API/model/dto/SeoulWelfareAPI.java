@@ -33,6 +33,9 @@ public class SeoulWelfareAPI {
     @JsonProperty("SVCURL")
     private String url;
 
+    @JsonProperty("IMGURL")
+    private String imageProfile;
+    
     @JsonProperty("PAYATNM")
     private String servicePay;
 
