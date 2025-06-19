@@ -1,6 +1,7 @@
 import WelfareMap from "./welfaremap";
 import PublicDataMap from "./PublicDataMap";
 import YouthPolicyList from "./YouthPolicyList";
+import WelfareFacilityJobList from "./components/WelfareFacilityJobList";
 
 function App() {
   return (
@@ -15,6 +16,9 @@ function App() {
       <div>
         <YouthPolicyList />
       </div>
+        <div>
+      <WelfareFacilityJobList/>
+    </div>
     </>
   );
 }
