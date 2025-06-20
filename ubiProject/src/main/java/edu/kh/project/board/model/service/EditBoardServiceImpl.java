@@ -78,8 +78,7 @@ public class EditBoardServiceImpl implements EditBoardService {
 
 				// 모든 값을 저장할 DTO 생성
 				BoardImg img = BoardImg.builder()
-						.imgOriginalName(originalName)
-						.imgRename(rename)
+						.imgName(originalName)
 						.imgPath(webPath)
 						.boardNo(boardNo)
 						.imgOrder(i)
@@ -112,7 +111,7 @@ public class EditBoardServiceImpl implements EditBoardService {
 
 			// 서버에 저장
 			for(BoardImg img : uploadList) {
-				img.getUploadFile().transferTo(new File(folderPath + img.getImgRename()));
+				img.getUploadFile().transferTo(new File(folderPath + img.getImgName()));
 			
 			}
 			
@@ -180,8 +179,8 @@ public class EditBoardServiceImpl implements EditBoardService {
 				
 				// 모든 값을 저장할 DTO 생성 (BoardImg)
 				BoardImg img = BoardImg.builder()
-							   .imgOriginalName(originalName)
-							   .imgRename(rename)
+							   .imgName(originalName)
+							
 							   .imgPath(webPath)
 							   .boardNo(inputBoard.getBoardNo())
 							   .imgOrder(i)
@@ -221,7 +220,7 @@ public class EditBoardServiceImpl implements EditBoardService {
 		
 		// 수정, 새로 삽입한 이미지 파일을 서버에 실제로 저장
 		for(BoardImg img : uploadList) {
-			img.getUploadFile().transferTo(new File(folderPath + img.getImgRename()));
+			img.getUploadFile().transferTo(new File(folderPath + img.getImgNo()));
 		}
 		
 		return result;
