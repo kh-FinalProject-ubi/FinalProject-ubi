@@ -7,9 +7,7 @@ import "../styles/MainPage.css";
 const MainPage = () => {
   return (
     <>
-      <Header />
       <WelfareMap />
-      <Footer />
     </>
   );
 };

@@ -12,8 +12,8 @@ import { Style, Stroke, Fill } from "ol/style";
 import WelfareCompareView from "./WelfareCompareView";
 import WelfareBenefitView from "./WelfareBenefitView";
 import Spinner from "./Spinner.jsx";
+import useBenefitStore from "../stores/useWelfareStore.js";
 
-// 특례시 매핑
 const specialCityNames = {
   수원시: "수원특례시",
   용인시: "용인특례시",
@@ -40,10 +40,11 @@ const WelfareMap = () => {
   const selectedLayersRef = useRef([]);
   const [selectedDistricts, setSelectedDistricts] = useState([]);
   const selectedDistrictsRef = useRef([]);
-  const [benefitsData, setBenefitsData] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
+  const { benefitsData, setBenefitsData } = useBenefitStore();
+  const [isLoading, setIsLoading] = useState(!benefitsData);
 
   useEffect(() => {
+    if (benefitsData) return;
     fetch("/api/welfare-curl/welfare-list/all")
       .then((res) => res.json())
       .then((data) => {

@@ -5,7 +5,6 @@ import Footer from "../components/Footer";
 const OurSigunguGood = () => {
   return (
     <>
-      <Header />
       <div style={{ padding: "2rem" }}>
         <h2>우리 동네 좋아요</h2>
         <p>
@@ -13,7 +12,6 @@ const OurSigunguGood = () => {
           글도 좋아요.
         </p>
       </div>
-      <Footer />
     </>
   );
 };

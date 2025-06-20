@@ -25,13 +25,15 @@ public class Member {
     private String enrollDate;           // 가입일
     private String memberDelFl;          // 탈퇴 여부
     private String authority;            // 권한
-    
+    private String memberName;
+  
     private String memberTaddress;		 // 회원 임시주소
     private String memberStandard;       // 아동, 청년, 기타 등등..
     
     private int reportCount;  // 신고 누적 횟수
     private String suspendedFl;  // 사용정지여부
     
+
     // 아래 필드는 프론트 요청 대응 시 주로 사용됨
     private String kakaoId;              // 카카오 로그인 ID (optional)
 }
