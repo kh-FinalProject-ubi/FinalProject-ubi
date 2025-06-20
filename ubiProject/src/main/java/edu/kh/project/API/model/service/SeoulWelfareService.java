@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import edu.kh.project.API.model.dto.SeoulWelfareAPI;
-import edu.kh.project.API.model.dto.WelfareFacility;
+
 
 public interface SeoulWelfareService {
 

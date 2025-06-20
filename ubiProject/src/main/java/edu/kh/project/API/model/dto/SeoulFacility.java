@@ -6,6 +6,6 @@ import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WelfareFacility {
+public class SeoulFacility {
 
 }

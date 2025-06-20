@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.kh.project.API.model.dto.SeoulWelfareAPI;
-import edu.kh.project.API.model.dto.WelfareFacility;
+import edu.kh.project.API.model.dto.SeoulFacility;
 import edu.kh.project.API.model.service.SeoulWelfareService;
 import lombok.RequiredArgsConstructor;
 
