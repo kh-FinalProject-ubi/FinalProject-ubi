@@ -23,7 +23,7 @@ public class Board {
 	private int boardReportCount;
 	
 
-	
+	private String boardWriteDate;
 	// BOARD 종류 컬럼 
 	private int boardCode;
 	private int boardType; 
