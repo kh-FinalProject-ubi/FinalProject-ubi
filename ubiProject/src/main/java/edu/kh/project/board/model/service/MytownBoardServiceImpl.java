@@ -34,7 +34,7 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 
 	// 특정 게시판의 지정된 페이지 목록 조회 서비스
 	@Override
-	public Map<String, Object> selectMytownBoardList(int boardCode, int cp) {
+	public Map<String, Object> selectMytownBoardList(int boardCode, int cp, Map<String, Object> paramMap) {
 
 		// 1. 지정된 게시판(boardCode)에서
 		// 삭제되지 않은 게시글 수를 조회

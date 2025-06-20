@@ -15,7 +15,7 @@ public interface MytownBoardService {
 	 * @param cp
 	 * @return
 	 */
-	Map<String, Object> selectMytownBoardList(int boardCode, int cp);
+	Map<String, Object> selectMytownBoardList(int boardCode, int cp, Map<String, Object> paramMap);
 
 	/** 게시글 상세 조회 서비스
 	 * @param map

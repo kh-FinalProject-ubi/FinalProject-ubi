@@ -42,9 +42,15 @@ import edu.kh.project.member.model.dto.Member;
 		@GetMapping("list")
 		public String mytownboardList(@RequestParam(value = "cp", required = false, defaultValue = "1") int cp, 
 							  Model model, 
-							  @RequestParam Map<String, Object> paramMap) {
+							  @RequestParam Map<String, Object> paramMap,
+							  @SessionAttribute(value = "loginMember", required = false) Member loginMember) {
 
 			int boardCode = 3 ; 
+			
+			// 로그인한 사용자의 regionDistrict 를 파라미터에 포함시켜야 지역 제한이 적용
+		    if (loginMember != null) {
+		        paramMap.put("regionDistrict", loginMember.getRegionDistrict());
+		    }
 			
 			// 조회 서비스 호출 후 결과 반환 받기.
 
@@ -55,7 +61,7 @@ import edu.kh.project.member.model.dto.Member;
 			// 검색이 아닌 경우 -> paramMap 은 {}
 			if(paramMap.get("key") == null){
 				// 게시글 목록 조회 서비스 호출
-				map = service.selectMytownBoardList(boardCode, cp); // 검색조건 포함 리스트 
+				map = service.selectMytownBoardList(boardCode, cp,paramMap); // 검색조건 포함 리스트 
 				
 			} else {
 				// 검색인 경우 -> paramMap = {"query"="짱구", "key"="tc"}
@@ -96,6 +102,7 @@ import edu.kh.project.member.model.dto.Member;
 			Map<String, Integer> map = new HashMap<>();
 	
 			map.put("boardNo", boardNo);
+			map.put("boardCode", 3);
 
 			// 로그인 상태에만 memberNo 추가
 			if (loginMember != null) {
@@ -110,7 +117,7 @@ import edu.kh.project.member.model.dto.Member;
 
 			// 조회 결과가 없는 경우
 			if (board == null) {
-				path = "redirect:/board/mytownlist" ; // 목록 재요청
+				path = "redirect:/board/mytown/list" ; // 목록 재요청
 				ra.addFlashAttribute("message", "게시글이 존재하지 않습니다.");
 
 			} else {
@@ -164,7 +171,7 @@ import edu.kh.project.member.model.dto.Member;
 
 						// 먼저 조회된 board의 readCount 값을
 						// result 값으로 다시 세팅
-						board.setReadCount(result);
+						board.setBoardReadCount(result);
 
 						// 쿠키 적용 경로 설정
 						c.setPath("/"); // "/" 이하 경로 요청 시 쿠키 서버로 전달
