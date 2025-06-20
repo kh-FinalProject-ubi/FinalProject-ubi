@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import "../styles/Header.css";
 import OurSigunguGood from "../pages/OurSigunguGood";
 import AskBoard from "../pages/AskBoard";
@@ -6,9 +6,14 @@ import NoticeBoard from "../pages/NoticeBoard";
 import WelfareService from "./../pages/WelfareService";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
+import useAuthStore from "../stores/useAuthStore";
+import LoginModal from "./LoginModal"; // ✅ 팝업 컴포넌트 import
+
 
 const Header = () => {
-  const { isLogin, userInfo, logout } = useAuth();
+  const { token, address, memberName, clearAuth } = useAuthStore();
+  const isLogin = !!token; // 토큰 존재 여부로 로그인 상태 판단
+
 
   const navigate = useNavigate();
 
@@ -21,6 +26,8 @@ const Header = () => {
       )}`
     );
   };
+
+  const [showLoginModal, setShowLoginModal] = useState(false); // ✅ 팝업 상태
 
   return (
     <header className="site-header">
@@ -41,24 +48,29 @@ const Header = () => {
           {isLogin ? (
             <>
               <button className="alarm-btn">🔔</button>
-              <span className="nickname">{userInfo?.nickname}님</span>
+              <span className="nickname">{memberName}님</span>
               <img
                 className="profile-img"
-                src={userInfo?.profileImg || "/assets/profile.png"}
+                src="/assets/profile.png"
                 alt="프로필"
               />
-              <button className="logout-btn" onClick={logout}>
+              <button className="logout-btn" onClick={clearAuth}>
                 로그아웃
               </button>
             </>
           ) : (
             <>
-              <Link to="/login">로그인</Link>
+              <button onClick={() => setShowLoginModal(true)}>로그인</button>
               <Link to="/signup">회원가입</Link>
             </>
           )}
         </div>
       </div>
+
+      {/* ✅ 로그인 팝업 표시 */}
+      {showLoginModal && (
+        <LoginModal onClose={() => setShowLoginModal(false)} />
+      )}
     </header>
   );
 };

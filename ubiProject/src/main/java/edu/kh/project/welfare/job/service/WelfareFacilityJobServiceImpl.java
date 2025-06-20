@@ -1,4 +1,4 @@
-package edu.kh.project.welfarefacility.service;
+package edu.kh.project.welfare.job.service;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import edu.kh.project.welfarefacility.dto.WelfareFacilityJob;
+import edu.kh.project.welfare.job.dto.WelfareFacilityJob;
 import lombok.RequiredArgsConstructor;
 
 
@@ -58,7 +58,7 @@ public class WelfareFacilityJobServiceImpl implements WelfareFacilityJobService{
         try {
             String url = "http://apis.data.go.kr/B552474/SenuriService/getJobList?"
                        + "ServiceKey=" + serviceKey1
-                       + "&numOfRows=10&pageNo=1";
+                       + "&numOfRows=1000&pageNo=1";
 
             String xml = restTemplate.getForObject(url, String.class);
             JSONObject json = XML.toJSONObject(xml);
@@ -79,7 +79,7 @@ public class WelfareFacilityJobServiceImpl implements WelfareFacilityJobService{
 
             return ids;
         } catch (Exception e) {
-        	   System.out.println("🔥 API1 목록 조회 실패: " + e.getMessage());
+        	   
             e.printStackTrace();
             return List.of();
         }
@@ -99,7 +99,7 @@ public class WelfareFacilityJobServiceImpl implements WelfareFacilityJobService{
                     .getJSONObject("body")
                     .getJSONObject("items")
                     .getJSONObject("item");
-            System.out.println(xml);
+          //  System.out.println(xml);
             String address = item.optString("plDetAddr", "");
             String[] parts = address.split("\\s+");
 
@@ -112,15 +112,15 @@ public class WelfareFacilityJobServiceImpl implements WelfareFacilityJobService{
                     .jobContact(item.optString("repr"))
                     .jobContactTel(item.optString("clerkContt"))
                     .jobRequirement(item.optString("etcItm"))
-                    .regionDistrict(parts.length > 1 ? parts[1] : "")
-                    .regionCity(parts.length > 0 ? parts[0] : "")
+                    .regionDistrict(parts.length > 2 ? parts[2] : "")
+                    .regionCity(parts.length > 1 ? parts[1] : "")
                     .jobAddress(address)
                     .apiSource("API1")
                     .build();
 
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("🔥 API1 목록 조회 실패: " + e.getMessage());
+          
             return null;
         }
         
@@ -132,7 +132,7 @@ public class WelfareFacilityJobServiceImpl implements WelfareFacilityJobService{
     private List<Map<String, Object>> callApi2() {
         try {
             String url = "https://apis.data.go.kr/B552583/job/job_list_env?"
-                    + "serviceKey=" + serviceKey2 + "&pageNo=1&numOfRows=100";
+                    + "serviceKey=" + serviceKey2 + "&pageNo=1&numOfRows=1000";
 
             String xml = restTemplate.getForObject(url, String.class);
             JSONObject json = XML.toJSONObject(xml);

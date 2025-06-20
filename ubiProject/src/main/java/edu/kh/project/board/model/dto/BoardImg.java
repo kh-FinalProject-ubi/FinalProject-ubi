@@ -15,8 +15,7 @@ public class BoardImg {
 
 	private int imgNo;
 	private String imgPath;
-	private String imgOriginalName;
-	private String imgRename;
+	private String imgName;
 	private int imgOrder;
 	private int boardNo;
 

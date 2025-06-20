@@ -120,6 +120,8 @@ public class WelfareProxyController {
             return ResponseEntity.ok(response.toString());
         }
     }
+    
+    
     @GetMapping("/youth-policy")
     public ResponseEntity<Map<String, Object>> proxyYouthPolicy(
             @RequestParam(name = "pageNum", defaultValue = "1") String pageNum,

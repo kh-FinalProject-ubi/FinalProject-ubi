@@ -6,6 +6,8 @@ import NoticeBoard from "./pages/NoticeBoard";
 import WelfareService from "./pages/WelfareService";
 import Header from "./components/Header";
 import FacilityDetailPage from "./pages/welfarefacility/FacilityDetailPage";
+import KakaoCallback from "./pages/KakaoCallback";
+
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
         <Route path="/askBoard" element={<AskBoard />} />
         <Route path="/noticeBoard" element={<NoticeBoard />} />
         <Route path="/facility" element={<FacilityDetailPage />} />
+        <Route path="/oauth/kakao/callback" element={<KakaoCallback />} />
+
       </Routes>
     </Router>
   );

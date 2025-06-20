@@ -251,4 +251,8 @@ public class BoardController {
 		return service.boardLike(map);
 
 	}
+	
+	/**
+	 * 게시글 
+	 */
 }
