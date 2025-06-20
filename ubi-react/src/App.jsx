@@ -8,11 +8,9 @@ import Header from "./components/Header";
 import FacilityDetailPage from "./pages/welfarefacility/FacilityDetailPage";
 import KakaoCallback from "./pages/KakaoCallback";
 
-
 function App() {
   return (
     <Router>
-      <Header />
       <Routes>
         <Route path="/" element={<MainPage />} />
         <Route path="/welfareService" element={<WelfareService />} />
@@ -21,7 +19,6 @@ function App() {
         <Route path="/noticeBoard" element={<NoticeBoard />} />
         <Route path="/facility" element={<FacilityDetailPage />} />
         <Route path="/oauth/kakao/callback" element={<KakaoCallback />} />
-
       </Routes>
     </Router>
   );
