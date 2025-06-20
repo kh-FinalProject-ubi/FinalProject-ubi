@@ -9,6 +9,8 @@ const LoginModal = ({ onClose }) => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    console.log("memberId:", `"${memberId}"`);
+    console.log("memberPw:", `"${memberPw}"`);
     const res = await fetch("/api/member/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

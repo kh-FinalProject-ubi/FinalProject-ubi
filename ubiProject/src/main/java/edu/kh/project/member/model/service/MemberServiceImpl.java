@@ -21,9 +21,13 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public Member login(String memberId, String memberPw) {
         Member m = mapper.login(memberId);
-        if (m == null || !bcrypt.matches(memberPw, m.getMemberPw())) {
-            return null;
-        }
+        if (m == null) return null;
+
+        boolean isMatch = bcrypt.matches(memberPw, m.getMemberPw());
+
+
+        if (!isMatch) return null;
+
         m.setMemberPw(null);
         return m;
     }
