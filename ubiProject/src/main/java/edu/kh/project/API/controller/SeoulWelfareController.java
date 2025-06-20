@@ -71,6 +71,7 @@ public class SeoulWelfareController {
                 }
                 return ResponseEntity.ok(response.toString());
             }
+            
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body("API 호출 실패: " + e.getMessage());
