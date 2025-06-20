@@ -10,6 +10,9 @@ import KakaoCallback from "./pages/KakaoCallback";
 import WelfareMap from "./components/WelfareMap";
 import Layout from "./components/Layout";
 import Signup from "./pages/Signup";
+import WelfareMap from "./components/WelfareMap";
+import Layout from "./components/Layout";
+import Signup from "./pages/Signup";
 import MyTownBoard from "./pages/mytownboard/MyTownBoardList";
 
 function App() {

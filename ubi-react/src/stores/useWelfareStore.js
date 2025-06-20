@@ -1,22 +1,16 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-const useWelfareStore = create((set) => ({
-  districts: [], // [districtA, districtB]
-  layers: new Map(),
-  setDistricts: (newDistricts) => set({ districts: newDistricts }),
-  setLayer: (name, layer) =>
-    set((state) => {
-      const updated = new Map(state.layers);
-      updated.set(name, layer);
-      return { layers: updated };
+const useBenefitStore = create(
+  persist(
+    (set) => ({
+      benefitsData: null,
+      setBenefitsData: (data) => set({ benefitsData: data }),
     }),
-  removeLayer: (name) =>
-    set((state) => {
-      const updated = new Map(state.layers);
-      updated.delete(name);
-      return { layers: updated };
-    }),
-  clearAll: () => set({ districts: [], layers: new Map() }),
-}));
+    {
+      name: "benefit-storage",
+    }
+  )
+);
 
-export default useWelfareStore;
+export default useBenefitStore;

@@ -33,8 +33,12 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public int signup(Member inputMember, String[] memberAddress) {
-        // (주소 처리 & 암호화 로직 동일)
+    public int signup(Member inputMember) {
+        // 비밀번호 암호화
+        String encryptedPw = bcrypt.encode(inputMember.getMemberPw());
+        inputMember.setMemberPw(encryptedPw);
+
+        // 회원가입 처리
         return mapper.signup(inputMember);
     }
 

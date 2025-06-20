@@ -14,7 +14,7 @@ public interface MemberService {
     int checkNickname(String memberNickname);
 
     /** 회원 가입 서비스 */
-	int signup(Member inputMember, String[] memberAddress);
+    int signup(Member inputMember);
 
     /** 카카오 로그인 - 토큰 기반 처리 등 확장 가능 */
     Member kakaoLogin(String kakaoId);
