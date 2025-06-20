@@ -42,7 +42,7 @@ public class SeoulWelfareServiceImpl implements SeoulWelfareService{
 
 		        for (JsonNode node : rows) {
 		        	SeoulWelfareAPI dto = mapper.treeToValue(node, SeoulWelfareAPI.class);
-		            System.out.println("✅ DTO 변환 성공: " + dto); // 👈 null 여부 확인
+		   
 		            result.add(dto);
 		        }
 		    } catch (Exception e) {

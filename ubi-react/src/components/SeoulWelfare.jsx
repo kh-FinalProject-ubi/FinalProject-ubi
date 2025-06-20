@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import "./SeoulWelfare.css";
+import "../styles/SeoulWelfare.css";
 
 // HTML 디코딩
 const decodeHTML = (html) => {
@@ -102,6 +102,16 @@ const SeoulWelfare = () => {
 
             <p className="text-sm text-gray-500 mt-2">
               {decodeHTML(item.RCPTBGNDT)} ~ {decodeHTML(item.RCPTENDDT)}
+            </p>
+
+            <p className="p-2 border">
+              <a
+                href={decodeHTML(item.SVCURL)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                바로가기
+              </a>
             </p>
           </div>
         ))}
