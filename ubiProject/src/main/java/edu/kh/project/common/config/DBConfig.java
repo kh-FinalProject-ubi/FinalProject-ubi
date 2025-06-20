@@ -63,18 +63,7 @@ public class DBConfig {
 	
 	@Bean
 	public DataSource dataSource(HikariConfig config) {
-		// 매개변수 HikariConfig config
-		// -> 등록된 Bean 중 HikariConfig 타입의 Bean을 자동으로 주입
-		// -> HikariConfig 객체를 받아, DataSource 객체를 생성하는데 사용.
-		
-	
 		DataSource dataSource = new HikariDataSource(config);
-	
-		// DataSource :
-		// 애플리케이션이 데이터베이스에 연결할 때 사용하는 설정.
-		// 1) DB 연결 정보 제공(url, username, password)
-		// 2) Connection pool 관리 (Connection 생성/생명주기 관리)
-		// 3) 트랜잭션 관리
 		return dataSource;
 	}
 

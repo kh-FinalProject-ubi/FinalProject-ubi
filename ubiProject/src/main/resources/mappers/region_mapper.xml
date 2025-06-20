@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="edu.kh.project.welfare.facility.mapper.RegionMapper">
+
+	<select id="selectApiInfo"
+		resultType="edu.kh.project.welfare.facility.dto.RegionApiInfo">
+		SELECT
+		DATASET_ID AS apiDatasetId,
+		UDDI_ID AS apiEndpointId
+		FROM REGION
+		WHERE REGION_CITY = #{city}
+		AND REGION_DISTRICT = #{district}
+	</select>
+
+</mapper>
+
