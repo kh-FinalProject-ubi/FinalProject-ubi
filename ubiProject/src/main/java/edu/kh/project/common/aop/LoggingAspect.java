@@ -46,16 +46,16 @@ public class LoggingAspect {
 		sb.append(String.format("[%s.%s] 요청 / ip : %s", className, methodName, ip));
 		//	 [MainController.mainPage] 요청 / ip : 159.30.23.19
 		
-		// 로그인 상태인 경우
-		if(req.getSession().getAttribute("loginMember") != null) {
-			
-			String memberEmail = ((Member)req.getSession().getAttribute("loginMember"))
-												.getMemberEmail();
-			
-			sb.append(String.format(", 요청 회원 : %s", memberEmail));
-		}
-		
-		log.info(sb.toString());
+//		// 로그인 상태인 경우
+//		if(req.getSession().getAttribute("loginMember") != null) {
+//			
+//			String memberEmail = ((Member)req.getSession().getAttribute("loginMember"))
+//												.getMemberEmail();
+//			
+//			sb.append(String.format(", 요청 회원 : %s", memberEmail));
+//		}
+//		
+//		log.info(sb.toString());
 		
 	}
 	

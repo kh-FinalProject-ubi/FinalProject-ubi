@@ -3,16 +3,21 @@
 <mapper namespace="edu.kh.project.member.model.mapper.MemberMapper">
 	
 	<!-- 로그인  -->
-	<select id="login">
-	SELECT MEMBER_NO, MEMBER_EMAIL, MEMBER_NICKNAME,
-	MEMBER_PW, MEMBER_TEL, MEMBER_ADDRESS, PROFILE_IMG,
-	AUTHORITY,
-	TO_CHAR(ENROLL_DATE, 'YYYY"년" MM"월" DD"일" HH24"시" MI"분" SS"초"')
-	ENROLL_DATE FROM "MEMBER"
-	WHERE MEMBER_EMAIL = #{memberEmail}
-	AND MEMBER_DEL_FL='N'
-	</select>
-
+<select id="login" resultType="Member" parameterType="string">
+  SELECT
+    MEMBER_NO,
+    MEMBER_ID,
+    MEMBER_NICKNAME,
+    MEMBER_PW,
+    MEMBER_TEL,
+    MEMBER_ADDRESS,
+   MEMBER_IMG,
+    AUTHORITY,
+    TO_CHAR(ENROLL_DATE, 'YYYY"년" MM"월" DD"일"') AS ENROLL_DATE
+  FROM MEMBER
+  WHERE MEMBER_ID = #{memberId}
+    AND MEMBER_DEL_FL = 'N'
+</select>
 	<!-- 이메일 중복 검사 -->
 	<select id="checkEmail" resultType="_int">
 	SELECT COUNT(*)
@@ -29,21 +34,17 @@
 	 AND MEMBER_DEL_FL = 'N'
 	</select>
 
-	<!-- 회원 가입 -->
-	<insert id="signup">
-	INSERT INTO "MEMBER"
-	VALUES(SEQ_MEMBER_NO.NEXTVAL, 
-			 #{memberEmail},
-			 #{memberPw},
-			 #{memberNickname},
-			 #{memberTel},
-			 #{memberAddress},
-			 NULL,
-			 DEFAULT,
-			 DEFAULT,
-			 DEFAULT
-	)
-	</insert>
-
+<insert id="signup">
+  INSERT INTO "MEMBER"
+    (MEMBER_NO, MEMBER_ID, MEMBER_PW, MEMBER_NICKNAME, 
+     MEMBER_EMAIL, MEMBER_TEL, MEMBER_ADDRESS, 
+     MEMBER_IMG, ENROLL_DATE, MEMBER_DEL_FL, AUTHORITY)
+  VALUES(
+    SEQ_MEMBER_NO.NEXTVAL,
+    #{memberId}, #{memberPw}, #{memberNickname},
+    #{memberEmail}, #{memberTel}, #{memberAddress},
+    NULL, DEFAULT, DEFAULT, DEFAULT
+  )
+</insert>
 
 </mapper>

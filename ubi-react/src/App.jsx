@@ -1,14 +1,13 @@
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainPage from "./pages/MainPage";
 import OurSigunguGood from "./pages/OurSigunguGood";
 import AskBoard from "./pages/AskBoard";
 import NoticeBoard from "./pages/NoticeBoard";
 import WelfareService from "./pages/WelfareService";
+import KakaoCallback from "./pages/KakaoCallback";
 
 function App() {
   return (
-
     <Router>
       <Routes>
         <Route path="/" element={<MainPage />} />
@@ -16,6 +15,7 @@ function App() {
         <Route path="/ourSigunguGood" element={<OurSigunguGood />} />
         <Route path="/askBoard" element={<AskBoard />} />
         <Route path="/noticeBoard" element={<NoticeBoard />} />
+        <Route path="/oauth/kakao/callback" element={<KakaoCallback />} />
       </Routes>
     </Router>
   );
