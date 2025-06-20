@@ -5,6 +5,7 @@ import YouthPolicyList from "../components/YouthPolicyList";
 import SeoulWelfare from "../components/SeoulWelfare";
 import PublicDataMap from "../components/PublicDataMap";
 import WelfareFacilityJobList from "../components/WelfareFacilityJobList";
+import KidFacility from "../components/KidFacility";
 
 const WelfareService = () => {
   return (
@@ -36,7 +37,10 @@ const WelfareService = () => {
         <PublicDataMap />
 
         {/* ✅ 취약계층 구인정보 */}
-        <WelfareFacilityJobList/>
+        <WelfareFacilityJobList />
+
+        {/* 아동 시설 */}
+        <KidFacility />
       </div>
       <Footer />
     </>
