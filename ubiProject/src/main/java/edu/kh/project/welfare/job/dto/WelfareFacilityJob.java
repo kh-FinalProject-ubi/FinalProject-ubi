@@ -1,4 +1,4 @@
-package edu.kh.project.welfarefacility.dto;
+package edu.kh.project.welfare.job.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
