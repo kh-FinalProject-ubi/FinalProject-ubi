@@ -36,4 +36,10 @@ public class Member {
 
     // 아래 필드는 프론트 요청 대응 시 주로 사용됨
     private String kakaoId;              // 카카오 로그인 ID (optional)
+
+    // ✅ 지역 정보 추가
+    private String regionDistrict; // 예: 강남구
+    private String regionCity;     // 예: 서울특별시
+	
+	
 }

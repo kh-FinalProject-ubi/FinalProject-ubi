@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import "../styles/Header.css";
-import OurSigunguGood from "../pages/OurSigunguGood";
 import AskBoard from "../pages/AskBoard";
 import NoticeBoard from "../pages/NoticeBoard";
 import WelfareService from "./../pages/WelfareService";
@@ -40,7 +39,7 @@ const Header = () => {
           <span onClick={handleFacilityClick} style={{ cursor: "pointer" }}>
             복지시설
           </span>
-          <Link to="/ourSigunguGood">우리 동네 좋아요</Link>
+          <Link to="/mytownboard">우리 동네 좋아요</Link>
           <Link to="/askBoard">문의게시판</Link>
           <Link to="/noticeBoard">공지사항</Link>
         </nav>

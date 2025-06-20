@@ -83,6 +83,16 @@ public interface MytownBoardMapper {
 	 */
 	List<String> selectDBImageList();
 	
+	/**
+	 * 게시글 수 조회 (지역조건 포함)
+	 * @param paramMap
+	 * @return
+	 */
+	int getMytownListCountByRegion(Map<String, Object> paramMap);
+
+	
+	List<Board> selectMytownBoardListByRegion(Map<String, Object> paramMap, RowBounds rowBounds);
+
 	
 
 }
