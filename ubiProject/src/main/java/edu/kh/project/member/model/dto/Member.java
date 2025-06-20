@@ -24,6 +24,7 @@ public class Member {
     private String enrollDate;           // 가입일
     private String memberDelFl;          // 탈퇴 여부
     private String authority;            // 권한
+    private String memberName;
 
     // 아래 필드는 프론트 요청 대응 시 주로 사용됨
     private String kakaoId;              // 카카오 로그인 ID (optional)

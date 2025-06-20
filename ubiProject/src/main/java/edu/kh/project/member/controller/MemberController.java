@@ -38,11 +38,9 @@ public class MemberController {
 
     /** ✅ 회원가입 (Zustand 대응용 API) */
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(
-        @RequestBody Member inputMember,
-        @RequestParam(value = "memberAddress", required = false) String[] memberAddress
-    ) {
-        int result = service.signup(inputMember, memberAddress);
+    public ResponseEntity<?> signup(@RequestBody Member inputMember) {
+        int result = service.signup(inputMember);
+        
 
         if (result > 0) {
             return ResponseEntity.ok(

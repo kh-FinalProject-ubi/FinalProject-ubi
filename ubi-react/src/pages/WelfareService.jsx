@@ -10,7 +10,6 @@ import KidFacility from "../components/KidFacility";
 const WelfareService = () => {
   return (
     <>
-      <Header />
       <div style={{ padding: "2rem" }}>
         <h2>공공복지 서비스</h2>
         <p>
@@ -42,7 +41,6 @@ const WelfareService = () => {
         {/* 아동 시설 */}
         <KidFacility />
       </div>
-      <Footer />
     </>
   );
 };
