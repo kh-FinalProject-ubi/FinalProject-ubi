@@ -9,10 +9,10 @@ import edu.kh.project.member.model.dto.Member;
 public interface MemberMapper {
 
 	/** 로그인 SQL 실행
-	 * @param memberEmail
+	 * @param memberId
 	 * @return
 	 */
-	Member login(String memberEmail);
+	Member login(String memberId);
 
 	/** 이메일 중복검사
 	 * @param memberEmail
@@ -31,5 +31,7 @@ public interface MemberMapper {
 	 * @return
 	 */
 	int signup(Member inputMember);
+
+
 	
 }
