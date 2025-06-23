@@ -21,7 +21,7 @@ public class Member {
     private String memberEmail;   		 // 회원 이메일
     private String memberTel;            // 전화번호
     private String memberAddress;        // 주소
-    private String profileImg;           // 프로필 이미지
+    private String memberImg;           // 프로필 이미지
     private String enrollDate;           // 가입일
     private String memberDelFl;          // 탈퇴 여부
     private String authority;            // 권한

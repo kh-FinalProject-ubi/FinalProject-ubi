@@ -11,13 +11,15 @@
     MEMBER_PW,
     MEMBER_TEL,
     MEMBER_ADDRESS,
-   MEMBER_IMG,
+    MEMBER_STANDARD, <!-- ✅ 추가 -->
+    MEMBER_IMG,
     AUTHORITY,
     TO_CHAR(ENROLL_DATE, 'YYYY"년" MM"월" DD"일"') AS ENROLL_DATE
   FROM MEMBER
   WHERE MEMBER_ID = #{memberId}
     AND MEMBER_DEL_FL = 'N'
 </select>
+
 	<!-- 이메일 중복 검사 -->
 	<select id="checkEmail" resultType="_int">
 	SELECT COUNT(*)

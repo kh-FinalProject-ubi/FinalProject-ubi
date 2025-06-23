@@ -3,7 +3,6 @@ import MainPage from "./pages/MainPage";
 import AskBoard from "./pages/AskBoard";
 import NoticeBoard from "./pages/NoticeBoard";
 import WelfareService from "./pages/WelfareService";
-import Header from "./components/Header";
 import FacilityDetailPage from "./pages/welfarefacility/FacilityDetailPage";
 import KakaoCallback from "./pages/KakaoCallback";
 import WelfareMap from "./components/WelfareMap";
@@ -29,14 +28,13 @@ function App() {
           <Route path="askBoard" element={<AskBoard />} />
           <Route path="noticeBoard" element={<NoticeBoard />} />
           <Route path="facility" element={<FacilityDetailPage />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/mytownBoard" element={<MyTownBoard />} />
           <Route path="/mypage" element={<MypageLayout />}>
             <Route path="profile" element={<Profile />} />
             <Route path="chat" element={<Chat />} />
             <Route path="password" element={<ChangePassword />} />
             <Route path="withdraw" element={<Withdraw />} />
-          </Route>
+          <Route path="signup" element={<Signup />} />
+          <Route path="mytownBoard" element={<MyTownBoard />} />
         </Route>
 
 
