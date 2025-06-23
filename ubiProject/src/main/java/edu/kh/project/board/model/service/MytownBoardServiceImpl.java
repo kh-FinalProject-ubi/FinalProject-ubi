@@ -12,173 +12,24 @@ import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.board.model.dto.Pagination;
 
 import edu.kh.project.board.model.mapper.MytownBoardMapper;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 @Service
 public class MytownBoardServiceImpl implements MytownBoardService {
 
-//	private final DataSource dataSource;
 
 	@Autowired
 	private MytownBoardMapper mapper;
 
-//	BoardServiceImpl(DataSource dataSource) {
-//		this.dataSource = dataSource;
-//	}
-
-	// 게시판 종류 조회 서비스
+	/** 시군구가 동일한 게시글 목록조회 
+	 * @param regionDistrict
+	 * @param regionCity
+	 * @return
+	 */
 	@Override
-	public List<Map<String, Object>> selectMytownBoardTypeList() {
-		return mapper.selectMytownBoardTypeList();
+	public List<Board> selectLocalBoardList(String regionDistrict, String regionCity) {
+	    return mapper.selectLocalBoardList(regionDistrict, regionCity);
 	}
 
-	// 특정 게시판의 지정된 페이지 목록 조회 서비스
-	@Override
-	public Map<String, Object> selectMytownBoardList(int boardCode, int cp) {
-
-		// 1. 지정된 게시판(boardCode)에서
-		// 삭제되지 않은 게시글 수를 조회
-		int listCount = mapper.getMytownListCount(boardCode);
-
-		// 2. 1번의 결과 + cp를 이용해서
-		// Pagination 객체를 생성
-		// * Pagination 객체 : 게시글 목록 구성에 필요한 값을 저장한 객체
-		Pagination pagination = new Pagination(cp, listCount);
-
-		// 3. 특정 게시판의 지정된 페이지 목록 조회
-		/*
-		 * ROWBOUNDS 객체 (MyBatis 제공 객체) : 지정된 크기만큼 건너 뛰고 (offset) 제한된 크기만큼(list)의 행을
-		 * 조회하는 객체
-		 */
-		int limit = pagination.getLimit(); // 10개씩 조회
-		int offset = (cp - 1) * limit;
-
-		RowBounds rowBounds = new RowBounds(offset, limit);
-
-		// Mapper 메서드 호출 시 원래 전달할 수 있는 매개변수 1개
-		// -> 2개를 전달할 수 있는 경우가 있음
-		// rowBounds를 이용할 때
-		// -> 첫 번째 매개변수 -> SQL에 전달하는 파라미터
-		// -> 두 번째 매개변수 -> RowBounds 객체 전달
-		List<Board> boardList = mapper.selectMytownBoardList(boardCode, rowBounds);
-
-
-//		log.debug("boardList 결과 : {}", boardList);
-
-		// 4. 목록 조회 결과 + Pagination 객체를 Map으로 묶어서 반환
-		Map<String, Object> map = new HashMap<>();
-
-		map.put("pagination", pagination);
-		map.put("boardList", boardList);
-
-		// 5. 결과 반환
-
-		return map;
-	}
-
-	// 게시글 상세 조회
-	@Override
-	public Board selectMytownOne(Map<String, Integer> map) {
-
-		// 여러 SQL을 실행하는 방법
-		// 1. 하나의 Service 메서드에서
-		// 여러 mapper 메서드를 호출하는 방법
-
-		// 2. 수행하려는 SQL이
-		// 2-1) 모두 SELECT 이면서
-		// 2-2) 먼저 조회된 결과 중 일부를 이용해서
-		// 나중에 수행되는 SQL의 조건으로 삼을 수 있는 경우
-		// -> Mybatis의 <resultMap>, <collection> 태그를 이용해서
-		// mapper 메서드 1회 호출로 여러 SELECT 한 번에 수행 가능
-
-		return mapper.selectMytownOne(map);
-	}
-
-	// 게시글 좋아요 체크/해제
-	@Override
-	public int MytownboardLike(Map<String, Integer> map) {
-
-		int result = 0;
-
-		// 1. 좋아요가 체크된 상태인 경우(likeCheck == 1)
-		// -> BOARD_LIKE 테이블에 DELETE 수행
-		if (map.get("likeCheck") == 1) {
-
-			result = mapper.deleteMytownBoardLike(map);
-
-		} else {
-			// 2. 좋아요가 해제된 상태인 경우(likeCheck == 0)
-			// -> BOARD_LIKE 테이블에 INSERT 수행
-
-			result = mapper.insertMytownBoardLike(map);
-
-		}
-
-		// 3. 다시 해당 게시글의 좋아요 개수를 조회해서 반환
-		if (result > 0) {
-			return mapper.selectMytownLikeCount(map.get("boardNo"));
-		}
-
-		return -1; // 좋아요 처리 실패
-	}
-	
-	// 조회수 1 증가 서비스
-	@Override
-	public int updateMytownReadCount(int boardNo) {
-
-		// 1. 조회수 1 증가 (UPDATE)
-		int result = mapper.updateMytownReadCount(boardNo);
-		
-		// 2. 현재 조회 수 조회
-		if( result > 0 ) {
-			return mapper.selectMytownReadCount(boardNo);
-		}
-		
-		// 실패한 경우 -1 반환
-		return -1;
-	}
-	
-	// 검색 서비스 (게시글 목록 조회 참고)
- 	@Override
-	public Map<String, Object> searchMytownList(Map<String, Object> paramMap, int cp) {
-		// paramMap (key, query, boardCode)
- 		
- 		// 1. 지정된 게시판(boardCode)에서
- 		// 검색 조건에 맞으면서
- 		// 삭제되지 않은 게시글 수를 조회
- 		
- 		int listCount = mapper.getMytownSearchCount(paramMap);
-		
- 		// 2. 1번의 결과 + cp를 이용해서
- 		// Pagination 객체를 생성
- 		Pagination pagination = new Pagination(cp, listCount);
- 		
- 		// 3. 특정 게시판의 지정된 페이지 목록 조회
- 		int limit = pagination.getLimit(); // 10개씩 조회
-		int offset = (cp - 1) * limit;
-
-		RowBounds rowBounds = new RowBounds(offset, limit);
-		
- 		// mapper 메서드 호출 코드 수행
-		// -> Mapper 메서드 호출 시 전달할 수 있는 매개변수 1개
-		// -> 2개를 전달할 수 있는 경우가 있음
-		// RowBounds 를 이용할 때
-		// 1번째 : sql에 전달할 파라미터
-		// 2번째 : RowBounds 객체
-		List<Board> boardList = mapper.selectMytownSearchList(paramMap, rowBounds);
-		
-		// 4. 목록 조회 결과 + Pagination 객체를 Map으로 묶음
-		Map<String, Object> map = new HashMap<>();
-		
-		map.put("pagination", pagination);
-		map.put("boardList", boardList);
-		
-		return map;
-	}
- 	
- 	// DB 이미지 파일명 목록 조회
- 	@Override
- 	public List<String> selectDBImageList() {
- 		return mapper.selectDBImageList();
- 	}
 }

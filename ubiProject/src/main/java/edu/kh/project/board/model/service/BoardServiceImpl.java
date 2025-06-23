@@ -65,8 +65,6 @@ public class BoardServiceImpl implements BoardService {
 		// -> 첫 번째 매개변수 -> SQL에 전달하는 파라미터
 		// -> 두 번째 매개변수 -> RowBounds 객체 전달
 		List<Board> boardList = mapper.selectBoardList(boardCode, rowBounds);
-
-//		log.debug("boardList 결과 :" + boardList);
 		log.debug("boardList 결과 : {}", boardList);
 
 		// 4. 목록 조회 결과 + Pagination 객체를 Map으로 묶어서 반환
@@ -76,7 +74,8 @@ public class BoardServiceImpl implements BoardService {
 		map.put("boardList", boardList);
 
 		// 5. 결과 반환
-
+		log.error("===== 여긴 error 레벨 log =====");
+		System.err.println("===== System.err.println 테스트 =====");
 		return map;
 	}
 

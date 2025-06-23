@@ -21,16 +21,24 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public Member login(String memberId, String memberPw) {
         Member m = mapper.login(memberId);
-        if (m == null || !bcrypt.matches(memberPw, m.getMemberPw())) {
-            return null;
-        }
+        if (m == null) return null;
+
+        boolean isMatch = bcrypt.matches(memberPw, m.getMemberPw());
+
+
+        if (!isMatch) return null;
+
         m.setMemberPw(null);
         return m;
     }
 
     @Override
-    public int signup(Member inputMember, String[] memberAddress) {
-        // (주소 처리 & 암호화 로직 동일)
+    public int signup(Member inputMember) {
+        // 비밀번호 암호화
+        String encryptedPw = bcrypt.encode(inputMember.getMemberPw());
+        inputMember.setMemberPw(encryptedPw);
+
+        // 회원가입 처리
         return mapper.signup(inputMember);
     }
 

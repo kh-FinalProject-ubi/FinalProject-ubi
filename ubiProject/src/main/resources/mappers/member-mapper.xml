@@ -11,13 +11,15 @@
     MEMBER_PW,
     MEMBER_TEL,
     MEMBER_ADDRESS,
-   MEMBER_IMG,
+    MEMBER_STANDARD, <!-- ✅ 추가 -->
+    MEMBER_IMG,
     AUTHORITY,
     TO_CHAR(ENROLL_DATE, 'YYYY"년" MM"월" DD"일"') AS ENROLL_DATE
   FROM MEMBER
   WHERE MEMBER_ID = #{memberId}
     AND MEMBER_DEL_FL = 'N'
 </select>
+
 	<!-- 이메일 중복 검사 -->
 	<select id="checkEmail" resultType="_int">
 	SELECT COUNT(*)
@@ -34,16 +36,18 @@
 	 AND MEMBER_DEL_FL = 'N'
 	</select>
 
-<insert id="signup">
-  INSERT INTO "MEMBER"
-    (MEMBER_NO, MEMBER_ID, MEMBER_PW, MEMBER_NICKNAME, 
-     MEMBER_EMAIL, MEMBER_TEL, MEMBER_ADDRESS, 
-     MEMBER_IMG, ENROLL_DATE, MEMBER_DEL_FL, AUTHORITY)
-  VALUES(
-    SEQ_MEMBER_NO.NEXTVAL,
-    #{memberId}, #{memberPw}, #{memberNickname},
+<insert id="signup" parameterType="Member">
+  INSERT INTO MEMBER (
+    MEMBER_NO, MEMBER_ID, MEMBER_PW, MEMBER_NICKNAME,
+    MEMBER_EMAIL, MEMBER_TEL, MEMBER_ADDRESS,
+    MEMBER_TADDRESS, REGION_DISTRICT, REGION_CITY,
+    MEMBER_NAME, AUTHORITY, MEMBER_STANDARD, MEMBER_DEL_FL
+  )
+  VALUES (
+    SEQ_MEMBER_NO.NEXTVAL, #{memberId}, #{memberPw}, #{memberNickname},
     #{memberEmail}, #{memberTel}, #{memberAddress},
-    NULL, DEFAULT, DEFAULT, DEFAULT
+    #{memberTaddress}, #{regionDistrict}, #{regionCity},
+    #{memberName}, 1, #{memberStandard}, 'N'
   )
 </insert>
 

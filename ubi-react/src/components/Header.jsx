@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import "../styles/Header.css";
-import OurSigunguGood from "../pages/OurSigunguGood";
 import AskBoard from "../pages/AskBoard";
 import NoticeBoard from "../pages/NoticeBoard";
 import WelfareService from "./../pages/WelfareService";
@@ -9,11 +8,9 @@ import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../stores/useAuthStore";
 import LoginModal from "./LoginModal"; // ✅ 팝업 컴포넌트 import
 
-
 const Header = () => {
-  const { token, address, memberName, clearAuth } = useAuthStore();
+  const { token, memberName, memberImg, address, clearAuth } = useAuthStore();
   const isLogin = !!token; // 토큰 존재 여부로 로그인 상태 판단
-
 
   const navigate = useNavigate();
 
@@ -40,7 +37,7 @@ const Header = () => {
           <span onClick={handleFacilityClick} style={{ cursor: "pointer" }}>
             복지시설
           </span>
-          <Link to="/ourSigunguGood">우리 동네 좋아요</Link>
+          <Link to="/mytownBoard">우리 동네 좋아요</Link>
           <Link to="/askBoard">문의게시판</Link>
           <Link to="/noticeBoard">공지사항</Link>
         </nav>
@@ -49,11 +46,14 @@ const Header = () => {
             <>
               <button className="alarm-btn">🔔</button>
               <span className="nickname">{memberName}님</span>
+              <Link to="/mypage/Profile">
               <img
                 className="profile-img"
-                src="/assets/profile.png"
+                src={memberImg || "/assets/profile.png"}
                 alt="프로필"
               />
+              </Link>
+
               <button className="logout-btn" onClick={clearAuth}>
                 로그아웃
               </button>
