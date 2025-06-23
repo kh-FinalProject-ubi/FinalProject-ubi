@@ -7,12 +7,21 @@ const useAuthStore = create(
       token: null,
       address: null,
       memberName: null,
-      setAuth: ({ token, address, memberName }) =>
-        set({ token, address, memberName }),
-      clearAuth: () => set({ token: null, address: null, memberName: null }),
+      memberStandard: null, // ✅ 추가
+
+      setAuth: ({ token, address, memberName, memberStandard }) =>
+        set({ token, address, memberName, memberStandard }),
+
+      clearAuth: () =>
+        set({
+          token: null,
+          address: null,
+          memberName: null,
+          memberStandard: null,
+        }),
     }),
     {
-      name: "auth-storage", // localStorage key
+      name: "auth-storage",
     }
   )
 );

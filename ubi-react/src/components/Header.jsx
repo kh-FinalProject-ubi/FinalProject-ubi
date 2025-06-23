@@ -8,11 +8,9 @@ import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../stores/useAuthStore";
 import LoginModal from "./LoginModal"; // ✅ 팝업 컴포넌트 import
 
-
 const Header = () => {
-  const { token, address, memberName, clearAuth } = useAuthStore();
+  const { token, memberName, memberImg, address, clearAuth } = useAuthStore();
   const isLogin = !!token; // 토큰 존재 여부로 로그인 상태 판단
-
 
   const navigate = useNavigate();
 
@@ -50,7 +48,7 @@ const Header = () => {
               <span className="nickname">{memberName}님</span>
               <img
                 className="profile-img"
-                src="/assets/profile.png"
+                src={memberImg || "/assets/profile.png"}
                 alt="프로필"
               />
               <button className="logout-btn" onClick={clearAuth}>
