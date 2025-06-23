@@ -1,16 +1,56 @@
-import React from "react";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useLocation } from "react-router-dom";
 
-const AskBoard = () => {
+const boardCodeMap = {
+  "/noticeBoard": 1,
+  "/askBoard": 2,
+  // 필요한 만큼 매핑 추가
+};
+
+const askBoard = () => {
+  const [boardList, setBoardList] = useState([]);
+  const [pagination, setPagination] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const location = useLocation();
+  const path = location.pathname;
+  const boardCode = boardCodeMap[path];
+
+  useEffect(() => {
+    if (!boardCode) return;
+
+    axios
+      .get(`/api/board/${boardCode}`)
+      .then((res) => {
+        setBoardList(res.data.boardList);
+        setPagination(res.data.pagination);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("게시판 목록 조회 실패:", err);
+      });
+  }, [boardCode]);
+
+  if (!boardCode) return <p>존재하지 않는 게시판입니다.</p>;
+  if (loading) return <p>로딩 중...</p>;
+
   return (
-    <>
-      <div style={{ padding: "2rem" }}>
-        <h2>문의 게시판</h2>
-        <p>궁금한 점이나 서비스 관련 문의사항을 자유롭게 남겨주세요.</p>
-      </div>
-    </>
+    <div>
+      <h2>게시판 목록</h2>
+      <ul>
+        {boardList.map((board) => (
+          <li key={board.boardNo}>
+            {board.length} &nbsp;
+            {board.postType} &nbsp; &nbsp; &nbsp;
+            <strong>{board.boardTitle}</strong> - {board.boardDate}
+            &nbsp;&nbsp;&nbsp;
+            {board.boardAnswer}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 };
 
-export default AskBoard;
+export default askBoard;

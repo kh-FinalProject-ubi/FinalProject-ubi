@@ -78,6 +78,7 @@ const SeoulWelfare = () => {
             <p className="text-sm text-gray-700 font-medium">
               {decodeHTML(item.PLACENM || "혜택 제공 기관명")}
             </p>
+            <p>{decodeHTML(item.USETGTINFO)}</p>
 
             {/* 내용 + 이미지 수평 배치 */}
             <div className="flex justify-between items-start mt-2">
