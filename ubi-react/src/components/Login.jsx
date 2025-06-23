@@ -17,6 +17,7 @@ const Login = () => {
       const res = await fetch("/api/member/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ memberId, memberPw }),
       });
 
@@ -26,7 +27,9 @@ const Login = () => {
           token: data.token,
           address: data.address,
           memberName: data.memberName,
+           memberStandard: data.memberStandard, // ✅ 저장
         });
+              console.log("✅ 로그인 성공");
       } else {
         alert(data.message || "로그인 실패");
       }

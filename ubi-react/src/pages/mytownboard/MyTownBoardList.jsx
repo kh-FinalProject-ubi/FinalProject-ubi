@@ -1,36 +1,46 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 
 
-const MyTownBoard = () => {
+import { useEffect, useState } from "react";
+import useAuthStore from "../../stores/useAuthStore";
+
+function MyTownBoard() {
   const [boardList, setBoardList] = useState([]);
-  
-  useEffect(() => {
-    axios.get('/mytownBoard')
-      .then(res => {
-         console.log('응답 데이터:', res.data); // 👈 여기에 배열이 나와야 함
-        setBoardList(res.data);
-      })
-      .catch(err => console.error('게시판 불러오기 실패:', err));
-  }, []);
+  const { token } = useAuthStore(); // Zustand로부터 token 가져오기
 
-   return (
+  useEffect(() => {
+    if (!token) return; // 로그인 안 했으면 요청 X
+
+    fetch("/api/board/mytownBoard", {
+      method: "GET",
+        headers: {
+        Authorization: `Bearer ${token}`, // ✅ 토큰 인증 헤더
+      //credentials: "include", // ✅ 세션 쿠키 보내기
+          },
+
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("로그인 필요");
+        return res.json();
+      })
+      .then(setBoardList)
+      .catch((err) => {
+        console.error("게시글 조회 실패:", err);
+      });
+  }, [token]);
+
+  return (
     <div>
       <h2>우리 동네 게시판</h2>
-      {boardList.length === 0 ? (
-        <p>지역 일치 게시글이 없습니다.</p>
-      ) : (
-        <ul>
-            {Array.isArray(boardList) && boardList.map(post => (
-            <li key={post.boardNo}>
-              <strong>{post.boardTitle}</strong> by {post.memberNickname} ({post.regionDistrict}, {post.regionCity})
-            </li>
-          ))}
-        </ul>
-      )}
+      {boardList.map((post) => (
+        <div key={post.boardNo}>
+          <h3>{post.boardTitle}</h3>
+          <p>{post.boardContent}</p>
+        </div>
+      ))}
     </div>
   );
 };
+
 
 
 export default MyTownBoard;

@@ -1,57 +1,59 @@
 	package edu.kh.project.board.controller;
 
-	import java.time.Duration;
-	import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-	import org.springframework.beans.factory.annotation.Autowired;
-	import org.springframework.stereotype.Controller;
-	import org.springframework.ui.Model;
-	import org.springframework.web.bind.annotation.GetMapping;
-	import org.springframework.web.bind.annotation.PathVariable;
-	import org.springframework.web.bind.annotation.PostMapping;
-	import org.springframework.web.bind.annotation.RequestBody;
-	import org.springframework.web.bind.annotation.RequestMapping;
-	import org.springframework.web.bind.annotation.RequestParam;
-	import org.springframework.web.bind.annotation.ResponseBody;
-	import org.springframework.web.bind.annotation.SessionAttribute;
-	import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
-	import edu.kh.project.board.model.dto.Board;
-	import edu.kh.project.board.model.dto.BoardImg;
+import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.board.model.service.MytownBoardService;
 import edu.kh.project.member.model.dto.Member;
-	import jakarta.servlet.http.Cookie;
-	import jakarta.servlet.http.HttpServletRequest;
-	import jakarta.servlet.http.HttpServletResponse;
-	import lombok.extern.slf4j.Slf4j;
+import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 
-	@Controller
-	@RequestMapping("mytownBoard")
+@RestController 
+	@RequestMapping("/api/board")
 	@Slf4j
 	public class MytownBoardController {
 
-		@Autowired
-		private MytownBoardService service;
+    @Autowired
+    private MytownBoardService service;
 
-		/**
-		 * 게시글 목록 조회
-		 * @return 
-		 */
-		@GetMapping
-		@ResponseBody  
-		public List<Board> getLocalBoardList(
-			    @SessionAttribute(value = "loginMember", required = false) Member loginMember
-			) {
-			    if (loginMember == null) return Collections.emptyList();
+    @GetMapping("/mytownBoard")
+    public ResponseEntity<?> getLocalBoardList(
+    		  @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다");
+        }
 
-			    return service.selectLocalBoardList(
-			        loginMember.getRegionDistrict(),
-			        loginMember.getRegionCity()
-			    );
-			}
-		
-	}
+        String token = authHeader.substring(7); // "Bearer " 제거
+
+        Member loginMember = service.getMemberByToken(token); // ✅ 토큰으로 사용자 조회
+    	
+    	
+    	
+    	System.out.println("🔥 로그인 유저: " + loginMember); // null이면 아직 세션이 안 넘어온 것
+       
+        
+        
+        
+        if (loginMember == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다");
+        }
+
+        List<Board> boardList = service.selectLocalBoardList(
+                loginMember.getRegionDistrict(), // 지역 기반 필터링
+                loginMember.getMemberNo()        // 좋아요 여부 확인용
+        );
+        return ResponseEntity.ok(boardList);
+    }
+    
+}

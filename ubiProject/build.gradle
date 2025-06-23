@@ -24,6 +24,8 @@ repositories {
 }
 
 dependencies {
+implementation 'com.fasterxml.jackson.core:jackson-databind'
+implementation 'org.springframework.boot:spring-boot-starter-web'
  implementation 'org.json:json:20230227'
   implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.17.0'
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc'

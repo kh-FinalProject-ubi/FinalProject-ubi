@@ -6,15 +6,17 @@
 	<!-- 로그인된 회원과 동일한 시군구의 회원이 작성한 게시글 목록 조회 -->
 <select id="selectLocalBoardList" resultType="Board">
 SELECT 
-    B.BOARD_NO,
-    B.BOARD_TITLE,
-    B.BOARD_CONTENT,
-    B.BOARD_DATE,
-    B.READ_COUNT AS BOARD_READ_COUNT,
-    B.POST_TYPE,
-    M.MEMBER_NICKNAME,
-    M.REGION_DISTRICT,
-    M.REGION_CITY
+  B.BOARD_NO AS boardNo,
+    B.BOARD_TITLE AS boardTitle,
+    B.BOARD_CONTENT AS boardContent,
+    TO_CHAR(B.BOARD_DATE, 'YYYY-MM-DD HH24:MI:SS') AS boardDate,
+    B.READ_COUNT AS boardReadCount,
+    B.POST_TYPE AS postType,
+
+    M.MEMBER_NO AS memberNo,
+    M.MEMBER_NICKNAME AS memberNickname,
+    M.REGION_DISTRICT AS regionDistrict,
+    M.REGION_CITY AS regionCity
 FROM BOARD B
 JOIN MEMBER M ON B.MEMBER_NO = M.MEMBER_NO
 WHERE B.BOARD_TYPE = 3
@@ -24,6 +26,12 @@ WHERE B.BOARD_TYPE = 3
 ORDER BY B.BOARD_DATE DESC
 </select>
 
-	
+
+<select id="login" resultType="Member">
+  SELECT MEMBER_ID, MEMBER_PW,MEMBER_NO 
+  FROM MEMBER
+  WHERE MEMBER_ID = #{memberId}
+  AND MEMBER_PW = #{memberPw}
+</select>
 
 </mapper>

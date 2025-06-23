@@ -15,6 +15,7 @@ import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.member.model.service.MemberService;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -46,7 +47,7 @@ public class MemberController {
 
     /** ✅ 로그인 (Zustand용 JSON 응답) */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Member input) {
+    public ResponseEntity<?> login(@RequestBody Member input,  HttpSession session) {
         Member loginMember = service.login(input.getMemberId(), input.getMemberPw());
         
         if (loginMember == null) {
@@ -55,6 +56,9 @@ public class MemberController {
                 .body(Map.of("message", "아이디 또는 비밀번호가 일치하지 않습니다."));
         }
 
+        // 세션에 로그인 정보 저장 (동네게시판 구현)
+        session.setAttribute("loginMember", loginMember);
+        
         // 파싱 시작
         String readableStandard = parseMemberStandard(loginMember.getMemberStandard());
 
