@@ -41,7 +41,7 @@ const NoticeBoard = () => {
       <ul>
         {boardList.map((board) => (
           <li key={board.boardNo}>
-            <p>{board.postType}</p>
+            {board.postType}&nbsp;&nbsp;&nbsp;
             <strong>{board.boardTitle}</strong> - {board.boardDate}
           </li>
         ))}
