@@ -2,6 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="edu.kh.project.myPage.model.mapper.MyPageMapper">
 	
+	<!-- 내 기본 정보 조회 -->
+	<select id="info">
+		SELECT MEMBER_ID, MEMBER_NICKNAME, MEMBER_EMAIL, MEMBER_TEL, MEMBER_ADDRESS,
+			   ENROLL_DATE, MEMBER_IMG, MEMBER_STANDARD
+			   FROM MEMBER
+			   WHERE MEMBER_NO = #{memeberNo}
+	</select>
+	
+	
 	<!-- 회원 정보 수정 -->
 	<update id="updateInfo">
 	UPDATE "MEMBER" SET

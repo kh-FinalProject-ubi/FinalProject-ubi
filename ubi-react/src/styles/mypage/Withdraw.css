@@ -1,0 +1,18 @@
+.accordion-toggle {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  margin-top: 8px;
+  font-weight: bold;
+}
+
+.full-terms {
+  background: #f9f9f9;
+  border: 1px solid #ccc;
+  padding: 16px;
+  margin-top: 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.6;
+}

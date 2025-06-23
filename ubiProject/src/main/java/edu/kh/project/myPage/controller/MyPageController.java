@@ -4,12 +4,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
@@ -31,43 +36,34 @@ import oracle.jdbc.clio.annotations.Debug;
  * - Session에 존재하는 값을 key로 얻어오는 역할
  * */
 
-@SessionAttributes({ "loginMember" })
-@Controller
-@RequestMapping("myPage")
+@RestController
+@CrossOrigin(origins="http://localhost:5173"/*, allowCredentials = "true"*/)
+//allowCredentials = "true" 클라이언트로부터 들어오는 쿠키 허용
+//@SessionAttributes({ "loginMember" })
+@RequestMapping("api/myPage")
 @Slf4j
 public class MyPageController {
 
 	@Autowired
 	private MyPageService service;
 
-	@GetMapping("info") // /myPage/info GET 방식 요청 매핑
-	public String info(@SessionAttribute("loginMember") Member loginMember, Model model) {
-
-		// 현재 로그인한 회원의 주소를 꺼내옴
-		// 현재 로그인한 회원 정보 -> session에 등록된 상태(loginMember)
-
-		String memberAddress = loginMember.getMemberAddress();
-		// 13536^^^경기 성남시 분당구 판교역로 4^^^2555번지
-		// 주소가 없다면 null
-
-		// 주소가 있을 경우에만 동작
-		if (memberAddress != null) {
-
-			// 구분자 "^^^"를 기준으로
-			// memberAddress 값을 쪼개어 String[]로 반환
-			String[] arr = memberAddress.split("\\^\\^\\^");
-			// -> 13536^^^경기 성남시 분당구 판교역로 4^^^2555번지
-			// -> ['13536', '경기 성남시 분당구 판교역로 4', '2555번지']
-			// 0번 인덱스 1번 인덱스 2번 인덱스
-
-			model.addAttribute("postcode", arr[0]);
-			model.addAttribute("address", arr[1]);
-			model.addAttribute("detailAddress", arr[2]);
-
-		}
-
-		return "myPage/myPage-info";
-	}
+	
+	// 내 기본 정보 조회
+	@GetMapping("info")
+    public ResponseEntity<Object> info(@SessionAttribute("loginMember") Member loginMember) {
+        try {
+            if (loginMember == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+            }
+            
+            Member member = service.info(loginMember.getMemberNo());
+            return ResponseEntity.status(HttpStatus.OK).body(member);
+            
+        } catch (Exception e) {
+            log.error("내 정보 조회 중 에러 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 
 	// 프로필 이미지 변경 화면 이동
 	@GetMapping("profile") // /myPage/profile GET 요청 매핑
@@ -106,7 +102,7 @@ public class MyPageController {
 	 * @param ra
 	 * @return
 	 */
-	@PostMapping("info")
+	@PostMapping("update")
 	public String updateInfo(Member inputMember, @SessionAttribute("loginMember") Member loginMember,
 			@RequestParam("memberAddress") String[] memberAddress, RedirectAttributes ra) {
 

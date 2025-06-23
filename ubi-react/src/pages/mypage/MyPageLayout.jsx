@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from "react-router-dom";
-import "../../styles/MypageLayout.css"; // 스타일 따로 관리 추천
+import "../../styles/mypage/MypageLayout.css"; // 스타일 따로 관리 추천
 // import MypageSidebar from "../../components/MypageSidebar";
 
 function MypageLayout() {

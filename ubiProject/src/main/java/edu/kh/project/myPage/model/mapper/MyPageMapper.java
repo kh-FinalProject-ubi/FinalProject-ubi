@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.springframework.http.ResponseEntity;
 
 import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.myPage.model.dto.UploadFile;
@@ -53,5 +54,13 @@ public interface MyPageMapper {
 	 * @return
 	 */
 	int profile(Member member);
+	
+	//-----------------------------------------------------------------------------------
+
+	/** 내 기본 정보 조회
+	 * @param memberNo
+	 * @return
+	 */
+	Member info(int memberNo);
 
 }

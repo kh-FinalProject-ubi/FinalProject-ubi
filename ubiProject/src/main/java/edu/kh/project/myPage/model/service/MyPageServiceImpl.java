@@ -8,6 +8,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +36,11 @@ public class MyPageServiceImpl implements MyPageService {
 
 	@Value("${my.profile.folder-path}")
 	private String profileFolderPath; // C:/uploadFiles/profile/
+	
+	@Override
+	public Member info(int memberNo) {
+		return mapper.info(memberNo);
+	}
 
 	@Override
 	public int updateInfo(Member inputMember, String[] memberAddress) {
