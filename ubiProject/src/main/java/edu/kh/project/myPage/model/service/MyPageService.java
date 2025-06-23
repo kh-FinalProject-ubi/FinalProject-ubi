@@ -3,6 +3,7 @@ package edu.kh.project.myPage.model.service;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import edu.kh.project.member.model.dto.Member;
@@ -68,5 +69,13 @@ public interface MyPageService {
 	 * @throws Exception
 	 */
 	int profile(MultipartFile profileImg, Member loginMember) throws Exception;
+	
+	//==========================================================================================
+
+	/** 내 기본 정보 조회
+	 * @param memberNo
+	 * @return
+	 */
+	Member info(int memberNo);
 
 }
