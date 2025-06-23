@@ -1,77 +1,52 @@
 package edu.kh.project.welfare.facility.dto;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class WelfareFacility {
-    @JacksonXmlProperty(localName = "SIGUN_CD")
-    private String SIGUN_CD;
 
-    @JacksonXmlProperty(localName = "SIGUN_NM")
-    private String SIGUN_NM;
+    // 공통 가능 필드 (한글/영문 혼용 대응)
+    @JsonProperty("시설명")
+    private String 시설명;
 
-    @JacksonXmlProperty(localName = "FACLT_NM")
-    private String FACLT_NM;
+    @JsonProperty("address")
+    private String address;
 
-    @JacksonXmlProperty(localName = "REFINE_ROADNM_ADDR")
-    private String REFINE_ROADNM_ADDR;
+    @JsonProperty("주소")
+    private String 주소;
 
-    @JacksonXmlProperty(localName = "REFINE_LOTNO_ADDR")
-    private String REFINE_LOTNO_ADDR;
+    @JsonProperty("위도")
+    private Double 위도;
 
-    @JacksonXmlProperty(localName = "REFINE_ZIP_CD")
-    private String REFINE_ZIP_CD;
+    @JsonProperty("latitude")
+    private Double latitude;
 
-    @JacksonXmlProperty(localName = "DETAIL_TELNO")
-    private String DETAIL_TELNO;
+    @JsonProperty("경도")
+    private Double 경도;
 
-    @JacksonXmlProperty(localName = "DETAIL_FAXNO")
-    private String DETAIL_FAXNO;
+    @JsonProperty("longitude")
+    private Double longitude;
 
-    @JacksonXmlProperty(localName = "USE_MBER_CNT")
-    private Integer USE_MBER_CNT;
+    @JsonProperty("운영주체")
+    private String 운영주체;
 
-    @JacksonXmlProperty(localName = "ENFLPSN_PSN_CAPA")
-    private Integer ENFLPSN_PSN_CAPA;
+    @JsonProperty("기관명")
+    private String 기관명;
 
-    @JacksonXmlProperty(localName = "ENFLPSN_PSTPSN_SUM")
-    private Integer ENFLPSN_PSTPSN_SUM;
+    @JsonProperty("기준일자")
+    private String 기준일자;
 
-    @JacksonXmlProperty(localName = "ENFLPSN_PSTPSN_MALE_CNT")
-    private Integer ENFLPSN_PSTPSN_MALE_CNT;
+    @JsonProperty("전화번호")
+    private String 전화번호;
 
-    @JacksonXmlProperty(localName = "ENFLPSN_PSTPSN_FEMALE_CNT")
-    private Integer ENFLPSN_PSTPSN_FEMALE_CNT;
+    @JsonProperty("tel")
+    private String tel;
 
-    @JacksonXmlProperty(localName = "ENFLPSN_PSTPSN_RGLLBR_CNT")
-    private Integer ENFLPSN_PSTPSN_RGLLBR_CNT;
+    @JsonProperty("행정동")
+    private String 행정동;
 
-    @JacksonXmlProperty(localName = "ENFLPSN_PSTPSN_IRGLLBR_CNT")
-    private Integer ENFLPSN_PSTPSN_IRGLLBR_CNT;
-
-    @JacksonXmlProperty(localName = "FACLT_INSTL_DETAIL_DE")
-    private String FACLT_INSTL_DETAIL_DE;
-
-    @JacksonXmlProperty(localName = "LOCGOV_INSTL_DIV_NM")
-    private String LOCGOV_INSTL_DIV_NM;
-
-    @JacksonXmlProperty(localName = "PRVATE_INSTL_DIV_NM")
-    private String PRVATE_INSTL_DIV_NM;
-
-    @JacksonXmlProperty(localName = "INSTL_MAINBD_DIV_NM")
-    private String INSTL_MAINBD_DIV_NM;
-
-    @JacksonXmlProperty(localName = "COPRTN_GRP_NM")
-    private String COPRTN_GRP_NM;
-
-    @JacksonXmlProperty(localName = "RM")
-    private String RM;
-
-    @JacksonXmlProperty(localName = "REFINE_WGS84_LAT")
-    private Double REFINE_WGS84_LAT;
-
-    @JacksonXmlProperty(localName = "REFINE_WGS84_LOGT")
-    private Double REFINE_WGS84_LOGT;
+    // 기타 API 특성에 따라 필요한 컬럼은 자유롭게 확장 가능
 }
