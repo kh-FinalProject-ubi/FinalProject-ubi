@@ -1,7 +1,9 @@
 package edu.kh.project.welfare.facility.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 
 @Data
@@ -9,13 +11,13 @@ import lombok.Data;
 public class WelfareFacility {
 
     // 공통 가능 필드 (한글/영문 혼용 대응)
+	
     @JsonProperty("시설명")
+    @JsonAlias({"어르신복지시설명"}) // 대체 키들
     private String 시설명;
 
-    @JsonProperty("address")
-    private String address;
-
     @JsonProperty("주소")
+    @JsonAlias({"소재지도로명주소"}) 
     private String 주소;
 
     @JsonProperty("위도")
@@ -34,15 +36,18 @@ public class WelfareFacility {
     private String 운영주체;
 
     @JsonProperty("기관명")
+    @JsonAlias({"운영기관명"}) 
     private String 기관명;
 
     @JsonProperty("기준일자")
     private String 기준일자;
 
     @JsonProperty("전화번호")
+    @JsonAlias({"운영기관전화번호"}) 
     private String 전화번호;
 
     @JsonProperty("tel")
+    @JsonAlias({"관리기관전화번호"}) 
     private String tel;
 
     @JsonProperty("행정동")

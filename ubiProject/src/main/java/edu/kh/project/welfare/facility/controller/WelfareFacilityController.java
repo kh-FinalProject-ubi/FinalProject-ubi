@@ -10,10 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 import edu.kh.project.welfare.facility.dto.WelfareFacility;
 import edu.kh.project.welfare.facility.service.WelfareFacilityService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/facility")
 @RequiredArgsConstructor
+@Slf4j
 public class WelfareFacilityController {
 
     private final WelfareFacilityService facilityService;
@@ -23,6 +25,10 @@ public class WelfareFacilityController {
             @RequestParam("city") String city,
             @RequestParam("district") String district
     ) {
+    	
+    	
+    	log.debug("도시(city): '{}'", city);
+        log.debug("구(district): '{}'", district);
         return facilityService.getFacilitiesByRegion(city, district);
     }
 }

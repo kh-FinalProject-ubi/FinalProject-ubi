@@ -7,16 +7,19 @@ import { useAuth } from "../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../stores/useAuthStore";
 import LoginModal from "./LoginModal"; // ✅ 팝업 컴포넌트 import
+import useSelectedRegionStore from "../hook/welfarefacility/useSelectedRegionStore";
 
 const Header = () => {
   const { token, memberName, memberImg, address, clearAuth } = useAuthStore();
   const isLogin = !!token; // 토큰 존재 여부로 로그인 상태 판단
 
+  const { selectedCity, selectedDistrict } = useSelectedRegionStore(); // ✅ 이 줄 추가
   const navigate = useNavigate();
 
   const handleFacilityClick = () => {
-    const city = "서울특별시";
-    const district = "성북구";
+    const city = selectedCity || "서울특별시"; // ✅ 선택된 값 or 기본값
+    const district = selectedDistrict || "종로구";
+
     navigate(
       `/facility?city=${encodeURIComponent(city)}&district=${encodeURIComponent(
         district
@@ -47,11 +50,11 @@ const Header = () => {
               <button className="alarm-btn">🔔</button>
               <span className="nickname">{memberName}님</span>
               <Link to="/mypage/Profile">
-              <img
-                className="profile-img"
-                src={memberImg || "/assets/profile.png"}
-                alt="프로필"
-              />
+                <img
+                  className="profile-img"
+                  src={memberImg || "/assets/profile.png"}
+                  alt="프로필"
+                />
               </Link>
 
               <button className="logout-btn" onClick={clearAuth}>
