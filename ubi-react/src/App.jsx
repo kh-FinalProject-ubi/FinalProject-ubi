@@ -1,15 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainPage from "./pages/MainPage";
-import OurSigunguGood from "./pages/OurSigunguGood";
 import AskBoard from "./pages/AskBoard";
 import NoticeBoard from "./pages/NoticeBoard";
 import WelfareService from "./pages/WelfareService";
 import Header from "./components/Header";
 import FacilityDetailPage from "./pages/welfarefacility/FacilityDetailPage";
 import KakaoCallback from "./pages/KakaoCallback";
-import WelfareMap from "./components/WelfareMap";
-import Layout from "./components/Layout";
-import Signup from "./pages/Signup";
 import WelfareMap from "./components/WelfareMap";
 import Layout from "./components/Layout";
 import Signup from "./pages/Signup";
@@ -25,12 +21,11 @@ function App() {
           <Route index element={<MainPage />} />
           <Route path="map" element={<WelfareMap />} />
           <Route path="welfareService" element={<WelfareService />} />
-          <Route path="ourSigunguGood" element={<OurSigunguGood />} />
           <Route path="askBoard" element={<AskBoard />} />
           <Route path="noticeBoard" element={<NoticeBoard />} />
           <Route path="facility" element={<FacilityDetailPage />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/mytownBoard" element={<MyTownBoard/>} />
+          <Route path="/mytownBoard" element={<MyTownBoard />} />
         </Route>
 
         {/* 레이아웃이 필요 없는 단독 Route (예: 로그인 콜백) */}
