@@ -8,11 +8,12 @@ import edu.kh.project.board.model.dto.Board;
 public interface BoardService {
 
 	/** 게시판 종류 조회 서비스(Intercertor)
-	 * @return 삭제 ?? 
+	 * @return
 	 */
 	List<Map<String, Object>> selectBoardTypeList();
 
 	/** 특정 게시판의 지정된 페이지 목록 조회
+	 * @param boardCode
 	 * @param cp
 	 * @return
 	 */

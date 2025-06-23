@@ -1,31 +1,20 @@
 package edu.kh.project.welfare.facility.dto;
 
-import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-
 import lombok.Data;
 
-@JacksonXmlRootElement(localName = "response") // 응답 최상단 XML 태그
+import java.util.List;
+
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class WelfareFacilityResponse {
 
-	@JacksonXmlProperty(localName = "body")
-    private Body body;
+    @JsonProperty("data")
+    private List<WelfareFacility> data;
 
-    @Data
-    public static class Body {
-
-        @JacksonXmlElementWrapper(localName = "items")
-        @JacksonXmlProperty(localName = "item")
-        private List<WelfareFacility> items;
-    }
-
-    // 실제 데이터를 꺼낼 메서드
+    // 실제 데이터 반환 메서드
     public List<WelfareFacility> getRow() {
-        return body != null ? body.items : null;
+        return data;
     }
 }

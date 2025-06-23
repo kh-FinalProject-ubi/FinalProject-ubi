@@ -1,17 +1,20 @@
-import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import useAuthStore from "../stores/useAuthStore"; // ✅ zustand import
 
 export default function Login() {
-  const { login } = useAuth();
   const navigate = useNavigate();
+  const setAuth = useAuthStore((state) => state.setAuth); // ✅ zustand setter
 
   const handleLogin = () => {
-    // 실제로는 서버 응답에서 받아온 값 사용
     const dummyUser = {
-      nickname: "재석",
-      profileImg: "/assets/profile.png",
+      token: "dummy-token",
+      memberName: "재석",
+      address: "서울특별시^^^강남구^^^논현동 123",
+      memberStandard: "청년+장애인",
+      memberImg: "/resources/profile/default_user.png", // ✅ 프로필 이미지 경로
     };
-    login(dummyUser);
+
+    setAuth(dummyUser);
     navigate("/");
   };
 

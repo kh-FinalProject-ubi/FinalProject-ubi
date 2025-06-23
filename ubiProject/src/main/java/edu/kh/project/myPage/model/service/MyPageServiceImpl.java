@@ -259,7 +259,7 @@ public class MyPageServiceImpl implements MyPageService {
 		}
 
 		// 수정된 프로필 이미지 경로 + 회원 번호를 저장할 DTO 객체
-		Member member = Member.builder().memberNo(loginMember.getMemberNo()).profileImg(updatePath).build();
+		Member member = Member.builder().memberNo(loginMember.getMemberNo()).memberImg(updatePath).build();
 
 		int result = mapper.profile(member);
 
@@ -275,7 +275,7 @@ public class MyPageServiceImpl implements MyPageService {
 
 			// 세션에 저장된 loginMember의 프로필 이미지 경로를
 			// DB와 동기화
-			loginMember.setProfileImg(updatePath);
+			loginMember.setMemberImg(updatePath);
 
 		}
 
