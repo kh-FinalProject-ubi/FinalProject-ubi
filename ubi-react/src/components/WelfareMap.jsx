@@ -15,6 +15,7 @@ import WelfareBenefitView from "./WelfareBenefitView";
 import Spinner from "./Spinner";
 import useBenefitStore from "../stores/useWelfareStore";
 import useAuthStore from "../stores/useAuthStore";
+import useSelectedRegionStore from "../hook/welfarefacility/useSelectedRegionStore";
 
 const specialCityNames = {
   수원시: "수원특례시",
@@ -47,6 +48,7 @@ const WelfareMap = () => {
 
   const { benefitsData, setBenefitsData } = useBenefitStore();
   const [isLoading, setIsLoading] = useState(!benefitsData);
+  const { setRegion } = useSelectedRegionStore();
 
   // ✅ 복지 데이터 API 호출
   useEffect(() => {
@@ -111,6 +113,8 @@ const WelfareMap = () => {
       .then((data) => {
         const structure = data?.response?.result?.[0]?.structure;
         if (!structure) return;
+
+        setRegion(structure.level1, structure.level2);
 
         const fullName = `${structure.level1} ${structure.level2}`;
         const cleanFullName = mapCleanFullName(fullName);
