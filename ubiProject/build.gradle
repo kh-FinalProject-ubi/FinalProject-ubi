@@ -52,6 +52,10 @@ implementation 'org.springframework.boot:spring-boot-starter-web'
 	
 }
 
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-parameters"
+}
+
 
 tasks.named('test') {
 	useJUnitPlatform()

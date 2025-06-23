@@ -1,19 +1,24 @@
-// 📁 src/hooks/useFacilities.js
+// useFacilities.js
+
 import { useState, useEffect } from "react";
 import axios from "axios";
+import useSelectedRegionStore from "./useSelectedRegionStore";
 
-/**
- * 지역 복지시설 데이터를 가져오는 훅
- * @param {string} city - 시도명
- * @param {string} district - 시군구명
- */
-export function useFacilities(city, district) {
+export function useFacilities() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // ✅ 선택된 지역 store에서 가져옴
+  const { selectedCity: city, selectedDistrict: district } =
+    useSelectedRegionStore();
+
   useEffect(() => {
-    if (!city || !district) return;
+    // 🔐 유효성 검사
+    if (!city || !district) {
+      console.warn("🚫 주소가 없어 복지시설을 불러올 수 없습니다.");
+      return;
+    }
 
     const fetchFacilities = async () => {
       setLoading(true);
@@ -28,16 +33,11 @@ export function useFacilities(city, district) {
 
         let items = [];
 
-        // JSON 형태 1: 공공데이터포털 포맷 (data 배열)
         if (Array.isArray(res.data?.data)) {
           items = res.data.data;
-        }
-        // XML 변환 포맷: 공공데이터 xml → json 변환된 포맷
-        else if (Array.isArray(res.data?.response?.body?.items?.item)) {
+        } else if (Array.isArray(res.data?.response?.body?.items?.item)) {
           items = res.data.response.body.items.item;
-        }
-        // 단순 배열 형태 (백엔드 커스텀 응답)
-        else if (Array.isArray(res.data)) {
+        } else if (Array.isArray(res.data)) {
           items = res.data;
         }
 
@@ -53,7 +53,7 @@ export function useFacilities(city, district) {
     };
 
     fetchFacilities();
-  }, [city, district]);
+  }, [city, district]); // ✅ 선택 지역이 바뀔 때마다 실행
 
   return { data, loading, error };
 }

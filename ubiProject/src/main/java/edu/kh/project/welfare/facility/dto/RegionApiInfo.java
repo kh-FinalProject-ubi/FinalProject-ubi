@@ -11,4 +11,7 @@ public class RegionApiInfo {
 
     @JsonProperty("UDDI_ID")
     private String uddiId;
+    
+    @JsonProperty("API_URL")
+    private String apiUrl;         // ✅ 전체 URL을 직접 지정하는 필드 추가
 }

@@ -1,18 +1,29 @@
 package edu.kh.project.error;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
+import java.util.Map;
 
-@ControllerAdvice
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
+
+
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleException(Exception e) {
-        // 서버 내부 에러 응답
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("서버 내부 오류 발생: " + e.getMessage());
+    public ResponseEntity<?> handleException(Exception e) {
+        e.printStackTrace(); // 디버깅
+        return ResponseEntity.status(500).body(Map.of(
+            "message", "서버에서 오류가 발생했습니다.",
+            "detail", e.getMessage()
+        ));
+    }
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<?> handle404(NoHandlerFoundException e) {
+        return ResponseEntity.status(404).body(Map.of(
+            "message", "요청하신 경로를 찾을 수 없습니다."
+        ));
     }
 }
