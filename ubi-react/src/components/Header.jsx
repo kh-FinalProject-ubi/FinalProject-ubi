@@ -48,11 +48,14 @@ const Header = () => {
             <>
               <button className="alarm-btn">🔔</button>
               <span className="nickname">{memberName}님</span>
+              <Link to="/mypage/Profile">
               <img
                 className="profile-img"
                 src="/assets/profile.png"
                 alt="프로필"
               />
+              </Link>
+
               <button className="logout-btn" onClick={clearAuth}>
                 로그아웃
               </button>
