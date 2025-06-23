@@ -19,33 +19,26 @@ const WelfareCompareView = ({ districtA, districtB, benefits, isLoading }) => {
   const cleanA = districtA?.trim().normalize("NFC");
   const cleanB = districtB?.trim().normalize("NFC");
 
-  const listA = benefits[cleanA];
-  const listB = benefits[cleanB];
-
-  console.log("🔍 비교 지자체 A:", `"${cleanA}"`);
-  console.log("🔍 비교 지자체 B:", `"${cleanB}"`);
-  console.log("📦 전체 benefits keys:", Object.keys(benefits));
+  const listA = benefits[cleanA] || [];
+  const listB = benefits[cleanB] || [];
 
   if (isLoading) return <p>복지 데이터를 불러오는 중입니다...</p>;
 
-  if (!listA || !listB) {
-    return <p>복지혜택 데이터가 부족하여 비교할 수 없습니다.</p>;
+  if (listA.length === 0 || listB.length === 0) {
+    return <p>복지 혜택 데이터가 부족하여 비교할 수 없습니다.</p>;
   }
 
   return (
-    <div>
+    <div className="welfare-compare-view">
       <h3>
         {cleanA} vs {cleanB} 복지 혜택 비교
       </h3>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+
+      <table className="welfare-compare-table">
         <thead>
           <tr>
-            <th style={{ border: "1px solid #ccc", padding: "8px" }}>
-              {cleanA}
-            </th>
-            <th style={{ border: "1px solid #ccc", padding: "8px" }}>
-              {cleanB}
-            </th>
+            <th>{cleanA}</th>
+            <th>{cleanB}</th>
           </tr>
         </thead>
         <tbody>
@@ -53,34 +46,33 @@ const WelfareCompareView = ({ districtA, districtB, benefits, isLoading }) => {
             (_, idx) => (
               <tr key={idx}>
                 <td
-                  style={{
-                    border: "1px solid #ccc",
-                    padding: "8px",
-                    cursor: "pointer",
-                  }}
                   onClick={() => listA[idx] && fetchDetail(listA[idx].servId)}
+                  style={{ cursor: "pointer" }}
                 >
                   {listA[idx] ? (
                     <>
                       <strong>{listA[idx].servNm}</strong> <br />(
-                      {listA[idx].intrsThemaNmArray}) - {listA[idx].servDgst}
+                      {Array.isArray(listA[idx].intrsThemaNmArray)
+                        ? listA[idx].intrsThemaNmArray.join(", ")
+                        : listA[idx].intrsThemaNmArray || "주제 없음"}
+                      ) - {listA[idx].servDgst}
                     </>
                   ) : (
                     "-"
                   )}
                 </td>
+
                 <td
-                  style={{
-                    border: "1px solid #ccc",
-                    padding: "8px",
-                    cursor: "pointer",
-                  }}
                   onClick={() => listB[idx] && fetchDetail(listB[idx].servId)}
+                  style={{ cursor: "pointer" }}
                 >
                   {listB[idx] ? (
                     <>
                       <strong>{listB[idx].servNm}</strong> <br />(
-                      {listB[idx].intrsThemaNmArray}) - {listB[idx].servDgst}
+                      {Array.isArray(listB[idx].intrsThemaNmArray)
+                        ? listB[idx].intrsThemaNmArray.join(", ")
+                        : listB[idx].intrsThemaNmArray || "주제 없음"}
+                      ) - {listB[idx].servDgst}
                     </>
                   ) : (
                     "-"

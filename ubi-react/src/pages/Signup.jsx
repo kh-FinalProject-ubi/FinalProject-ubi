@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import DaumPostcode from "react-daum-postcode";
 import { useNavigate } from "react-router-dom";
+import TermsAndPrivacyModal from "../components/TermsAndPrivacyModal";
 
 const Signup = () => {
   const [memberId, setMemberId] = useState("");
@@ -17,28 +18,117 @@ const Signup = () => {
   const [memberTaddress, setMemberTaddress] = useState("");
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [memberStandard, setMemberStandard] = useState(""); // 노인/청년/아동
-  const [isDisabled, setIsDisabled] = useState(false); // 장애인 여부
-  const [profileImg, setProfileImg] = useState(null);
+  const [memberStandard, setMemberStandard] = useState("");
+  const [isDisabled, setIsDisabled] = useState(false);
+  const [authCode, setAuthCode] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [timer, setTimer] = useState(0);
+  const timerRef = useRef(null);
   const detailAddressRef = useRef(null);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [agreePrivacy, setAgreePrivacy] = useState(false);
+  const [viewingPolicy, setViewingPolicy] = useState(null);
 
-    if (isSubmitting) return;
-    if (memberPw !== memberPwCh) {
-      alert("비밀번호가 일치하지 않습니다.");
+  const [idError, setIdError] = useState("");
+  const [nicknameError, setNicknameError] = useState("");
+
+  const handleComplete = (data) => {
+    const fullAddr = data.roadAddress || data.jibunAddress;
+    setPostcode(data.zonecode);
+    setRegionCity(data.sido);
+    setRegionDistrict(data.sigungu);
+    setMemberAddress(fullAddr);
+    setIsPopupOpen(false);
+    setTimeout(() => detailAddressRef.current?.focus(), 0);
+  };
+
+  const checkIdDuplicate = async (id) => {
+    const res = await fetch(`/api/member/checkId?memberId=${id}`);
+    return res.ok;
+  };
+
+  const checkNicknameDuplicate = async (nickname) => {
+    const res = await fetch(
+      `/api/member/checkNickname?memberNickname=${nickname}`
+    );
+    return res.ok;
+  };
+
+  const handleSendAuthCode = async () => {
+    try {
+      const res = await fetch(`/api/member/sendAuthCode?email=${memberEmail}`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      alert(data.message);
+      setEmailSent(true);
+      setIsEmailVerified(false);
+      setAuthCode("");
+      startTimer(180);
+    } catch {
+      alert("인증번호 전송 실패");
+    }
+  };
+
+  const startTimer = (seconds) => {
+    clearInterval(timerRef.current);
+    setTimer(seconds);
+    timerRef.current = setInterval(() => {
+      setTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const handleCheckAuthCode = async () => {
+    if (timer === 0) {
+      alert("인증 시간이 만료되었습니다.");
       return;
     }
-    if (!memberTaddress.trim()) {
-      alert("상세 주소를 입력해주세요.");
+    try {
+      const res = await fetch(
+        `/api/member/checkAuthCode?inputCode=${authCode}`
+      );
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message);
+        setIsEmailVerified(true);
+        clearInterval(timerRef.current);
+      } else {
+        alert(data.message);
+      }
+    } catch {
+      alert("인증번호 확인 실패");
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIdError("");
+    setNicknameError("");
+
+    if (isSubmitting) return;
+    if (memberPw !== memberPwCh) return alert("비밀번호 불일치");
+    if (!memberTaddress.trim()) return alert("상세주소 입력 필요");
+    if (!agreeTerms || !agreePrivacy) return alert("약관에 모두 동의해주세요.");
+
+    const isIdOk = await checkIdDuplicate(memberId);
+    const isNicknameOk = await checkNicknameDuplicate(memberNickname);
+    if (!isIdOk || !isNicknameOk) {
+      if (!isIdOk) setIdError("이미 사용 중인 아이디입니다.");
+      if (!isNicknameOk) setNicknameError("이미 사용 중인 닉네임입니다.");
       return;
     }
 
     setIsSubmitting(true);
 
-    // ✅ 회원 분류 코드 계산
     let code = "0";
     if (memberStandard === "노인" && isDisabled) code = "4";
     else if (memberStandard === "청년" && isDisabled) code = "5";
@@ -48,7 +138,6 @@ const Signup = () => {
     else if (memberStandard === "아동") code = "3";
     else if (isDisabled) code = "7";
 
-    // ✅ FormData 생성
     const formData = new FormData();
     formData.append("memberId", memberId);
     formData.append("memberPw", memberPw);
@@ -64,37 +153,25 @@ const Signup = () => {
     formData.append("regionDistrict", regionDistrict);
     formData.append("memberStandard", code);
 
-    if (profileImg) {
-      formData.append("memberImg", profileImg); // ⚠️ 백엔드에서 필드명 일치 필요
-    }
-
     try {
       const res = await fetch("/api/member/signup", {
         method: "POST",
         body: formData,
       });
-
-      const contentType = res.headers.get("content-type");
-
-      if (!contentType || !contentType.includes("application/json")) {
-        const text = await res.text();
-        alert("예기치 않은 응답 형식입니다.");
-        return;
-      }
-
       const data = await res.json();
       if (res.ok) {
-        alert(data.message || "회원가입이 완료되었습니다.");
-        setTimeout(() => navigate("/", { replace: true }), 0);
+        alert(data.message || "회원가입 완료");
+        navigate("/", { replace: true });
       } else {
         alert(data.message || "회원가입 실패");
       }
-    } catch (err) {
-      alert("서버 오류로 회원가입에 실패했습니다.");
+    } catch {
+      alert("서버 오류");
     } finally {
       setIsSubmitting(false);
     }
   };
+
   return (
     <div>
       <h2>회원가입</h2>
@@ -105,6 +182,8 @@ const Signup = () => {
           placeholder="아이디"
           required
         />
+        {idError && <span style={{ color: "red" }}>{idError}</span>}
+
         <input
           type="password"
           value={memberPw}
@@ -131,6 +210,8 @@ const Signup = () => {
           placeholder="닉네임"
           required
         />
+        {nicknameError && <span style={{ color: "red" }}>{nicknameError}</span>}
+
         <input
           type="email"
           value={memberEmail}
@@ -138,6 +219,40 @@ const Signup = () => {
           placeholder="이메일"
           required
         />
+        <button type="button" onClick={handleSendAuthCode}>
+          인증번호 발송
+        </button>
+
+        {emailSent && (
+          <>
+            <input
+              placeholder="인증번호 입력"
+              value={authCode}
+              onChange={(e) => setAuthCode(e.target.value)}
+              disabled={timer === 0 || isEmailVerified}
+            />
+            <button
+              type="button"
+              onClick={handleCheckAuthCode}
+              disabled={timer === 0 || isEmailVerified}
+            >
+              확인
+            </button>
+            <p>
+              {isEmailVerified ? (
+                <span style={{ color: "green" }}>이메일 인증 완료</span>
+              ) : timer > 0 ? (
+                <>
+                  남은 시간: {Math.floor(timer / 60)}:
+                  {String(timer % 60).padStart(2, "0")}
+                </>
+              ) : (
+                <span style={{ color: "red" }}>⏰ 인증 시간 만료</span>
+              )}
+            </p>
+          </>
+        )}
+
         <input
           value={memberTel}
           onChange={(e) => setMemberTel(e.target.value)}
@@ -149,62 +264,33 @@ const Signup = () => {
           value={postcode}
           placeholder="우편번호"
           readOnly
-          onClick={() => !postcode && setIsPopupOpen(true)}
-          onFocus={() => !postcode && setIsPopupOpen(true)}
+          onClick={() => setIsPopupOpen(true)}
         />
-        <input
-          value={memberAddress}
-          placeholder="주소"
-          readOnly
-          onClick={() => !memberAddress && setIsPopupOpen(true)}
-          onFocus={() => !memberAddress && setIsPopupOpen(true)}
-        />
+        <input value={memberAddress} placeholder="주소" readOnly />
         <input
           ref={detailAddressRef}
           value={memberTaddress}
           onChange={(e) => setMemberTaddress(e.target.value)}
           placeholder="상세주소"
           required
-          onClick={() => (!postcode || !memberAddress) && setIsPopupOpen(true)}
-          onFocus={() => (!postcode || !memberAddress) && setIsPopupOpen(true)}
         />
         <button type="button" onClick={() => setIsPopupOpen(true)}>
           우편번호 검색
         </button>
 
         <h4>회원 유형 선택</h4>
-        <label>
-          <input
-            type="radio"
-            name="standard"
-            value="노인"
-            checked={memberStandard === "노인"}
-            onChange={(e) => setMemberStandard(e.target.value)}
-          />
-          노인
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="standard"
-            value="청년"
-            checked={memberStandard === "청년"}
-            onChange={(e) => setMemberStandard(e.target.value)}
-          />
-          청년
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="standard"
-            value="아동"
-            checked={memberStandard === "아동"}
-            onChange={(e) => setMemberStandard(e.target.value)}
-          />
-          아동
-        </label>
-
-        <br />
+        {["노인", "청년", "아동"].map((label) => (
+          <label key={label}>
+            <input
+              type="radio"
+              name="standard"
+              value={label}
+              checked={memberStandard === label}
+              onChange={(e) => setMemberStandard(e.target.value)}
+            />
+            {label}
+          </label>
+        ))}
 
         <label>
           <input
@@ -214,32 +300,52 @@ const Signup = () => {
           />
           장애인
         </label>
-        <label>
-          프로필 이미지:
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setProfileImg(e.target.files[0])}
-          />
-        </label>
 
-        {profileImg && (
-          <img
-            src={URL.createObjectURL(profileImg)}
-            alt="미리보기"
-            style={{
-              width: "120px",
-              height: "120px",
-              objectFit: "cover",
-              marginTop: "10px",
-            }}
+        {/* 약관 체크박스 및 자세히 보기 */}
+        <div>
+          <input
+            type="checkbox"
+            checked={agreeTerms}
+            onChange={() => setAgreeTerms(!agreeTerms)}
           />
-        )}
-        <br />
-        <button type="submit">가입하기</button>
+          (필수) 이용약관 동의
+          <button type="button" onClick={() => setViewingPolicy("terms")}>
+            자세히 보기
+          </button>
+        </div>
+        <div>
+          <input
+            type="checkbox"
+            checked={agreePrivacy}
+            onChange={() => setAgreePrivacy(!agreePrivacy)}
+          />
+          (필수) 개인정보 수집 및 이용 동의
+          <button type="button" onClick={() => setViewingPolicy("privacy")}>
+            자세히 보기
+          </button>
+        </div>
+
+        <button
+          type="submit"
+          disabled={
+            isSubmitting ||
+            !isEmailVerified ||
+            memberPw !== memberPwCh ||
+            memberTaddress.trim() === "" ||
+            !agreeTerms ||
+            !agreePrivacy
+          }
+        >
+          가입하기
+        </button>
       </form>
 
-      {isPopupOpen && <DaumPostcode onComplete={handleSubmit} autoClose />}
+      {isPopupOpen && <DaumPostcode onComplete={handleComplete} autoClose />}
+      <TermsAndPrivacyModal
+        open={!!viewingPolicy}
+        onClose={() => setViewingPolicy(null)}
+        view={viewingPolicy}
+      />
     </div>
   );
 };

@@ -11,6 +11,7 @@ const WelfareDetailModal = ({ detail, onClose }) => {
           &times;
         </button>
         <h2>{detail.servNm}</h2>
+
         <p>
           <strong>제공 부서:</strong> {detail.bizChrDeptNm}
         </p>

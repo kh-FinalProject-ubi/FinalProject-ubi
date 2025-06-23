@@ -6,6 +6,22 @@ const Login = () => {
   const [memberPw, setMemberPw] = useState("");
   const setAuth = useAuthStore((state) => state.setAuth);
 
+  const extractDistrict = (fullAddress) => {
+    if (!fullAddress) return "";
+
+    // 우편번호^^^기본주소^^^상세주소 중 기본주소만 추출
+    const parts = fullAddress.split("^^^");
+    const baseAddress = parts.length >= 2 ? parts[1] : fullAddress;
+
+    const tokens = baseAddress.trim().split(" ");
+    if (tokens.length === 1) return normalizeSido(tokens[0]);
+    if (tokens.length >= 2) {
+      const sido = normalizeSido(tokens[0]);
+      const sigungu = normalizeSigungu(tokens[1]);
+      return `${sido} ${sigungu}`;
+    }
+    return baseAddress;
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!memberId || !memberPw) {
@@ -22,10 +38,13 @@ const Login = () => {
 
       const data = await res.json();
       if (res.ok) {
+        console.log("🔍 서버 응답 주소:", data.address); // 여기에 추가
+
         setAuth({
           token: data.token,
-          address: data.address,
+          address: extractDistrict(data.address), // ✅ 시군구 단위로 자른 주소
           memberName: data.memberName,
+          memberImg: data.memberImg || "",
         });
       } else {
         alert(data.message || "로그인 실패");

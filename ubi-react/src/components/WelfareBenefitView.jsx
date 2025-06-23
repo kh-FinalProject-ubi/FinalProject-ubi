@@ -6,11 +6,9 @@ const WelfareBenefitView = ({ district, benefits }) => {
   const list = benefits[cleanDistrict];
 
   const [selectedDetail, setSelectedDetail] = useState(null);
-  console.log("🔍 선택된 지자체명:", cleanDistrict);
-  console.log("🧾 해당 지자체 복지 데이터:", list);
-  console.log("📦 전체 benefitsData keys:", Object.keys(benefits));
 
-  if (!list) return <p>해당 지역의 복지혜택 데이터가 없습니다.</p>;
+  if (!list || list.length === 0)
+    return <p>📭 {cleanDistrict}의 복지 혜택 정보가 없습니다.</p>;
 
   const fetchDetail = async (servId) => {
     try {
@@ -25,8 +23,10 @@ const WelfareBenefitView = ({ district, benefits }) => {
   };
 
   return (
-    <div>
-      <h3>{cleanDistrict} 복지 혜택 목록</h3>
+    <div style={{ marginTop: "1rem" }}>
+      <h3>
+        🏙️ <strong>{cleanDistrict}</strong>의 복지 혜택 목록 ({list.length}건)
+      </h3>
       <ul>
         {list.map((item) => (
           <li
@@ -34,15 +34,21 @@ const WelfareBenefitView = ({ district, benefits }) => {
             onClick={() => fetchDetail(item.servId)}
             style={{ cursor: "pointer" }}
           >
-            <strong>{item.servNm}</strong> ({item.intrsThemaNmArray}) -{" "}
-            {item.servDgst}
+            <strong>{item.servNm}</strong> (
+            {Array.isArray(item.intrsThemaNmArray)
+              ? item.intrsThemaNmArray.join(", ")
+              : item.intrsThemaNmArray || "주제 없음"}
+            ) - {item.servDgst}
           </li>
         ))}
       </ul>
-      <WelfareDetailModal
-        detail={selectedDetail}
-        onClose={() => setSelectedDetail(null)}
-      />
+
+      {selectedDetail && (
+        <WelfareDetailModal
+          detail={selectedDetail}
+          onClose={() => setSelectedDetail(null)}
+        />
+      )}
     </div>
   );
 };
