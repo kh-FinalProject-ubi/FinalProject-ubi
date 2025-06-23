@@ -239,7 +239,7 @@ const Signup = () => {
         <button type="submit">가입하기</button>
       </form>
 
-      {isPopupOpen && <DaumPostcode onComplete={handleComplete} autoClose />}
+      {isPopupOpen && <DaumPostcode onComplete={handleSubmit} autoClose />}
     </div>
   );
 };
