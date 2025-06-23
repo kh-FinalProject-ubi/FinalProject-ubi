@@ -33,6 +33,7 @@ const Login = () => {
       const res = await fetch("/api/member/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ memberId, memberPw }),
       });
 
@@ -44,8 +45,10 @@ const Login = () => {
           token: data.token,
           address: extractDistrict(data.address), // ✅ 시군구 단위로 자른 주소
           memberName: data.memberName,
+           memberStandard: data.memberStandard, // ✅ 저장
           memberImg: data.memberImg || "",
         });
+              console.log("✅ 로그인 성공");
       } else {
         alert(data.message || "로그인 실패");
       }

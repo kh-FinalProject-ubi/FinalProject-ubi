@@ -9,6 +9,7 @@ import org.apache.ibatis.session.RowBounds;
 
 import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.board.model.dto.Pagination;
+import edu.kh.project.member.model.dto.Member;
 
 /**
  * 
@@ -24,6 +25,8 @@ public interface MytownBoardMapper {
 	 */
 	List<Board> selectLocalBoardList(@Param("regionDistrict") String regionDistrict,
             @Param("regionCity") String regionCity);
+
+	Member login(Member inputMember);
 
 
 
