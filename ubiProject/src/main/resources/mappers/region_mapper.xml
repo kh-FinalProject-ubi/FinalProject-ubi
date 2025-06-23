@@ -9,11 +9,11 @@
 	<select id="selectApiInfo"
 		resultType="edu.kh.project.welfare.facility.dto.RegionApiInfo">
 		SELECT
-		DATASET_ID AS apiDatasetId,
-		UDDI_ID AS apiEndpointId
+		DATASET_ID AS datasetId,
+		UDDI_ID AS uddiId
 		FROM REGION
-		WHERE REGION_CITY = #{city}
-		AND REGION_DISTRICT = #{district}
+		WHERE TRIM(REGION_CITY) = TRIM(#{city})
+		AND TRIM(REGION_DISTRICT) = TRIM(#{district})
 	</select>
 
 </mapper>

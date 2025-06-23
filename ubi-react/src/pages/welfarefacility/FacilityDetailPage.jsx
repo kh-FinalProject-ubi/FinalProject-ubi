@@ -22,9 +22,17 @@ export default function FacilityDetailPage() {
       {!loading && facilities.length === 0 && <p>복지시설 정보가 없습니다.</p>}
 
       <div className="facility-list">
-        {facilities.map((facility, index) => (
-          <FacilityCard key={facility.FACLT_NM + index} facility={facility} />
-        ))}
+        {facilities.map((facility, index) => {
+          const name = facility.FACLT_NM || facility["시설명"] || "이름없음";
+          const lat = facility.REFINE_WGS84_LAT;
+          const lng = facility.REFINE_WGS84_LOGT;
+          const city = facility.CTPRVN_NM || facility["시도명"] || "시도없음";
+
+          const key =
+            lat && lng ? `${name}-${lat}-${lng}` : `${name}-${city}-${index}`; // <-- index 추가로 고유 보장
+
+          return <FacilityCard key={key} facility={facility} />;
+        })}
       </div>
     </div>
   );
