@@ -25,7 +25,7 @@ function App() {
           <Route path="noticeBoard" element={<NoticeBoard />} />
           <Route path="facility" element={<FacilityDetailPage />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/mytownBoard" element={<MyTownBoard />} />
+          <Route path="/mytownBoard" element={<MyTownBoard/>} />
         </Route>
 
         {/* 레이아웃이 필요 없는 단독 Route (예: 로그인 콜백) */}

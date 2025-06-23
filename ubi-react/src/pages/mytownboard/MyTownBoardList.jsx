@@ -1,56 +1,34 @@
-
-import axios from "axios";
-import React, { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 
 const MyTownBoard = () => {
-  const [searchParams] = useSearchParams();
-  const cp = searchParams.get('cp') || 1;
-
   const [boardList, setBoardList] = useState([]);
-  const [pagination, setPagination] = useState({});
-
+  
   useEffect(() => {
-    axios.get(`/board/mytown/list?cp=${cp}`)
+    axios.get('/mytownBoard')
       .then(res => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(res.data, "text/html");
-        const boardData = JSON.parse(doc.querySelector('#boardListJson').textContent);
-        const pageData = JSON.parse(doc.querySelector('#paginationJson').textContent);
-        setBoardList(boardData);
-        setPagination(pageData);
+         console.log('응답 데이터:', res.data); // 👈 여기에 배열이 나와야 함
+        setBoardList(res.data);
       })
-      .catch(err => console.error(err));
-  }, [cp]);
+      .catch(err => console.error('게시판 불러오기 실패:', err));
+  }, []);
 
-  return (
-
-
-
-    <div className="board-wrapper">
+   return (
+    <div>
       <h2>우리 동네 게시판</h2>
-        {boardList.map((board) => (
-        <div key={board.boardNo} className="board-card">
-          <Link to={`/board/mytown/${board.boardNo}`}>
-            <img src={board.thumbnail || '/img/default.png'} alt="썸네일" />
-            <div className="content">
-              <h4>{board.boardTitle}</h4>
-              <p>{board.memberNickname}</p>
-              <p>조회수: {board.boardReadCount}</p>
-              {board.postType === '후기' && (
-                <p>★ {board.starCount}/5</p>
-              )}
-              <span className="tag">{board.postType}</span>
-            </div>
-          </Link>
-        </div>
-
-        
-      ))}
+      {boardList.length === 0 ? (
+        <p>지역 일치 게시글이 없습니다.</p>
+      ) : (
+        <ul>
+            {Array.isArray(boardList) && boardList.map(post => (
+            <li key={post.boardNo}>
+              <strong>{post.boardTitle}</strong> by {post.memberNickname} ({post.regionDistrict}, {post.regionCity})
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
-
-
   );
 };
 
