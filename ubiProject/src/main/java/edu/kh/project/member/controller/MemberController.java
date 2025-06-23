@@ -89,9 +89,10 @@ public class MemberController {
             ? ResponseEntity.ok(Map.of("message", inputMember.getMemberNickname() + "님의 가입을 환영합니다!"))
             : ResponseEntity.badRequest().body(Map.of("message", "회원가입 실패"));
     }
-    @GetMapping("/checkId")
-    public ResponseEntity<Integer> checkId(@RequestParam("memberId") String memberId) {
-        int result = service.checkId(memberId); // 존재하면 1, 없으면 0
-        return ResponseEntity.ok(result);
-    }
+	/*
+	 * @GetMapping("/checkId") public ResponseEntity<Integer>
+	 * checkId(@RequestParam("memberId") String memberId) { int result =
+	 * service.checkId(memberId); // 존재하면 1, 없으면 0 return ResponseEntity.ok(result);
+	 * }
+	 */
 }
