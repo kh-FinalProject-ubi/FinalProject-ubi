@@ -19,6 +19,14 @@ public interface MemberService {
     /** 카카오 로그인 - 토큰 기반 처리 등 확장 가능 */
     Member kakaoLogin(String kakaoId);
 
+	String createRandomCode();
+
+	boolean sendAuthCodeToEmail(String email, String authCode);
+
+	boolean checkIdAvailable(String memberId);
+
+	boolean checkNicknameAvailable(String memberNickname);
+
 
 
 

@@ -9,10 +9,12 @@ import VectorSource from "ol/source/Vector";
 import GeoJSON from "ol/format/GeoJSON";
 import { toLonLat } from "ol/proj";
 import { Style, Stroke, Fill } from "ol/style";
+
 import WelfareCompareView from "./WelfareCompareView";
 import WelfareBenefitView from "./WelfareBenefitView";
-import Spinner from "./Spinner.jsx";
-import useBenefitStore from "../stores/useWelfareStore.js";
+import Spinner from "./Spinner";
+import useBenefitStore from "../stores/useWelfareStore";
+import useAuthStore from "../stores/useAuthStore";
 
 const specialCityNames = {
   수원시: "수원특례시",
@@ -37,12 +39,16 @@ const mapCleanFullName = (fullName) => {
 const WelfareMap = () => {
   const mapElement = useRef();
   const mapRef = useRef();
-  const selectedLayersRef = useRef([]);
-  const [selectedDistricts, setSelectedDistricts] = useState([]);
-  const selectedDistrictsRef = useRef([]);
+  const districtBLayerRef = useRef(null);
+
+  const { token, address } = useAuthStore();
+  const districtA = token ? address : "서울특별시 종로구";
+  const [districtB, setDistrictB] = useState(null);
+
   const { benefitsData, setBenefitsData } = useBenefitStore();
   const [isLoading, setIsLoading] = useState(!benefitsData);
 
+  // ✅ 복지 데이터 API 호출
   useEffect(() => {
     if (benefitsData) return;
     fetch("/api/welfare-curl/welfare-list/all")
@@ -69,6 +75,7 @@ const WelfareMap = () => {
       .finally(() => setIsLoading(false));
   }, []);
 
+  // ✅ 지도 초기화
   useEffect(() => {
     const map = new Map({
       target: mapElement.current,
@@ -97,10 +104,7 @@ const WelfareMap = () => {
     return () => map.setTarget(null);
   }, []);
 
-  useEffect(() => {
-    selectedDistrictsRef.current = selectedDistricts;
-  }, [selectedDistricts]);
-
+  // ✅ 지도 클릭 시 역지오코딩
   const reverseGeocode = (lon, lat) => {
     fetch(`/api/welfare-curl/reverse-geocode?lon=${lon}&lat=${lat}`)
       .then((res) => res.json())
@@ -111,26 +115,14 @@ const WelfareMap = () => {
         const fullName = `${structure.level1} ${structure.level2}`;
         const cleanFullName = mapCleanFullName(fullName);
 
-        const alreadyIndex =
-          selectedDistrictsRef.current.indexOf(cleanFullName);
-
-        if (alreadyIndex !== -1) {
-          const removedLayer = selectedLayersRef.current[alreadyIndex];
-          mapRef.current.removeLayer(removedLayer);
-          selectedLayersRef.current.splice(alreadyIndex, 1);
-          setSelectedDistricts((prev) => {
-            const copy = [...prev];
-            copy.splice(alreadyIndex, 1);
-            return copy;
-          });
-        } else {
-          displayPolygon(cleanFullName);
-        }
+        if (cleanFullName === districtA) return; // A와 같으면 무시
+        displayBPolygon(cleanFullName);
       })
       .catch((err) => console.error("지오코딩 실패:", err));
   };
 
-  const displayPolygon = (fullNameClean) => {
+  // ✅ B 지역 폴리곤 표시
+  const displayBPolygon = (fullNameClean) => {
     fetch("/TL_SCCO_SIG_KDJ.json")
       .then((res) => res.json())
       .then((geojson) => {
@@ -139,16 +131,10 @@ const WelfareMap = () => {
         );
         if (features.length === 0) return;
 
-        const currentIndex =
-          selectedLayersRef.current.length >= 2
-            ? 1
-            : selectedLayersRef.current.length;
-
-        const colors = [
-          { fill: "rgba(255, 0, 0, 0.4)", stroke: "#ff0000" },
-          { fill: "rgba(0, 128, 255, 0.4)", stroke: "#007bff" },
-        ];
-        const color = colors[currentIndex];
+        // 기존 B 지역 제거
+        if (districtBLayerRef.current) {
+          mapRef.current.removeLayer(districtBLayerRef.current);
+        }
 
         const vectorSource = new VectorSource({
           features: new GeoJSON().readFeatures(
@@ -160,20 +146,14 @@ const WelfareMap = () => {
         const vectorLayer = new VectorLayer({
           source: vectorSource,
           style: new Style({
-            stroke: new Stroke({ color: color.stroke, width: 3 }),
-            fill: new Fill({ color: color.fill }),
+            stroke: new Stroke({ color: "#007bff", width: 3 }),
+            fill: new Fill({ color: "rgba(0, 128, 255, 0.4)" }),
           }),
         });
 
-        if (selectedLayersRef.current.length >= 2) {
-          const removed = selectedLayersRef.current.shift();
-          mapRef.current.removeLayer(removed);
-          setSelectedDistricts((prev) => prev.slice(1));
-        }
-
         mapRef.current.addLayer(vectorLayer);
-        selectedLayersRef.current.push(vectorLayer);
-        setSelectedDistricts((prev) => [...prev, fullNameClean]);
+        districtBLayerRef.current = vectorLayer;
+        setDistrictB(fullNameClean);
       });
   };
 
@@ -182,25 +162,24 @@ const WelfareMap = () => {
       {isLoading && <Spinner />}
       <h2>복지 지도</h2>
       <div ref={mapElement} style={{ width: "100%", height: "600px" }}></div>
+
       <div style={{ marginTop: "10px" }}>
-        <h3>선택한 지자체:</h3>
-        <ul>
-          {selectedDistricts.map((d, i) => (
-            <li key={i}>{d}</li>
-          ))}
-        </ul>
+        <h3>기준 지역 (A): {districtA}</h3>
+        {districtB && <h3>비교 지역 (B): {districtB}</h3>}
       </div>
-      {selectedDistricts.length === 1 && (
+
+      {!districtB && (
         <WelfareBenefitView
-          district={selectedDistricts[0]}
+          district={districtA}
           benefits={benefitsData}
           isLoading={isLoading}
         />
       )}
-      {selectedDistricts.length === 2 && (
+
+      {districtA && districtB && (
         <WelfareCompareView
-          districtA={selectedDistricts[0]}
-          districtB={selectedDistricts[1]}
+          districtA={districtA}
+          districtB={districtB}
           benefits={benefitsData}
           isLoading={isLoading}
         />
