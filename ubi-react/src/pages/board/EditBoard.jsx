@@ -1,17 +1,31 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
+import useAuthStore from "../../stores/useAuthStore"; // 쥬스탠드
 
 function EditBoard() {
   const { boardCode, boardNo } = useParams();
   const [board, setBoard] = useState({ boardTitle: "", boardContent: "" });
   const [images, setImages] = useState([]);
   const navigate = useNavigate();
+  const [loginMemberNo, setLoginMemberNo] = useState(null);
+
+  const { token } = useAuthStore(); // 쥬스탠드
+
+  useEffect(() => {
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      navigate("/");
+    }
+  }, [token, navigate]);
+
+  const handleEdit = () => navigate(-1);
 
   useEffect(() => {
     axios
       .get(`/api/editBoard/${boardCode}/${boardNo}`)
       .then((res) => {
+        console.log(res.data.board);
         setBoard(res.data.board);
       })
       .catch((err) => {
@@ -40,7 +54,7 @@ function EditBoard() {
     formData.append("boardTitle", board.boardTitle);
     formData.append("boardContent", board.boardContent);
 
-    images.forEach((image, index) => {
+    images.forEach((image) => {
       formData.append("images", image);
     });
 
@@ -52,7 +66,7 @@ function EditBoard() {
         alert(res.data.message);
         navigate(`/board/${boardCode}/${boardNo}`);
       })
-      .catch((err) => {
+      .catch(() => {
         alert("게시글 수정에 실패했습니다.");
       });
   };
@@ -61,7 +75,6 @@ function EditBoard() {
     <div className="edit-board-form">
       <h2>게시글 수정</h2>
 
-      {/* board 정보가 로딩되지 않았으면 렌더링하지 않음 */}
       {!board ? (
         <p>로딩 중...</p>
       ) : (
@@ -95,10 +108,14 @@ function EditBoard() {
             onChange={handleImageChange}
           />
 
+          <button type="button" onClick={handleEdit}>
+            수정 취소
+          </button>
           <button type="submit">수정 완료</button>
         </form>
       )}
     </div>
   );
 }
+
 export default EditBoard;

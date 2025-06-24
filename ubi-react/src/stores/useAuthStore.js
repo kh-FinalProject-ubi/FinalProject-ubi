@@ -18,6 +18,7 @@ const useAuthStore = create(
           address: null,
           memberName: null,
           memberStandard: null,
+          memberNo: null,
         }),
     }),
     {

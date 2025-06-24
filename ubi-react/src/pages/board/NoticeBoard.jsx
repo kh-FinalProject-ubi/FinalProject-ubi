@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useLocation } from "react-router-dom";
 import { div } from "framer-motion/client";
+import useAuthStore from "../../stores/useAuthStore";
 
 const boardCodeMap = {
   "/noticeBoard": 1,
