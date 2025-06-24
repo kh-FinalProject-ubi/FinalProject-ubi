@@ -34,6 +34,7 @@ public class Board {
 	private String boardAnswer;
 	private int starCount; // 후기 게시글인 경우만 사용
 	private String postType;  // '후기', '자유', '자랑'
+	private String hashtags;  // 쉼표로 연결된 문자열 "#맛집,#서울"
 
 	
 	// 조인된 테이블 컬럼 ===========================================

@@ -14,6 +14,8 @@ import Profile from "./pages/mypage/Profile";
 import Chat from "./pages/mypage/Chat";
 import ChangePassword from "./pages/mypage/ChangePassword";
 import Withdraw from "./pages/mypage/Withdraw";
+import MyTownBoardDetail from "./pages/mytownboard/MyTownBoardDetail";
+
 
 function App() {
   return (
@@ -27,15 +29,19 @@ function App() {
           <Route path="welfareService" element={<WelfareService />} />
           <Route path="askBoard" element={<AskBoard />} />
           <Route path="noticeBoard" element={<NoticeBoard />} />
+          <Route path="mytownBoard" element={<MyTownBoard />} />
+            <Route path="mytownBoard/:boardNo" element={<MyTownBoardDetail />} />
           <Route path="facility" element={<FacilityDetailPage />} />
           <Route path="/mypage" element={<MypageLayout />}>
             <Route path="profile" element={<Profile />} />
             <Route path="chat" element={<Chat />} />
             <Route path="password" element={<ChangePassword />} />
             <Route path="withdraw" element={<Withdraw />} />
+           
           </Route>
           <Route path="signup" element={<Signup />} />
-          <Route path="mytownBoard" element={<MyTownBoard />} />
+          
+         
         </Route>
 
         {/* 레이아웃이 필요 없는 단독 Route (예: 로그인 콜백) */}
