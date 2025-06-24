@@ -25,25 +25,34 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CrossOrigin(origins = "*")
 public class MemberController {
-	
+
 	@Value("${my.profile.folder-path}")
 	private String profileFolderPath;
 
 	@Value("${my.profile.web-path}")
 	private String profileWebPath;
-	
+
 	private String parseMemberStandard(String codeStr) {
-	    switch (codeStr) {
-	        case "1": return "노인";
-	        case "2": return "청년";
-	        case "3": return "아동";
-	        case "4": return "노인+장애인";
-	        case "5": return "청년+장애인";
-	        case "6": return "아동+장애인";
-	        case "7": return "장애인";
-	        default: return "일반";
-	    }
+		switch (codeStr) {
+		case "1":
+			return "노인";
+		case "2":
+			return "청년";
+		case "3":
+			return "아동";
+		case "4":
+			return "노인+장애인";
+		case "5":
+			return "청년+장애인";
+		case "6":
+			return "아동+장애인";
+		case "7":
+			return "장애인";
+		default:
+			return "일반";
+		}
 	}
+
 
     @Autowired
     private MemberService service;
@@ -225,5 +234,29 @@ public String normalizeSigungu(String rawSigungu) {
         default: return rawSigungu;
     }
 }
+
+	@GetMapping("/info")
+	public ResponseEntity<?> getLoginMember(HttpSession session) {
+		Member loginMember = (Member) session.getAttribute("loginMember");
+
+		if (loginMember == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "로그인한 사용자 없음"));
+		}
+
+		// 필요한 정보만 추려서 보냄
+		String readableStandard = parseMemberStandard(loginMember.getMemberStandard());
+		String district = extractDistrict(loginMember.getMemberAddress());
+
+		Map<String, Object> body = new HashMap<>();
+		body.put("memberId", loginMember.getMemberId());
+		body.put("memberName", loginMember.getMemberNickname());
+		body.put("memberAddressCity", district.split(" ")[0]); // 서울특별시
+		body.put("memberAddressDistrict", district.split(" ")[1]); // 종로구
+		body.put("memberStandard", readableStandard);
+		body.put("memberImg", loginMember.getMemberImg());
+
+		return ResponseEntity.ok(body);
+	}
+
 
 }

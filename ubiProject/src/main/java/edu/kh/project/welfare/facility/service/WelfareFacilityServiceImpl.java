@@ -41,10 +41,8 @@ public class WelfareFacilityServiceImpl implements WelfareFacilityService {
         // ✅ API_URL이 존재하면 우선 사용
         String url;
         if (apiInfo.getApiUrl() != null && !apiInfo.getApiUrl().isBlank()) {
-            url = String.format(
-                "%s?serviceKey=%s&returnType=json&page=1&perPage=100",
-                apiInfo.getApiUrl(), serviceKey
-            );
+            // 인증키 삽입을 위한 format 처리
+            url = String.format(apiInfo.getApiUrl(), serviceKey);
         } else {
             url = String.format(
                 "https://api.odcloud.kr/api/%s/v1/%s?serviceKey=%s&returnType=json&page=1&perPage=100",
