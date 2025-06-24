@@ -6,8 +6,10 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.http.ResponseEntity;
 
+import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.myPage.model.dto.UploadFile;
+import edu.kh.project.welfare.benefits.model.dto.Benefits;
 
 @Mapper
 public interface MyPageMapper {
@@ -62,5 +64,17 @@ public interface MyPageMapper {
 	 * @return
 	 */
 	Member info(int memberNo);
+
+	/** 내가 찜한 혜택 조회
+	 * @param memberNo
+	 * @return
+	 */
+	List<Benefits> benefits(int memberNo);
+
+	/** 작성글 조회
+	 * @param memberNo
+	 * @return
+	 */
+	List<Board> board(int memberNo);
 
 }

@@ -3,7 +3,6 @@ import MainPage from "./pages/MainPage";
 import AskBoard from "./pages/AskBoard";
 import NoticeBoard from "./pages/NoticeBoard";
 import WelfareService from "./pages/WelfareService";
-import FacilityDetailPage from "./pages/welfarefacility/FacilityDetailPage";
 import KakaoCallback from "./pages/KakaoCallback";
 import WelfareMap from "./components/WelfareMap";
 import Layout from "./components/Layout";
@@ -15,6 +14,9 @@ import Chat from "./pages/mypage/Chat";
 import ChangePassword from "./pages/mypage/ChangePassword";
 import Withdraw from "./pages/mypage/Withdraw";
 import BoardDetail from "./components/BoardDetail";
+import MyTownBoardDetail from "./pages/mytownboard/MyTownBoardDetail";
+import FacilityRouter from "./pages/welfarefacility/FacilityRouter";
+
 
 function App() {
   return (
@@ -28,12 +30,15 @@ function App() {
           <Route path="welfareService" element={<WelfareService />} />
           <Route path="askBoard" element={<AskBoard />} />
           <Route path="noticeBoard" element={<NoticeBoard />} />
-          <Route path="facility" element={<FacilityDetailPage />} />
+          <Route path="mytownBoard" element={<MyTownBoard />} />
+            <Route path="mytownBoard/:boardNo" element={<MyTownBoardDetail />} />
+          <Route path="facility" element={<FacilityRouter />} />
           <Route path="/mypage" element={<MypageLayout />}>
             <Route path="profile" element={<Profile />} />
             <Route path="chat" element={<Chat />} />
             <Route path="password" element={<ChangePassword />} />
             <Route path="withdraw" element={<Withdraw />} />
+           
           </Route>
           <Route path="signup" element={<Signup />} />
           <Route path="mytownBoard" element={<MyTownBoard />} />

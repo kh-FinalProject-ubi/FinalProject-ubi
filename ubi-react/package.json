@@ -14,6 +14,7 @@
     "axios": "^1.10.0",
     "framer-motion": "^12.19.1",
     "ol": "^10.5.0",
+    "papaparse": "^5.5.3",
     "react": "^19.1.0",
     "react-daum-postcode": "^3.2.0",
     "react-dom": "^19.1.0",

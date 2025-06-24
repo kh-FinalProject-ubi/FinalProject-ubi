@@ -255,29 +255,46 @@ const Signup = () => {
 
         <input
           value={memberTel}
-          onChange={(e) => setMemberTel(e.target.value)}
-          placeholder="전화번호"
+          onChange={(e) => {
+            const value = e.target.value.replace(/\D/g, ""); // 숫자 이외 제거
+            if (value.length <= 11) setMemberTel(value);
+          }}
+          placeholder="전화번호 (숫자만 입력)"
           required
         />
+        <div>
+          <button type="button" onClick={() => setIsPopupOpen(true)}>
+            우편번호 검색
+          </button>
 
-        <input
-          value={postcode}
-          placeholder="우편번호"
-          readOnly
-          onClick={() => setIsPopupOpen(true)}
-        />
-        <input value={memberAddress} placeholder="주소" readOnly />
-        <input
-          ref={detailAddressRef}
-          value={memberTaddress}
-          onChange={(e) => setMemberTaddress(e.target.value)}
-          placeholder="상세주소"
-          required
-        />
-        <button type="button" onClick={() => setIsPopupOpen(true)}>
-          우편번호 검색
-        </button>
+          <input
+            value={postcode}
+            placeholder="우편번호"
+            readOnly
+            style={{ backgroundColor: "#f1f1f1", cursor: "default" }}
+          />
+          <input
+            value={memberAddress}
+            placeholder="기본 주소"
+            readOnly
+            style={{ backgroundColor: "#f1f1f1", cursor: "default" }}
+          />
+          <input
+            ref={detailAddressRef}
+            value={memberTaddress}
+            onChange={(e) => setMemberTaddress(e.target.value)}
+            placeholder="상세주소 (예: 101동 1001호)"
+            required
+          />
+        </div>
 
+        {isPopupOpen && (
+          <DaumPostcode
+            onComplete={handleComplete}
+            autoClose
+            style={{ zIndex: 1000, position: "absolute" }} // 필요시 스타일 추가
+          />
+        )}
         <h4>회원 유형 선택</h4>
         {["노인", "청년", "아동"].map((label) => (
           <label key={label}>

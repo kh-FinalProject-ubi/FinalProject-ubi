@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import "../../styles/mypage/Profile.css";
 
 const Profile = () => {
 
-  const [benefits, setBenefits] = useState([]);
-  const [posts, setPosts] = useState([]);
   const [member, setMember] = useState(null);
+  const [benefits, setBenefits] = useState([]);
+  const [board, setboard] = useState([]);
 
   // 내 기본 정보
   const getMemberData = async () => {
     try {
-       console.log("axios 요청 시작");
+       console.log("기본정보 axios 요청 시작");
       const res = await axios.get('/api/myPage/info');
-     console.log("응답 받음:", res);
-      console.log(res.data);
+     console.log("기본정보 응답 받음:", res);
+      console.log("기본정보 응답 값:", res.data);
 
       if (res.status === 200) {
         setMember(res.data);
@@ -23,13 +24,46 @@ const Profile = () => {
     }
   };
 
+  // 혜택 목록
+  const getBenefitsData = async () => {
+    try{
+      console.log("혜택 axios 요청 시작");
+      const res = await axios.get('/api/myPage/service');
+      console.log("혜택 응답 받음:", res);
+      console.log("혜택 응답 값:", res.data);
+
+      if (res.status === 200) {
+        setBenefits(res.data);
+      }
+
+    }catch(err) {
+      console.error("혜택목록 조회 중 예외 발생 : ", err)
+    }
+  }
   
+  // 내가 작성한 게시글 목록
+  const getBoardData = async () => {
+    try{
+      console.log("작성글 axios 요청 시작");
+      const res = await axios.get('/api/myPage/board');
+      console.log("작성글 응답 받음:", res);
+      console.log("작성글 응답 값:", res.data);
+
+      if (res.status === 200) {
+        setboard(res.data);
+      }
+
+    }catch(err) {
+      console.error("작성글 목록 조회 중 예외 발생 : ", err)
+    }
+  }
+
   useEffect(() => {
     console.log("useEffect 실행");
     getMemberData();
-    // 혜택 목록
+    getBenefitsData();
+    getBoardData();
 
-    // 내가 작성한 게시글 목록
   }, []);
 
     return (
@@ -64,13 +98,21 @@ const Profile = () => {
         <h3>혜택 목록 ({benefits.length})</h3>
         <div className="benefit-cards">
           {benefits.map((benefit) => (
-            <div className="benefit-card" key={benefit.id}>
+            <div className="benefit-card" key={benefit.serviceNo}>
               <div className="badge-row">
-                {benefit.isNew && <span className="badge new">NEW</span>}
-                {benefit.requiresApplication && <span className="badge 신청필요">신청필요</span>}
+               const isApplicationBased = benefit.receptionStart && benefit.receptionEnd;
+                <span className={`badge ${isApplicationBased ? "신청혜택" : "기본혜택"}`}>
+                  {isApplicationBased ? "신청혜택" : "기본혜택"}
+                </span>
               </div>
-              <div className="benefit-title">{benefit.title}</div>
+              <div className="benefit-title">{benefit.serviceName}</div>
+              <div className="benefit-agency">{benefit.agency}</div>
               <div className="benefit-description">{benefit.description}</div>
+              <p className="benefit">
+                {benefit.receptionStart && benefit.receptionEnd
+                  ? `${benefit.receptionStart} ~ ${benefit.receptionEnd}`
+                  : "상세 확인 필요"}
+              </p>
             </div>
           ))}
         </div>
@@ -78,7 +120,7 @@ const Profile = () => {
 
       {/* 게시글 목록 */}
       <section className="post-list">
-        <h3>내가 작성한 게시글 ({posts.length})</h3>
+        <h3>내가 작성한 게시글 ({board.length})</h3>
         <table className="post-table">
           <thead>
             <tr>
@@ -91,21 +133,21 @@ const Profile = () => {
             </tr>
           </thead>
           <tbody>
-            {posts.map((post) => (
-              <tr key={post.id}>
-                <td>{post.category}</td>
-                <td>{post.boardName}</td>
-                <td>{post.title}</td>
-                <td>{post.content}</td>
-                <td>{post.createdDate}</td>
-                <td>{post.writer}</td>
+            {board.map((board) => (
+              <tr key={board.boardNo}>
+                <td>{board.boardType}</td>
+                <td>{board.boardName}</td>
+                <td>{board.title}</td>
+                <td>{board.content}</td>
+                <td>{board.createdDate}</td>
+                <td>{board.writer}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </section>
 
-      <section className="post-list">
+      {/* <section className="post-list">
         <h3>내가 좋아요를 누른 게시글 ({posts.length})</h3>
         <table className="post-table">
           <thead>
@@ -131,7 +173,7 @@ const Profile = () => {
             ))}
           </tbody>
         </table>
-      </section>
+      </section> */}
     </div>
   );
 };
