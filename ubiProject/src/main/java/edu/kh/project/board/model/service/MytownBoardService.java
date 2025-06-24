@@ -13,20 +13,15 @@ public interface MytownBoardService {
 	 * @param i
 	 * @return
 	 */
-	List<Board> selectLocalBoardList(String regionDistrict, int i);
-
-
-	   Member login(Member inputMember);
-
-
-	/** 시군구가 동일한 게시글 목록조회 
-	 * @param regionDistrict
-	 * @param regionCity
+	 List<Board> getLocalBoardList();
+	 
+	 
+	/**
+	 * 상세조회
+	 * @param boardNo
 	 * @return
 	 */
-	List<Board> selectLocalBoardList(String regionDistrict, String regionCity);
-
-
-	Member getMemberByToken(String token);
+	   Board selectLocalBoardDetail(int boardNo);
+     
 }
 

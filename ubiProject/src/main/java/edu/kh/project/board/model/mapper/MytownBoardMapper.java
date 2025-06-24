@@ -23,11 +23,14 @@ public interface MytownBoardMapper {
 	 * @param regionCity
 	 * @return
 	 */
-	List<Board> selectLocalBoardList(@Param("regionDistrict") String regionDistrict,
-            @Param("regionCity") String regionCity);
+	  List<Board> selectLocalBoardList();
 
-	Member login(Member inputMember);
-
-
+	  // 상세 조회
+	  /**상세조회
+	   * 
+	   * @param boardNo
+	   * @return
+	   */
+	    Board selectLocalBoardDetail(int boardNo);
 
 }
