@@ -6,8 +6,10 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
+import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.myPage.model.dto.UploadFile;
+import edu.kh.project.welfare.benefits.model.dto.Benefits;
 
 public interface MyPageService {
 
@@ -77,5 +79,17 @@ public interface MyPageService {
 	 * @return
 	 */
 	Member info(int memberNo);
+
+	/** 내가 찜한 혜택 조회
+	 * @param memberNo
+	 * @return
+	 */
+	List<Benefits> benefits(int memberNo);
+
+	/** 작성글 조회
+	 * @param memberNo
+	 * @return
+	 */
+	List<Board> baord(int memberNo);
 
 }

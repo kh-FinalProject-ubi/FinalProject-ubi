@@ -10,6 +10,27 @@
 			   WHERE MEMBER_NO = #{memeberNo}
 	</select>
 	
+	<!-- 내가 찜한 혜택 조회 -->
+	<select id="benefits">
+		SELECT SERVICE_NAME, AGENCY, DESCRIPTION, RECEPTION_START, RECEPTION_END, CATEGORY, SERVICE_NO
+		FROM   WELFARE
+		WHERE  MEMBER_NO = #{memberNo}
+		ORDER BY SERVICE_NO
+	</select>
+	
+	<!-- 작성글 조회 -->
+	<select id="board">
+		SELECT 
+		  B.BOARD_NO, 
+		  B.BOARD_TITLE, 
+		  B.BOARD_CONTENT, 
+		  B.BOARD_DATE, 
+		  B.BOARD_READ_COUNT, 
+		  M.MEMBER_NICKNAME
+		FROM BOARD B
+		JOIN MEMBER M ON B.MEMBER_NO = M.MEMBER_NO
+		WHERE B.MEMBER_NO = #{memberNo}
+	</select>
 	
 	<!-- 회원 정보 수정 -->
 	<update id="updateInfo">
