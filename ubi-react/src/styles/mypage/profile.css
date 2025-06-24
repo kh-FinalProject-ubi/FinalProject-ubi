@@ -1,0 +1,9 @@
+.description-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;            /* 줄 수 제한 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.5em;
+  max-height: 3em;                  /* 줄 수 x 줄 높이 */
+}

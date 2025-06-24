@@ -35,6 +35,8 @@ public interface MemberMapper {
 
 	int checkMemberId(String memberId);
 
+	void insertKakaoMember(Member newMember);
+
 
 	
 }

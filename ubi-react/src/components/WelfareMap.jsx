@@ -20,14 +20,20 @@ import useSelectedRegionStore from "../hook/welfarefacility/useSelectedRegionSto
 const specialCityNames = {
   수원시: "수원특례시",
   용인시: "용인특례시",
-  성남시: "성남특례시",
   고양시: "고양특례시",
   창원시: "창원특례시",
+  화성시: "화성시",
+  성남시: "성남특례시",
   안양시: "안양시",
   안산시: "안산시",
   전주시: "전주시",
   천안시: "천안시",
   청주시: "청주시",
+};
+
+const extractCleanAddress = (rawAddress) => {
+  if (!rawAddress) return "";
+  return rawAddress.includes("^^^") ? rawAddress.split("^^^")[1] : rawAddress;
 };
 
 const mapCleanFullName = (fullName) => {
@@ -41,9 +47,8 @@ const WelfareMap = () => {
   const mapElement = useRef();
   const mapRef = useRef();
   const districtBLayerRef = useRef(null);
-
   const { token, address } = useAuthStore();
-  const districtA = token ? address : "서울특별시 종로구";
+  const districtA = token ? extractCleanAddress(address) : "서울특별시 종로구";
   const [districtB, setDistrictB] = useState(null);
 
   const { benefitsData, setBenefitsData } = useBenefitStore();
@@ -124,6 +129,47 @@ const WelfareMap = () => {
       })
       .catch((err) => console.error("지오코딩 실패:", err));
   };
+  // A 지역 폴리곤 표시
+  const districtALayerRef = useRef(null); // A 지역 별도 레이어
+
+  const displayAPolygon = (fullNameClean) => {
+    fetch("/TL_SCCO_SIG_KDJ.json")
+      .then((res) => res.json())
+      .then((geojson) => {
+        const features = geojson.features.filter(
+          (f) => f.properties.FULL_NM_CLEAN?.trim() === fullNameClean.trim()
+        );
+        if (features.length === 0) return;
+
+        if (districtALayerRef.current) {
+          mapRef.current.removeLayer(districtALayerRef.current);
+        }
+
+        const vectorSource = new VectorSource({
+          features: new GeoJSON().readFeatures(
+            { type: "FeatureCollection", features },
+            { featureProjection: "EPSG:3857" }
+          ),
+        });
+
+        const vectorLayer = new VectorLayer({
+          source: vectorSource,
+          style: new Style({
+            stroke: new Stroke({ color: "#dc3545", width: 3 }), // 빨간색 테두리
+            fill: new Fill({ color: "rgba(220, 53, 69, 0.3)" }),
+          }),
+        });
+
+        mapRef.current.addLayer(vectorLayer);
+        districtALayerRef.current = vectorLayer;
+      });
+  };
+  useEffect(() => {
+    if (districtA && mapRef.current) {
+      const cleanA = mapCleanFullName(districtA);
+      displayAPolygon(cleanA);
+    }
+  }, [districtA]);
 
   // ✅ B 지역 폴리곤 표시
   const displayBPolygon = (fullNameClean) => {

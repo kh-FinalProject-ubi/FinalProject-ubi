@@ -21,7 +21,9 @@ import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.member.model.dto.Member;
+import edu.kh.project.welfare.benefits.model.dto.Benefits;
 import edu.kh.project.myPage.model.dto.UploadFile;
 import edu.kh.project.myPage.model.service.MyPageService;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +52,7 @@ public class MyPageController {
 	
 	// 내 기본 정보 조회
 	@GetMapping("info")
-    public ResponseEntity<Object> info(@SessionAttribute("loginMember") Member loginMember) {
+    public ResponseEntity<Object> info(@SessionAttribute(value = "loginMember", required = false) Member loginMember) {
         try {
             if (loginMember == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
@@ -64,34 +66,6 @@ public class MyPageController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
-	// 프로필 이미지 변경 화면 이동
-	@GetMapping("profile") // /myPage/profile GET 요청 매핑
-	public String profile() {
-
-		return "myPage/myPage-profile";
-	}
-
-	// 비밀번호 변경 화면 이동
-	@GetMapping("changePw") // /myPage/changePw GET 요청 매핑
-	public String changePw() {
-
-		return "myPage/myPage-changePw";
-	}
-
-	// 회원 탈퇴 화면 이동
-	@GetMapping("secession") // /myPage/secession GET 요청 매핑
-	public String secession() {
-
-		return "myPage/myPage-secession";
-	}
-
-	// 파일 업로드 테스트 화면 이동
-	@GetMapping("fileTest") // /myPage/fileTest GET 요청 매핑
-	public String fileTest() {
-
-		return "myPage/myPage-fileTest";
-	}
 
 	/**
 	 * 회원 정보 수정
@@ -138,6 +112,42 @@ public class MyPageController {
 		ra.addFlashAttribute("message", message);
 		return "redirect:info";
 	}
+	
+	// 내가 찜한 혜택 조회
+	@GetMapping("service")
+    public ResponseEntity<Object> service(@SessionAttribute(value = "loginMember", required = false) Member loginMember) {
+        try {
+            if (loginMember == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+            }
+            
+            List<Benefits> benefits = service.benefits(loginMember.getMemberNo());
+            return ResponseEntity.status(HttpStatus.OK).body(benefits);
+            
+        } catch (Exception e) {
+            log.error("내 정보 조회 중 에러 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+	
+	// 작성글 조회
+	@GetMapping("board")
+	public ResponseEntity<Object> board(@SessionAttribute(value = "loginMember", required = false) Member loginMember) {
+		try {
+			if (loginMember == null) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+			}
+			
+			List<Board> baord = service.baord(loginMember.getMemberNo());
+			return ResponseEntity.status(HttpStatus.OK).body(baord);
+			
+		} catch (Exception e) {
+			log.error("내 정보 조회 중 에러 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+	}
+	
+	
 
 	/**
 	 * 비밀번호 변경
