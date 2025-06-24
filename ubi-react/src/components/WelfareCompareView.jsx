@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import WelfareDetailModal from "./WelfareDetailModal";
+import "../styles/WelfareCompareView.css";
 
 const WelfareCompareView = ({ districtA, districtB, benefits, isLoading }) => {
   const [selectedDetail, setSelectedDetail] = useState(null);

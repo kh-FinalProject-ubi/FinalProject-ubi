@@ -1077,10 +1077,10 @@ INSERT INTO MEMBER (MEMBER_NO, MEMBER_ID, MEMBER_PW, MEMBER_NICKNAME, MEMBER_EMA
                     MEMBER_ADDRESS, ENROLL_DATE, MEMBER_DEL_FL, MEMBER_IMG, AUTHORITY,
                     MEMBER_TADDRESS, MEMBER_STANDARD, MEMBER_PW_CH, REGION_DISTRICT, REGION_CITY,
                     REPORT_COUNT, SUSPENDED_FL, KAKAO_ID)
-VALUES (2, 'user02', 'pw5678', '이순신', 'user02@example.com', '01087654321',
-        '부산 해운대구 센텀중앙로 55', SYSDATE - 8, 'N', NULL, 1,
-        NULL, 'N', NULL, '해운대구', '부산시',
-        0, 'N', NULL);
+VALUES (    2, 'user02', 'pw5678', '이순신', 'user02@example.com', '01087654321',
+    '부산 해운대구 센텀중앙로 55', SYSDATE - 8, 'N', NULL, 1,
+    NULL, 'N', 'N', '해운대구', '부산시',
+    0, 'N', NULL);
 
 INSERT INTO MEMBER (MEMBER_NO, MEMBER_ID, MEMBER_PW, MEMBER_NICKNAME, MEMBER_EMAIL, MEMBER_TEL,
                     MEMBER_ADDRESS, ENROLL_DATE, MEMBER_DEL_FL, MEMBER_IMG, AUTHORITY,
@@ -1529,5 +1529,3 @@ SELECT * FROM REGION WHERE ROWNUM = 1;
 SELECT column_name
 FROM all_tab_columns
 WHERE table_name = 'REGION';
-
-

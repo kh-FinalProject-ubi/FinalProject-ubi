@@ -1,0 +1,26 @@
+.welfare-compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.welfare-compare-table th,
+.welfare-compare-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  vertical-align: top;
+  text-align: left;
+}
+
+.welfare-compare-table td {
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.welfare-compare-table td:hover {
+  background: #f0f0f0;
+}
+
+.welfare-compare-view h3 {
+  margin-bottom: 10px;
+}
