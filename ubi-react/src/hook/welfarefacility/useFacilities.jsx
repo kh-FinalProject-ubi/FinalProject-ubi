@@ -1,24 +1,14 @@
-// useFacilities.js
-
 import { useState, useEffect } from "react";
 import axios from "axios";
-import useSelectedRegionStore from "./useSelectedRegionStore";
 
-export function useFacilities(cityParam, districtParam) {
+export function useFacilities(city, district) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const {
-    selectedCity: selectedCityFromStore,
-    selectedDistrict: selectedDistrictFromStore,
-  } = useSelectedRegionStore();
-
-  // ✅ 외부에서 넘겨준 값이 있으면 우선 사용, 없으면 store, 최종적으로 기본값
-  const city = cityParam || selectedCityFromStore || "서울특별시";
-  const district = districtParam || selectedDistrictFromStore || "종로구";
-
   useEffect(() => {
+    if (!city || !district) return;
+
     const fetchFacilities = async () => {
       setLoading(true);
       setError(null);
