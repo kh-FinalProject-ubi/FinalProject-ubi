@@ -25,148 +25,175 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CrossOrigin(origins = "*")
 public class MemberController {
-	
+
 	@Value("${my.profile.folder-path}")
 	private String profileFolderPath;
 
 	@Value("${my.profile.web-path}")
 	private String profileWebPath;
-	
+
 	private String parseMemberStandard(String codeStr) {
-	    switch (codeStr) {
-	        case "1": return "노인";
-	        case "2": return "청년";
-	        case "3": return "아동";
-	        case "4": return "노인+장애인";
-	        case "5": return "청년+장애인";
-	        case "6": return "아동+장애인";
-	        case "7": return "장애인";
-	        default: return "일반";
-	    }
+		switch (codeStr) {
+		case "1":
+			return "노인";
+		case "2":
+			return "청년";
+		case "3":
+			return "아동";
+		case "4":
+			return "노인+장애인";
+		case "5":
+			return "청년+장애인";
+		case "6":
+			return "아동+장애인";
+		case "7":
+			return "장애인";
+		default:
+			return "일반";
+		}
 	}
 
-    @Autowired
-    private MemberService service;
+	@Autowired
+	private MemberService service;
 
-    /** ✅ 로그인 (Zustand용 JSON 응답) */
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Member input,  HttpSession session) {
-        Member loginMember = service.login(input.getMemberId(), input.getMemberPw());
+	/** ✅ 로그인 (Zustand용 JSON 응답) */
+	@PostMapping("/login")
+	public ResponseEntity<?> login(@RequestBody Member input, HttpSession session) {
+		Member loginMember = service.login(input.getMemberId(), input.getMemberPw());
 
-        if (loginMember == null) {
-            return ResponseEntity
-                .badRequest()
-                .body(Map.of("message", "아이디 또는 비밀번호가 일치하지 않습니다."));
-        }
+		if (loginMember == null) {
+			return ResponseEntity.badRequest().body(Map.of("message", "아이디 또는 비밀번호가 일치하지 않습니다."));
+		}
 
+		// 세션에 로그인 정보 저장 (동네게시판 구현)
+		session.setAttribute("loginMember", loginMember);
 
-        // 세션에 로그인 정보 저장 (동네게시판 구현)
-        session.setAttribute("loginMember", loginMember);
-        
-        // 파싱 시작
-        String readableStandard = parseMemberStandard(loginMember.getMemberStandard());
-        String district = extractDistrict(loginMember.getMemberAddress());
+		// 파싱 시작
+		String readableStandard = parseMemberStandard(loginMember.getMemberStandard());
+		String district = extractDistrict(loginMember.getMemberAddress());
 
-        Map<String, Object> body = new HashMap<>();
-        body.put("token", "dummy-token");
-        body.put("memberName", loginMember.getMemberNickname());
-        body.put("address", district); // ✅ 시군구 단위로 가공
-        body.put("memberStandard", readableStandard);
-        body.put("memberImg", loginMember.getMemberImg());
+		Map<String, Object> body = new HashMap<>();
+		body.put("token", "dummy-token");
+		body.put("memberName", loginMember.getMemberNickname());
+		body.put("address", district); // ✅ 시군구 단위로 가공
+		body.put("memberStandard", readableStandard);
+		body.put("memberImg", loginMember.getMemberImg());
 
-        return ResponseEntity.ok(body);
-    }
+		return ResponseEntity.ok(body);
+	}
 
-    private String extractDistrict(String fullAddress) {
-        if (fullAddress == null || fullAddress.isBlank()) return "";
-        String[] tokens = fullAddress.trim().split(" ");
-        if (tokens.length == 1) return tokens[0];
-        return tokens[0] + " " + tokens[1];
-    }
-    @PostMapping("/signup")
-    public ResponseEntity<?> signup(
-        @ModelAttribute Member inputMember,
-        @RequestParam(value = "memberImg", required = false) MultipartFile memberImg
-    ) {
-        String webPath = profileWebPath;
-        String folderPath = profileFolderPath;
+	private String extractDistrict(String fullAddress) {
+		if (fullAddress == null || fullAddress.isBlank())
+			return "";
+		String[] tokens = fullAddress.trim().split(" ");
+		if (tokens.length == 1)
+			return tokens[0];
+		return tokens[0] + " " + tokens[1];
+	}
 
-        if (memberImg != null && !memberImg.isEmpty()) {
-            String renamed = UUID.randomUUID().toString() + "_" + memberImg.getOriginalFilename();
-            File dest = new File(folderPath + renamed);
-            try {
-                memberImg.transferTo(dest);
-                inputMember.setMemberImg(webPath + renamed);
-            } catch (IOException e) {
-                return ResponseEntity.internalServerError().body(Map.of("message", "파일 저장 실패"));
-            }
-        }
+	@PostMapping("/signup")
+	public ResponseEntity<?> signup(@ModelAttribute Member inputMember,
+			@RequestParam(value = "memberImg", required = false) MultipartFile memberImg) {
+		String webPath = profileWebPath;
+		String folderPath = profileFolderPath;
 
-        int result = service.signup(inputMember);
-        return result > 0
-            ? ResponseEntity.ok(Map.of("message", inputMember.getMemberNickname() + "님의 가입을 환영합니다!"))
-            : ResponseEntity.badRequest().body(Map.of("message", "회원가입 실패"));
-    }
+		if (memberImg != null && !memberImg.isEmpty()) {
+			String renamed = UUID.randomUUID().toString() + "_" + memberImg.getOriginalFilename();
+			File dest = new File(folderPath + renamed);
+			try {
+				memberImg.transferTo(dest);
+				inputMember.setMemberImg(webPath + renamed);
+			} catch (IOException e) {
+				return ResponseEntity.internalServerError().body(Map.of("message", "파일 저장 실패"));
+			}
+		}
 
-@PostMapping("/sendAuthCode")
-public ResponseEntity<?> sendAuthCode(@RequestParam("email") String email, HttpSession session) {
-    String authCode = service.createRandomCode(); // 예: "836524"
-    boolean result = service.sendAuthCodeToEmail(email, authCode); // 이메일 전송
+		int result = service.signup(inputMember);
+		return result > 0 ? ResponseEntity.ok(Map.of("message", inputMember.getMemberNickname() + "님의 가입을 환영합니다!"))
+				: ResponseEntity.badRequest().body(Map.of("message", "회원가입 실패"));
+	}
 
-    if (result) {
-        session.setAttribute("authCode", authCode);
-        session.setMaxInactiveInterval(180); // 3분 유효
-        return ResponseEntity.ok(Map.of("message", "인증번호가 이메일로 전송되었습니다."));
-    } else {
-        return ResponseEntity.internalServerError().body(Map.of("message", "이메일 전송 실패"));
-    }
-}
+	@PostMapping("/sendAuthCode")
+	public ResponseEntity<?> sendAuthCode(@RequestParam("email") String email, HttpSession session) {
+		String authCode = service.createRandomCode(); // 예: "836524"
+		boolean result = service.sendAuthCodeToEmail(email, authCode); // 이메일 전송
 
-@GetMapping("/checkAuthCode")
-public ResponseEntity<?> checkAuthCode(@RequestParam("inputCode") String inputCode, HttpSession session) {
-    String savedCode = (String) session.getAttribute("authCode");
-    if (savedCode != null && savedCode.equals(inputCode)) {
-        return ResponseEntity.ok(Map.of("message", "인증 성공"));
-    } else {
-        return ResponseEntity.badRequest().body(Map.of("message", "인증번호가 일치하지 않습니다."));
-    }
-}
+		if (result) {
+			session.setAttribute("authCode", authCode);
+			session.setMaxInactiveInterval(180); // 3분 유효
+			return ResponseEntity.ok(Map.of("message", "인증번호가 이메일로 전송되었습니다."));
+		} else {
+			return ResponseEntity.internalServerError().body(Map.of("message", "이메일 전송 실패"));
+		}
+	}
 
-@GetMapping("/checkId")
-public ResponseEntity<?> checkId(@RequestParam("memberId") String memberId) {
-    boolean isAvailable = service.checkIdAvailable(memberId); // 중복 없으면 true
-    return isAvailable
-        ? ResponseEntity.ok().build()
-        : ResponseEntity.status(409).body(Map.of("message", "이미 사용 중인 아이디입니다."));
-}
+	@GetMapping("/checkAuthCode")
+	public ResponseEntity<?> checkAuthCode(@RequestParam("inputCode") String inputCode, HttpSession session) {
+		String savedCode = (String) session.getAttribute("authCode");
+		if (savedCode != null && savedCode.equals(inputCode)) {
+			return ResponseEntity.ok(Map.of("message", "인증 성공"));
+		} else {
+			return ResponseEntity.badRequest().body(Map.of("message", "인증번호가 일치하지 않습니다."));
+		}
+	}
 
-@GetMapping("/checkNickname")
-public ResponseEntity<?> checkNickname(@RequestParam("memberNickname") String memberNickname) {
-    boolean isAvailable = service.checkNicknameAvailable(memberNickname); // ✅ 오타 수정
-    return isAvailable
-        ? ResponseEntity.ok().build()
-        : ResponseEntity.status(409).body(Map.of("message", "이미 사용 중인 닉네임입니다.")); // 메시지도 닉네임용으로 변경
-}
-@PostMapping("/kakao-login")
-public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code) {
-    try {
-        Member member = service.kakaoLogin(code); // 반환 타입을 Member로 가정
+	@GetMapping("/checkId")
+	public ResponseEntity<?> checkId(@RequestParam("memberId") String memberId) {
+		boolean isAvailable = service.checkIdAvailable(memberId); // 중복 없으면 true
+		return isAvailable ? ResponseEntity.ok().build()
+				: ResponseEntity.status(409).body(Map.of("message", "이미 사용 중인 아이디입니다."));
+	}
 
-        String readableStandard = parseMemberStandard(member.getMemberStandard());
-        String district = extractDistrict(member.getMemberAddress());
+	@GetMapping("/checkNickname")
+	public ResponseEntity<?> checkNickname(@RequestParam("memberNickname") String memberNickname) {
+		boolean isAvailable = service.checkNicknameAvailable(memberNickname); // ✅ 오타 수정
+		return isAvailable ? ResponseEntity.ok().build()
+				: ResponseEntity.status(409).body(Map.of("message", "이미 사용 중인 닉네임입니다.")); // 메시지도 닉네임용으로 변경
+	}
 
-        Map<String, Object> body = new HashMap<>();
-        body.put("token", "dummy-token");
-        body.put("memberName", member.getMemberNickname());
-        body.put("address", district);
-        body.put("memberStandard", readableStandard);
-        body.put("memberImg", member.getMemberImg());
+	@PostMapping("/kakao-login")
+	public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code) {
+		try {
+			Member member = service.kakaoLogin(code); // 반환 타입을 Member로 가정
 
-        return ResponseEntity.ok(body);
+			String readableStandard = parseMemberStandard(member.getMemberStandard());
+			String district = extractDistrict(member.getMemberAddress());
 
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "카카오 로그인 실패"));
-    }
-}
+			Map<String, Object> body = new HashMap<>();
+			body.put("token", "dummy-token");
+			body.put("memberName", member.getMemberNickname());
+			body.put("address", district);
+			body.put("memberStandard", readableStandard);
+			body.put("memberImg", member.getMemberImg());
+
+			return ResponseEntity.ok(body);
+
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "카카오 로그인 실패"));
+		}
+	}
+
+	@GetMapping("/info")
+	public ResponseEntity<?> getLoginMember(HttpSession session) {
+		Member loginMember = (Member) session.getAttribute("loginMember");
+
+		if (loginMember == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "로그인한 사용자 없음"));
+		}
+
+		// 필요한 정보만 추려서 보냄
+		String readableStandard = parseMemberStandard(loginMember.getMemberStandard());
+		String district = extractDistrict(loginMember.getMemberAddress());
+
+		Map<String, Object> body = new HashMap<>();
+		body.put("memberId", loginMember.getMemberId());
+		body.put("memberName", loginMember.getMemberNickname());
+		body.put("memberAddressCity", district.split(" ")[0]); // 서울특별시
+		body.put("memberAddressDistrict", district.split(" ")[1]); // 종로구
+		body.put("memberStandard", readableStandard);
+		body.put("memberImg", loginMember.getMemberImg());
+
+		return ResponseEntity.ok(body);
+	}
 
 }
