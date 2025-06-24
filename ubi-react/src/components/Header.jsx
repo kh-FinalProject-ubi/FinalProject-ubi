@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "../styles/Header.css";
-import AskBoard from "../pages/AskBoard";
-import NoticeBoard from "../pages/NoticeBoard";
+import AskBoard from "../pages/board/AskBoard";
+import NoticeBoard from "../pages/board/NoticeBoard";
 import WelfareService from "./../pages/WelfareService";
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";

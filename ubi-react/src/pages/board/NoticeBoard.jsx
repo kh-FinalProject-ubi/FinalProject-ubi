@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useLocation } from "react-router-dom";
+import { div } from "framer-motion/client";
+import useAuthStore from "../../stores/useAuthStore";
 
 const boardCodeMap = {
   "/noticeBoard": 1,
@@ -8,7 +10,7 @@ const boardCodeMap = {
   // 필요한 만큼 매핑 추가
 };
 
-const askBoard = () => {
+const NoticeBoard = () => {
   const [boardList, setBoardList] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -42,11 +44,9 @@ const askBoard = () => {
         {boardList.map((board) => (
           <li key={board.boardNo}>
             <Link to={`/${path.split("/")[1]}/detail/${board.boardNo}`}>
-              {board.length} &nbsp;
-              {board.postType} &nbsp; &nbsp; &nbsp;
+              {board.postType}&nbsp;&nbsp;&nbsp;
               <strong>{board.boardTitle}</strong> - {board.boardDate}
-              &nbsp;&nbsp;&nbsp;
-              {board.boardAnswer}
+              {board.readBoardCount}
             </Link>
           </li>
         ))}
@@ -55,4 +55,4 @@ const askBoard = () => {
   );
 };
 
-export default askBoard;
+export default NoticeBoard;
