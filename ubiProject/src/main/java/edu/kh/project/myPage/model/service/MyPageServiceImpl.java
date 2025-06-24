@@ -14,10 +14,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.common.util.Utility;
 import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.myPage.model.dto.UploadFile;
 import edu.kh.project.myPage.model.mapper.MyPageMapper;
+import edu.kh.project.welfare.benefits.model.dto.Benefits;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -37,9 +39,22 @@ public class MyPageServiceImpl implements MyPageService {
 	@Value("${my.profile.folder-path}")
 	private String profileFolderPath; // C:/uploadFiles/profile/
 	
+	// 내 기본 정보 조회
 	@Override
 	public Member info(int memberNo) {
 		return mapper.info(memberNo);
+	}
+	
+	// 내가 찜한 혜택 조회
+	@Override
+	public List<Benefits> benefits(int memberNo) {
+		return mapper.benefits(memberNo);
+	}
+	
+	// 작성글 조회
+	@Override
+	public List<Board> baord(int memberNo) {
+		return mapper.board(memberNo);
 	}
 
 	@Override
