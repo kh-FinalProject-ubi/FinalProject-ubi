@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import "../../styles/mypage/Profile.css";
+import useAuthStore from '../../stores/useAuthStore';
 
 const Profile = () => {
+  
+  const { memberNo } = useAuthStore(); // Zustand에서 회원 정보 가져옴
+  console.log('memberNo:', memberNo);
 
   const [member, setMember] = useState(null);
   const [benefits, setBenefits] = useState([]);
@@ -59,12 +63,13 @@ const Profile = () => {
   }
 
   useEffect(() => {
+    if (!memberNo) return;
     console.log("useEffect 실행");
     getMemberData();
     getBenefitsData();
     getBoardData();
 
-  }, []);
+  }, [memberNo]);
 
     return (
     <div className="mypage-profile">
@@ -125,22 +130,28 @@ const Profile = () => {
           <thead>
             <tr>
               <th>분류</th>
-              <th>게시판</th>
+              <th>해시태그</th>
               <th>제목</th>
               <th>내용</th>
               <th>작성일</th>
-              <th>작성자</th>
+              <th>조회수</th>
             </tr>
           </thead>
           <tbody>
             {board.map((board) => (
               <tr key={board.boardNo}>
-                <td>{board.boardType}</td>
-                <td>{board.boardName}</td>
-                <td>{board.title}</td>
-                <td>{board.content}</td>
-                <td>{board.createdDate}</td>
-                <td>{board.writer}</td>
+                <td>{board.postType}</td>
+                <td>{board.hashtags}</td>
+                <td>{board.boardTitle}</td>
+                <td>
+                  {board.boardContent
+                    ? board.boardContent.length > 20
+                      ? `${board.boardContent.slice(0, 20)}...`
+                      : board.boardContent
+                    : "내용 없음"}
+                </td>
+                <td>{board.boardDate}</td>
+                <td>{board.boardReadCount}</td>
               </tr>
             ))}
           </tbody>

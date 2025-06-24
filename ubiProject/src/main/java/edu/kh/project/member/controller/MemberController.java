@@ -73,6 +73,8 @@ public class MemberController {
         body.put("address", district); // ✅ 시군구 단위로 가공
         body.put("memberStandard", readableStandard);
         body.put("memberImg", loginMember.getMemberImg());
+        body.put("memberNo", loginMember.getMemberNo());
+
 
         return ResponseEntity.ok(body);
     }

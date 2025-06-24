@@ -23,6 +23,7 @@ const LoginModal = ({ onClose }) => {
         token: data.token,
         address: data.address,
         memberName: data.memberName,
+        memberNo: data.memberNo,
       });
       onClose();
     } else {

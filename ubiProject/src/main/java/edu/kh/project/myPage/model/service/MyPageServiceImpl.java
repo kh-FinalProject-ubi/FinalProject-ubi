@@ -2,8 +2,12 @@ package edu.kh.project.myPage.model.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,9 +58,34 @@ public class MyPageServiceImpl implements MyPageService {
 	// 작성글 조회
 	@Override
 	public List<Board> baord(int memberNo) {
-		return mapper.board(memberNo);
-	}
+		
+		List<Board> board =  mapper.board(memberNo);
+		
+		List<Integer> boardNoList = board.stream()
+	            .map(Board::getBoardNo)
+	            .collect(Collectors.toList());
 
+	        // 3. 게시글 번호로 해시태그 전부 조회 (resultType="map")
+	        List<Map<String, Object>> hashtagRows = mapper.selectHashtagsByBoardNoList(boardNoList);
+
+	        // 4. 게시글 번호 → 해시태그 리스트로 변환
+	        Map<Integer, List<String>> tagMap = new HashMap<>();
+	        for (Map<String, Object> row : hashtagRows) {
+	            Integer boardNo = ((Number) row.get("BOARD_NO")).intValue();
+	            String tag = (String) row.get("HASHTAG_NAME");
+	            tagMap.computeIfAbsent(boardNo, k -> new ArrayList<>()).add(tag);
+	        }
+
+	        // 5. 게시글에 쉼표로 연결된 해시태그 문자열 세팅
+	        for (Board b : board) {
+	            List<String> tags = tagMap.getOrDefault(b.getBoardNo(), Collections.emptyList());
+	            b.setHashtags(String.join(",", tags));
+	        }
+
+	        return board;
+	    }
+	
+	
 	@Override
 	public int updateInfo(Member inputMember, String[] memberAddress) {
 

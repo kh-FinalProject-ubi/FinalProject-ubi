@@ -9,8 +9,9 @@ const useAuthStore = create(
       memberName: null,
       memberStandard: null, // ✅ 추가
 
-      setAuth: ({ token, address, memberName, memberStandard }) =>
-        set({ token, address, memberName, memberStandard }),
+
+      setAuth: ({ token, address, memberName, memberStandard, memberNo }) =>
+        set({ token, address, memberName, memberStandard, memberNo}),
 
       clearAuth: () =>
         set({
@@ -18,6 +19,7 @@ const useAuthStore = create(
           address: null,
           memberName: null,
           memberStandard: null,
+          memberNo: null,
         }),
     }),
     {
