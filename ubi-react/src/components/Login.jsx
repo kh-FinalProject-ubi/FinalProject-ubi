@@ -8,11 +8,8 @@ const Login = () => {
 
   const extractDistrict = (fullAddress) => {
     if (!fullAddress) return "";
-
-    // 우편번호^^^기본주소^^^상세주소 중 기본주소만 추출
     const parts = fullAddress.split("^^^");
     const baseAddress = parts.length >= 2 ? parts[1] : fullAddress;
-
     const tokens = baseAddress.trim().split(" ");
     if (tokens.length === 1) return normalizeSido(tokens[0]);
     if (tokens.length >= 2) {
@@ -22,6 +19,7 @@ const Login = () => {
     }
     return baseAddress;
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!memberId || !memberPw) {
@@ -39,22 +37,26 @@ const Login = () => {
 
       const data = await res.json();
       if (res.ok) {
-        console.log("🔍 서버 응답 주소:", data.address); // 여기에 추가
-
         setAuth({
           token: data.token,
-          address: extractDistrict(data.address), // ✅ 시군구 단위로 자른 주소
+          address: extractDistrict(data.address),
           memberName: data.memberName,
-           memberStandard: data.memberStandard, // ✅ 저장
+          memberStandard: data.memberStandard,
           memberImg: data.memberImg || "",
         });
-              console.log("✅ 로그인 성공");
+        console.log("✅ 일반 로그인 성공");
       } else {
         alert(data.message || "로그인 실패");
       }
     } catch (err) {
       console.error("로그인 오류:", err);
     }
+  };
+
+  // ✅ 카카오 로그인 처리
+  const handleKakaoLogin = () => {
+    // 실제 카카오 로그인 경로는 백엔드에서 리다이렉션 처리
+    window.location.href = "/oauth2/authorization/kakao";
   };
 
   return (
@@ -71,6 +73,30 @@ const Login = () => {
         placeholder="비밀번호"
       />
       <button type="submit">로그인</button>
+
+      {/* ✅ 카카오 로그인 버튼 */}
+      <button
+        type="button"
+        onClick={handleKakaoLogin}
+        style={{
+          backgroundColor: "#FEE500",
+          border: "none",
+          padding: "10px",
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginTop: "10px",
+          cursor: "pointer",
+        }}
+      >
+        <img
+          src="/kakao-login-icon.png"
+          alt="카카오 로그인"
+          style={{ height: "20px", marginRight: "8px" }}
+        />
+        카카오로 로그인
+      </button>
     </form>
   );
 };
