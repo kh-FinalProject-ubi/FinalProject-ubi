@@ -1,17 +1,58 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import BoardTable from "../components/BoardTable";
+import { Link, useLocation } from "react-router-dom";
 
-const AskBoard = () => {
-  const [Ask, setAsk] = useState([]);
-
-  useEffect(() => {
-    axios.get("/board/json?code=2") // 문의 게시판 코드 2번 (예시)
-      .then((res) => setAsk(res.data))
-      .catch((err) => console.error("문의글 불러오기 실패", err));
-  }, []);
-
-  return <BoardTable boardList={Ask} title="문의게시판" />;
+const boardCodeMap = {
+  "/noticeBoard": 1,
+  "/askBoard": 2,
+  // 필요한 만큼 매핑 추가
 };
 
-export default AskBoard;
+const askBoard = () => {
+  const [boardList, setBoardList] = useState([]);
+  const [pagination, setPagination] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const location = useLocation();
+  const path = location.pathname;
+  const boardCode = boardCodeMap[path];
+
+  useEffect(() => {
+    if (!boardCode) return;
+
+    axios
+      .get(`/api/board/${boardCode}`)
+      .then((res) => {
+        setBoardList(res.data.boardList);
+        setPagination(res.data.pagination);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("게시판 목록 조회 실패:", err);
+      });
+  }, [boardCode]);
+
+  if (!boardCode) return <p>존재하지 않는 게시판입니다.</p>;
+  if (loading) return <p>로딩 중...</p>;
+
+  return (
+    <div>
+      <h2>게시판 목록</h2>
+      <ul>
+        {boardList.map((board) => (
+          <li key={board.boardNo}>
+            <Link to={`/${path.split("/")[1]}/detail/${board.boardNo}`}>
+              {board.length} &nbsp;
+              {board.postType} &nbsp; &nbsp; &nbsp;
+              <strong>{board.boardTitle}</strong> - {board.boardDate}
+              &nbsp;&nbsp;&nbsp;
+              {board.boardAnswer}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default askBoard;

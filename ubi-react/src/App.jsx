@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainPage from "./pages/MainPage";
-import AskBoard from "./pages/AskBoard";
-import NoticeBoard from "./pages/NoticeBoard";
+import AskBoard from "./pages/board/AskBoard";
+import NoticeBoard from "./pages/board/NoticeBoard";
 import WelfareService from "./pages/WelfareService";
 import KakaoCallback from "./pages/KakaoCallback";
 import WelfareMap from "./components/WelfareMap";
@@ -13,10 +13,10 @@ import Profile from "./pages/mypage/Profile";
 import Chat from "./pages/mypage/Chat";
 import ChangePassword from "./pages/mypage/ChangePassword";
 import Withdraw from "./pages/mypage/Withdraw";
-import BoardDetail from "./components/BoardDetail";
+import BoardDetail from "./pages/board/BoardDetail";
 import MyTownBoardDetail from "./pages/mytownboard/MyTownBoardDetail";
 import FacilityRouter from "./pages/welfarefacility/FacilityRouter";
-
+import EditBoard from "./pages/board/EditBoard";
 
 function App() {
   return (
@@ -31,18 +31,21 @@ function App() {
           <Route path="askBoard" element={<AskBoard />} />
           <Route path="noticeBoard" element={<NoticeBoard />} />
           <Route path="mytownBoard" element={<MyTownBoard />} />
-            <Route path="mytownBoard/:boardNo" element={<MyTownBoardDetail />} />
+          <Route path="mytownBoard/:boardNo" element={<MyTownBoardDetail />} />
           <Route path="facility" element={<FacilityRouter />} />
           <Route path="/mypage" element={<MypageLayout />}>
             <Route path="profile" element={<Profile />} />
             <Route path="chat" element={<Chat />} />
             <Route path="password" element={<ChangePassword />} />
             <Route path="withdraw" element={<Withdraw />} />
-           
           </Route>
           <Route path="signup" element={<Signup />} />
           <Route path="mytownBoard" element={<MyTownBoard />} />
           <Route path="/:boardPath/detail/:boardNo" element={<BoardDetail />} />
+          <Route
+            path="/editBoard/:boardCode/:boardNo"
+            element={<EditBoard />}
+          />
         </Route>
 
         {/* 레이아웃이 필요 없는 단독 Route (예: 로그인 콜백) */}

@@ -39,10 +39,8 @@ public class BoardController {
 	private final BoardService service;
 
 	@GetMapping("/{boardCode:[0-9]+}")
-	public ResponseEntity<Map<String, Object>> selectBoardList(
-			@PathVariable("boardCode") int boardCode,
-			@RequestParam(value = "cp", defaultValue = "1") int cp,
-			@RequestParam Map<String, Object> paramMap) {
+	public ResponseEntity<Map<String, Object>> selectBoardList(@PathVariable("boardCode") int boardCode,
+			@RequestParam(value = "cp", defaultValue = "1") int cp, @RequestParam Map<String, Object> paramMap) {
 
 		Map<String, Object> map;
 
@@ -55,7 +53,6 @@ public class BoardController {
 
 		return ResponseEntity.ok(map);
 	}
-
 
 	// 상세 조회 요청 주소
 	// /board/1/1994?cp=1
@@ -75,13 +72,10 @@ public class BoardController {
 	 * @return
 	 */
 	@GetMapping("/{boardCode:[0-9]+}/{boardNo:[0-9]+}")
-	public ResponseEntity<?> getBoardDetail(
-			@PathVariable("boardCode") int boardCode,
+	public ResponseEntity<Map<String, Object>> getBoardDetail(@PathVariable("boardCode") int boardCode,
 			@PathVariable("boardNo") int boardNo,
-			@SessionAttribute(value = "loginMember", required = false) Member loginMember,
-			HttpServletRequest req,
-			HttpServletResponse resp
-	) {
+			@SessionAttribute(value = "loginMember", required = false) Member loginMember, HttpServletRequest req,
+			HttpServletResponse resp) {
 		Map<String, Integer> map = new HashMap<>();
 		map.put("boardCode", boardCode);
 		map.put("boardNo", boardNo);
@@ -91,8 +85,7 @@ public class BoardController {
 
 		Board board = service.selectOne(map);
 		if (board == null) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND)
-					.body(Map.of("message", "게시글이 존재하지 않습니다."));
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "게시글이 존재하지 않습니다."));
 		}
 
 		// 조회수 증가 로직
@@ -131,10 +124,10 @@ public class BoardController {
 			}
 		}
 
-		return ResponseEntity.ok(board);
+		int loginMemberNo = loginMember != null ? loginMember.getMemberNo() : 0;
+
+		return ResponseEntity.ok(Map.of("status", 200, "board", board, "loginMemberNo", loginMemberNo));
 	}
-
-
 
 	/**
 	 * 게시글 좋아요 체크/해제
