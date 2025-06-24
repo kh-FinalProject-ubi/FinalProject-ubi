@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -146,4 +147,26 @@ public ResponseEntity<?> checkNickname(@RequestParam("memberNickname") String me
         ? ResponseEntity.ok().build()
         : ResponseEntity.status(409).body(Map.of("message", "이미 사용 중인 닉네임입니다.")); // 메시지도 닉네임용으로 변경
 }
+@PostMapping("/kakao-login")
+public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code) {
+    try {
+        Member member = service.kakaoLogin(code); // 반환 타입을 Member로 가정
+
+        String readableStandard = parseMemberStandard(member.getMemberStandard());
+        String district = extractDistrict(member.getMemberAddress());
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("token", "dummy-token");
+        body.put("memberName", member.getMemberNickname());
+        body.put("address", district);
+        body.put("memberStandard", readableStandard);
+        body.put("memberImg", member.getMemberImg());
+
+        return ResponseEntity.ok(body);
+
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "카카오 로그인 실패"));
+    }
+}
+
 }

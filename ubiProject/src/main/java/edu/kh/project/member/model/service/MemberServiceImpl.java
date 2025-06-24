@@ -60,6 +60,7 @@ public class MemberServiceImpl implements MemberService {
         return null;
     }
     
+    
 
     private final JavaMailSender mailSender;
 
