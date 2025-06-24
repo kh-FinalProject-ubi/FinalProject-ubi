@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.http.ResponseEntity;
 
 import edu.kh.project.board.model.dto.Board;
@@ -76,5 +77,12 @@ public interface MyPageMapper {
 	 * @return
 	 */
 	List<Board> board(int memberNo);
+
+	/** 작성글에 포함된 해시태그 조회
+	 * @param boardNoList
+	 * @return
+	 */
+	List<Map<String, Object>> selectHashtagsByBoardNoList(@Param("boardNoList") List<Integer> boardNoList);
+
 
 }

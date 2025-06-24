@@ -26,10 +26,23 @@
 		  B.BOARD_CONTENT, 
 		  B.BOARD_DATE, 
 		  B.BOARD_READ_COUNT, 
-		  M.MEMBER_NICKNAME
+		  M.MEMBER_NICKNAME,
+		  B.POST_TYPE,
+		  B.STAR_COUNT
 		FROM BOARD B
 		JOIN MEMBER M ON B.MEMBER_NO = M.MEMBER_NO
 		WHERE B.MEMBER_NO = #{memberNo}
+		AND BOARD_DEL_FL = 'N'
+	</select>
+	
+	<!-- 작성글에 포함된 해시태그 조회 -->
+	<select id="selectHashtagsByBoardNoList">
+		SELECT BOARD_NO, HASHTAG_NAME
+	    FROM BOARD_HASHTAG
+	    WHERE BOARD_NO IN
+	    <foreach collection="boardNoList" item="boardNo" open="(" separator="," close=")">
+	    	#{boardNo}
+  		</foreach>
 	</select>
 	
 	<!-- 회원 정보 수정 -->

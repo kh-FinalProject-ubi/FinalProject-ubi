@@ -1,7 +1,9 @@
 package edu.kh.project.myPage.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -125,7 +127,7 @@ public class MyPageController {
             return ResponseEntity.status(HttpStatus.OK).body(benefits);
             
         } catch (Exception e) {
-            log.error("내 정보 조회 중 에러 발생", e);
+            log.error("내 혜택 조회 중 에러 발생", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
@@ -138,8 +140,8 @@ public class MyPageController {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
 			}
 			
-			List<Board> baord = service.baord(loginMember.getMemberNo());
-			return ResponseEntity.status(HttpStatus.OK).body(baord);
+			List<Board> board = service.baord(loginMember.getMemberNo());
+			return ResponseEntity.status(HttpStatus.OK).body(board);
 			
 		} catch (Exception e) {
 			log.error("내 정보 조회 중 에러 발생", e);
