@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { generateTagList } from '../../components/utils/tagUtils';
 function MyTownBoard() {
   const [boards, setBoards] = useState([]);
 
@@ -44,26 +45,8 @@ function MyTownBoard() {
               <span style={{ marginLeft: '10px' }}>❤️ {board.likeCount}</span>
             </div>
           
-          {(() => {
-  const tagList = [];
-
-  // 기존 DB 해시태그
-  if (board.hashtags) {
-    tagList.push(...board.hashtags.split(',').map(tag => tag.trim()));
-  }
-
-  // 시군구 해시태그 (예: #서울 강남구)
-  if (board.regionCity && board.regionDistrict) {
-    tagList.push(`${board.regionCity} ${board.regionDistrict}`);
-  }
-
-  // 복지 서비스 유형
-  if (board.apiServiceId) {
-    tagList.push('복지서비스후기');
-  } else if (board.facilityApiServiceId) {
-    tagList.push('복지시설후기');
-  }
-
+ {(() => {
+  const tagList = generateTagList(board);
   return (
     <div style={{ marginTop: '5px', color: '#3b5998' }}>
       {tagList.map((tag, idx) => (

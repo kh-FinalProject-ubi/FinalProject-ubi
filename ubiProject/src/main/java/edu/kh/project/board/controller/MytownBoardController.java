@@ -35,7 +35,9 @@ import lombok.extern.slf4j.Slf4j;
     
     @GetMapping("/mytownBoard/{boardNo}")
     public ResponseEntity<Board> getLocalBoardDetail(@PathVariable("boardNo") int boardNo) {
-        Board board = service.selectLocalBoardDetail(boardNo);
+        
+    	Board board = service.selectLocalBoardDetail(boardNo);
+        
         if (board != null) {
             return ResponseEntity.ok(board);
         } else {

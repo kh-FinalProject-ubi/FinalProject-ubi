@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { generateTagList } from '../../components/utils/tagUtils';
 
 function MyTownBoardDetail() {
   const { boardNo } = useParams();
   const [board, setBoard] = useState(null);
+  
 
   useEffect(() => {
     fetch(`/api/board/mytownBoard/${boardNo}`)
@@ -12,32 +14,26 @@ function MyTownBoardDetail() {
       .catch(err => console.error('Error:', err));
   }, [boardNo]);
 
-  if (!board) return <p>로딩 중...</p>;
+if (!board) return <p>로딩 중...</p>; // ✅ null 방지
 
-  const imageList = board.imageList ? board.imageList.split(',') : [];
+const tagList = generateTagList(board);
+return (
+  <div>
+    <h2>{board.boardTitle}</h2>
+    <p>{board.boardContent}</p>
+    <p><strong>작성자:</strong> {board.memberNickname}</p>
+    <p><strong>작성일:</strong> {board.boardDate}</p>
+    <p><strong>지역:</strong> {board.regionCity} {board.regionDistrict}</p>
 
-  return (
-    <div>
-      <h2>{board.boardTitle}</h2>
-      <p>작성자: {board.memberNickname}</p>
-      <p>작성일: {board.boardDate}</p>
-      <p>조회수: {board.readCount} | 좋아요: {board.likeCount} | ⭐ {board.starCount ?? 0}</p>
+    {/* 해시태그 표시 */}
+  <div style={{ marginTop: '10px', color: '#3b5998' }}>
+    {tagList.map((tag, idx) => (
+      <span key={idx}>#{tag} </span>
+    ))}
+  </div>
 
-      <div>
-        {imageList.map((img, idx) => (
-          <img key={idx} src={img} alt={`이미지${idx}`} width="200" style={{ margin: '10px 0' }} />
-        ))}
-      </div>
-
-      <p>{board.boardContent}</p>
-
-      <div style={{ marginTop: '10px' }}>
-        {board.hashtags?.split(',').map((tag, i) => (
-          <span key={i}>#{tag.trim()} </span>
-        ))}
-      </div>
-    </div>
-  );
+  </div>
+);
 }
 
 export default MyTownBoardDetail;
