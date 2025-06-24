@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { div } from "framer-motion/client";
 
 const boardCodeMap = {
   "/noticeBoard": 1,
@@ -41,8 +42,10 @@ const NoticeBoard = () => {
       <ul>
         {boardList.map((board) => (
           <li key={board.boardNo}>
-            {board.postType}&nbsp;&nbsp;&nbsp;
-            <strong>{board.boardTitle}</strong> - {board.boardDate}
+            <Link to={`/${path.split("/")[1]}/detail/${board.boardNo}`}>
+              {board.postType}&nbsp;&nbsp;&nbsp;
+              <strong>{board.boardTitle}</strong> - {board.boardDate}
+            </Link>
           </li>
         ))}
       </ul>

@@ -112,18 +112,18 @@
 	 <!-- 게시글 상세 조회 -->
 	 <select id="selectOne" resultMap="board_rm">
 	 SELECT BOARD_NO, BOARD_TITLE, BOARD_CONTENT, BOARD_TYPE, BOARD_READ_COUNT,
-   	 MEMBER_NO, MEMBER_NICKNAME, PROFILE_IMG, POST_TYPE,
-	 TO_CHAR(BOARD_WRITE_DATE, 'YYYY"년" MM"월" DD"일" HH24:MI:SS') BOARD_WRITE_DATE,
-	 TO_CHAR(BOARD_WRITE_DATE, 'YYYY"년" MM"월" DD"일" HH24:MI:SS') BOARD_UPDATE_DATE,
+   	 MEMBER_NO, MEMBER_NICKNAME, MEMBER_IMG, POST_TYPE,
+	 TO_CHAR(BOARD_DATE, 'YYYY"년" MM"월" DD"일" HH24:MI:SS') BOARD_DATE,
+	 TO_CHAR(BOARD_UPDATE, 'YYYY"년" MM"월" DD"일" HH24:MI:SS') BOARD_UPDATE,
 	
 	 (SELECT COUNT(*)
 	 FROM "BOARD_LIKE"
 	 WHERE BOARD_NO = #{boardNo}) LIKE_COUNT,
 	
-	 (SELECT IMG_PATH || IMG_RENAME
-	 FROM "BOARD_IMG"
+	 (SELECT IMAGE_PATH || IMAGE_NAME
+	 FROM "BOARD_IMAGE"
 	 WHERE BOARD_NO = #{boardNo}
-	 AND IMG_ORDER = 0) THUMBNAIL,
+	 AND IMAGE_ORDER = 0) THUMBNAIL,
 	
 	 (SELECT COUNT(*)
 	 FROM "BOARD_LIKE"
@@ -134,15 +134,15 @@
 	 JOIN "MEMBER" USING(MEMBER_NO)
 	 WHERE BOARD_DEL_FL = 'N'
 	 AND BOARD_NO = #{boardNo}
-	 AND BOARD_CODE = #{boardCode}
+	 AND BOARD_TYPE = #{boardCode}
 	 </select>
 	 
 	 <!-- 상세 조회한 게시글의 이미지 목록 조회 -->
 	 <select id="selectImgList" resultType="BoardImg">
 	 SELECT * FROM
-	 "BOARD_IMG"
+	 "BOARD_IMAGE"
 	 WHERE BOARD_NO = #{boardCode}
-	 ORDER BY IMG_ORDER
+	 ORDER BY IMAGE_ORDER
 	 </select>
 	 
 	 <!-- 상세 조회한 게시글의 댓글 목록 조회 -->

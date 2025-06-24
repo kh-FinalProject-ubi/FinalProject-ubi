@@ -14,6 +14,7 @@ import Profile from "./pages/mypage/Profile";
 import Chat from "./pages/mypage/Chat";
 import ChangePassword from "./pages/mypage/ChangePassword";
 import Withdraw from "./pages/mypage/Withdraw";
+import BoardDetail from "./components/BoardDetail";
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
           </Route>
           <Route path="signup" element={<Signup />} />
           <Route path="mytownBoard" element={<MyTownBoard />} />
+          <Route path="/:boardPath/detail/:boardNo" element={<BoardDetail />} />
         </Route>
 
         {/* 레이아웃이 필요 없는 단독 Route (예: 로그인 콜백) */}
