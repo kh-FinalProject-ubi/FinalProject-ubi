@@ -14,6 +14,7 @@ import Profile from "./pages/mypage/Profile";
 import Chat from "./pages/mypage/Chat";
 import ChangePassword from "./pages/mypage/ChangePassword";
 import Withdraw from "./pages/mypage/Withdraw";
+import FacilityRouter from "./pages/welfarefacility/FacilityRouter";
 
 function App() {
   return (
@@ -27,7 +28,7 @@ function App() {
           <Route path="welfareService" element={<WelfareService />} />
           <Route path="askBoard" element={<AskBoard />} />
           <Route path="noticeBoard" element={<NoticeBoard />} />
-          <Route path="facility" element={<FacilityDetailPage />} />
+          <Route path="facility" element={<FacilityRouter />} />
           <Route path="/mypage" element={<MypageLayout />}>
             <Route path="profile" element={<Profile />} />
             <Route path="chat" element={<Chat />} />

@@ -17,11 +17,15 @@ public class WelfareFacility {
     private String 시설명;
 
     @JsonProperty("주소")
-    @JsonAlias({"소재지도로명주소"}) 
+    @JsonAlias({"소재지도로명주소", "도로명주소"}) 
     private String 주소;
 
     @JsonProperty("위도")
     private Double 위도;
+    
+    @JsonProperty("시설홈페이지")
+    @JsonAlias({"홈페이지", "url"}) 
+    private String 시설홈페이지;
 
     @JsonProperty("latitude")
     private Double latitude;
@@ -36,7 +40,7 @@ public class WelfareFacility {
     private String 운영주체;
 
     @JsonProperty("기관명")
-    @JsonAlias({"운영기관명"}) 
+    @JsonAlias({"운영기관명", "관리기관명"}) 
     private String 기관명;
 
     @JsonProperty("기준일자")

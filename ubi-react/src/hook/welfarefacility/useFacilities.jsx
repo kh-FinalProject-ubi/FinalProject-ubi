@@ -4,22 +4,21 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import useSelectedRegionStore from "./useSelectedRegionStore";
 
-export function useFacilities() {
+export function useFacilities(cityParam, districtParam) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // ✅ 선택된 지역 store에서 가져옴
-  const { selectedCity: city, selectedDistrict: district } =
-    useSelectedRegionStore();
+  const {
+    selectedCity: selectedCityFromStore,
+    selectedDistrict: selectedDistrictFromStore,
+  } = useSelectedRegionStore();
+
+  // ✅ 외부에서 넘겨준 값이 있으면 우선 사용, 없으면 store, 최종적으로 기본값
+  const city = cityParam || selectedCityFromStore || "서울특별시";
+  const district = districtParam || selectedDistrictFromStore || "종로구";
 
   useEffect(() => {
-    // 🔐 유효성 검사
-    if (!city || !district) {
-      console.warn("🚫 주소가 없어 복지시설을 불러올 수 없습니다.");
-      return;
-    }
-
     const fetchFacilities = async () => {
       setLoading(true);
       setError(null);
@@ -53,7 +52,7 @@ export function useFacilities() {
     };
 
     fetchFacilities();
-  }, [city, district]); // ✅ 선택 지역이 바뀔 때마다 실행
+  }, [city, district]);
 
   return { data, loading, error };
 }
