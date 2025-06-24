@@ -1,0 +1,36 @@
+.benefit-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.benefit-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.benefit-card:hover {
+  transform: scale(1.01);
+}
+
+.benefit-title {
+  font-weight: bold;
+  font-size: 1rem;
+  margin-bottom: 6px;
+  color: #2e2e2e;
+}
+
+.benefit-tags {
+  font-size: 0.85rem;
+  color: #5e60ce;
+  margin-bottom: 4px;
+}
+
+.benefit-description {
+  font-size: 0.95rem;
+  color: #333;
+}

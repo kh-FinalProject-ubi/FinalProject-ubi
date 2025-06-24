@@ -90,6 +90,20 @@ public class MemberController {
     ) {
         String webPath = profileWebPath;
         String folderPath = profileFolderPath;
+        
+        String fullAddress = inputMember.getMemberAddress();
+        if (fullAddress != null && !fullAddress.isBlank()) {
+            String[] parts = fullAddress.split("^^^");
+            String baseAddress = parts.length >= 2 ? parts[1] : fullAddress;
+            String[] tokens = baseAddress.trim().split(" ");
+
+            if (tokens.length >= 2) {
+                String sido = normalizeSido(tokens[0]);
+                String sigungu = normalizeSigungu(tokens[1]);
+                inputMember.setRegionCity(sido);
+                inputMember.setRegionDistrict(sigungu);
+            }
+        }
 
         if (memberImg != null && !memberImg.isEmpty()) {
             String renamed = UUID.randomUUID().toString() + "_" + memberImg.getOriginalFilename();
@@ -166,6 +180,49 @@ public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code) {
 
     } catch (Exception e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "카카오 로그인 실패"));
+    }
+}
+private String normalizeSido(String rawSido) {
+    if (rawSido == null) return "";
+
+    rawSido = rawSido.trim().replaceAll("[^가-힣]", ""); // 숫자, 기호 제거
+
+    switch (rawSido) {
+        case "서울": case "서울시": return "서울특별시";
+        case "부산": case "부산시": return "부산광역시";
+        case "대구": case "대구시": return "대구광역시";
+        case "인천": case "인천시": return "인천광역시";
+        case "광주": case "광주시": return "광주광역시";
+        case "대전": case "대전시": return "대전광역시";
+        case "울산": case "울산시": return "울산광역시";
+        case "세종": case "세종시": return "세종특별자치시";
+
+        case "경기": case "경기도": return "경기도";
+
+        case "강원": case "강원도": return "강원특별자치도";
+        case "전북": case "전라북도": return "전북특별자치도";
+        case "전남": case "전라남도": return "전라남도";
+        case "충북": case "충청북도": return "충청북도";
+        case "충남": case "충청남도": return "충청남도";
+        case "경북": case "경상북도": return "경상북도";
+        case "경남": case "경상남도": return "경상남도";
+        case "제주": case "제주도": case "제주특별자치도": return "제주특별자치도";
+
+        default: return rawSido; // 예외는 그대로 반환
+    }
+}
+
+public String normalizeSigungu(String rawSigungu) {
+    if (rawSigungu == null) return "";
+    rawSigungu = rawSigungu.trim().replaceAll("[^가-힣]", "");
+
+    switch (rawSigungu) {
+        case "수원": case "수원시": return "수원특례시";
+        case "고양": case "고양시": return "고양특례시";
+        case "용인": case "용인시": return "용인특례시";
+        case "창원": case "창원시": return "창원특례시";
+
+        default: return rawSigungu;
     }
 }
 

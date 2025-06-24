@@ -1,5 +1,6 @@
 import { useState } from "react";
 import WelfareDetailModal from "./WelfareDetailModal";
+import "../styles/WelfareBenefitView.css";
 
 const WelfareBenefitView = ({ district, benefits }) => {
   const cleanDistrict = district?.trim().normalize("NFC");
@@ -27,22 +28,25 @@ const WelfareBenefitView = ({ district, benefits }) => {
       <h3>
         🏙️ <strong>{cleanDistrict}</strong>의 복지 혜택 목록 ({list.length}건)
       </h3>
-      <ul>
+      <div className="benefit-card-list">
         {list.map((item) => (
-          <li
+          <div
+            className="benefit-card"
             key={item.servId}
             onClick={() => fetchDetail(item.servId)}
-            style={{ cursor: "pointer" }}
           >
-            <strong>{item.servNm}</strong> (
-            {Array.isArray(item.intrsThemaNmArray)
-              ? item.intrsThemaNmArray.join(", ")
-              : item.intrsThemaNmArray || "주제 없음"}
-            ) - {item.servDgst}
-          </li>
+            <h4 className="benefit-title">{item.servNm}</h4>
+            <p className="benefit-tags">
+              (
+              {Array.isArray(item.intrsThemaNmArray)
+                ? item.intrsThemaNmArray.join(", ")
+                : item.intrsThemaNmArray || "주제 없음"}
+              )
+            </p>
+            <p className="benefit-description">{item.servDgst}</p>
+          </div>
         ))}
-      </ul>
-
+      </div>
       {selectedDetail && (
         <WelfareDetailModal
           detail={selectedDetail}

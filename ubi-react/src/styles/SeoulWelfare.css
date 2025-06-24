@@ -43,7 +43,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: normal; /* 줄바꿈 허용 */
-  max-width: 70%;
+  max-width: 1;
   font-size: 0.875rem; /* text-sm 대응 */
   line-height: 1.25rem; /* 적절한 줄간격 */
 }

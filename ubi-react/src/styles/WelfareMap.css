@@ -1,0 +1,132 @@
+/* ---------------- WelfareMap 전용 ---------------- */
+
+:root {
+  /* 이미 MainPage.css에서 선언했더라도, 단독 사용 시 대비해 한 번 더 선언 */
+  --yellow: #ffe56d;
+  --indigo: #5e60ce;
+  --gray-100: #f9fbfd;
+  --gray-600: #6c6c6c;
+  --gray-800: #2e2e2e;
+}
+
+/* 1. 섹션 타이틀 */
+.map-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: var(--gray-800);
+}
+
+/* 2. 지도 + 비교 패널 레이아웃 */
+/* map-wrapper: 50 : 50 정도 비율 (원하면 %만 조정) */
+.map-wrapper {
+  display: grid;
+  grid-template-columns: 45% 1fr; /* 지도 45%, 패널 55% */
+  gap: 24px;
+  align-items: start;
+}
+
+/* 3. 지도 캔버스 */
+/* 지도 크기 ↓ */
+.map-canvas {
+  width: 100%;
+  height: 420px; /* 이전 500 → 420 */
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* 혜택 패널: 스크롤 카드 */
+.benefit-panel {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  max-height: 420px; /* 지도와 높이 맞춤 */
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+/* 4-1. 노란 탭 */
+.benefit-panel .tab {
+  background: var(--yellow);
+  padding: 20px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--gray-800);
+}
+
+/* 4-2. 내부 콘텐츠 */
+.benefit-panel .content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.compare-panel ul {
+  list-style: disc;
+  padding-left: 18px;
+  font-size: 0.9rem;
+  color: var(--gray-800);
+}
+
+.compare-panel li {
+  margin-bottom: 4px;
+}
+
+/* A·B 텍스트 */
+.compare-text {
+  font-weight: 600;
+  color: var(--gray-800, #2e2e2e);
+}
+
+@media (max-width: 992px) {
+  /* 태블릿 이하: 세로 스택 */
+  .map-wrapper {
+    grid-template-columns: 1fr;
+  }
+  .compare-panel {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+
+/* 모바일(≤ 992px) 은 세로 스택 */
+@media (max-width: 992px) {
+  .map-wrapper {
+    grid-template-columns: 1fr;
+  }
+  .benefit-panel {
+    max-height: none;
+  }
+}
+
+.benefit-panel {
+  display: flex;
+  flex-direction: column;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.benefit-panel .content {
+  flex: 1;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.benefit-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.benefit-card {
+  width: 100%;
+}

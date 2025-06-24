@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import useAuthStore from "../stores/useAuthStore";
+import { normalizeSido, normalizeSigungu } from "../utils/regionUtils";
 
 const Login = () => {
   const [memberId, setMemberId] = useState("");
@@ -11,11 +12,10 @@ const Login = () => {
     const parts = fullAddress.split("^^^");
     const baseAddress = parts.length >= 2 ? parts[1] : fullAddress;
     const tokens = baseAddress.trim().split(" ");
-    if (tokens.length === 1) return normalizeSido(tokens[0]);
     if (tokens.length >= 2) {
       const sido = normalizeSido(tokens[0]);
       const sigungu = normalizeSigungu(tokens[1]);
-      return `${sido} ${sigungu}`;
+      return `${sido} ${sigungu}`; // ✅ 시도 + 시군구 반환
     }
     return baseAddress;
   };
