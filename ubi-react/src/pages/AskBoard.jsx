@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const boardCodeMap = {
   "/noticeBoard": 1,
@@ -41,11 +41,13 @@ const askBoard = () => {
       <ul>
         {boardList.map((board) => (
           <li key={board.boardNo}>
-            {board.length} &nbsp;
-            {board.postType} &nbsp; &nbsp; &nbsp;
-            <strong>{board.boardTitle}</strong> - {board.boardDate}
-            &nbsp;&nbsp;&nbsp;
-            {board.boardAnswer}
+            <Link to={`/${path.split("/")[1]}/detail/${board.boardNo}`}>
+              {board.length} &nbsp;
+              {board.postType} &nbsp; &nbsp; &nbsp;
+              <strong>{board.boardTitle}</strong> - {board.boardDate}
+              &nbsp;&nbsp;&nbsp;
+              {board.boardAnswer}
+            </Link>
           </li>
         ))}
       </ul>
