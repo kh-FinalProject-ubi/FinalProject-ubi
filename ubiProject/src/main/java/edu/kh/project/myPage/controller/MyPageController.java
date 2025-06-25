@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import edu.kh.project.board.model.dto.Board;
+import edu.kh.project.board.model.dto.BoardLike;
 import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.welfare.benefits.model.dto.Benefits;
 import edu.kh.project.myPage.model.dto.UploadFile;
@@ -54,13 +55,13 @@ public class MyPageController {
 	
 	// 내 기본 정보 조회
 	@GetMapping("info")
-    public ResponseEntity<Object> info(@SessionAttribute(value = "loginMember", required = false) Member loginMember) {
+    public ResponseEntity<Object> info(@RequestParam("memberNo") int memberNo) {
         try {
-            if (loginMember == null) {
+            if (memberNo == 0) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
             }
             
-            Member member = service.info(loginMember.getMemberNo());
+            Member member = service.info(memberNo);
             return ResponseEntity.status(HttpStatus.OK).body(member);
             
         } catch (Exception e) {
@@ -68,6 +69,60 @@ public class MyPageController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+	
+	
+	// 내가 찜한 혜택 조회
+	@GetMapping("service")
+    public ResponseEntity<Object> service(@RequestParam("memberNo") int memberNo) {
+        try {
+            if (memberNo == 0) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+            }
+            
+            List<Benefits> benefits = service.benefits(memberNo);
+            return ResponseEntity.status(HttpStatus.OK).body(benefits);
+            
+        } catch (Exception e) {
+            log.error("내 혜택 조회 중 에러 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+	
+	// 작성글 조회
+	@GetMapping("board")
+	public ResponseEntity<Object> board(@RequestParam("memberNo") int memberNo) {
+		try {
+			if (memberNo == 0) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+			}
+			
+			List<Board> board = service.baord(memberNo);
+			return ResponseEntity.status(HttpStatus.OK).body(board);
+			
+		} catch (Exception e) {
+			log.error("내 정보 조회 중 에러 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+	}
+	
+	// 내가 좋아요를 누른 게시글 조회
+	@GetMapping("like")
+	public ResponseEntity<Object> like(@RequestParam("memberNo") int memberNo) {
+		try {
+			if (memberNo == 0) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+			}
+			
+			List<BoardLike> like = service.like(memberNo);
+			return ResponseEntity.status(HttpStatus.OK).body(like);
+			
+		} catch (Exception e) {
+			log.error("내 정보 조회 중 에러 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+	}
+	
+	// ---------------------------------------------------------------------------------------------------------------------
 
 	/**
 	 * 회원 정보 수정
@@ -113,43 +168,7 @@ public class MyPageController {
 
 		ra.addFlashAttribute("message", message);
 		return "redirect:info";
-	}
-	
-	// 내가 찜한 혜택 조회
-	@GetMapping("service")
-    public ResponseEntity<Object> service(@SessionAttribute(value = "loginMember", required = false) Member loginMember) {
-        try {
-            if (loginMember == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
-            }
-            
-            List<Benefits> benefits = service.benefits(loginMember.getMemberNo());
-            return ResponseEntity.status(HttpStatus.OK).body(benefits);
-            
-        } catch (Exception e) {
-            log.error("내 혜택 조회 중 에러 발생", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-	
-	// 작성글 조회
-	@GetMapping("board")
-	public ResponseEntity<Object> board(@SessionAttribute(value = "loginMember", required = false) Member loginMember) {
-		try {
-			if (loginMember == null) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
-			}
-			
-			List<Board> board = service.baord(loginMember.getMemberNo());
-			return ResponseEntity.status(HttpStatus.OK).body(board);
-			
-		} catch (Exception e) {
-			log.error("내 정보 조회 중 에러 발생", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-		}
-	}
-	
-	
+	}	
 
 	/**
 	 * 비밀번호 변경

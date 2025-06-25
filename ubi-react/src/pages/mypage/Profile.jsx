@@ -11,12 +11,13 @@ const Profile = () => {
   const [member, setMember] = useState(null);
   const [benefits, setBenefits] = useState([]);
   const [board, setboard] = useState([]);
+  const [like, setlike] = useState([]);
 
   // 내 기본 정보
   const getMemberData = async () => {
     try {
        console.log("기본정보 axios 요청 시작");
-      const res = await axios.get('/api/myPage/info');
+      const res = await axios.get('/api/myPage/info', { params: {memberNo : memberNo} });
      console.log("기본정보 응답 받음:", res);
       console.log("기본정보 응답 값:", res.data);
 
@@ -32,7 +33,7 @@ const Profile = () => {
   const getBenefitsData = async () => {
     try{
       console.log("혜택 axios 요청 시작");
-      const res = await axios.get('/api/myPage/service');
+      const res = await axios.get('/api/myPage/service', { params: {memberNo : memberNo} });
       console.log("혜택 응답 받음:", res);
       console.log("혜택 응답 값:", res.data);
 
@@ -49,7 +50,7 @@ const Profile = () => {
   const getBoardData = async () => {
     try{
       console.log("작성글 axios 요청 시작");
-      const res = await axios.get('/api/myPage/board');
+      const res = await axios.get('/api/myPage/board', { params: {memberNo : memberNo} });
       console.log("작성글 응답 받음:", res);
       console.log("작성글 응답 값:", res.data);
 
@@ -62,12 +63,30 @@ const Profile = () => {
     }
   }
 
+  // 내가 좋아요를 누른 게시글 목록
+  const getLikeData = async () => {
+    try{
+      console.log("좋아요 axios 요청 시작");
+      const res = await axios.get('/api/myPage/like', { params: {memberNo : memberNo} });
+      console.log("좋아요 응답 받음:", res);
+      console.log("좋아요 응답 값:", res.data);
+
+      if (res.status === 200) {
+        setlike(res.data);
+      }
+
+    }catch(err) {
+      console.error("좋아요 목록 조회 중 예외 발생 : ", err)
+    }
+  }
+
   useEffect(() => {
     if (!memberNo) return;
     console.log("useEffect 실행");
     getMemberData();
     getBenefitsData();
     getBoardData();
+    getLikeData();
 
   }, [memberNo]);
 
@@ -158,33 +177,33 @@ const Profile = () => {
         </table>
       </section>
 
-      {/* <section className="post-list">
-        <h3>내가 좋아요를 누른 게시글 ({posts.length})</h3>
+      <section className="post-list">
+        <h3>내가 좋아요를 누른 게시글 ({like.length})</h3>
         <table className="post-table">
           <thead>
             <tr>
               <th>분류</th>
-              <th>게시판</th>
+              <th>해시태그</th>
               <th>제목</th>
               <th>내용</th>
-              <th>작성일</th>
               <th>작성자</th>
+              <th>작성일</th>
             </tr>
           </thead>
           <tbody>
-            {posts.map((post) => (
-              <tr key={post.id}>
-                <td>{post.category}</td>
-                <td>{post.boardName}</td>
-                <td>{post.title}</td>
-                <td>{post.content}</td>
-                <td>{post.createdDate}</td>
-                <td>{post.writer}</td>
+            {like.map((like) => (
+              <tr key={like.id}>
+                <td>{like.postType}</td>
+                <td>{like.hashtag}</td>
+                <td>{like.boardTitle}</td>
+                <td>{like.boardContent}</td>
+                <td>{like.memberNickname}</td>
+                <td>{like.boardDate}</td>
               </tr>
             ))}
           </tbody>
         </table>
-      </section> */}
+      </section>
     </div>
   );
 };

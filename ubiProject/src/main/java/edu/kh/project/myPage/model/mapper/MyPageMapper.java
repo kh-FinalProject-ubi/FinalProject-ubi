@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.http.ResponseEntity;
 
 import edu.kh.project.board.model.dto.Board;
+import edu.kh.project.board.model.dto.BoardLike;
 import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.myPage.model.dto.UploadFile;
 import edu.kh.project.welfare.benefits.model.dto.Benefits;
@@ -83,6 +84,13 @@ public interface MyPageMapper {
 	 * @return
 	 */
 	List<Map<String, Object>> selectHashtagsByBoardNoList(@Param("boardNoList") List<Integer> boardNoList);
+
+	/** 내가 좋아요를 누른 게시글 조회
+	 * @param memberNo
+	 * @return
+	 */
+	List<BoardLike> like(int memberNo);
+
 
 
 }
