@@ -47,12 +47,34 @@ public class MytownBoardServiceImpl implements MytownBoardService {
       */
         @Override
         public int writeBoard(Board dto) {
+        	 // 게시글 등록
             mapper.insertBoard(dto);
-            return mapper.getLastInsertedId();
+            
+            
+            int boardNo = mapper.getLastInsertedId();
+
+            // 해시태그 중복 없이 삽입
+            if (dto.getHashtagList() != null) {
+                for (String tag : dto.getHashtagList()) {
+                    // 중복 체크 후 없을 경우에만 삽입
+                    int exists = mapper.checkHashtagExists(boardNo, tag);
+                    if (exists == 0) {
+                        mapper.insertHashtag(boardNo, tag);
+                    }
+                }  
+            }
+                return boardNo;
         }
 
+        /**  해시태그
+         * 
+         */
         @Override
-        public Board getBoard(int boardNo) {
-            return mapper.selectBoard(boardNo);
+        public void insertHashtag(int boardNo, String tag) {
+            mapper.insertHashtag(boardNo, tag);
         }
+
+	
+		
+
 }

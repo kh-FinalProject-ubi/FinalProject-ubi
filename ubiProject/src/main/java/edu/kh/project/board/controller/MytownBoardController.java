@@ -36,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
     @GetMapping("/mytownBoard/{boardNo}")
     public ResponseEntity<Board> getLocalBoardDetail(@PathVariable("boardNo") int boardNo) {
         
+        // ✅ 게시글 상세조회
     	Board board = service.selectLocalBoardDetail(boardNo);
         
         if (board != null) {
@@ -43,5 +44,8 @@ import lombok.extern.slf4j.Slf4j;
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+        
+        
+        
     }
 }
