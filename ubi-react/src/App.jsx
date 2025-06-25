@@ -17,6 +17,7 @@ import BoardDetail from "./pages/board/BoardDetail";
 import MyTownBoardDetail from "./pages/mytownboard/MyTownBoardDetail";
 import FacilityRouter from "./pages/welfarefacility/FacilityRouter";
 import EditBoard from "./pages/board/EditBoard";
+import MyTownBoardWrite from "./pages/mytownboard/MyTownBoardWrite"
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="noticeBoard" element={<NoticeBoard />} />
           <Route path="mytownBoard" element={<MyTownBoard />} />
           <Route path="mytownBoard/:boardNo" element={<MyTownBoardDetail />} />
+          <Route path="mytownBoard/write" element={<MyTownBoardWrite />} />
           <Route path="facility" element={<FacilityRouter />} />
           <Route path="/mypage" element={<MypageLayout />}>
             <Route path="profile" element={<Profile />} />

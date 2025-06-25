@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { generateTagList } from '../../components/utils/tagUtils';
+import { generateTagList } from '../../utils/tagUtils';
 
 function MyTownBoardDetail() {
   const { boardNo } = useParams();

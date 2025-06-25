@@ -22,6 +22,18 @@ public interface MytownBoardService {
 	 * @return
 	 */
 	   Board selectLocalBoardDetail(int boardNo);
+	   
+	   
+	 /**
+	  * 글쓰기
+	  * @param dto
+	  * @return
+	  */
+	    int writeBoard(Board dto);
+	    Board getBoard(int boardNo);
+
+
+
      
 }
 

@@ -25,7 +25,6 @@ public interface MytownBoardMapper {
 	 */
 	  List<Board> selectLocalBoardList();
 
-	  // 상세 조회
 	  /**상세조회
 	   * 
 	   * @param boardNo
@@ -33,4 +32,14 @@ public interface MytownBoardMapper {
 	   */
 	    Board selectLocalBoardDetail(int boardNo);
 
+	    
+	    
+	    
+	    int insertBoard(Board dto);
+	    int updateBoard(Board dto);
+	    Board selectBoard(int boardNo);
+	    int getLastInsertedId();
+	    
+	    
+	    
 }

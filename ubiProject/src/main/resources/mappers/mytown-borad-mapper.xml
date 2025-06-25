@@ -50,7 +50,7 @@ B.BOARD_READ_COUNT,
   JOIN MEMBER M ON B.MEMBER_NO = M.MEMBER_NO
    JOIN BOARD_TYPE BT ON B.BOARD_TYPE = BT.BOARD_CODE
   LEFT JOIN LOCAL_SUBCATEGORY LS ON B.BOARD_TYPE = LS.BOARD_TYPE
-  
+    AND B.POST_TYPE = LS.POST_TYPE
   WHERE B.BOARD_TYPE = 3
     AND B.BOARD_DEL_FL = 'N'
     
@@ -66,57 +66,55 @@ SELECT
   B.BOARD_DATE,
   B.BOARD_READ_COUNT,
   NVL(B.STAR_COUNT, 0) AS STAR_COUNT,
-  
-
-  NVL((
-    SELECT COUNT(*) 
-    FROM BOARD_LIKE 
-    WHERE BOARD_NO = B.BOARD_NO
-  ), 0) AS LIKE_COUNT,
-  
-
+  NVL((SELECT COUNT(*) FROM BOARD_LIKE WHERE BOARD_NO = B.BOARD_NO), 0) AS LIKE_COUNT,
   M.MEMBER_NICKNAME,
-
-
-  NVL((
-    SELECT LISTAGG(IMAGE_PATH, ',') WITHIN GROUP (ORDER BY IMAGE_ORDER)
-    FROM BOARD_IMAGE 
-    WHERE BOARD_NO = B.BOARD_NO
-  ), '') AS IMAGE_LIST,
-
-
-  NVL((
-    SELECT LISTAGG(H.HASHTAG_NAME, ',') 
-    FROM BOARD_HASHTAG H
-    WHERE H.BOARD_NO = B.BOARD_NO
-  ), '') AS HASHTAGS,
-
+  (SELECT LISTAGG(IMAGE_PATH, ',') WITHIN GROUP (ORDER BY IMAGE_ORDER)
+     FROM BOARD_IMAGE WHERE BOARD_NO = B.BOARD_NO) AS IMAGE_LIST,
+  (SELECT LISTAGG(H.HASHTAG_NAME, ',') 
+     FROM BOARD_HASHTAG H
+    WHERE H.BOARD_NO = B.BOARD_NO) AS HASHTAGS,
   BT.BOARD_NAME,
-  M.REGION_CITY,
+    M.REGION_CITY,                             
   M.REGION_DISTRICT,
-  B.API_SERVICE_ID,
-  B.FACILITY_API_SERVICE_ID,
-
-
-  LS.POST_TYPE
-
+  B.API_SERVICE_ID,                       
+  B.FACILITY_API_SERVICE_ID ,
+    LS.BOARD_TYPE,
+    LS.POST_TYPE           
+                      
 FROM BOARD B
-
--- 기본 JOIN
 JOIN MEMBER M ON B.MEMBER_NO = M.MEMBER_NO
 JOIN BOARD_TYPE BT ON B.BOARD_TYPE = BT.BOARD_CODE
-
-
-LEFT JOIN (
-  SELECT BOARD_TYPE, MIN(POST_TYPE) AS POST_TYPE
-  FROM LOCAL_SUBCATEGORY
-  GROUP BY BOARD_TYPE
-) LS ON B.BOARD_TYPE = LS.BOARD_TYPE
-
-WHERE B.BOARD_NO = #{boardNo}
+  LEFT JOIN LOCAL_SUBCATEGORY LS 
+  ON B.BOARD_TYPE = LS.BOARD_TYPE
+  AND B.POST_TYPE = LS.POST_TYPE
+WHERE B.BOARD_NO = #{boardNo} 
 </select>
 
 
+<!--  게시글 작성  -->
+   <insert id="insertBoard" parameterType="edu.kh.project.board.model.dto.Board">
+        INSERT INTO BOARD (
+            BOARD_NO, BOARD_TYPE, BOARD_TITLE, BOARD_CONTENT, MEMBER_NO, BOARD_DATE
+        ) VALUES (
+            BOARD_SEQ.NEXTVAL, 3, #{boardTitle}, #{boardContent}, #{memberNo}, SYSDATE
+        )
+    </insert>
+
+    <update id="updateBoard" parameterType="edu.kh.project.board.model.dto.Board">
+        UPDATE BOARD
+        SET BOARD_TITLE = #{boardTitle}, BOARD_CONTENT = #{{boardContent}
+        WHERE BOARD_NO = #{boardNo} AND MEMBER_NO = #{memberNo}
+    </update>
+
+    <select id="selectBoard" resultType="edu.kh.project.board.model.dto.Board">
+        SELECT BOARD_NO, BOARD_TITLE, BOARD_CONTENT, MEMBER_NO, TO_CHAR(BOARD_DATE, 'YYYY-MM-DD') AS BOARD_DATE
+        FROM BOARD
+        WHERE BOARD_NO = #{boardNo}
+    </select>
+
+    <select id="getLastInsertedId" resultType="int">
+        SELECT BOARD_SEQ.CURRVAL FROM DUAL
+    </select>
 
 
 
