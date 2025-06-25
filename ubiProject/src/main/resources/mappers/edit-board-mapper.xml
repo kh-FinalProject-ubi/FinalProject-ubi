@@ -54,15 +54,14 @@
 	 -->
 	
 	<insert id="insertUploadList">
-		INSERT INTO "BOARD_IMG"
+		INSERT INTO "BOARD_IMAGE"
 		
 		<foreach collection="list" item="img" 
 		open="(" close=")" separator=" UNION ">
 		 SELECT NEXT_IMG_NO(),
-		 #{img.imgPath},
-		 #{img.imgOriginalName},
-		 #{img.imgRename},
-		 #{img.imgOrder},
+		 #{img.imagePath},
+		 #{img.imageName},
+		 #{img.imageOrder},
 		 #{img.boardNo}
 		 FROM DUAL		
 		</foreach>
@@ -73,35 +72,34 @@
 		UPDATE "BOARD" SET
 		BOARD_TITLE = #{boardTitle},
 		BOARD_CONTENT = #{boardContent}
-		WHERE BOARD_TYPE = #{boardCode}
+		WHERE BOARD_TYPE = #{boardType}
 		AND BOARD_NO = #{boardNo}
 		AND MEMBER_NO = #{memberNo}
 	</update>
 
 	<!-- 게시글 이미지 삭제 -->
 	<delete id="deleteImage">
-		DELETE FROM "BOARD_IMG"
+		DELETE FROM "BOARD_IMAGE"
 		WHERE BOARD_NO = #{boardNo}
 		AND IMG_ORDER IN(${deleteOrderList})  <!-- IN (1,2,3)으로 들어가야 함. ${} -->
 	</delete>
 	
 	<!-- 게시글 이미지 1행 수정 -->
 	<update id="updateImage">
-		UPDATE "BOARD_IMG" SET
-		IMG_ORIGINAL_NAME = #{imgOriginalName},
-		IMG_RENAME = #{imgRename}
+		UPDATE "BOARD_IMAGE" SET
+		IMAGE_PATH = #{imagePath},
+		IMAGE_ORDER = #{imageOrder},
+		IMAGE_NAME = #{imageName}
 		WHERE BOARD_NO = #{boardNo}
-		AND IMG_ORDER = #{imgOrder}		
 	</update>
 	
 	<!-- 게시글 이미지 1행 삽입 -->
 	<insert id="insertImage">
-		INSERT INTO "BOARD_IMG"
-		VALUES(NEXT_IMG_NO(),
-				#{imgPath},
-				#{imgOriginalName},
-				#{imgRename},
-				#{imgOrder},
+		INSERT INTO "BOARD_IMAGE"
+		VALUES(SEQ_BOARD_IMAGE.NEXTVAL,
+				#{imagePath},
+				#{imageOrder},
+				#{imageName},
 				#{boardNo})
 	</insert>
 	

@@ -44,6 +44,7 @@ const Login = () => {
           memberStandard: data.memberStandard,
           memberImg: data.memberImg || "",
           memberNo: data.memberNo,
+          authority: data.authority,
         });
         console.log("✅ 일반 로그인 성공");
       } else {
