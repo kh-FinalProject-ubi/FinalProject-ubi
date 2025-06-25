@@ -24,7 +24,9 @@ import edu.kh.project.common.util.Utility;
 import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.myPage.model.dto.UploadFile;
 import edu.kh.project.myPage.model.mapper.MyPageMapper;
-import edu.kh.project.welfare.benefits.model.dto.Benefits;
+import edu.kh.project.welfare.benefits.model.dto.Facility;
+import edu.kh.project.welfare.benefits.model.dto.FacilityJob;
+import edu.kh.project.welfare.benefits.model.dto.Welfare;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -50,11 +52,25 @@ public class MyPageServiceImpl implements MyPageService {
 		return mapper.info(memberNo);
 	}
 	
+	
 	// 내가 찜한 혜택 조회
 	@Override
-	public List<Benefits> benefits(int memberNo) {
-		return mapper.benefits(memberNo);
+	public List<Welfare> getWelfareBenefits(int memberNo) {
+		return mapper.getWelfareBenefits(memberNo);
 	}
+	
+	// 내가 찜한 채용 조회
+	@Override
+	public List<FacilityJob> getRecruitBenefits(int memberNo) {
+		return mapper.getRecruitBenefits(memberNo);
+	}
+	
+	// 내가 찜한 시설 조회
+	@Override
+	public List<Facility> getFacilityBenefits(int memberNo) {
+		return mapper.getFacilityBenefits(memberNo);
+	}
+	
 	
 	// 작성글 조회
 	@Override

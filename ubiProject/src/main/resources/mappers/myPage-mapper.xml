@@ -11,11 +11,28 @@
 	</select>
 	
 	<!-- 내가 찜한 혜택 조회 -->
-	<select id="benefits">
+	<select id="getWelfareBenefits">
 		SELECT SERVICE_NAME, AGENCY, DESCRIPTION, RECEPTION_START, RECEPTION_END, CATEGORY, SERVICE_NO
 		FROM   WELFARE
 		WHERE  MEMBER_NO = #{memberNo}
-		ORDER BY SERVICE_NO
+		ORDER BY JJ_TIME
+	</select>
+	
+	<!-- 내가 찜한 채용 조회 -->
+	<select id="getRecruitBenefits">
+		SELECT JOB_TITLE, JOB_FACILITY_NAME, JOB_SALARY, JOB_POSITION, JOB_REQUIREMENT, JOB_CONTENT, RCPTBGNDT, RCPTENDDT
+		FROM   WELFARE_FACILITY_JOB
+		WHERE  MEMBER_NO = #{memberNo}
+		ORDER BY JJ_TIME
+	</select>
+	
+	<!-- 내가 찜한 시설 조회 -->
+	<select id="getFacilityBenefits">
+		SELECT FACILITY_NO, FACILITY_NAME, FACILITY_KIND_NM, EVENT_TITLE, EVENT_DATE_START, EVENT_DATE_END, 
+			   EVENT_CONTENT, REQUIREMENT, RCPTBGNDT, RCPTENDDT
+		FROM   WELFARE_FACILITY
+		WHERE  MEMBER_NO = #{memberNo}
+		ORDER BY JJ_TIME
 	</select>
 	
 	<!-- 작성글 조회 -->
@@ -116,6 +133,5 @@
 	UPDATE "MEMBER" SET
 	PROFILE_IMG = #{profileImg}
 	WHERE MEMBER_NO = #{memberNo}
-	
 	</update>
 </mapper>
