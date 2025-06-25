@@ -15,6 +15,19 @@ const Header = () => {
 
   const navigate = useNavigate();
 
+  const LogoutButton = () => {
+    const logout = useAuthStore((state) => state.logout);
+
+    const handleLogout = () => {
+      logout(); // Zustand 상태 초기화
+      localStorage.removeItem("kakaoId"); // 만약 남아있다면
+      alert("로그아웃되었습니다.");
+      window.location.href = "/"; // or navigate("/");
+    };
+
+    return <button onClick={handleLogout}>로그아웃</button>;
+  };
+
   const handleFacilityClick = () => {
     const city = selectedCity || "서울특별시";
     const district = selectedDistrict || "종로구";

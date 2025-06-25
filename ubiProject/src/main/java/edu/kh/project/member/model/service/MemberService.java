@@ -28,6 +28,8 @@ public interface MemberService {
 
 	boolean checkNicknameAvailable(String memberNickname);
 
+	Member findByNo(Long memberNo);
+
 
 
 
