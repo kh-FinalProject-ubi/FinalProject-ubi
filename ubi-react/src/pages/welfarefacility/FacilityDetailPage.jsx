@@ -1,193 +1,47 @@
 // 📁 src/pages/welfarefacility/FacilityDetailPage.jsx
-import React, { useState, useEffect, useMemo } from "react";
-import { useFacilities } from "../../hook/welfarefacility/useFacilities";
-import FacilityCard from "../../components/welfarefacility/FacilityCard";
-import useSelectedRegionStore from "../../hook/welfarefacility/useSelectedRegionStore";
-import useLoginMember from "../../hook/login/useLoginMember";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import KakaoMapView from "../../components/welfarefacility/KakaoMapView"; // 카카오맵 컴포넌트
+import "../../styles/welfarefacility/FacilityDetailPage.css";
 
-export default function FacilityDetailPage({ city, district }) {
-  const { member, loading: memberLoading } = useLoginMember();
-  const {
-    selectedCity: selectedCityFromStore,
-    selectedDistrict: selectedDistrictFromStore,
-  } = useSelectedRegionStore();
+export default function FacilityDetailPage() {
+  const location = useLocation();
+  const facility = location.state?.facility;
 
-  // ✅ 지역 상태 저장
-  const [region, setRegion] = useState({
-    city: "",
-    district: "",
-  });
-
-  // ✅ 로그인 상태, 선택 상태에 따라 지역 설정
-  useEffect(() => {
-    if (!memberLoading) {
-      // 로그인한 경우
-      if (member) {
-        const finalCity =
-          member.memberAddressCity ||
-          selectedCityFromStore ||
-          city ||
-          "서울특별시";
-        const finalDistrict =
-          member.memberAddressDistrict ||
-          selectedDistrictFromStore ||
-          district ||
-          "종로구";
-
-        console.log("✅ [로그인] 최종 지역:", finalCity, finalDistrict);
-        setRegion({ city: finalCity, district: finalDistrict });
-      } else {
-        // 비로그인 또는 로그아웃된 경우
-        const finalCity = selectedCityFromStore || city || "서울특별시";
-        const finalDistrict = selectedDistrictFromStore || district || "종로구";
-
-        console.log("✅ [비로그인] 최종 지역:", finalCity, finalDistrict);
-        setRegion({ city: finalCity, district: finalDistrict });
-      }
-    }
-  }, [
-    member,
-    memberLoading,
-    selectedCityFromStore,
-    selectedDistrictFromStore,
-    city,
-    district,
-  ]);
-
-  // ✅ 시설 데이터 가져오기
-  const {
-    data: facilities,
-    loading,
-    error,
-  } = useFacilities(region.city, region.district);
-
-  const [selectedServiceType, setSelectedServiceType] = useState("전체");
-  const [selectedCategory, setSelectedCategory] = useState("전체");
-  const [selectedOperator, setSelectedOperator] = useState("전체");
-
-  // ✅ 필터 적용
-  const filteredFacilities = facilities.filter((facility) => {
-    const svcType = facility["복지유형"] || facility.SVC_TYPE || "";
-    const category = facility["카테고리"] || facility.CATEGORY || "";
-    const operator = facility["운영기관"] || facility.OPERATOR || "";
-
-    const typeMatch =
-      selectedServiceType === "전체" || svcType.includes(selectedServiceType);
-    const categoryMatch =
-      selectedCategory === "전체" || category.includes(selectedCategory);
-    const operatorMatch =
-      selectedOperator === "전체" || operator.includes(selectedOperator);
-
-    return typeMatch && categoryMatch && operatorMatch;
-  });
-
-  if (memberLoading || !region.city || !region.district) {
-    return <p>로그인 정보를 불러오는 중입니다...</p>;
+  if (!facility) {
+    return <div>❌ 잘못된 접근입니다. 시설 정보가 없습니다.</div>;
   }
 
+  const name = facility["시설명"] || facility["FACLT_NM"] || "시설명 없음";
+  const address =
+    facility["주소"] || facility["REFINE_ROADNM_ADDR"] || facility["ADDR"];
+  const imageUrl = facility.imageUrl || null;
+
   return (
-    <div className="facility-detail-page">
-      <h2>공공 서비스 조회</h2>
+    <div className="facility-detail-container">
+      <h2 className="facility-detail-title">{name}</h2>
 
-      <div style={{ marginBottom: "20px" }}>
-        <strong>선택 지역:</strong> {region.city} {region.district}
-      </div>
-
-      {/* 필터 UI */}
-      <div style={{ marginBottom: "30px" }}>
-        <h3>정식 필터</h3>
-
-        {/* 복지유형 */}
-        <div>
-          <label>
-            <strong>복지 유형: </strong>
-          </label>
-          {["지자체 혜택", "지자체 시설"].map((type) => (
-            <label key={type} style={{ marginRight: "10px" }}>
-              <input
-                type="radio"
-                name="serviceType"
-                value={type}
-                checked={selectedServiceType === type}
-                onChange={() => setSelectedServiceType(type)}
-              />
-              {type}
-            </label>
-          ))}
+      {imageUrl && (
+        <div className="facility-image">
+          <img src={imageUrl} alt="시설 이미지" />
         </div>
-
-        {/* 카테고리 */}
-        <div style={{ marginTop: "10px" }}>
-          <label>
-            <strong>카테고리: </strong>
-          </label>
-          {["복지 혜택", "구인", "예약", "기타"].map((cat) => (
-            <label key={cat} style={{ marginRight: "10px" }}>
-              <input
-                type="radio"
-                name="category"
-                value={cat}
-                checked={selectedCategory === cat}
-                onChange={() => setSelectedCategory(cat)}
-              />
-              {cat}
-            </label>
-          ))}
-          <br />
-          {["체육시설", "요양시설", "의료시설", "행정시설", "집합시설"].map(
-            (cat) => (
-              <label key={cat} style={{ marginRight: "10px" }}>
-                <input
-                  type="radio"
-                  name="category"
-                  value={cat}
-                  checked={selectedCategory === cat}
-                  onChange={() => setSelectedCategory(cat)}
-                />
-                {cat}
-              </label>
-            )
-          )}
-        </div>
-
-        {/* 운영기관 */}
-        <div style={{ marginTop: "10px" }}>
-          <label>
-            <strong>운영기관: </strong>
-          </label>
-          <select
-            value={selectedOperator}
-            onChange={(e) => setSelectedOperator(e.target.value)}
-          >
-            <option value="전체">전체</option>
-            <option value="시립">시립</option>
-            <option value="구립">구립</option>
-            <option value="민간">민간</option>
-          </select>
-        </div>
-      </div>
-
-      {/* 상태 메시지 */}
-      {loading && <p>로딩 중...</p>}
-      {error && <p>시설 정보를 불러오는 중 오류가 발생했습니다.</p>}
-      {!loading && filteredFacilities.length === 0 && (
-        <p>복지시설 정보가 없습니다. 추후 업데이트 예정입니다.</p>
       )}
 
-      {/* 시설 카드 출력 */}
-      <div className="facility-list">
-        {filteredFacilities.map((facility, index) => {
-          const name = facility.FACLT_NM || facility["시설명"] || "이름없음";
-          const lat = facility.REFINE_WGS84_LAT;
-          const lng = facility.REFINE_WGS84_LOGT;
-          const city = facility.CTPRVN_NM || facility["시도명"] || "시도없음";
+      <section className="facility-section">
+        <h3>📝 상세 정보</h3>
+        <ul>
+          {Object.entries(facility).map(([key, value]) => (
+            <li key={key}>
+              <strong>{key}:</strong> {value || "없음"}
+            </li>
+          ))}
+        </ul>
+      </section>
 
-          const key =
-            lat && lng ? `${name}-${lat}-${lng}` : `${name}-${city}-${index}`;
-
-          return <FacilityCard key={key} facility={facility} />;
-        })}
-      </div>
+      <section className="facility-section">
+        <h3>📍 시설 위치</h3>
+        <KakaoMapView address={address} />
+      </section>
     </div>
   );
 }

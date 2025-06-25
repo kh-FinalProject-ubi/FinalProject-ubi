@@ -96,3 +96,25 @@
   border: 1px solid #ccc;
   border-radius: 6px;
 }
+
+.service-type-filter {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.service-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  border: 1px solid #ddd;
+  background-color: white;
+  color: #444;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.service-btn.selected {
+  background-color: #facc15; /* Tailwind yellow-400 */
+  color: white;
+  font-weight: 600;
+}

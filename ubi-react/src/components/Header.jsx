@@ -20,9 +20,9 @@ const Header = () => {
     const district = selectedDistrict || "종로구";
 
     navigate(
-      `/facility?city=${encodeURIComponent(city)}&district=${encodeURIComponent(
-        district
-      )}`
+      `/facility/search?city=${encodeURIComponent(
+        city
+      )}&district=${encodeURIComponent(district)}`
     );
   };
 
