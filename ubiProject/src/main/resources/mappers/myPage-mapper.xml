@@ -45,6 +45,25 @@
   		</foreach>
 	</select>
 	
+	<!-- 내가 좋아요를 누른 게시글 조회 -->
+	<select id="like">
+		SELECT
+		  b.BOARD_NO,
+		  b.BOARD_TITLE,
+		  b.BOARD_CONTENT,
+		  b.BOARD_DATE,
+		  m.MEMBER_NICKNAME,
+		  b.POST_TYPE,
+		  LISTAGG(bh.HASHTAG_NAME, ', ') WITHIN GROUP (ORDER BY bh.HASHTAG_NAME) AS HASHTAG
+		FROM BOARD_LIKE bl
+		JOIN BOARD b ON bl.BOARD_NO = b.BOARD_NO
+		JOIN MEMBER m ON b.MEMBER_NO = m.MEMBER_NO
+		LEFT JOIN BOARD_HASHTAG bh ON b.BOARD_NO = bh.BOARD_NO
+		WHERE bl.MEMBER_NO = #{memberNo}
+		GROUP BY b.BOARD_NO, b.BOARD_TITLE, b.BOARD_CONTENT, 
+			     b.BOARD_DATE, m.MEMBER_NICKNAME, b.POST_TYPE
+	</select>
+	
 	<!-- 회원 정보 수정 -->
 	<update id="updateInfo">
 	UPDATE "MEMBER" SET

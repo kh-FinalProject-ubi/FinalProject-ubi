@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import edu.kh.project.board.model.dto.Board;
+import edu.kh.project.board.model.dto.BoardLike;
 import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.myPage.model.dto.UploadFile;
 import edu.kh.project.welfare.benefits.model.dto.Benefits;
@@ -91,5 +92,11 @@ public interface MyPageService {
 	 * @return
 	 */
 	List<Board> baord(int memberNo);
+
+	/** 내가 좋아요를 누른 게시글 조회
+	 * @param memberNo
+	 * @return
+	 */
+	List<BoardLike> like(int memberNo);
 
 }
