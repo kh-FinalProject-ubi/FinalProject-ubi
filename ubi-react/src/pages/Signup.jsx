@@ -175,10 +175,16 @@ const Signup = () => {
         body: formData,
       });
       const data = await res.json();
+
       if (res.ok) {
         alert(data.message || "회원가입 완료");
-        localStorage.removeItem("kakaoId"); // ✅ 삭제
-
+        localStorage.removeItem("kakaoId");
+        setAuth({
+          token: data.token,
+          address: data.address,
+          memberName: data.memberName,
+          memberNo: data.memberNo,
+        });
         navigate("/", { replace: true });
       } else {
         alert(data.message || "회원가입 실패");
@@ -189,7 +195,6 @@ const Signup = () => {
       setIsSubmitting(false);
     }
   };
-
   return (
     <div className="signup-container">
       <h2>회원가입</h2>

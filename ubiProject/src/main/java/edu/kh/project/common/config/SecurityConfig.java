@@ -2,21 +2,52 @@ package edu.kh.project.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 
-//@Configuration 
-// - 해당 클래스가 설정용 클래스임을 명시
-// + 객체로 생성해서 내부 코드를 서버 실행 시 모두 수행
-// 
-//@Bean
-// - 개발자가 수동으로 생성한 객체의 관리를
-// 스프링에게 넘기는 어노테이션(Bean 등록)
-@Configuration 
+import edu.kh.project.common.util.JwtUtil;
+import edu.kh.project.member.model.mapper.MemberMapper;
+import edu.kh.project.member.model.service.CustomOAuth2UserService;
+import edu.kh.project.member.model.service.OAuth2SuccessHandler;
+import org.springframework.security.config.http.SessionCreationPolicy;
+
+
+@Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
-	@Bean
-	public BCryptPasswordEncoder bCryptPasswordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+    @Bean
+    public OAuth2SuccessHandler successHandler(MemberMapper mapper, JwtUtil jwtUtil) {
+        return new OAuth2SuccessHandler(mapper, jwtUtil);
+    }
 	
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                            CustomOAuth2UserService oAuth2UserService,
+                                            OAuth2SuccessHandler successHandler) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())
+
+            // ✅ 세션 완전 제거: STATELESS 설정
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/", "/api/**", "/css/**", "/js/**", "/img/**", "/login/**", "/oauth2/**").permitAll()
+                .anyRequest().authenticated()
+            )
+
+            .oauth2Login(oauth -> oauth
+                .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService))
+                .successHandler(successHandler)
+            );
+
+        return http.build();
+    }
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }

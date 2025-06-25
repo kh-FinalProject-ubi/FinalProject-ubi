@@ -67,6 +67,7 @@ const Login = () => {
         onChange={(e) => setMemberId(e.target.value)}
         placeholder="아이디"
       />
+
       <input
         type="password"
         value={memberPw}

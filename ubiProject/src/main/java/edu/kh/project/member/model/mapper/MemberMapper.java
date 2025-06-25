@@ -39,6 +39,8 @@ public interface MemberMapper {
 
 	Member selectByKakaoId(String kakaoId);
 
+	Member selectByNo(Long memberNo);
+
 
 	
 }
