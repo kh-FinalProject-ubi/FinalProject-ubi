@@ -1,23 +1,22 @@
-import React, { useState } from "react";
+import React from "react";
 import "../styles/Header.css";
-import AskBoard from "../pages/board/AskBoard";
-import NoticeBoard from "../pages/board/NoticeBoard";
-import WelfareService from "./../pages/WelfareService";
-import { useAuth } from "../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../stores/useAuthStore";
-import LoginModal from "./LoginModal"; // ✅ 팝업 컴포넌트 import
 import useSelectedRegionStore from "../hook/welfarefacility/useSelectedRegionStore";
+import useModalStore from "../stores/useModalStore";
 
 const Header = () => {
   const { token, memberName, memberImg, address, clearAuth } = useAuthStore();
-  const isLogin = !!token; // 토큰 존재 여부로 로그인 상태 판단
+  const isLogin = !!token;
 
-  const { selectedCity, selectedDistrict } = useSelectedRegionStore(); // ✅ 이 줄 추가
+  const { selectedCity, selectedDistrict } = useSelectedRegionStore();
+
+  const { openLoginModal } = useModalStore();
+
   const navigate = useNavigate();
 
   const handleFacilityClick = () => {
-    const city = selectedCity || "서울특별시"; // ✅ 선택된 값 or 기본값
+    const city = selectedCity || "서울특별시";
     const district = selectedDistrict || "종로구";
 
     navigate(
@@ -26,8 +25,6 @@ const Header = () => {
       )}`
     );
   };
-
-  const [showLoginModal, setShowLoginModal] = useState(false); // ✅ 팝업 상태
 
   return (
     <header className="site-header">
@@ -44,6 +41,7 @@ const Header = () => {
           <Link to="/askBoard">문의게시판</Link>
           <Link to="/noticeBoard">공지사항</Link>
         </nav>
+
         <div className="header-right">
           {isLogin ? (
             <>
@@ -56,24 +54,18 @@ const Header = () => {
                   alt="프로필"
                 />
               </Link>
-
               <button className="logout-btn" onClick={clearAuth}>
                 로그아웃
               </button>
             </>
           ) : (
             <>
-              <button onClick={() => setShowLoginModal(true)}>로그인</button>
+              <button onClick={openLoginModal}>로그인</button>
               <Link to="/signup">회원가입</Link>
             </>
           )}
         </div>
       </div>
-
-      {/* ✅ 로그인 팝업 표시 */}
-      {showLoginModal && (
-        <LoginModal onClose={() => setShowLoginModal(false)} />
-      )}
     </header>
   );
 };

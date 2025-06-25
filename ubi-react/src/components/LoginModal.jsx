@@ -1,16 +1,17 @@
 import React, { useState } from "react";
 import useAuthStore from "../stores/useAuthStore";
-// import "./LoginModal.css";
+import useModalStore from "../stores/useModalStore";
 
-const LoginModal = ({ onClose }) => {
+const LoginModal = () => {
+  const { isLoginModalOpen, closeLoginModal } = useModalStore();
   const [memberId, setMemberId] = useState("");
   const [memberPw, setMemberPw] = useState("");
   const setAuth = useAuthStore((state) => state.setAuth);
 
+  if (!isLoginModalOpen) return null; // 열리지 않으면 렌더 안함
+
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("memberId:", `"${memberId}"`);
-    console.log("memberPw:", `"${memberPw}"`);
     const res = await fetch("/api/member/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -25,23 +26,28 @@ const LoginModal = ({ onClose }) => {
         memberName: data.memberName,
         memberNo: data.memberNo,
       });
-      onClose();
+      closeLoginModal(); // 상태 통해 닫기
     } else {
       alert(data.message || "로그인 실패");
     }
   };
 
+  // const handleKakaoLogin = () => {
+  //   const KAKAO_REST_API_KEY = "b62bbea46498a09baf12fedc0a9bc832";
+  //   const REDIRECT_URI = "http://localhost:3000/oauth/kakao/callback";
+  //   const kakaoURL = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_REST_API_KEY}&redirect_uri=${REDIRECT_URI}&response_type=code`;
+  //   window.location.href = kakaoURL;
+  // };
+
   const handleKakaoLogin = () => {
-    const KAKAO_REST_API_KEY = "카카오 REST API 키";
-    const REDIRECT_URI = "http://localhost:3000/oauth/kakao/callback";
-    const kakaoURL = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_REST_API_KEY}&redirect_uri=${REDIRECT_URI}&response_type=code`;
-    window.location.href = kakaoURL;
+    // ✅ Spring Security에서 설정한 OAuth2 엔드포인트로 이동
+    window.location.href = "http://localhost:8080/oauth2/authorization/kakao";
   };
 
   return (
     <div className="login-modal">
       <div className="modal-content">
-        <button className="close-btn" onClick={onClose}>
+        <button className="close-btn" onClick={closeLoginModal}>
           ✕
         </button>
         <h2>로그인</h2>

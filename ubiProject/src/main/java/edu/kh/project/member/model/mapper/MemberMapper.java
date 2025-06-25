@@ -37,6 +37,8 @@ public interface MemberMapper {
 
 	void insertKakaoMember(Member newMember);
 
+	Member selectByKakaoId(String kakaoId);
+
 
 	
 }
