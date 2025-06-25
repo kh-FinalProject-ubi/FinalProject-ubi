@@ -9,8 +9,6 @@
 	<select id="selectApiInfo"
 		resultType="edu.kh.project.welfare.facility.dto.RegionApiInfo">
 		SELECT
-		DATASET_ID AS datasetId,
-		UDDI_ID AS uddiId,
 		API_URL AS apiUrl
 		FROM REGION
 		WHERE TRIM(REGION_CITY) = TRIM(#{city})

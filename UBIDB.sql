@@ -1426,69 +1426,137 @@ ORDER BY mcm.CHAT_SEND_DATE DESC;
 SELECT COLUMN_NAME FROM USER_TAB_COLUMNS
 WHERE TABLE_NAME = 'REGION';
 
-UPDATE REGION
-SET 
-  DATASET_ID = '15040322',
-  UDDI_ID = 'uddi:65b2f3f0-d497-4a09-888a-dc67f712501d',
-  API_URL = 'https://api.odcloud.kr/api/15040322/v1/uddi:65b2f3f0-d497-4a09-888a-dc67f712501d'
-WHERE REGION_CITY = '서울특별시'
-  AND REGION_DISTRICT = '성북구';
+
 
 UPDATE REGION
-SET DATASET_ID = '15044848',
-    UDDI_ID = 'uddi:802f202c-6338-4b52-8d6d-c7581ad8cd28',
-    API_URL = 'https://api.odcloud.kr/api/15044848/v1/uddi:802f202c-6338-4b52-8d6d-c7581ad8cd28'
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_GN/1/1000/'
 WHERE REGION_CITY = '서울특별시'
-  AND REGION_DISTRICT = '송파구';
+  AND REGION_DISTRICT = '강남구';
 
 UPDATE REGION
-SET DATASET_ID = '15037407',
-    UDDI_ID = 'uddi:09a438f0-8d2f-4595-9966-9ca7a484cb77',
-    API_URL = 'https://api.odcloud.kr/api/15037407/v1/uddi:09a438f0-8d2f-4595-9966-9ca7a484cb77'
-WHERE REGION_CITY = '서울특별시'
-  AND REGION_DISTRICT = '중랑구';
-
-UPDATE REGION
-SET DATASET_ID = '15037430',
-    UDDI_ID = 'uddi:60b0a016-6f8d-4b4d-90dd-d85d9073e098',
-    API_URL = 'https://api.odcloud.kr/api/15037430/v1/uddi:60b0a016-6f8d-4b4d-90dd-d85d9073e098'
-WHERE REGION_CITY = '서울특별시'
-  AND REGION_DISTRICT = '동작구';
-
-UPDATE REGION
-SET DATASET_ID = '15106418',
-    UDDI_ID = 'uddi:6fd73ff6-f83c-4436-a88d-a9a405f04350',
-    API_URL = 'https://api.odcloud.kr/api/15106418/v1/uddi:6fd73ff6-f83c-4436-a88d-a9a405f04350'
-WHERE REGION_CITY = '서울특별시'
-  AND REGION_DISTRICT = '영등포구';
-
-UPDATE REGION
-SET DATASET_ID = '15106192',
-    UDDI_ID = 'uddi:f246d394-98da-4756-b5ad-d9eeda6918aa',
-    API_URL = 'https://api.odcloud.kr/api/15106192/v1/uddi:f246d394-98da-4756-b5ad-d9eeda6918aa'
-WHERE REGION_CITY = '서울특별시'
-  AND REGION_DISTRICT = '관악구';
-
-UPDATE REGION
-SET DATASET_ID = '15104654',
-    UDDI_ID = 'uddi:459795e6-0484-4a9b-8025-bed67a24ac3a',
-    API_URL = 'https://api.odcloud.kr/api/15104654/v1/uddi:459795e6-0484-4a9b-8025-bed67a24ac3a'
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_JN/1/1000/'
 WHERE REGION_CITY = '서울특별시'
   AND REGION_DISTRICT = '종로구';
 
 UPDATE REGION
-SET DATASET_ID = '15127338',
-    UDDI_ID = 'uddi:863c8f87-af15-4b33-a784-d3658d74535e',
-    API_URL = 'https://api.odcloud.kr/api/15127338/v1/uddi:863c8f87-af15-4b33-a784-d3658d74535e'
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_JG/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '중구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_YS/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '용산구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_SD/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '성동구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_GJ/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '광진구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_DD/1/1000/'
 WHERE REGION_CITY = '서울특별시'
   AND REGION_DISTRICT = '동대문구';
 
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_GD/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '강동구';
 
-/15127338/v1/uddi:863c8f87-af15-4b33-a784-d3658d74535e
-서울특별시 동대문구_노인복지시설_20240322
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_SP/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '송파구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_SC/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '서초구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_GA/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '관악구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_DJ/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '동작구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_YD/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '영등포구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_GC/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '금천구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_GR/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '구로구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_GS/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '강서구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_YC/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '양천구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_MP/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '마포구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_SM/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '서대문구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_EP/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '은평구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_NW/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '노원구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_JR/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '중랑구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_DB/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '도봉구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_SB/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '성북구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_GB/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '강북구';
 
 
-Models
+COMMIT;
+
+
 
 
 SELECT COLUMN_NAME
@@ -1496,7 +1564,7 @@ FROM ALL_TAB_COLUMNS
 WHERE TABLE_NAME = 'REGION'
   AND COLUMN_NAME = 'API_URL';
 
-COMMIT;
+
 
 
 SELECT COLUMN_NAME 
@@ -1515,6 +1583,8 @@ SELECT *
 FROM WELFARE_FACILITY 
 WHERE FACILITY_ADDR LIKE '%송파구%';
 
+
+SELECT * FROM REGION WHERE REGION_DISTRICT = '강남구';
 SELECT
 		DATASET_ID AS datasetId,
 		UDDI_ID AS uddiId,

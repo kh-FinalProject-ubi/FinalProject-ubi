@@ -15,7 +15,8 @@ import ChangePassword from "./pages/mypage/ChangePassword";
 import Withdraw from "./pages/mypage/Withdraw";
 import BoardDetail from "./pages/board/BoardDetail";
 import MyTownBoardDetail from "./pages/mytownboard/MyTownBoardDetail";
-import FacilityRouter from "./pages/welfarefacility/FacilityRouter";
+import FacilitySearchPage from "./pages/welfarefacility/FacilitySearchPage";
+import FacilityDetailPage from "./pages/welfarefacility/FacilityDetailPage";
 import EditBoard from "./pages/board/EditBoard";
 
 function App() {
@@ -32,7 +33,8 @@ function App() {
           <Route path="noticeBoard" element={<NoticeBoard />} />
           <Route path="mytownBoard" element={<MyTownBoard />} />
           <Route path="mytownBoard/:boardNo" element={<MyTownBoardDetail />} />
-          <Route path="facility" element={<FacilityRouter />} />
+          <Route path="/facility" element={<FacilitySearchPage />} />
+          <Route path="/facility/detail" element={<FacilityDetailPage />} />
           <Route path="/mypage" element={<MypageLayout />}>
             <Route path="profile" element={<Profile />} />
             <Route path="chat" element={<Chat />} />
