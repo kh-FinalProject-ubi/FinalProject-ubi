@@ -73,7 +73,7 @@
 		UPDATE "BOARD" SET
 		BOARD_TITLE = #{boardTitle},
 		BOARD_CONTENT = #{boardContent}
-		WHERE BOARD_CODE = #{boardCode}
+		WHERE BOARD_TYPE = #{boardCode}
 		AND BOARD_NO = #{boardNo}
 		AND MEMBER_NO = #{memberNo}
 	</update>
