@@ -30,8 +30,7 @@ public interface MytownBoardService {
 	  * @return
 	  */
 	    int writeBoard(Board dto);
-	    Board getBoard(int boardNo);
-
+	    void insertHashtag(int boardNo, String tag);
 
 
      

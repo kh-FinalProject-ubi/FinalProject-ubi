@@ -47,11 +47,9 @@ public class MytownEditBoardController {
 	 */
 	@PostMapping("/write")
     public ResponseEntity<?> write(@RequestBody Board dto) {
-        if (dto.getMemberNo() == 0) {
-            return ResponseEntity.badRequest().body("memberNo 없음");
-        }
 
         int boardNo = Service.writeBoard(dto);
+        
         return ResponseEntity.ok(Map.of("boardNo", boardNo));
     }
 	

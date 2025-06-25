@@ -36,9 +36,12 @@ public interface MytownBoardMapper {
 	    
 	    
 	    int insertBoard(Board dto);
-	    int updateBoard(Board dto);
-	    Board selectBoard(int boardNo);
+
 	    int getLastInsertedId();
+
+	    void insertHashtag(@Param("boardNo") int boardNo, @Param("tag") String tag);
+
+	    int checkHashtagExists(@Param("boardNo") int boardNo, @Param("tag") String tag);
 	    
 	    
 	    
