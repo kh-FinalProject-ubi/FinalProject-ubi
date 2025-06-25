@@ -35,18 +35,15 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             String token = jwtUtil.generateToken(member);
 
             String redirectUrl = UriComponentsBuilder
-                .fromUriString("http://localhost:5174/oauth/kakao/callback")
-                .queryParam("token", token)
-                .queryParam("memberName", URLEncoder.encode(member.getMemberNickname(), "UTF-8"))
-                .queryParam("address", URLEncoder.encode(member.getMemberAddress(), "UTF-8"))
-                .queryParam("memberNo", member.getMemberNo())
-                .build().toUriString();
+            	    .fromUriString("http://localhost:5173/oauth/kakao/callback")
+            	    .queryParam("token", token) // ⛔ memberName, address 제거
+            	    .build().toUriString();
 
-            response.sendRedirect(redirectUrl);
+            	response.sendRedirect(redirectUrl);
         } else {
             // 신규 사용자
             String redirectUrl = UriComponentsBuilder
-                .fromUriString("http://localhost:5174/oauth/kakao/callback")
+                .fromUriString("http://localhost:5173/oauth/kakao/callback")
                 .queryParam("kakaoId", kakaoId)
                 .build().toUriString();
 
