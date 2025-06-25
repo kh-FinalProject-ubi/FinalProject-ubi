@@ -14,10 +14,19 @@ const NoticeBoard = () => {
   const [boardList, setBoardList] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { token, authority, memberNo: loginMemberNo } = useAuthStore();
 
   const location = useLocation();
   const path = location.pathname;
   const boardCode = boardCodeMap[path];
+  // 권한 체크 후 이동 및 alert 중복 방지용
+  const [hasAlerted, setHasAlerted] = useState(false);
+  const authorityMap = {
+    1: "USER",
+    2: "ADMIN",
+  };
+
+  const isAdmin = authorityMap[authority] === "ADMIN";
 
   useEffect(() => {
     if (!boardCode) return;
@@ -31,6 +40,7 @@ const NoticeBoard = () => {
       })
       .catch((err) => {
         console.error("게시판 목록 조회 실패:", err);
+        window.location.href = "/";
       });
   }, [boardCode]);
 
@@ -51,6 +61,11 @@ const NoticeBoard = () => {
           </li>
         ))}
       </ul>
+      {isAdmin && (
+        <button onClick={() => navigate(`/editBoard/${boardCode}/${boardNo}`)}>
+          글 작성
+        </button>
+      )}
     </div>
   );
 };

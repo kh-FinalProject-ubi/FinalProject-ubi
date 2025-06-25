@@ -19,10 +19,6 @@ public class JwtUtil {
 	@Value("${jwt.secret}")
 	private String secretKey;
 	
-	@PostConstruct
-	public void init() {
-	    System.out.println("JWT Secret Key: " + secretKey);
-	}
 
 	private final long tokenValidityInMs = 1000 * 60 * 60 * 2; // 2시간
 

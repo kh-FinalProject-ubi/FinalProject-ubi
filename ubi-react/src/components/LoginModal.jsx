@@ -25,6 +25,7 @@ const LoginModal = () => {
         address: data.address,
         memberName: data.memberName,
         memberNo: data.memberNo,
+        authority: data.authority,
       });
       closeLoginModal(); // 상태 통해 닫기
     } else {

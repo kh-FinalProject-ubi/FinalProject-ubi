@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import edu.kh.project.common.util.JwtUtil;
 import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.member.model.service.MemberService;
 
@@ -31,6 +32,9 @@ public class MemberController {
 
 	@Value("${my.profile.web-path}")
 	private String profileWebPath;
+	
+	@Autowired
+	private JwtUtil jwtUtil;
 
 	private String parseMemberStandard(String codeStr) {
 		switch (codeStr) {
@@ -76,14 +80,16 @@ public class MemberController {
         String readableStandard = parseMemberStandard(loginMember.getMemberStandard());
         String district = extractDistrict(loginMember.getMemberAddress());
 
+        String token = jwtUtil.generateToken(loginMember);
+        
         Map<String, Object> body = new HashMap<>();
-        body.put("token", "dummy-token");
+        body.put("token", token);
         body.put("memberName", loginMember.getMemberNickname());
-        body.put("address", district); // ✅ 시군구 단위로 가공
+        body.put("address", district);
         body.put("memberStandard", readableStandard);
         body.put("memberImg", loginMember.getMemberImg());
         body.put("memberNo", loginMember.getMemberNo());
-
+        body.put("authority", loginMember.getAuthority()); // ✅ 반드시 포함
 
         return ResponseEntity.ok(body);
     }
@@ -94,6 +100,7 @@ public class MemberController {
         if (tokens.length == 1) return tokens[0];
         return tokens[0] + " " + tokens[1];
     }
+    
     @PostMapping("/signup")
     public ResponseEntity<?> signup(
         @ModelAttribute Member inputMember,

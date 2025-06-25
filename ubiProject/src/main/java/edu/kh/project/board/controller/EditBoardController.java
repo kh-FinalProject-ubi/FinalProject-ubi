@@ -109,35 +109,29 @@ public class EditBoardController {
 	 * @return
 	 */
 	@GetMapping("{boardCode:[0-9]+}/{boardNo:[0-9]+}")
-	public ResponseEntity<Map<String, Object>> boardUpdate(
-	        @PathVariable("boardCode") int boardCode,
-	        @PathVariable("boardNo") int boardNo,
-	        @RequestHeader(value = "Authorization", required = false) String authHeader) {
+	public ResponseEntity<Map<String, Object>> boardUpdate(@PathVariable("boardCode") int boardCode,
+			@PathVariable("boardNo") int boardNo,
+			@RequestHeader(value = "Authorization", required = false) String authHeader) {
 
-	    Map<String, Integer> map = Map.of("boardCode", boardCode, "boardNo", boardNo);
-	    Board board = boardService.selectOne(map);
+		Map<String, Integer> map = Map.of("boardCode", boardCode, "boardNo", boardNo);
+		Board board = boardService.selectOne(map);
 
-	    if (board == null) {
-	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-	                .body(Map.of("message", "해당 게시글이 존재하지 않습니다."));
-	    }
+		if (board == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "해당 게시글이 존재하지 않습니다."));
+		}
 
-	    Long memberNo = null;
-	    String role = "GUEST";
+		Long memberNo = null;
+		String role = "GUEST";
 
-	    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-	        String token = authHeader.substring(7);
-	        memberNo = jwtUtil.extractMemberNo(token);
-	        role = jwtUtil.extractRole(token); // "ADMIN" / "USER"
-	    }
+		if (authHeader != null && authHeader.startsWith("Bearer ")) {
+			String token = authHeader.substring(7);
+			memberNo = jwtUtil.extractMemberNo(token);
+			role = jwtUtil.extractRole(token); // "ADMIN" / "USER"
+		}
 
-	    return ResponseEntity.ok(Map.of(
-	            "status", 200,
-	            "board", board,
-	            "role", role,
-	            "memberNo", memberNo
-	    ));
+		return ResponseEntity.ok(Map.of("status", 200, "board", board, "role", role, "memberNo", memberNo));
 	}
+
 	/**
 	 * 게시글 수정
 	 * 
@@ -153,53 +147,52 @@ public class EditBoardController {
 	 */
 	@PostMapping("{boardCode:[0-9]+}/{boardNo:[0-9]+}")
 	public ResponseEntity<Map<String, Object>> boardUpdate(@PathVariable("boardCode") int boardCode,
-			@PathVariable("boardNo") int boardNo,
+			@PathVariable("boardNo") int boardNo, @RequestParam("boardTitle") String boardTitle,
+			@RequestParam("boardContent") String boardContent,
 			@RequestParam(value = "images", required = false) List<MultipartFile> images,
+			@RequestParam(name = "boardType") int boardType,
 			@RequestParam(value = "deleteOrderList", required = false) String deleteOrderList,
 			@RequestHeader("Authorization") String authHeader) throws Exception {
 
-		 Map<String, Integer> paramMap = Map.of("boardCode", boardCode, "boardNo", boardNo);
-		    Board board = boardService.selectOne(paramMap);
+		Map<String, Integer> paramMap = Map.of("boardCode", boardCode, "boardNo", boardNo);
+		Board board = boardService.selectOne(paramMap);
 
-		    if (board == null) {
-		        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-		                             .body(Map.of("message", "게시글이 존재하지 않습니다."));
-		    }
-
-		    int boardType = board.getBoardType(); // 1: 공지, 2: 문의
-		    Long memberNo = null;
-		    String role = "GUEST";
-
-		    // JWT 토큰 파싱
-		    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-		        String token = authHeader.substring(7);
-		        memberNo = jwtUtil.extractMemberNo(token);
-		        role = jwtUtil.extractRole(token);  // 이게 "1" 또는 "2"일 가능성 있음
-		        
-		    }
-
-		    // 권한 체크
-		    if (boardType == 2) { // 문의 게시판
-		        if (!role.equals("ADMIN") && !memberNo.equals(board.getMemberNo())) {
-		            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-		                                 .body(Map.of("message", "접근 권한이 없습니다."));
-		        }
-		    }
-
-		    if (boardType == 1) { // 공지 게시판
-		        if (!role.equals("ADMIN")) {
-		            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-		                                 .body(Map.of("message", "관리자만 수정할 수 있습니다."));
-		        }
-		    }
-
-		    return ResponseEntity.ok(Map.of(
-		        "board", board,
-		        "role", role,
-		        "memberNo", memberNo
-		    ));
+		if (board == null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "게시글이 존재하지 않습니다."));
 		}
-	
+
+		Long memberNo = null;
+		String role = "GUEST";
+
+		if (authHeader != null && authHeader.startsWith("Bearer ")) {
+			String token = authHeader.substring(7);
+			memberNo = jwtUtil.extractMemberNo(token);
+			role = jwtUtil.extractRole(token);
+		}
+
+		// 권한 체크
+		if (boardType == 2) {
+			if (!role.equals("ADMIN") && !memberNo.equals(board.getMemberNo())) {
+				return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "접근 권한이 없습니다."));
+			}
+		}
+
+		if (boardType == 1 && !role.equals("ADMIN")) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "관리자만 수정할 수 있습니다."));
+		}
+
+		board.setBoardTitle(boardTitle);
+		board.setBoardContent(boardContent);
+
+		int result = service.boardUpdate(board, images, deleteOrderList);
+
+		if (result > 0) {
+			return ResponseEntity.ok(Map.of("message", "수정 완료"));
+		} else {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "수정 실패"));
+		}
+	}
+
 	// /editBoard/1/2000/delete?cp=1
 	@RequestMapping(value = "{boardCode:[0-9]+}/{boardNo:[0-9]+}/delete", method = { RequestMethod.GET,
 			RequestMethod.POST })
