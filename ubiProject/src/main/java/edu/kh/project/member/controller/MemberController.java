@@ -26,9 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CrossOrigin(origins = "*")
 public class MemberController {
-	
-	@Autowired
-	private JwtUtil jwtUtil;
 
 	@Value("${my.profile.folder-path}")
 	private String profileFolderPath;
