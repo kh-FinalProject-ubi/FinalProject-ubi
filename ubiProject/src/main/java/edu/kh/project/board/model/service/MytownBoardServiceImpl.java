@@ -38,5 +38,21 @@ public class MytownBoardServiceImpl implements MytownBoardService {
         public Board selectLocalBoardDetail(int boardNo) {
             return mapper.selectLocalBoardDetail(boardNo);
         }    
+   
         
+     /**
+      *  
+      * @param dto
+      * @return
+      */
+        @Override
+        public int writeBoard(Board dto) {
+            mapper.insertBoard(dto);
+            return mapper.getLastInsertedId();
+        }
+
+        @Override
+        public Board getBoard(int boardNo) {
+            return mapper.selectBoard(boardNo);
+        }
 }

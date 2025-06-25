@@ -1,10 +1,11 @@
 
 
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { generateTagList } from '../../components/utils/tagUtils';
+import { Link, useNavigate } from 'react-router-dom';
+import { generateTagList } from '../../utils/tagUtils';
 function MyTownBoard() {
   const [boards, setBoards] = useState([]);
+    const navigate = useNavigate();
 
   useEffect(() => {
     fetch('/api/board/mytownBoard')
@@ -60,8 +61,17 @@ function MyTownBoard() {
           </li>
         ))}
       </ul>
+           <button
+        onClick={() => navigate("/mytownBoard/write")}
+        className="write-btn"
+      >
+        글쓰기
+      </button>
     </div>
+
+    
   );
+  
 }
 
 export default MyTownBoard;
