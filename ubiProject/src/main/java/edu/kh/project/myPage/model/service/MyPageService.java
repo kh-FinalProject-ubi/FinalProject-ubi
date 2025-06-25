@@ -10,7 +10,9 @@ import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.board.model.dto.BoardLike;
 import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.myPage.model.dto.UploadFile;
-import edu.kh.project.welfare.benefits.model.dto.Benefits;
+import edu.kh.project.welfare.benefits.model.dto.Facility;
+import edu.kh.project.welfare.benefits.model.dto.FacilityJob;
+import edu.kh.project.welfare.benefits.model.dto.Welfare;
 
 public interface MyPageService {
 
@@ -80,13 +82,28 @@ public interface MyPageService {
 	 * @return
 	 */
 	Member info(int memberNo);
+	
 
 	/** 내가 찜한 혜택 조회
 	 * @param memberNo
+	 * @param category 
 	 * @return
 	 */
-	List<Benefits> benefits(int memberNo);
+	List<Welfare> getWelfareBenefits(int memberNo);
 
+	/** 내가 찜한 채용 조회
+	 * @param memberNo
+	 * @return
+	 */
+	List<FacilityJob> getRecruitBenefits(int memberNo);
+
+	/** 내가 찜한 시설 조회
+	 * @param memberNo
+	 * @return
+	 */
+	List<Facility> getFacilityBenefits(int memberNo);
+
+	
 	/** 작성글 조회
 	 * @param memberNo
 	 * @return
@@ -98,5 +115,7 @@ public interface MyPageService {
 	 * @return
 	 */
 	List<BoardLike> like(int memberNo);
+
+
 
 }
