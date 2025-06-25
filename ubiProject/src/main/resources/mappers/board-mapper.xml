@@ -16,7 +16,7 @@
 
 		<!-- 해당 게시글 이미지 목록 조회 후 필드에 저장 -->
 		<collection property="imageList" select="selectImgList"
-			column="BOARD_NO" javaType="java.util.ArrayList" ofType="BoardImg" />
+			column="BOARD_NO" javaType="java.util.ArrayList" ofType="boardImage" />
 
 		<!-- 해당 게시글 댓글 목록 조회 후 필드에 저장 -->
 		<collection property="commentList"
@@ -107,7 +107,7 @@
 	</select>
 
 	<!-- 상세 조회한 게시글의 이미지 목록 조회 -->
-	<select id="selectImgList" resultType="BoardImg">
+	<select id="selectImgList" resultType="BoardImage">
 		SELECT * FROM
 		"BOARD_IMAGE"
 		WHERE BOARD_NO = #{boardCode}

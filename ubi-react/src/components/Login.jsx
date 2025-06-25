@@ -44,6 +44,7 @@ const Login = () => {
           memberStandard: data.memberStandard,
           memberImg: data.memberImg || "",
           memberNo: data.memberNo,
+          authority: data.authority,
         });
         console.log("✅ 일반 로그인 성공");
       } else {
@@ -67,6 +68,7 @@ const Login = () => {
         onChange={(e) => setMemberId(e.target.value)}
         placeholder="아이디"
       />
+
       <input
         type="password"
         value={memberPw}

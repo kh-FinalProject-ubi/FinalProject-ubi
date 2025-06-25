@@ -1,15 +1,11 @@
 package edu.kh.project.myPage.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttribute;
-import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -26,11 +21,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.board.model.dto.BoardLike;
 import edu.kh.project.member.model.dto.Member;
-import edu.kh.project.welfare.benefits.model.dto.Benefits;
 import edu.kh.project.myPage.model.dto.UploadFile;
 import edu.kh.project.myPage.model.service.MyPageService;
+import edu.kh.project.welfare.benefits.model.dto.Facility;
+import edu.kh.project.welfare.benefits.model.dto.FacilityJob;
+import edu.kh.project.welfare.benefits.model.dto.Welfare;
 import lombok.extern.slf4j.Slf4j;
-import oracle.jdbc.clio.annotations.Debug;
 
 /*
  * @SessionAttributes 의 역할
@@ -73,14 +69,29 @@ public class MyPageController {
 	
 	// 내가 찜한 혜택 조회
 	@GetMapping("service")
-    public ResponseEntity<Object> service(@RequestParam("memberNo") int memberNo) {
+    public ResponseEntity<Object> service(@RequestParam("memberNo") int memberNo,
+    									  @RequestParam("category") String category) {
         try {
             if (memberNo == 0) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
             }
             
-            List<Benefits> benefits = service.benefits(memberNo);
-            return ResponseEntity.status(HttpStatus.OK).body(benefits);
+
+            switch (category) {
+                case "시설":
+                	List<Facility> facitiy = service.getFacilityBenefits(memberNo);
+                	 return ResponseEntity.status(HttpStatus.OK).body(facitiy);
+                case "채용":
+                	List<FacilityJob> facitiyJob = service.getRecruitBenefits(memberNo);
+                	 return ResponseEntity.status(HttpStatus.OK).body(facitiyJob);
+                case "혜택":
+                	List<Welfare> walfare = service.getWelfareBenefits(memberNo);
+                	 return ResponseEntity.status(HttpStatus.OK).body(walfare);
+                default:
+                	return ResponseEntity.badRequest().body("유효하지 않은 카테고리입니다.");
+                    
+            }
+           
             
         } catch (Exception e) {
             log.error("내 혜택 조회 중 에러 발생", e);

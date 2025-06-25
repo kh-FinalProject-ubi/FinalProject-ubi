@@ -7,3 +7,23 @@
   line-height: 1.5em;
   max-height: 3em;                  /* 줄 수 x 줄 높이 */
 }
+
+.category-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.category-tabs button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: #eee;
+  cursor: pointer;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.category-tabs .active {
+  background: #3478f6;
+  color: white;
+}

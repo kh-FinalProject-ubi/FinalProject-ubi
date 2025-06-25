@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import "../../styles/mypage/Profile.css";
 import useAuthStore from '../../stores/useAuthStore';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const Profile = () => {
   
@@ -9,8 +10,13 @@ const Profile = () => {
   console.log('memberNo:', memberNo);
 
   const [member, setMember] = useState(null);
+
   const [benefits, setBenefits] = useState([]);
+  const [category, setCategory] = useState('시설'); // or '채용', '혜택', '시설'
+
   const [board, setboard] = useState([]);
+  const [contentType, setContentType] = useState('게시글'); // or '댓글'
+
   const [like, setlike] = useState([]);
 
   // 내 기본 정보
@@ -33,7 +39,7 @@ const Profile = () => {
   const getBenefitsData = async () => {
     try{
       console.log("혜택 axios 요청 시작");
-      const res = await axios.get('/api/myPage/service', { params: {memberNo : memberNo} });
+      const res = await axios.get('/api/myPage/service', { params: {memberNo : memberNo, category: category} });
       console.log("혜택 응답 받음:", res);
       console.log("혜택 응답 값:", res.data);
 
@@ -120,26 +126,103 @@ const Profile = () => {
       {/* 혜택 리스트 */}
       <section className="benefit-list">
         <h3>혜택 목록 ({benefits.length})</h3>
-        <div className="benefit-cards">
-          {benefits.map((benefit) => (
-            <div className="benefit-card" key={benefit.serviceNo}>
-              <div className="badge-row">
-               const isApplicationBased = benefit.receptionStart && benefit.receptionEnd;
-                <span className={`badge ${isApplicationBased ? "신청혜택" : "기본혜택"}`}>
-                  {isApplicationBased ? "신청혜택" : "기본혜택"}
-                </span>
-              </div>
-              <div className="benefit-title">{benefit.serviceName}</div>
-              <div className="benefit-agency">{benefit.agency}</div>
-              <div className="benefit-description">{benefit.description}</div>
-              <p className="benefit">
-                {benefit.receptionStart && benefit.receptionEnd
-                  ? `${benefit.receptionStart} ~ ${benefit.receptionEnd}`
-                  : "상세 확인 필요"}
-              </p>
-            </div>
+        <div className="category-tabs">
+          {['시설', '채용', '혜택'].map(cat => (
+            <button
+              key={cat}
+              onClick={() => setCategory(cat)}
+              className={category === cat ? 'active' : ''}
+            >
+              {cat}
+            </button>
           ))}
         </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={category}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+              className="benefit-cards"
+            >
+              {benefits.map((benefit) => {
+                switch (category) {
+                   case '채용':
+                    return (
+                      <div className="benefit-card" key={benefit.recruitNo}>
+                        <div className="badge-row">채용 정보</div>
+                        <div className="benefit-title">{benefit.jobTitle}</div>
+                        <div className="benefit-agency">{benefit.jobFacilityName}</div>
+                        <div className="benefit-salary">입금조건: {benefit.jobSalary}</div>
+                        <div className="benefit-field">채용분야: {benefit.jobPosition}</div>
+                        <div className="benefit-requirement">자격조건: {benefit.jobRequirement}</div>
+                        <div className="benefit-description">내용: {benefit.jobContent}</div>
+                        <p className="benefit-date">
+                          {benefit.rcptbgndt && benefit.rcptenddt
+                            ? `${benefit.rcptbgndt} ~ ${benefit.rcptenddt}`
+                            : '상세 확인 필요'}
+                        </p>
+                      </div>
+                    );
+
+                  case '시설':
+                    const isEvent = !!benefit.eventTitle; // 행사 여부
+
+                    return (
+                      <div className="benefit-card" key={benefit.facilityId}>
+                        <div className="badge-row">{isEvent ? '이벤트 정보' : '시설 이용'}</div>
+
+                        <div className="benefit-title">
+                          {isEvent ? benefit.eventTitle : benefit.facilityName}
+                        </div>
+
+                        <div className="benefit-kind">
+                          {isEvent ? benefit.eventContent : benefit.facilityKindNM}
+                        </div>
+
+                        {!isEvent && (
+                          <div className="benefit-requirement">입장 기준: {benefit.requirement}</div>
+                        )}
+
+                        <p className="benefit-date">
+                          {isEvent
+                            ? benefit.eventDateStart && benefit.eventDateEnd
+                              ? `${benefit.eventDateStart} ~ ${benefit.eventDateEnd}`
+                              : '상세 확인 필요'
+                            : benefit.rcptbgndt && benefit.rcptenddt
+                            ? `${benefit.rcptbgndt} ~ ${benefit.rcptenddt}`
+                            : '상세 확인 필요'}
+                        </p>
+                      </div>)
+
+                  case '혜택':
+                    return (
+                      <div className="benefit-card" key={benefit.serviceNo}>
+                        <div className="badge-row">
+                          <span className={`badge ${
+                            benefit.receptionStart && benefit.receptionEnd ? '신청혜택' : '기본혜택'
+                          }`}>
+                            {benefit.receptionStart && benefit.receptionEnd ? '신청혜택' : '기본혜택'}
+                          </span>
+                        </div>
+                        <div className="benefit-title">{benefit.serviceName}</div>
+                        <div className="benefit-agency">{benefit.agency}</div>
+                        <div className="benefit-description">{benefit.description}</div>
+                        <p className="benefit">
+                          {benefit.receptionStart && benefit.receptionEnd
+                            ? `${benefit.receptionStart} ~ ${benefit.receptionEnd}`
+                            : '상세 확인 필요'}
+                        </p>
+                      </div>
+                    );
+
+                  default:
+                    return null;
+                }
+              })}
+            </motion.div>
+          </AnimatePresence>
       </section>
 
       {/* 게시글 목록 */}

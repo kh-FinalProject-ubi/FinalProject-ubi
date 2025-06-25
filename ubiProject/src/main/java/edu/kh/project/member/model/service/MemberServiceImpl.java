@@ -3,6 +3,9 @@ package edu.kh.project.member.model.service;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -81,57 +84,57 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
-    /** ✅ 카카오 로그인 구현 */
     @Override
-    public Member kakaoLogin(String code) throws RuntimeException {
+    public Member kakaoLogin(String code) {
         try {
             RestTemplate restTemplate = new RestTemplate();
 
-            // 1. 인가코드로 액세스 토큰 요청
+            // 1. 인가 코드로 액세스 토큰 요청
             String tokenUrl = "https://kauth.kakao.com/oauth/token";
-            Map<String, String> tokenRequest = Map.of(
-                "grant_type", "authorization_code",
-                "client_id", "b62bbea46498a09baf12fedc0a9bc832",
-                "redirect_uri", "http://localhost:3000/oauth/kakao/callback",
-                "code", code
-            );
+            String clientId = "b62bbea46498a09baf12fedc0a9bc832"; // 카카오 앱 REST API 키
+            String redirectUri = "http://localhost:5174/oauth/kakao/callback";
 
             String tokenResponse = restTemplate.postForObject(
-                tokenUrl + "?grant_type=" + tokenRequest.get("grant_type") +
-                "&client_id=" + tokenRequest.get("client_id") +
-                "&redirect_uri=" + tokenRequest.get("redirect_uri") +
-                "&code=" + tokenRequest.get("code"),
+                tokenUrl +
+                "?grant_type=authorization_code" +
+                "&client_id=" + clientId +
+                "&redirect_uri=" + redirectUri +
+                "&code=" + code,
                 null,
                 String.class
             );
 
-            ObjectMapper mapperObj = new ObjectMapper();
-            Map<String, Object> tokenMap = mapperObj.readValue(tokenResponse, Map.class);
+            // 2. 토큰 파싱
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, Object> tokenMap = objectMapper.readValue(tokenResponse, Map.class);
             String accessToken = (String) tokenMap.get("access_token");
 
-            // 2. 사용자 정보 요청
-            String userInfoUrl = "https://kapi.kakao.com/v2/user/me";
-            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            // 3. 액세스 토큰으로 사용자 정보 요청
+            HttpHeaders headers = new HttpHeaders();
             headers.add("Authorization", "Bearer " + accessToken);
-            org.springframework.http.HttpEntity<String> entity = new org.springframework.http.HttpEntity<>(headers);
-            org.springframework.http.ResponseEntity<String> userResponse = restTemplate.postForEntity(userInfoUrl, entity, String.class);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
 
-            Map<String, Object> userMap = mapperObj.readValue(userResponse.getBody(), Map.class);
-            String kakaoId = String.valueOf(userMap.get("id"));
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                "https://kapi.kakao.com/v2/user/me", entity, String.class
+            );
 
-            // 3. DB 조회
+            // 4. 사용자 정보 파싱
+            Map<String, Object> userMap = objectMapper.readValue(response.getBody(), Map.class);
+            String kakaoId = String.valueOf(userMap.get("id")); // 카카오 고유 ID
+
+            // 5. DB에서 카카오 ID로 사용자 조회
             Member member = mapper.selectByKakaoId(kakaoId);
             if (member == null) {
-                throw new RuntimeException("신규 사용자 - 회원가입 필요");
+                // 신규 사용자는 프론트에서 회원가입 유도
+                throw new RuntimeException("신규 사용자입니다. 회원가입이 필요합니다.");
             }
 
             return member;
 
         } catch (Exception e) {
-            throw new RuntimeException("카카오 로그인 실패", e);
+            throw new RuntimeException("카카오 로그인 처리 중 오류 발생", e);
         }
     }
-    
 
     private final JavaMailSender mailSender;
 
@@ -150,5 +153,12 @@ public class MemberServiceImpl implements MemberService {
     public boolean checkNicknameAvailable(String memberNickname) {
         return mapper.checkNickname(memberNickname) == 0;
     }
+
+	@Override
+	public Member findByNo(Long memberNo) {
+	    return mapper.selectByNo(memberNo);
+	
+	}
+
 }
 

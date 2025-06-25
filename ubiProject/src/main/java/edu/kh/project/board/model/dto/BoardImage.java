@@ -11,12 +11,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BoardImg {
+public class BoardImage {
 
-	private int imgNo;
-	private String imgPath;
-	private String imgName;
-	private int imgOrder;
+	private int imageNo;
+	private String imagePath;
+	private int imageOrder;
+	private String imageName;
 	private int boardNo;
 
 	// 게시글 이미지 삽입/수정 할 때 사용

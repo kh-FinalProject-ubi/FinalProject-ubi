@@ -29,6 +29,7 @@ const askBoard = () => {
       })
       .catch((err) => {
         console.error("게시판 목록 조회 실패:", err);
+        window.location.href = "/";
       });
   }, [boardCode]);
 

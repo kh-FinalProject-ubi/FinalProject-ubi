@@ -25,6 +25,7 @@ const LoginModal = () => {
         address: data.address,
         memberName: data.memberName,
         memberNo: data.memberNo,
+        authority: data.authority,
       });
       closeLoginModal(); // 상태 통해 닫기
     } else {
@@ -41,7 +42,7 @@ const LoginModal = () => {
 
   const handleKakaoLogin = () => {
     // ✅ Spring Security에서 설정한 OAuth2 엔드포인트로 이동
-    window.location.href = "http://localhost:8080/oauth2/authorization/kakao";
+    window.location.href = "http://localhost:80/oauth2/authorization/kakao";
   };
 
   return (

@@ -21,10 +21,9 @@ const BoardDetail = () => {
   const [hasAlerted, setHasAlerted] = useState(false);
 
   useEffect(() => {
-    console.log("=== BoardDetail useEffect ===");
-    console.log("토큰:", token);
-    console.log("authority:", authority);
-    console.log("loginMemberNo:", loginMemberNo);
+    // console.log("=== BoardDetail useEffect ===");
+    // console.log("토큰:", token);
+    // console.log("authority:", authority);
 
     if (!boardCode) {
       if (!hasAlerted) {

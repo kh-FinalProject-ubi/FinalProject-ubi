@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import edu.kh.project.common.util.JwtUtil;
 import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.member.model.service.MemberService;
 
@@ -25,12 +26,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CrossOrigin(origins = "*")
 public class MemberController {
+	
+	@Autowired
+	private JwtUtil jwtUtil;
 
 	@Value("${my.profile.folder-path}")
 	private String profileFolderPath;
 
 	@Value("${my.profile.web-path}")
 	private String profileWebPath;
+	
+	@Autowired
+	private JwtUtil jwtUtil;
 
 	private String parseMemberStandard(String codeStr) {
 		switch (codeStr) {
@@ -76,14 +83,16 @@ public class MemberController {
         String readableStandard = parseMemberStandard(loginMember.getMemberStandard());
         String district = extractDistrict(loginMember.getMemberAddress());
 
+        String token = jwtUtil.generateToken(loginMember);
+        
         Map<String, Object> body = new HashMap<>();
-        body.put("token", "dummy-token");
+        body.put("token", token);
         body.put("memberName", loginMember.getMemberNickname());
-        body.put("address", district); // ✅ 시군구 단위로 가공
+        body.put("address", district);
         body.put("memberStandard", readableStandard);
         body.put("memberImg", loginMember.getMemberImg());
         body.put("memberNo", loginMember.getMemberNo());
-
+        body.put("authority", loginMember.getAuthority()); // ✅ 반드시 포함
 
         return ResponseEntity.ok(body);
     }
@@ -94,6 +103,7 @@ public class MemberController {
         if (tokens.length == 1) return tokens[0];
         return tokens[0] + " " + tokens[1];
     }
+    
     @PostMapping("/signup")
     public ResponseEntity<?> signup(
         @ModelAttribute Member inputMember,
@@ -127,12 +137,30 @@ public class MemberController {
             }
         }
 
-        int result = service.signup(inputMember);
-        return result > 0
-            ? ResponseEntity.ok(Map.of("message", inputMember.getMemberNickname() + "님의 가입을 환영합니다!"))
-            : ResponseEntity.badRequest().body(Map.of("message", "회원가입 실패"));
-    }
 
+        int result = service.signup(inputMember);
+
+        if (result > 0) {
+            inputMember.setAuthority("1"); // ✅ 기본 USER 권한 명시
+
+            String token = jwtUtil.generateToken(inputMember); // ✅ JWT 생성
+
+            String readableStandard = parseMemberStandard(inputMember.getMemberStandard());
+            String district = extractDistrict(inputMember.getMemberAddress());
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("token", token);
+            body.put("memberName", inputMember.getMemberNickname());
+            body.put("address", district);
+            body.put("memberStandard", readableStandard);
+            body.put("memberImg", inputMember.getMemberImg());
+            body.put("memberNo", inputMember.getMemberNo());
+
+            return ResponseEntity.ok(body);
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("message", "회원가입 실패"));
+        }
+    }
 @PostMapping("/sendAuthCode")
 public ResponseEntity<?> sendAuthCode(@RequestParam("email") String email, HttpSession session) {
     String authCode = service.createRandomCode(); // 예: "836524"
@@ -180,12 +208,15 @@ public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code) {
         String readableStandard = parseMemberStandard(member.getMemberStandard());
         String district = extractDistrict(member.getMemberAddress());
 
+        String token = jwtUtil.generateToken(member);
+
         Map<String, Object> body = new HashMap<>();
-        body.put("token", "dummy-token");
+        body.put("token", token);
         body.put("memberName", member.getMemberNickname());
         body.put("address", district);
         body.put("memberStandard", readableStandard);
         body.put("memberImg", member.getMemberImg());
+        body.put("memberNo", member.getMemberNo());
 
         return ResponseEntity.ok(body);
 
@@ -259,6 +290,60 @@ public String normalizeSigungu(String rawSigungu) {
 
 		return ResponseEntity.ok(body);
 	}
+	@GetMapping("/kakao-info")
+	public ResponseEntity<?> kakaoSessionCheck(HttpSession session) {
+	    Member loginMember = (Member) session.getAttribute("loginMember");
 
+	    if (loginMember != null) {
+	        String readableStandard = parseMemberStandard(loginMember.getMemberStandard());
+	        String district = extractDistrict(loginMember.getMemberAddress());
 
+	        return ResponseEntity.ok(Map.of(
+	            "token", "dummy-token",
+	            "memberName", loginMember.getMemberNickname(),
+	            "address", district,
+	            "memberNo", loginMember.getMemberNo(),
+	            "memberStandard", readableStandard
+	        ));
+	    }
+
+	    // 신규 사용자면 kakaoId만 꺼냄
+	    String kakaoId = (String) session.getAttribute("kakaoId");
+	    if (kakaoId != null) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	            .body(Map.of("kakaoId", kakaoId));
+	    }
+
+	    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+	        .body(Map.of("message", "로그인 정보 없음"));
+	}
+
+	@GetMapping("/me")
+	public ResponseEntity<?> getMemberFromToken(@RequestHeader("Authorization") String authorizationHeader) {
+	    if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "토큰 없음"));
+	    }
+
+	    try {
+	        String token = authorizationHeader.substring(7);
+	        Long memberNo = jwtUtil.extractMemberNo(token);
+	        Member member = service.findByNo(memberNo);
+
+	        if (member == null) {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "회원 정보 없음"));
+	        }
+
+	        String readableStandard = parseMemberStandard(member.getMemberStandard());
+	        String district = extractDistrict(member.getMemberAddress());
+
+	        return ResponseEntity.ok(Map.of(
+	            "memberName", member.getMemberNickname(),
+	            "address", district,
+	            "memberNo", member.getMemberNo(),
+	            "memberStandard", readableStandard
+	        ));
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "유효하지 않은 토큰"));
+	    }
+	}
 }

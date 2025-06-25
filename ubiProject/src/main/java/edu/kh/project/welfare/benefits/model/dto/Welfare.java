@@ -1,6 +1,17 @@
 package edu.kh.project.welfare.benefits.model.dto;
 
-public class Benefits {
+import java.util.List;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Welfare {
 	
 	private int serviceNo;			// 서비스 번호
 	private String apiServiceId;	// 외부 API 기분 고유 식별
