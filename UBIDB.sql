@@ -1392,6 +1392,181 @@ INSERT INTO REGION (REGION_DISTRICT, REGION_CITY) VALUES ('합천군', '경상�
 INSERT INTO REGION (REGION_DISTRICT, REGION_CITY) VALUES ('서귀포시', '제주특별자치도');
 INSERT INTO REGION (REGION_DISTRICT, REGION_CITY) VALUES ('제주시', '제주특별자치도');
 
+
+
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_GN/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '강남구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_JN/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '종로구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_JG/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '중구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_YS/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '용산구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_SD/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '성동구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_GJ/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '광진구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_DD/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '동대문구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_GD/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '강동구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_SP/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '송파구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_SC/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '서초구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_GA/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '관악구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_DJ/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '동작구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_YD/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '영등포구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_GC/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '금천구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_GR/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '구로구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_GS/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '강서구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_YC/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '양천구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_MP/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '마포구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_SM/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '서대문구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_EP/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '은평구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_NW/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '노원구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_JR/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '중랑구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_DB/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '도봉구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_SB/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '성북구';
+
+UPDATE REGION
+SET API_URL = 'http://openapi.seoul.go.kr:8088/%s/xml/fcltOpenInfo_GB/1/1000/'
+WHERE REGION_CITY = '서울특별시'
+  AND REGION_DISTRICT = '강북구';
+
+
+COMMIT;
+
+
+
+
+SELECT COLUMN_NAME
+FROM ALL_TAB_COLUMNS
+WHERE TABLE_NAME = 'REGION'
+  AND COLUMN_NAME = 'API_URL';
+
+
+
+
+SELECT COLUMN_NAME 
+FROM USER_TAB_COLUMNS 
+WHERE TABLE_NAME = 'REGION';
+
+SELECT COLUMN_NAME FROM USER_TAB_COLUMNS WHERE TABLE_NAME = 'REGION';
+
+SELECT * FROM REGION; 
+
+
+SELECT COLUMN_NAME FROM USER_TAB_COLUMNS
+WHERE TABLE_NAME = 'REGION';
+
+SELECT * 
+FROM WELFARE_FACILITY 
+WHERE FACILITY_ADDR LIKE '%송파구%';
+
+
+SELECT * FROM REGION WHERE REGION_DISTRICT = '강남구';
+SELECT
+		DATASET_ID AS datasetId,
+		UDDI_ID AS uddiId,
+		API_URL AS apiUrl
+		FROM REGION;
+SELECT "API_URL" FROM REGION;
+SELECT API_URL FROM REGION;
+
+
+SELECT * FROM REGION WHERE ROWNUM = 1;
+
+SELECT column_name
+FROM all_tab_columns
+WHERE table_name = 'REGION';
+
 INSERT INTO REGION (REGION_DISTRICT, REGION_CITY) VALUES ('고양특례시', '경기도');
 INSERT INTO REGION (REGION_DISTRICT, REGION_CITY) VALUES ('성남특례시', '경기도');
 INSERT INTO REGION (REGION_DISTRICT, REGION_CITY) VALUES ('창원특례시', '경상남도');
@@ -1473,3 +1648,4 @@ LEFT JOIN (
 
 -- 조회 대상
 WHERE B.BOARD_NO = 18;
+
