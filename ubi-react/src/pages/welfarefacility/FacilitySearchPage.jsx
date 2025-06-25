@@ -17,6 +17,42 @@ export default function FacilitySearchPage() {
   const [region, setRegion] = useState({ city: "", district: "" });
   const [keyword, setKeyword] = useState("");
   const [category, setCategory] = useState("전체");
+  const [serviceType, setServiceType] = useState("전체");
+
+  const categoryMap = {
+    체육시설: ["체육시설"],
+    요양시설: ["재가노인복지시설", "노인요양시설", "장기요양기관"],
+    의료시설: ["장애인재활치료시설", "정신건강복지 지역센터"],
+    행정시설: [
+      "건강가정지원센터",
+      "다문화가족지원센터",
+      "사회복지관",
+      "자활시설",
+    ],
+  };
+
+  const isMatchServiceTarget = (facility, selectedType) => {
+    if (selectedType === "전체") return true;
+
+    const matchTable = {
+      노인: ["노인"],
+      청소년: ["청소년", "청년"],
+      아동: ["아동"],
+      장애인: ["장애인"],
+    };
+
+    const keywords = matchTable[selectedType] || [];
+
+    const typeFields = [
+      facility["시설종류명"],
+      facility["상세유형"],
+      facility["SVC_TYPE"],
+    ];
+
+    return keywords.some((keyword) =>
+      typeFields.some((field) => field?.includes(keyword))
+    );
+  };
 
   useEffect(() => {
     if (!memberLoading) {
@@ -36,19 +72,25 @@ export default function FacilitySearchPage() {
 
   const filteredFacilities = facilities.filter((f) => {
     const name = f["시설명"] || f["FACLT_NM"] || "";
-    const type = f["시설종류명"] || f["SVC_TYPE"] || "";
+    const type = f["상세유형"] || f["시설종류명"] || f["SVC_TYPE"] || "";
+
     const matchesKeyword = keyword === "" || name.includes(keyword);
-    const matchesCategory = category === "전체" || type.includes(category);
-    return matchesKeyword && matchesCategory;
+
+    const matchesServiceType = isMatchServiceTarget(f, serviceType);
+
+    const categoryKeywords = categoryMap[category] || [];
+    const matchesCategory =
+      category === "전체" ||
+      categoryKeywords.some((target) => type?.includes(target));
+
+    return matchesKeyword && matchesServiceType && matchesCategory;
   });
 
   return (
     <div className="facility-search-container">
       <h2 className="facility-title">지역 복지시설</h2>
 
-      {/* 🔍 필터 바 */}
       <div className="filter-bar">
-        {/* 지역 표시 + 검색창 */}
         <div className="filter-row">
           <div className="region-text">
             {region.city} {region.district}
@@ -63,7 +105,20 @@ export default function FacilitySearchPage() {
           />
         </div>
 
-        {/* 카테고리 라디오 필터 */}
+        <div className="service-type-filter">
+          {["전체", "노인", "청소년", "아동", "장애인"].map((type) => (
+            <button
+              key={type}
+              onClick={() => setServiceType(type)}
+              className={`service-btn ${
+                serviceType === type ? "selected" : ""
+              }`}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+
         <div className="category-filter">
           {["전체", "체육시설", "요양시설", "의료시설", "행정시설"].map(
             (cat) => (
@@ -82,7 +137,6 @@ export default function FacilitySearchPage() {
         </div>
       </div>
 
-      {/* 🔄 상태 처리 */}
       {loading && <p>불러오는 중...</p>}
       {error && (
         <p className="error-text">시설 정보를 가져오는 데 실패했습니다.</p>
@@ -91,13 +145,10 @@ export default function FacilitySearchPage() {
         <p>해당 조건의 복지시설이 없습니다.</p>
       )}
 
-      {/* 📋 카드 리스트 */}
       <div className="facility-card-list">
         {filteredFacilities.map((facility, idx) => {
-          const key =
-            facility["시설명"] ||
-            facility["FACLT_NM"] ||
-            `facility-${region.district}-${idx}`;
+          const name = facility["시설명"] || facility["FACLT_NM"] || "";
+          const key = `${name}-${idx}`;
           return <FacilityCard key={key} facility={facility} />;
         })}
       </div>

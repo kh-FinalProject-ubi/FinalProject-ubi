@@ -1,0 +1,22 @@
+.facility-detail-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: #fff;
+}
+
+.facility-detail-title {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.facility-image img {
+  width: 100%;
+  height: auto;
+  margin: 20px 0;
+}
+
+.facility-section {
+  margin-top: 30px;
+}
