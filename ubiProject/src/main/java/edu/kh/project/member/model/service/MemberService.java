@@ -18,7 +18,7 @@ public interface MemberService {
 
     /** 카카오 로그인 - 토큰 기반 처리 등 확장 가능 
      * @throws Exception */
-    Member kakaoLogin(String kakaoId) throws Exception;
+    Member kakaoLogin(String authorizationCode) throws Exception;
 
 	String createRandomCode();
 

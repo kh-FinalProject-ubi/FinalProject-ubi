@@ -41,13 +41,13 @@
     MEMBER_NO, MEMBER_ID, MEMBER_PW, MEMBER_NICKNAME,
     MEMBER_EMAIL, MEMBER_TEL, MEMBER_ADDRESS,
     MEMBER_TADDRESS, REGION_DISTRICT, REGION_CITY,
-    MEMBER_NAME, AUTHORITY, MEMBER_STANDARD, MEMBER_DEL_FL
+    MEMBER_NAME, AUTHORITY, MEMBER_STANDARD, KAKAO_ID, MEMBER_DEL_FL
   )
   VALUES (
     SEQ_MEMBER_NO.NEXTVAL, #{memberId}, #{memberPw}, #{memberNickname},
     #{memberEmail}, #{memberTel}, #{memberAddress},
     #{memberTaddress}, #{regionDistrict}, #{regionCity},
-    #{memberName}, 1, #{memberStandard}, 'N'
+    #{memberName}, 1, #{memberStandard}, #{kakaoId}, 'N'
   )
 </insert>
 
@@ -56,6 +56,24 @@
   SELECT COUNT(*)
   FROM MEMBER
   WHERE MEMBER_ID = #{memberId}
+  AND MEMBER_DEL_FL = 'N'
+</select>
+
+<select id="selectByKakaoId" parameterType="string" resultType="Member">
+  SELECT
+    MEMBER_NO,
+    MEMBER_ID,
+    MEMBER_NICKNAME,
+    MEMBER_PW,
+    MEMBER_TEL,
+    MEMBER_ADDRESS,
+    MEMBER_STANDARD,
+    MEMBER_IMG,
+    KAKAO_ID, <!-- ✅ 필요시 확인용 -->
+    AUTHORITY,
+    TO_CHAR(ENROLL_DATE, 'YYYY"년" MM"월" DD"일"') AS ENROLL_DATE
+  FROM MEMBER
+  WHERE KAKAO_ID = #{kakaoId}
   AND MEMBER_DEL_FL = 'N'
 </select>
 

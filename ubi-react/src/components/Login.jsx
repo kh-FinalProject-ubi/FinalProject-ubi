@@ -76,21 +76,7 @@ const Login = () => {
       <button type="submit">로그인</button>
 
       {/* ✅ 카카오 로그인 버튼 */}
-      <button
-        type="button"
-        onClick={handleKakaoLogin}
-        style={{
-          backgroundColor: "#FEE500",
-          border: "none",
-          padding: "10px",
-          width: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          marginTop: "10px",
-          cursor: "pointer",
-        }}
-      >
+      <button type="button" onClick={handleKakaoLogin}>
         <img
           src="/kakao-login-icon.png"
           alt="카카오 로그인"
