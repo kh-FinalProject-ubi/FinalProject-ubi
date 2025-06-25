@@ -7,11 +7,25 @@ const useAuthStore = create(
       token: null,
       address: null,
       memberName: null,
-      memberStandard: null, // ✅ 추가
+      memberStandard: null,
+      authority: null, // ✅ 추가
 
-
-      setAuth: ({ token, address, memberName, memberStandard, memberNo }) =>
-        set({ token, address, memberName, memberStandard, memberNo}),
+      setAuth: ({
+        token,
+        address,
+        memberName,
+        memberStandard,
+        memberNo,
+        authority,
+      }) =>
+        set({
+          token,
+          address,
+          memberName,
+          memberStandard,
+          memberNo,
+          authority,
+        }),
 
       clearAuth: () =>
         set({
@@ -20,6 +34,7 @@ const useAuthStore = create(
           memberName: null,
           memberStandard: null,
           memberNo: null,
+          authority: null,
         }),
     }),
     {

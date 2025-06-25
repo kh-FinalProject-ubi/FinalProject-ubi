@@ -37,7 +37,7 @@ const askBoard = () => {
 
   return (
     <div>
-      <h2>게시판 목록</h2>
+      <h2>문의게시판</h2>
       <ul>
         {boardList.map((board) => (
           <li key={board.boardNo}>

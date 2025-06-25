@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,6 +25,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.board.model.service.BoardService;
 import edu.kh.project.board.model.service.EditBoardService;
+import edu.kh.project.common.util.JwtUtil;
 import edu.kh.project.member.model.dto.Member;
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,6 +39,11 @@ public class EditBoardController {
 
 	@Autowired
 	private BoardService boardService;
+
+	// 쥬스텐드에서 memberNo를 가져오기 위해
+	// 의존성 주입한 객체
+	@Autowired
+	private JwtUtil jwtUtil;
 
 	// 게시글 작성 화면 전환
 	@GetMapping("{boardCode:[0-9]+}/insert")
@@ -58,8 +65,9 @@ public class EditBoardController {
 	@PostMapping("{boardCode:[0-9]+}/insert")
 	public String boardInsert(@PathVariable("boardCode") int boardCode, @ModelAttribute Board inputBoard, // DTO에서 제목과
 																											// 내용만 얻어옴
-			@SessionAttribute("loginMember") Member loginMember, @RequestParam("images") List<MultipartFile> images,
-			RedirectAttributes ra) throws Exception {
+			@SessionAttribute("loginMember") Member loginMember,
+			@RequestParam(value = "images", required = false) List<MultipartFile> images, RedirectAttributes ra)
+			throws Exception {
 
 		// 1. boardCode, 로그인한 회원번호 memberNo를 inputBoard에 세팅
 		inputBoard.setBoardCode(boardCode);
@@ -101,113 +109,132 @@ public class EditBoardController {
 	 * @return
 	 */
 	@GetMapping("{boardCode:[0-9]+}/{boardNo:[0-9]+}")
-	public ResponseEntity<Map<String, Object>> boardUpdate(@PathVariable("boardCode") int boardCode,
-			@PathVariable("boardNo") int boardNo, @SessionAttribute("loginMember") Member loginMember) {
+	public ResponseEntity<Map<String, Object>> boardUpdate(
+	        @PathVariable("boardCode") int boardCode,
+	        @PathVariable("boardNo") int boardNo,
+	        @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
-		Map<String, Integer> map = new HashMap<>();
-		map.put("boardCode", boardCode);
-		map.put("boardNo", boardNo);
+	    Map<String, Integer> map = Map.of("boardCode", boardCode, "boardNo", boardNo);
+	    Board board = boardService.selectOne(map);
 
-		Board board = boardService.selectOne(map);
+	    if (board == null) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                .body(Map.of("message", "해당 게시글이 존재하지 않습니다."));
+	    }
 
-		if (board == null) {
-			Map<String, Object> body = Map.of("message", "해당 게시글이 존재하지 않습니다.", "status", 404);
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
-		}
+	    Long memberNo = null;
+	    String role = "GUEST";
 
-		if (board.getMemberNo() != loginMember.getMemberNo()) {
-			Map<String, Object> body = Map.of("message", "자신이 작성한 글만 수정 가능합니다.", "status", 403);
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
-		}
+	    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+	        String token = authHeader.substring(7);
+	        memberNo = jwtUtil.extractMemberNo(token);
+	        role = jwtUtil.extractRole(token); // "ADMIN" / "USER"
+	    }
 
-		return ResponseEntity.ok(Map.of("status", 200, "board", board));
+	    return ResponseEntity.ok(Map.of(
+	            "status", 200,
+	            "board", board,
+	            "role", role,
+	            "memberNo", memberNo
+	    ));
 	}
-
-	/** 게시글 수정
-	 * @param boardCode        : 게시글 종류 번호
-	 * @param boardNo  	       : 수정할 게시글 번호
-	 * @param inputBoard       : 커맨드 객체(제목, 내용)
-	 * @param images	       : 제출된 input type = "file" 모든 요소 (이미지 파일)
-	 * @param loginMember      : 로그인한 회원 번호 이용
+	/**
+	 * 게시글 수정
+	 * 
+	 * @param boardCode       : 게시글 종류 번호
+	 * @param boardNo         : 수정할 게시글 번호
+	 * @param inputBoard      : 커맨드 객체(제목, 내용)
+	 * @param images          : 제출된 input type = "file" 모든 요소 (이미지 파일)
+	 * @param loginMember     : 로그인한 회원 번호 이용
 	 * @param ra
-	 * @param deleteOrderList  : 삭제된 이미지 순서가 기록된 문자열 ("1,2,3")
-	 * @param cp	 		   : 수정 성공 시 이전 파라미터 유지
+	 * @param deleteOrderList : 삭제된 이미지 순서가 기록된 문자열 ("1,2,3")
+	 * @param cp              : 수정 성공 시 이전 파라미터 유지
 	 * @return
 	 */
 	@PostMapping("{boardCode:[0-9]+}/{boardNo:[0-9]+}")
 	public ResponseEntity<Map<String, Object>> boardUpdate(@PathVariable("boardCode") int boardCode,
-							  @PathVariable("boardNo") int boardNo,
-							  Board inputBoard,
-							  @RequestParam("images") List<MultipartFile> images,
-							  @SessionAttribute("loginMember") Member loginMember,
-							  @RequestParam(value = "deleteOrderList", required = false) String deleteOrderList,
-							  @RequestParam(value = "cp", required = false, defaultValue = "1") int cp
-							  ) throws Exception {
-		
-		// 1. 커맨드 객체 (inputBoard)에 boardCode, boardNo, memberNo 세팅
-		inputBoard.setBoardCode(boardCode);
-		inputBoard.setBoardNo(boardNo);
-		inputBoard.setMemberNo(loginMember.getMemberNo());
-		// inputBoard -> 제목, 내용, boardCode, boardNo, memberNo
-		
-		// 2. 게시글 수정 서비스 호출 후 결과 반환 받기
-		int result = service.boardUpdate(inputBoard, images, deleteOrderList);
-		
-		// 3. 서비스 결과에 따라 응답 제어
-		String message = null;
-		String path = null;
-		
-		if(result > 0) {
-			
-			Map<String, Object> body = Map.of(
-			            "message", "게시글이 수정 되었습니다."
-			        );
-			        return ResponseEntity.status(HttpStatus.OK).body(body);
-			
-		} else {
-				Map<String, Object> body = Map.of(
-		            "message", "수정에 실패했습니다."
-		        );
-		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
-	
-		}
-		
-	}
+			@PathVariable("boardNo") int boardNo,
+			@RequestParam(value = "images", required = false) List<MultipartFile> images,
+			@RequestParam(value = "deleteOrderList", required = false) String deleteOrderList,
+			@RequestHeader("Authorization") String authHeader) throws Exception {
 
+		 Map<String, Integer> paramMap = Map.of("boardCode", boardCode, "boardNo", boardNo);
+		    Board board = boardService.selectOne(paramMap);
+
+		    if (board == null) {
+		        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+		                             .body(Map.of("message", "게시글이 존재하지 않습니다."));
+		    }
+
+		    int boardType = board.getBoardType(); // 1: 공지, 2: 문의
+		    Long memberNo = null;
+		    String role = "GUEST";
+
+		    // JWT 토큰 파싱
+		    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+		        String token = authHeader.substring(7);
+		        memberNo = jwtUtil.extractMemberNo(token);
+		        role = jwtUtil.extractRole(token);  // 이게 "1" 또는 "2"일 가능성 있음
+		        
+		    }
+
+		    // 권한 체크
+		    if (boardType == 2) { // 문의 게시판
+		        if (!role.equals("ADMIN") && !memberNo.equals(board.getMemberNo())) {
+		            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+		                                 .body(Map.of("message", "접근 권한이 없습니다."));
+		        }
+		    }
+
+		    if (boardType == 1) { // 공지 게시판
+		        if (!role.equals("ADMIN")) {
+		            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+		                                 .body(Map.of("message", "관리자만 수정할 수 있습니다."));
+		        }
+		    }
+
+		    return ResponseEntity.ok(Map.of(
+		        "board", board,
+		        "role", role,
+		        "memberNo", memberNo
+		    ));
+		}
+	
 	// /editBoard/1/2000/delete?cp=1
-	@RequestMapping(value = "{boardCode:[0-9]+}/{boardNo:[0-9]+}/delete", 
-					method = {RequestMethod.GET, RequestMethod.POST})
-	public String boardDelete(@PathVariable("boardCode") int boardCode,
-							  @PathVariable("boardNo") int boardNo,
-							  @RequestParam(value="cp", required = false, defaultValue = "1") int cp,
-							  RedirectAttributes ra,
-							  @SessionAttribute("loginMember") Member loginMember) {
-		
+	@RequestMapping(value = "{boardCode:[0-9]+}/{boardNo:[0-9]+}/delete", method = { RequestMethod.GET,
+			RequestMethod.POST })
+	public String boardDelete(@PathVariable("boardCode") int boardCode, @PathVariable("boardNo") int boardNo,
+			@RequestParam(value = "cp", required = false, defaultValue = "1") int cp, RedirectAttributes ra,
+			@RequestHeader("Authorization") String authHeader) {
+
+		String token = authHeader.replace("Bearer ", "");
+		Long memberNoLong = jwtUtil.extractMemberNo(token);
+		int memberNo = memberNoLong.intValue();
+
 		Map<String, Integer> map = new HashMap<>();
 		map.put("boardCode", boardCode);
 		map.put("boardNo", boardNo);
-		map.put("memberNo", loginMember.getMemberNo());
-		
+		map.put("memberNo", memberNo);
+
 		int result = service.boardDelete(map);
-		
+
 		String path = null;
 		String message = null;
-		
-		if(result > 0) {
+
+		if (result > 0) {
 			message = "삭제되었습니다.";
 			path = String.format("/board/%d?cp=%d", boardCode, cp);
 			// /board/1?cp=7 게시글 목록 조회
-			
+
 		} else {
 			message = "삭제 실패";
 			path = String.format("/board/%d/%d?cp=%d", boardCode, boardNo, cp);
-			// /board/1/2000?cp=7 보드넘버 추가		
+			// /board/1/2000?cp=7 보드넘버 추가
 		}
-		
+
 		ra.addFlashAttribute("message", message);
-		
-		
-		return"redirect:" + path;
+
+		return "redirect:" + path;
 	}
 
 }

@@ -23,7 +23,7 @@
 }
 
 body {
-  background: var(--bg-light);
+  /* background: var(--bg-light); */
   color: var(--gray-800);
   line-height: 1.4;
 }
