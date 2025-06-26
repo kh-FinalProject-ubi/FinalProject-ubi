@@ -8,12 +8,16 @@ import org.apache.ibatis.annotations.Param;
 
 import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.board.model.dto.BoardLike;
+import edu.kh.project.board.model.dto.Comment;
 import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.myPage.model.dto.UploadFile;
 import edu.kh.project.welfare.benefits.model.dto.Facility;
 import edu.kh.project.welfare.benefits.model.dto.FacilityJob;
 import edu.kh.project.welfare.benefits.model.dto.Welfare;
 
+/**
+ * 
+ */
 @Mapper
 public interface MyPageMapper {
 
@@ -100,11 +104,18 @@ public interface MyPageMapper {
 	 */
 	List<Map<String, Object>> selectHashtagsByBoardNoList(@Param("boardNoList") List<Integer> boardNoList);
 
+	/** 작성댓글 조회
+	 * @param memberNo
+	 * @return
+	 */
+	List<Comment> Comment(int memberNo);
+	
 	/** 내가 좋아요를 누른 게시글 조회
 	 * @param memberNo
 	 * @return
 	 */
 	List<BoardLike> like(int memberNo);
+
 
 
 

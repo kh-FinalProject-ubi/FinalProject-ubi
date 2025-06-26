@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import edu.kh.project.board.model.dto.Board;
+import edu.kh.project.board.model.dto.Comment;
 import edu.kh.project.board.model.dto.BoardLike;
 import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.myPage.model.dto.UploadFile;
@@ -101,14 +102,27 @@ public class MyPageController {
 	
 	// 작성글 조회
 	@GetMapping("board")
-	public ResponseEntity<Object> board(@RequestParam("memberNo") int memberNo) {
+	public ResponseEntity<Object> board(@RequestParam("memberNo") int memberNo,
+										@RequestParam("contentType") String contentType) {
 		try {
 			if (memberNo == 0) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
 			}
 			
-			List<Board> board = service.baord(memberNo);
-			return ResponseEntity.status(HttpStatus.OK).body(board);
+			switch (contentType) {
+			
+			case "게시글" :
+				List<Board> board = service.baord(memberNo);
+				return ResponseEntity.status(HttpStatus.OK).body(board);
+				
+			case "댓글" :
+				List<Comment> comment = service.Comment(memberNo);
+				return ResponseEntity.status(HttpStatus.OK).body(comment);
+				
+			default:
+            	return ResponseEntity.badRequest().body("유효하지 않은 카테고리입니다.");	
+            	
+			}
 			
 		} catch (Exception e) {
 			log.error("내 정보 조회 중 에러 발생", e);
