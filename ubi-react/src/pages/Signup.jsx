@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import TermsAndPrivacyModal from "../components/TermsAndPrivacyModal";
 import "../styles/signup.css";
 import useModalStore from "../stores/useModalStore";
+import useAuthStore from "../stores/useAuthStore";
 
 const Signup = () => {
   const [memberId, setMemberId] = useState("");
@@ -39,6 +40,7 @@ const Signup = () => {
 
   const [emailError, setEmailError] = useState("");
   const openLogin = useModalStore((state) => state.openLoginModal);
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   const handleComplete = (data) => {
     const fullAddr = data.roadAddress || data.jibunAddress;
@@ -131,13 +133,16 @@ const Signup = () => {
     if (!memberTaddress.trim()) return alert("상세주소 입력 필요");
     if (!agreeTerms || !agreePrivacy) return alert("약관에 모두 동의해주세요.");
 
-    const isIdOk = await checkIdDuplicate(memberId);
-    const isNicknameOk = await checkNicknameDuplicate(memberNickname);
-    if (!isIdOk || !isNicknameOk) {
-      if (!isIdOk) setIdError("이미 사용 중인 아이디입니다.");
-      if (!isNicknameOk) setNicknameError("이미 사용 중인 닉네임입니다.");
-      return;
+    const isIdOk = await checkIdDuplicate(memberId); // true면 사용 가능
+    const isNicknameOk = await checkNicknameDuplicate(memberNickname); // true면 사용 가능
+
+    if (!isIdOk) {
+      setIdError("이미 사용 중인 아이디입니다.");
     }
+    if (!isNicknameOk) {
+      setNicknameError("이미 사용 중인 닉네임입니다.");
+    }
+    if (!isIdOk || !isNicknameOk) return;
 
     setIsSubmitting(true);
 

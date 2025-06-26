@@ -37,6 +37,10 @@
 	</select>
 
 <insert id="signup" parameterType="Member">
+  <selectKey keyProperty="memberNo" resultType="int" order="BEFORE">
+    SELECT SEQ_MEMBER_NO.NEXTVAL FROM DUAL
+  </selectKey>
+
   INSERT INTO MEMBER (
     MEMBER_NO, MEMBER_ID, MEMBER_PW, MEMBER_NICKNAME,
     MEMBER_EMAIL, MEMBER_TEL, MEMBER_ADDRESS,
@@ -44,7 +48,7 @@
     MEMBER_NAME, AUTHORITY, MEMBER_STANDARD, KAKAO_ID, MEMBER_DEL_FL
   )
   VALUES (
-    SEQ_MEMBER_NO.NEXTVAL, #{memberId}, #{memberPw}, #{memberNickname},
+    #{memberNo}, #{memberId}, #{memberPw}, #{memberNickname},
     #{memberEmail}, #{memberTel}, #{memberAddress},
     #{memberTaddress}, #{regionDistrict}, #{regionCity},
     #{memberName}, 1, #{memberStandard}, #{kakaoId}, 'N'
