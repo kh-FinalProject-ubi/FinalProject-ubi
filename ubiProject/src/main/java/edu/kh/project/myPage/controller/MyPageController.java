@@ -132,14 +132,28 @@ public class MyPageController {
 	
 	// 내가 좋아요를 누른 게시글 조회
 	@GetMapping("like")
-	public ResponseEntity<Object> like(@RequestParam("memberNo") int memberNo) {
+	public ResponseEntity<Object> like(@RequestParam("memberNo") int memberNo,
+									   @RequestParam("contentType") String contentType) {
 		try {
+			
 			if (memberNo == 0) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
 			}
 			
-			List<BoardLike> like = service.like(memberNo);
-			return ResponseEntity.status(HttpStatus.OK).body(like);
+			switch (contentType) {
+			
+			case "게시글" :
+				List<BoardLike> like = service.like(memberNo);
+				return ResponseEntity.status(HttpStatus.OK).body(like);
+				
+			case "댓글" :
+				List<Comment> likeComment = service.likeComment(memberNo);
+				return ResponseEntity.status(HttpStatus.OK).body(likeComment);
+				
+			default:
+            	return ResponseEntity.badRequest().body("유효하지 않은 카테고리입니다.");	
+            	
+			}
 			
 		} catch (Exception e) {
 			log.error("내 정보 조회 중 에러 발생", e);

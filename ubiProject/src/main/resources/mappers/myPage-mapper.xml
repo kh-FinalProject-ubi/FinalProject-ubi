@@ -53,13 +53,22 @@
 	</select>
 	
 	<!-- 작성글에 포함된 해시태그 조회 -->
-	<select id="selectHashtagsByBoardNoList">
-		SELECT BOARD_NO, HASHTAG_NAME
-	    FROM BOARD_HASHTAG
-	    WHERE BOARD_NO IN
-	    <foreach collection="boardNoList" item="boardNo" open="(" separator="," close=")">
-	    	#{boardNo}
-  		</foreach>
+	<select id="selectHashtagsByBoardNoList" resultType="map">
+	  <choose>
+	    <when test="boardNoList != null and boardNoList.size() > 0">
+	      SELECT BOARD_NO, HASHTAG_NAME
+	      FROM BOARD_HASHTAG
+	      WHERE BOARD_NO IN
+	      <foreach collection="boardNoList" item="boardNo" open="(" separator="," close=")">
+	        #{boardNo}
+	      </foreach>
+	    </when>
+	    <otherwise>
+	      SELECT BOARD_NO, HASHTAG_NAME
+	      FROM BOARD_HASHTAG
+	      WHERE 1 = 0
+	    </otherwise>
+	  </choose>
 	</select>
 	
 	<!-- 작성 댓글 조회 -->
@@ -104,6 +113,31 @@
 		WHERE bl.MEMBER_NO = #{memberNo}
 		GROUP BY b.BOARD_NO, b.BOARD_TITLE, b.BOARD_CONTENT, 
 			     b.BOARD_DATE, m.MEMBER_NICKNAME, b.POST_TYPE
+	</select>
+	
+	<!-- 내가 좋아요를 누른 댓글 조회 -->
+	<select id="likeComment">
+		SELECT 
+		  C.COMMENT_NO,
+		  B.POST_TYPE, 
+		  B.BOARD_TITLE, 
+		  C.COMMENT_CONTENT, 
+		  C.COMMENT_DATE, 
+		  COUNT(CL2.COMMENT_NO) AS LIKE_COUNT  -- 전체 좋아요 수
+		FROM COMMENT_LIKE CL -- 내가 좋아요 누른 목록에서 시작
+		JOIN COMMENTS C ON CL.COMMENT_NO = C.COMMENT_NO
+		JOIN BOARD B ON C.BOARD_NO = B.BOARD_NO
+		LEFT JOIN COMMENT_LIKE CL2 ON C.COMMENT_NO = CL2.COMMENT_NO  -- 전체 좋아요 수 세기용
+		WHERE 
+		  CL.MEMBER_NO = #{memberNo}  -- 내가 좋아요 누른 댓글만
+		  AND C.COMMENT_DEL_FL = 'N'
+		GROUP BY 
+		  C.COMMENT_NO,
+		  B.POST_TYPE,
+		  B.BOARD_TITLE,
+		  C.COMMENT_CONTENT,
+		  C.COMMENT_DATE
+		ORDER BY C.COMMENT_DATE
 	</select>
 	
 	<!-- 회원 정보 수정 -->
