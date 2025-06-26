@@ -30,13 +30,24 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
 
-            // ✅ 세션 완전 제거: STATELESS 설정
+            
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/api/**", "/css/**", "/js/**", "/img/**", "/login/**", "/oauth2/**","/kid/**").permitAll()
-                .anyRequest().authenticated()
+            	    .requestMatchers(
+            	            "/", 
+            	            "/api/**", 
+            	            "/css/**", 
+            	            "/js/**", 
+            	            "/img/**", 
+            	            "/images/**",            // 추가
+            	            "/images/board/**",      // 추가
+            	            "/login/**", 
+            	            "/oauth2/**",
+            	            "/kid/**"
+            	        ).permitAll()
+            	        .anyRequest().authenticated()
             )
 
             .oauth2Login(oauth -> oauth

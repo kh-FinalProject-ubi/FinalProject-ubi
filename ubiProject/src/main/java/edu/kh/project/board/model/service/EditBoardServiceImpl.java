@@ -135,11 +135,10 @@ public class EditBoardServiceImpl implements EditBoardService {
 
 	// 게시글 수정
 	public int boardUpdate(Board inputBoard, List<MultipartFile> images, String deleteOrderList) throws Exception {
-	    // 1. 게시글 부분 수정
 	    int result = mapper.boardUpdate(inputBoard);
 	    if (result == 0) return 0;
 
-	    // 2. 이미지 삭제 처리
+	    // 이미지 삭제 처리
 	    if (deleteOrderList != null && !deleteOrderList.isBlank()) {
 	        Map<String, Object> map = new HashMap<>();
 	        map.put("deleteOrderList", deleteOrderList);
@@ -148,23 +147,22 @@ public class EditBoardServiceImpl implements EditBoardService {
 	        if (result == 0) throw new RuntimeException("이미지 삭제 실패");
 	    }
 
-	    // 3. 이미지가 없으면 리턴
 	    if (images == null || images.isEmpty()) {
 	        return result;
 	    }
 
 	    List<BoardImage> uploadList = new ArrayList<>();
 	    String uploadFolder = "C:/uploadFiles/board/";
+	    File folder = new File(uploadFolder);
+	    if (!folder.exists()) folder.mkdirs();  // 폴더 없으면 생성
+
+	    int successCount = 0;
 
 	    for (int i = 0; i < images.size(); i++) {
 	        MultipartFile file = images.get(i);
 	        if (!file.isEmpty()) {
 	            String originalName = file.getOriginalFilename();
-	            String extension = "";
-	            int dotIndex = originalName.lastIndexOf(".");
-	            if (dotIndex != -1) {
-	                extension = originalName.substring(dotIndex);
-	            }
+	            String extension = originalName.substring(originalName.lastIndexOf("."));
 	            String storedFileName = UUID.randomUUID().toString() + extension;
 
 	            BoardImage img = BoardImage.builder()
@@ -175,27 +173,28 @@ public class EditBoardServiceImpl implements EditBoardService {
 	                    .uploadFile(file)
 	                    .build();
 
-	            // 먼저 이미지 수정 시도
-	            result = mapper.updateImage(img);
+	            int updateResult = mapper.updateImage(img);
 
-	            // 수정 실패 시 삽입
-	            if (result == 0) {
-	                result = mapper.insertImage(img);
+	            if (updateResult == 0) {
+	                updateResult = mapper.insertImage(img);
 	            }
 
-	            if (result == 0) throw new RuntimeException("이미지 수정 또는 삽입 실패");
+	            if (updateResult == 0) {
+	                throw new RuntimeException("이미지 수정 또는 삽입 실패");
+	            }
 
 	            uploadList.add(img);
+	            successCount++;
 	        }
 	    }
 
-	    // 4. 실제 파일 저장
 	    for (BoardImage img : uploadList) {
 	        img.getUploadFile().transferTo(new File(uploadFolder + img.getImageName()));
 	    }
 
-	    return result;
+	    return successCount > 0 ? successCount : result;
 	}
+
 	
 	// 게시글 삭제
 	@Override

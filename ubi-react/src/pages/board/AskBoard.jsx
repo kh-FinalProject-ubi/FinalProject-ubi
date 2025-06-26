@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link, useLocation } from "react-router-dom";
+import { Link, Navigate, useLocation } from "react-router-dom";
 
 const boardCodeMap = {
   "/noticeBoard": 1,
@@ -40,18 +40,25 @@ const askBoard = () => {
     <div>
       <h2>문의게시판</h2>
       <ul>
-        {boardList.map((board) => (
+        {boardList.map((board, index) => (
           <li key={board.boardNo}>
             <Link to={`/${path.split("/")[1]}/detail/${board.boardNo}`}>
-              {board.length} &nbsp;
+              {index + 1} &nbsp;&nbsp;&nbsp;
               {board.postType} &nbsp; &nbsp; &nbsp;
-              <strong>{board.boardTitle}</strong> - {board.boardDate}
+              <strong>{board.boardTitle}</strong>&nbsp; &nbsp; &nbsp;
+              {board.memberNickname}&nbsp; &nbsp; &nbsp;
+              {board.boardDate}
               &nbsp;&nbsp;&nbsp;
-              {board.boardAnswer}
+              {board.boardAnswer}&nbsp;&nbsp;&nbsp;
+              {board.boardReadCount}
             </Link>
           </li>
         ))}
       </ul>
+
+      <button onClick={() => Navigate(`/editBoard/${boardCode}`)}>
+        글 작성
+      </button>
     </div>
   );
 };
