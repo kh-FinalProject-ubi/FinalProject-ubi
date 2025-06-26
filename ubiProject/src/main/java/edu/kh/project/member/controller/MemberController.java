@@ -102,16 +102,11 @@ public class MemberController {
     }
     
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(
-        @ModelAttribute Member inputMember,
-        @RequestParam(value = "memberImg", required = false) MultipartFile memberImg
-    ) {
-        String webPath = profileWebPath;
-        String folderPath = profileFolderPath;
-        
+    public ResponseEntity<?> signup(@ModelAttribute Member inputMember) {
+        // 1. 주소에서 시/도, 시/군/구 추출
         String fullAddress = inputMember.getMemberAddress();
         if (fullAddress != null && !fullAddress.isBlank()) {
-            String[] parts = fullAddress.split("^^^");
+            String[] parts = fullAddress.split("\\^\\^\\^"); // "우편번호^^^기본주소^^^상세주소"
             String baseAddress = parts.length >= 2 ? parts[1] : fullAddress;
             String[] tokens = baseAddress.trim().split(" ");
 
@@ -123,34 +118,22 @@ public class MemberController {
             }
         }
 
-        if (memberImg != null && !memberImg.isEmpty()) {
-            String renamed = UUID.randomUUID().toString() + "_" + memberImg.getOriginalFilename();
-            File dest = new File(folderPath + renamed);
-            try {
-                memberImg.transferTo(dest);
-                inputMember.setMemberImg(webPath + renamed);
-            } catch (IOException e) {
-                return ResponseEntity.internalServerError().body(Map.of("message", "파일 저장 실패"));
-            }
-        }
+        // 2. 기본 권한 부여
+        inputMember.setAuthority("1"); // 일반 사용자
 
-
-        int result = service.signup(inputMember);
+        // 3. DB에 회원 정보 저장
+        int result = service.signup(inputMember); // 이 시점에 memberNo가 자동으로 세팅돼야 함
 
         if (result > 0) {
-            inputMember.setAuthority("1"); // ✅ 기본 USER 권한 명시
+            // 4. JWT 토큰 생성
+            String token = jwtUtil.generateToken(inputMember);
 
-            String token = jwtUtil.generateToken(inputMember); // ✅ JWT 생성
-
-            String readableStandard = parseMemberStandard(inputMember.getMemberStandard());
-            String district = extractDistrict(inputMember.getMemberAddress());
-
+            // 5. 응답 데이터 구성
             Map<String, Object> body = new HashMap<>();
             body.put("token", token);
             body.put("memberName", inputMember.getMemberNickname());
-            body.put("address", district);
-            body.put("memberStandard", readableStandard);
-            body.put("memberImg", inputMember.getMemberImg());
+            body.put("address", extractDistrict(inputMember.getMemberAddress()));
+            body.put("memberStandard", parseMemberStandard(inputMember.getMemberStandard()));
             body.put("memberNo", inputMember.getMemberNo());
 
             return ResponseEntity.ok(body);
