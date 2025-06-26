@@ -116,6 +116,12 @@ public interface MyPageMapper {
 	 */
 	List<BoardLike> like(int memberNo);
 
+	/** 내가 좋아요를 누른 댓글 조회
+	 * @param memberNo
+	 * @return
+	 */
+	List<Comment> likeComment(int memberNo);
+
 
 
 
