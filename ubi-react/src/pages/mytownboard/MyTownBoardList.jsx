@@ -3,10 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { generateTagList } from '../../utils/tagUtils';
+import useAuthStore from '../../stores/useAuthStore';
 function MyTownBoard() {
   const [boards, setBoards] = useState([]);
     const navigate = useNavigate();
-
+ const { address } = useAuthStore();
   useEffect(() => {
     fetch('/api/board/mytownBoard')
       .then(res => res.json())
@@ -16,7 +17,7 @@ function MyTownBoard() {
 
   return (
     <div>
-      <h2>📍 우리동네 게시판</h2>
+      <h2>📍 우리동네 게시판</h2> <h3>지역:{address}</h3>
       <ul>
         {boards.map(board => (
           <li key={board.boardNo} style={{ borderBottom: '1px solid #ccc', padding: '10px' }}>

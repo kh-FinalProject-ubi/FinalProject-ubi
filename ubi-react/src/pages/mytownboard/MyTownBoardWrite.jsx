@@ -4,9 +4,11 @@ import "summernote/dist/summernote-lite.css";
 import $ from "jquery";
 import "summernote/dist/summernote-lite";
 import useAuthStore from "../../stores/useAuthStore";
+import WelfareFacilityModal from "./WelfareFacilityModal";
+import Modal from "../../components/common/Modal";
 
 const MyTownBoardWrite = () => {
-  const { token, memberNo, regionCity, regionDistrict } = useAuthStore();
+  const { memberNo, address } = useAuthStore();
   const [boardTitle, setTitle] = useState("");
   const [boardContent, setContent] = useState("");
   const navigate = useNavigate();
@@ -14,9 +16,12 @@ const MyTownBoardWrite = () => {
   const [postTypeCheck, setPostTypeCheck] = useState(""); // 단일 선택
   // ✅ HTML 태그 제거 (순수 텍스트 추출)
   const plainContent = boardContent.replace(/<[^>]+>/g, "").trim();
-
-
 const postTypeCheckOptions = ["자유", "자랑","복지시설후기","복지혜택후기"];
+const [showModal, setShowModal] = useState(false);
+
+const [selectedFacilityName, setSelectedFacilityName] = useState("");
+const [selectedFacilityId, setSelectedFacilityId] = useState("");
+
   const handleSubmit = () => {
     //1. 입력하지 않는 경우 alert
     if (!boardTitle.trim()) {
@@ -60,8 +65,7 @@ else if (postTypeCheck === "복지시설후기" || postTypeCheck === "복지혜�
        memberNo,
          postType,  
         hashtagList,  // ✅ 배열 형태로 전송
-                regionCity,        // ✅ 서버로 보낼 경우
-        regionDistrict     // ✅ 서버로 보낼 경우
+facilityApiServiceId: selectedFacilityId || null, // 선택 안했을 경우 null
       }),
     })
         .then(async res => {
@@ -107,7 +111,7 @@ console.log("hashtags:", hashtags);
 
 <div className="post-option-box">
 <p>
-  작성자 지역: {regionCity} {regionDistrict}
+  작성자 지역: {address}
 </p>
  <table border="1" style={{ width: "100%", marginTop: "20px", borderCollapse: "collapse" }}>
   <tbody>
@@ -127,16 +131,26 @@ console.log("hashtags:", hashtags);
             {type}
           </label>
         ))}
+
+<br />
+
+{postTypeCheck === "복지시설후기" && (
+  <button onClick={() => setShowModal(true)}>복지시설 선택</button>
+)}
+
+{showModal && (
+  <Modal onClose={() => setShowModal(false)}>
+    <WelfareFacilityModal />
+  </Modal>
+)}
+
+{selectedFacilityName && (
+  <div style={{ marginTop: "10px", fontWeight: "bold", color: "#333" }}>
+    선택된 시설: {selectedFacilityName}
+  </div>
+)}
       </td>
     </tr>
-
-     {/* 작성복지 입력 */}
-    <tr>
-       <th >작성복지</th> 
-<td >작성복지</td>
-    </tr>
-
-
 
     {/* 해시태그 입력 */}
     <tr>
