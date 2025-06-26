@@ -4,6 +4,30 @@ import { useLocation } from "react-router-dom";
 import KakaoMapView from "../../components/welfarefacility/KakaoMapView"; // 카카오맵 컴포넌트
 import "../../styles/welfarefacility/FacilityDetailPage.css";
 
+// 🧹 설명 문자열 전처리 함수
+function cleanDescription(desc) {
+  return (
+    desc
+      .replace(/<!--\[data-hwpjson][\s\S]*?-->/g, "")
+      .replace(/"{[^}]*}"/g, "")
+
+      // ✅ 숫자. 또는 번호 패턴 개행 추가
+      .replace(/([0-9]+)\.\s*/g, "\n$1. ")
+      .replace(/\(([0-9]+)\)/g, "\n($1)")
+
+      // ✅ 특수 기호 앞 줄바꿈
+      .replace(/- /g, "\n- ")
+      .replace(/►/g, "\n►")
+
+      // ✅ 공백 정리
+
+      .replace(/\n{3,}/g, "\n\n")
+
+      // ✅ 앞뒤 공백 제거
+      .trim()
+  );
+}
+
 export default function FacilityDetailPage() {
   const location = useLocation();
   const facility = location.state?.facility;
@@ -12,10 +36,32 @@ export default function FacilityDetailPage() {
     return <div>❌ 잘못된 접근입니다. 시설 정보가 없습니다.</div>;
   }
 
-  const name = facility["시설명"] || facility["FACLT_NM"] || "시설명 없음";
+  const name =
+    facility.facilityName ||
+    facility["시설명"] ||
+    facility["FACLT_NM"] ||
+    "시설명 없음";
+
   const address =
-    facility["주소"] || facility["REFINE_ROADNM_ADDR"] || facility["ADDR"];
+    facility.facilityAddr ||
+    facility["주소"] ||
+    facility["REFINE_ROADNM_ADDR"] ||
+    facility["ADDR"];
+
   const imageUrl = facility.imageUrl || null;
+  const lat = facility.lat || facility["Y"];
+  const lng = facility.lng || facility["X"];
+  const reservationUrl = facility.reservationUrl || facility["SVCURL"];
+  const rawDescription = facility.description || facility["DTLCONT"] || "";
+  const description = cleanDescription(rawDescription);
+
+  // ✅ 표시할 항목만 골라서 매핑
+  const displayFields = {
+    시설명: name,
+    시설주소: address,
+    카테고리: facility.category,
+    예약주소: reservationUrl,
+  };
 
   return (
     <div className="facility-detail-container">
@@ -30,17 +76,39 @@ export default function FacilityDetailPage() {
       <section className="facility-section">
         <h3>📝 상세 정보</h3>
         <ul>
-          {Object.entries(facility).map(([key, value]) => (
-            <li key={key}>
-              <strong>{key}:</strong> {value || "없음"}
+          {Object.entries(displayFields).map(([label, value]) => (
+            <li key={label}>
+              <strong>{label}:</strong> {value || "없음"}
             </li>
           ))}
         </ul>
       </section>
 
+      {/* 📖 설명 */}
+      {description && (
+        <section className="facility-section">
+          <h3>📖 이용 안내</h3>
+          <p style={{ whiteSpace: "pre-line" }}>{description}</p>
+        </section>
+      )}
+
+      {/* ✅ 예약하기 버튼 (상세정보와 지도 사이) */}
+      {reservationUrl && (
+        <div style={{ textAlign: "center", margin: "20px 0" }}>
+          <a
+            href={reservationUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="reservation-button"
+          >
+            📅 예약하기
+          </a>
+        </div>
+      )}
+
       <section className="facility-section">
         <h3>📍 시설 위치</h3>
-        <KakaoMapView address={address} />
+        <KakaoMapView address={!lat ? address : null} lat={lat} lng={lng} />
       </section>
     </div>
   );

@@ -9,7 +9,9 @@ const useAuthStore = create(
       memberName: null,
       memberStandard: null,
       authority: null, // ✅ 추가
-
+      regionCity: null, // ✅ 여기도 초기화 필요
+      regionDistrict: null,
+  
       setAuth: ({
         token,
         address,
@@ -17,6 +19,9 @@ const useAuthStore = create(
         memberStandard,
         memberNo,
         authority,
+
+        regionCity, // ✅ 지역 추가
+        regionDistrict,
       }) =>
         set({
           token,
@@ -24,7 +29,10 @@ const useAuthStore = create(
           memberName,
           memberStandard,
           memberNo,
-          authority,
+          authority, // ✅ 지역 추가
+          regionCity,
+          regionDistrict,
+
         }),
 
       clearAuth: () =>
@@ -35,6 +43,9 @@ const useAuthStore = create(
           memberStandard: null,
           memberNo: null,
           authority: null,
+          regionCity: null, // ✅ 추가
+          regionDistrict: null,
+
         }),
     }),
     {
