@@ -3,29 +3,44 @@ import axios from 'axios';
 import "../../styles/mypage/Profile.css";
 import useAuthStore from '../../stores/useAuthStore';
 import { AnimatePresence, motion } from 'framer-motion';
+import LoadingOverlay from './loading';
+import { div } from 'framer-motion/client';
 
 const Profile = () => {
   
   const { memberNo } = useAuthStore(); // Zustand에서 회원 정보 가져옴
   console.log('memberNo:', memberNo);
+  const [loading, setLoading] = useState(false);
 
   const [member, setMember] = useState(null);
 
   const [benefits, setBenefits] = useState([]);
   const [category, setCategory] = useState('시설'); // or '채용', '혜택', '시설'
 
-  const [board, setboard] = useState([]);
+  const [board, setBoard] = useState([]);
   const [contentType, setContentType] = useState('게시글'); // or '댓글'
 
   const [like, setlike] = useState([]);
+
+  // 로딩
+  const withLoadingParallel = async (...tasks) => {
+    setLoading(true);
+    try {
+      await Promise.all(tasks.map(fn => fn()));
+    } catch (err) {
+      console.error("에러:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // 내 기본 정보
   const getMemberData = async () => {
     try {
        console.log("기본정보 axios 요청 시작");
-      const res = await axios.get('/api/myPage/info', { params: {memberNo : memberNo} });
+     const res = await axios.get('/api/myPage/info', { params: {memberNo : memberNo} });
      console.log("기본정보 응답 받음:", res);
-      console.log("기본정보 응답 값:", res.data);
+     console.log("기본정보 응답 값:", res.data);
 
       if (res.status === 200) {
         setMember(res.data);
@@ -52,16 +67,16 @@ const Profile = () => {
     }
   }
   
-  // 내가 작성한 게시글 목록
+  // 내가 작성한 게시글/댓글 목록
   const getBoardData = async () => {
     try{
       console.log("작성글 axios 요청 시작");
-      const res = await axios.get('/api/myPage/board', { params: {memberNo : memberNo} });
+      const res = await axios.get('/api/myPage/board', { params: {memberNo : memberNo, contentType : contentType} });
       console.log("작성글 응답 받음:", res);
       console.log("작성글 응답 값:", res.data);
 
       if (res.status === 200) {
-        setboard(res.data);
+        setBoard(res.data);
       }
 
     }catch(err) {
@@ -89,14 +104,18 @@ const Profile = () => {
   useEffect(() => {
     if (!memberNo) return;
     console.log("useEffect 실행");
+    withLoadingParallel(getBenefitsData, getBoardData, getLikeData, getMemberData);
+
     getMemberData();
+
     getBenefitsData();
     getBoardData();
+
     getLikeData();
 
-  }, [memberNo]);
+  }, [memberNo, category, contentType]);
 
-    return (
+  return (
     <div className="mypage-profile">
       <h2>내 정보</h2>
 
@@ -104,6 +123,7 @@ const Profile = () => {
         <section className="basic-info">
           <h3>기본 정보</h3>
           <div className="profile-left">
+            {loading && <LoadingOverlay />}
             <img
               src={member.profileImg || "/assets/profile-example.png"}
               alt="프로필"
@@ -127,6 +147,7 @@ const Profile = () => {
       <section className="benefit-list">
         <h3>혜택 목록 ({benefits.length})</h3>
         <div className="category-tabs">
+          {loading && <LoadingOverlay />}
           {['시설', '채용', '혜택'].map(cat => (
             <button
               key={cat}
@@ -170,7 +191,7 @@ const Profile = () => {
                     const isEvent = !!benefit.eventTitle; // 행사 여부
 
                     return (
-                      <div className="benefit-card" key={benefit.facilityId}>
+                      <div className="benefit-card" key={benefit.facilityNo}>
                         <div className="badge-row">{isEvent ? '이벤트 정보' : '시설 이용'}</div>
 
                         <div className="benefit-title">
@@ -227,42 +248,87 @@ const Profile = () => {
 
       {/* 게시글 목록 */}
       <section className="post-list">
-        <h3>내가 작성한 게시글 ({board.length})</h3>
-        <table className="post-table">
-          <thead>
-            <tr>
-              <th>분류</th>
-              <th>해시태그</th>
-              <th>제목</th>
-              <th>내용</th>
-              <th>작성일</th>
-              <th>조회수</th>
-            </tr>
-          </thead>
-          <tbody>
-            {board.map((board) => (
-              <tr key={board.boardNo}>
-                <td>{board.postType}</td>
-                <td>{board.hashtags}</td>
-                <td>{board.boardTitle}</td>
-                <td>
-                  {board.boardContent
-                    ? board.boardContent.length > 20
-                      ? `${board.boardContent.slice(0, 20)}...`
-                      : board.boardContent
-                    : "내용 없음"}
-                </td>
-                <td>{board.boardDate}</td>
-                <td>{board.boardReadCount}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="category-tabs">
+          {['게시글', '댓글'].map(cat => (
+            <button
+              key={cat}
+              onClick={() => setContentType(cat)}
+              className={contentType === cat ? 'active' : ''}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+          {loading && <LoadingOverlay />}
+        {contentType === '게시글' && (
+          <div>
+            <h3>내가 작성한 게시글 ({board.length})</h3>
+            <table className="post-table">
+              <thead>
+                <tr>
+                  <th>분류</th>
+                  <th>해시태그</th>
+                  <th>제목</th>
+                  <th>내용</th>
+                  <th>작성일</th>
+                  <th>조회수</th>
+                </tr>
+              </thead>
+              <tbody>
+                {board.map((b) => (
+                  <tr key={b.boardNo}>
+                    <td>{b.postType}</td>
+                    <td>{b.hashtags}</td>
+                    <td>{b.boardTitle}</td>
+                    <td>
+                      {b.boardContent
+                        ? b.boardContent.length > 20
+                          ? `${b.boardContent.slice(0, 20)}...`
+                          : b.boardContent
+                        : "내용 없음"}
+                    </td>
+                    <td>{b.boardDate}</td>
+                    <td>{b.boardReadCount}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {contentType === '댓글' && (
+          <div>
+            <h3>내가 작성한 댓글 ({board.length})</h3>
+            <table className="post-table">
+              <thead>
+                <tr>
+                  <th>분류</th>
+                  <th>제목</th>
+                  <th>내 댓글</th>
+                  <th>작성일</th>
+                  <th>좋아요</th>
+                </tr>
+              </thead>
+              <tbody>
+                {board.map((b) => (
+                  <tr key={b.commentNo}>
+                    <td>{b.postType}</td>
+                    <td>{b.boardTitle}</td>
+                    <td>{b.commentContent}</td>
+                    <td>{b.commentDate}</td>
+                    <td>{b.likeCount}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
 
       <section className="post-list">
         <h3>내가 좋아요를 누른 게시글 ({like.length})</h3>
         <table className="post-table">
+          {loading && <LoadingOverlay />}
           <thead>
             <tr>
               <th>분류</th>

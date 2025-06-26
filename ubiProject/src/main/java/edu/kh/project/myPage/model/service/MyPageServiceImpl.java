@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import edu.kh.project.board.model.dto.Board;
+import edu.kh.project.board.model.dto.Comment;
 import edu.kh.project.board.model.dto.BoardLike;
 import edu.kh.project.common.util.Utility;
 import edu.kh.project.member.model.dto.Member;
@@ -101,6 +102,11 @@ public class MyPageServiceImpl implements MyPageService {
 
 	        return board;
 	    }
+	
+	@Override
+	public List<Comment> Comment(int memberNo) {
+		return mapper.Comment(memberNo);
+	}
 	
 	// 내가 좋아요를 누른 게시글 조회
 	@Override
