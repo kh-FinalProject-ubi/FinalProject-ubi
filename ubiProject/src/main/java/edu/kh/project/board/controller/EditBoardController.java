@@ -64,7 +64,7 @@ public class EditBoardController {
 	 */
 	@PostMapping("{boardCode:[0-9]+}/insert")
 	public String boardInsert(@PathVariable("boardCode") int boardCode, @ModelAttribute Board inputBoard, // DTO에서 제목과
-																											// 내용만 얻어옴
+																			//@RequestParam("files") MultipartFile[] files, 추가 // 내용만 얻어옴
 			@SessionAttribute("loginMember") Member loginMember,
 			@RequestParam(value = "images", required = false) List<MultipartFile> images, RedirectAttributes ra)
 			throws Exception {

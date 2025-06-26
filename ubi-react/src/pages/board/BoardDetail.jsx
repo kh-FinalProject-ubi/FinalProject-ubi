@@ -16,15 +16,10 @@ const BoardDetail = () => {
   const boardCode = boardCodeMap[boardPath];
 
   const [board, setBoard] = useState(null);
-
-  // 권한 체크 후 이동 및 alert 중복 방지용
+  const [loading, setLoading] = useState(true);
   const [hasAlerted, setHasAlerted] = useState(false);
 
   useEffect(() => {
-    // console.log("=== BoardDetail useEffect ===");
-    // console.log("토큰:", token);
-    // console.log("authority:", authority);
-
     if (!boardCode) {
       if (!hasAlerted) {
         alert("잘못된 게시판 경로입니다.");
@@ -34,39 +29,40 @@ const BoardDetail = () => {
       return;
     }
 
-    if (!token) {
+    if (!token && boardCode === 2) {
+      // 문의게시판은 비로그인 접근 불가
       if (!hasAlerted) {
         alert("로그인이 필요합니다.");
         setHasAlerted(true);
-        navigate(`/${boardPath}`);
       }
+      navigate(`/${boardPath}`);
       return;
     }
 
     const fetchBoard = async () => {
       try {
         const res = await axios.get(`/api/board/${boardCode}/${boardNo}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
 
         const boardData = res.data.board;
 
-        // 문의게시판이면 작성자 or 관리자만 볼 수 있음
+        // 문의게시판 권한 체크: 작성자 또는 관리자만 접근 가능
         if (
           boardCode === 2 &&
-          !(loginMemberNo === boardData.memberNo || role === "ADMIN")
+          !(loginMemberNo === boardData.memberNo || authority === "ADMIN")
         ) {
           if (!hasAlerted) {
             alert("해당 게시글을 볼 권한이 없습니다.");
             setHasAlerted(true);
+            setTimeout(() => navigate(`/${boardPath}`), 100); // 부드러운 이동
+            setLoading(false); // 로딩 종료
           }
-          navigate(`/${boardPath}`);
+
           return;
         }
 
-        // 공지게시판은 모두 조회 가능
+        // 권한 있으면 게시글 세팅
         setBoard(boardData);
       } catch (err) {
         if (!hasAlerted) {
@@ -78,8 +74,10 @@ const BoardDetail = () => {
             alert("오류가 발생했습니다.");
           }
           setHasAlerted(true);
+          setTimeout(() => navigate(`/${boardPath}`), 100);
         }
-        navigate(`/${boardPath}`);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -95,11 +93,12 @@ const BoardDetail = () => {
     hasAlerted,
   ]);
 
-  if (!board) return <p>로딩 중...</p>;
+  // 로딩 중이거나 권한 없는 경우 상세를 렌더링하지 않음
+  if (loading || !board) return null;
 
   const isWriter = loginMemberNo === board.memberNo;
   const isAdmin = authority === "ADMIN";
-  const isNotice = board?.boardType === 1;
+  const isNotice = board.boardType === 1;
 
   return (
     <main className="container">
@@ -109,6 +108,22 @@ const BoardDetail = () => {
         <h2 className="view-title">{board.boardTitle}</h2>
         <div className="content-box">
           <p>{board.boardContent}</p>
+          <div className="image-list">
+            {board.imageList && board.imageList.length > 0
+              ? board.imageList.map((img, index) => {
+                  const encodedFileName = encodeURIComponent(img.imageName);
+                  const filePath = `http://localhost:80${img.imagePath}${encodedFileName}`;
+                  return (
+                    <img
+                      key={index}
+                      src={filePath}
+                      alt={`게시글 이미지 ${index + 1}`}
+                      style={{ maxWidth: "100%", marginBottom: "10px" }}
+                    />
+                  );
+                })
+              : null}
+          </div>
           <p>조회수: {board.boardReadCount}</p>
           <p>작성자 번호: {board.memberNo}</p>
         </div>
@@ -121,7 +136,6 @@ const BoardDetail = () => {
             목록
           </button>
 
-          {/* 공지게시판은 모두 읽기 가능하므로 버튼은 작성자 or 관리자만 보여야 함 */}
           {(isWriter || isAdmin) && (
             <>
               <button

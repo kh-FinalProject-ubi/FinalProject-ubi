@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -133,80 +134,64 @@ public class EditBoardServiceImpl implements EditBoardService {
 	}
 
 	// 게시글 수정
-	@Override
-	public int boardUpdate(Board inputBoard, 
-	                       List<MultipartFile> images, 
-	                       String deleteOrderList) throws Exception {
-
-	    // 1. 게시글 부분(제목/내용) 수정
+	public int boardUpdate(Board inputBoard, List<MultipartFile> images, String deleteOrderList) throws Exception {
+	    // 1. 게시글 부분 수정
 	    int result = mapper.boardUpdate(inputBoard);
+	    if (result == 0) return 0;
 
-	    // 수정 실패 시 바로 리턴
-	    if(result == 0) return 0;
-
-	    // 2. 삭제할 이미지가 있으면 삭제 처리
-	    if(deleteOrderList != null && !deleteOrderList.isBlank()) {
-
+	    // 2. 이미지 삭제 처리
+	    if (deleteOrderList != null && !deleteOrderList.isBlank()) {
 	        Map<String, Object> map = new HashMap<>();
 	        map.put("deleteOrderList", deleteOrderList);
 	        map.put("boardNo", inputBoard.getBoardNo());
-
 	        result = mapper.deleteImage(map);
-
-	        // 삭제 실패 시 롤백
-	        if(result == 0) {
-	            throw new RuntimeException("이미지 삭제 실패");
-	        }
+	        if (result == 0) throw new RuntimeException("이미지 삭제 실패");
 	    }
 
-	    // 3. images가 null이거나 빈 리스트면 이미지 처리 생략
-	    if(images == null || images.isEmpty()) {
-	        // 이미지 첨부가 없으면 여기서 종료 (제목/내용만 수정 완료)
+	    // 3. 이미지가 없으면 리턴
+	    if (images == null || images.isEmpty()) {
 	        return result;
 	    }
 
-	    // 4. 실제 이미지 처리
 	    List<BoardImage> uploadList = new ArrayList<>();
+	    String uploadFolder = "C:/uploadFiles/board/";
 
-	    for(int i = 0; i < images.size(); i++) {
-
+	    for (int i = 0; i < images.size(); i++) {
 	        MultipartFile file = images.get(i);
+	        if (!file.isEmpty()) {
+	            String originalName = file.getOriginalFilename();
+	            String extension = "";
+	            int dotIndex = originalName.lastIndexOf(".");
+	            if (dotIndex != -1) {
+	                extension = originalName.substring(dotIndex);
+	            }
+	            String storedFileName = UUID.randomUUID().toString() + extension;
 
-	        if(!file.isEmpty()) {
-	            String originalName = file.getName();
-	          
 	            BoardImage img = BoardImage.builder()
-	                                   .imageName(originalName)
-	                                   .imagePath(webPath)
-	                                   .imageOrder(i)	                                   
-	                                   .boardNo(inputBoard.getBoardNo())
-	                                   .build();
+	                    .imageName(storedFileName)
+	                    .imagePath("/images/board/")
+	                    .imageOrder(i)
+	                    .boardNo(inputBoard.getBoardNo())
+	                    .uploadFile(file)
+	                    .build();
 
-	            uploadList.add(img);
-
-	            // 이미지 수정 시도
+	            // 먼저 이미지 수정 시도
 	            result = mapper.updateImage(img);
 
-	            // 수정 실패 시(기존 이미지 없으면) 삽입
-	            if(result == 0) {
+	            // 수정 실패 시 삽입
+	            if (result == 0) {
 	                result = mapper.insertImage(img);
 	            }
 
-	            // 수정/삽입 실패 시 롤백
-	            if(result == 0) {
-	                throw new RuntimeException("이미지 수정 또는 삽입 실패");
-	            }
+	            if (result == 0) throw new RuntimeException("이미지 수정 또는 삽입 실패");
+
+	            uploadList.add(img);
 	        }
 	    }
 
-	    // 5. 이미지가 하나도 없으면 리턴
-	    if(uploadList.isEmpty()) {
-	        return result;
-	    }
-
-	    // 6. 실제 파일을 서버 저장 폴더에 저장
-	    for(BoardImage img : uploadList) {
-	        img.getUploadFile().transferTo(new File(folderPath + img.getImageNo()));
+	    // 4. 실제 파일 저장
+	    for (BoardImage img : uploadList) {
+	        img.getUploadFile().transferTo(new File(uploadFolder + img.getImageName()));
 	    }
 
 	    return result;
