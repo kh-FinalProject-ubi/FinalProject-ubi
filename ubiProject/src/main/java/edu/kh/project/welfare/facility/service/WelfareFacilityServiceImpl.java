@@ -37,18 +37,18 @@ public class WelfareFacilityServiceImpl implements WelfareFacilityService {
 			return Collections.emptyList();
 		}
 
-		// ✅ RestTemplate 직접 생성 (한글 인코딩 방지용 설정 포함)
+		//  RestTemplate 직접 생성 (한글 인코딩 방지용 설정 포함)
 		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.getMessageConverters().add(0,
 			new org.springframework.http.converter.StringHttpMessageConverter(java.nio.charset.StandardCharsets.UTF_8));
 
-		// ✅ DB에서 불러온 URL에 서비스 키만 삽입 (추가 파라미터 없이 사용)
+		//  DB에서 불러온 URL에 서비스 키만 삽입 (추가 파라미터 없이 사용)
 		String url = String.format(apiInfo.getApiUrl(), serviceKey);
 		log.info("📡 외부 API 호출 URL: {}", url);
 
 		try {
 			String xmlResponse = restTemplate.getForObject(url, String.class);
-			log.debug("📦 XML 응답 본문: {}", xmlResponse);
+			
 
 			XmlMapper xmlMapper = new XmlMapper();
 			WelfareFacilityResponse response = xmlMapper.readValue(xmlResponse, WelfareFacilityResponse.class);

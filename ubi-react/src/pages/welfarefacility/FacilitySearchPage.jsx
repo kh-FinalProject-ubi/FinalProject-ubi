@@ -6,6 +6,7 @@ import { useFacilities } from "../../hook/welfarefacility/useFacilities";
 import useSelectedRegionStore from "../../hook/welfarefacility/useSelectedRegionStore";
 import useLoginMember from "../../hook/login/useLoginMember";
 import "../../styles/welfarefacility/FacilitySearchPage.css";
+import { useSportsFacilities } from "../../hook/welfarefacility/useSportsFacilities";
 
 export default function FacilitySearchPage() {
   const { member, loading: memberLoading } = useLoginMember();
@@ -20,7 +21,7 @@ export default function FacilitySearchPage() {
   const [serviceType, setServiceType] = useState("전체");
 
   const categoryMap = {
-    체육시설: ["체육시설"],
+    체육시설: ["체육시설", "테니스장", "다목적경기장"],
     요양시설: ["재가노인복지시설", "노인요양시설", "장기요양기관"],
     의료시설: ["장애인재활치료시설", "정신건강복지 지역센터"],
     행정시설: [
@@ -34,6 +35,11 @@ export default function FacilitySearchPage() {
   const isMatchServiceTarget = (facility, selectedType) => {
     if (selectedType === "전체") return true;
 
+    // 체육시설은 서비스 대상 필터 무시하고 항상 true
+    if (facility["type"] === "체육" || facility["category"] === "체육시설") {
+      return true;
+    }
+
     const matchTable = {
       노인: ["노인"],
       청소년: ["청소년", "청년"],
@@ -42,11 +48,12 @@ export default function FacilitySearchPage() {
     };
 
     const keywords = matchTable[selectedType] || [];
-
     const typeFields = [
       facility["시설종류명"],
       facility["상세유형"],
       facility["SVC_TYPE"],
+      facility["category"],
+      facility["type"],
     ];
 
     return keywords.some((keyword) =>
@@ -65,19 +72,26 @@ export default function FacilitySearchPage() {
   }, [member, memberLoading, selectedCityFromStore, selectedDistrictFromStore]);
 
   const {
-    data: facilities,
-    loading,
+    data: welfareData,
+    loading: welfareLoading,
     error,
   } = useFacilities(region.city, region.district);
 
-  const filteredFacilities = facilities.filter((f) => {
-    const name = f["시설명"] || f["FACLT_NM"] || "";
-    const type = f["상세유형"] || f["시설종류명"] || f["SVC_TYPE"] || "";
+  const { data: sportsData, loading: sportsLoading } = useSportsFacilities(
+    region.city,
+    region.district
+  );
+
+  const loading = welfareLoading || sportsLoading;
+  const combinedFacilities = [...welfareData, ...sportsData];
+
+  const filteredFacilities = combinedFacilities.filter((f) => {
+    const name = f["시설명"] || f["FACLT_NM"] || f["facilityName"] || "";
+    const type =
+      f["상세유형"] || f["시설종류명"] || f["SVC_TYPE"] || f["category"] || "";
 
     const matchesKeyword = keyword === "" || name.includes(keyword);
-
     const matchesServiceType = isMatchServiceTarget(f, serviceType);
-
     const categoryKeywords = categoryMap[category] || [];
     const matchesCategory =
       category === "전체" ||
@@ -147,7 +161,11 @@ export default function FacilitySearchPage() {
 
       <div className="facility-card-list">
         {filteredFacilities.map((facility, idx) => {
-          const name = facility["시설명"] || facility["FACLT_NM"] || "";
+          const name =
+            facility["시설명"] ||
+            facility["FACLT_NM"] ||
+            facility["facilityName"] ||
+            "시설";
           const key = `${name}-${idx}`;
           return <FacilityCard key={key} facility={facility} />;
         })}
