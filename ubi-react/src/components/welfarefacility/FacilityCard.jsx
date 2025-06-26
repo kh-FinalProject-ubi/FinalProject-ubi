@@ -6,8 +6,11 @@ import { Link } from "react-router-dom";
  */
 
 // ✅ 카테고리 매핑
+/**
+ * 카테고리 매핑 테이블
+ */
 const categoryMap = {
-  체육시설: ["체육시설"],
+  체육시설: ["체육시설", "테니스장", "다목적경기장"],
   요양시설: ["재가노인복지시설", "노인요양시설", "장기요양기관"],
   의료시설: [
     "장애인재활치료시설",
@@ -22,6 +25,9 @@ const categoryMap = {
   ],
 };
 
+/**
+ * 다국어 키 대응 (공공 API 호환)
+ */
 const getField = (facility, ...keys) => {
   for (const key of keys) {
     const value = facility?.[key];
@@ -33,19 +39,19 @@ const getField = (facility, ...keys) => {
 };
 
 /**
- * 서비스 대상 판별 함수
+ * 서비스 대상 자동 판별
  */
 const getServiceTarget = (facility) => {
   const text = JSON.stringify(facility);
   if (text.includes("노인")) return "노인";
   if (text.includes("장애인")) return "장애인";
   if (text.includes("아동")) return "아동";
-  if (text.includes("청소년")) return "청소년";
+  if (text.includes("청소년") || text.includes("청년")) return "청소년";
   return "기타";
 };
 
 /**
- * 카테고리 판별 함수
+ * 카테고리 자동 판별
  */
 const getCategory = (facility) => {
   const text = JSON.stringify(facility);
@@ -58,7 +64,9 @@ const getCategory = (facility) => {
 };
 
 export default function FacilityCard({ facility }) {
-  const name = getField(facility, "시설명", "FACLT_NM");
+  const name =
+    getField(facility, "시설명", "FACLT_NM", "facilityName") || "이름 없음";
+
   const serviceTarget = getServiceTarget(facility);
   const category = getCategory(facility);
 
