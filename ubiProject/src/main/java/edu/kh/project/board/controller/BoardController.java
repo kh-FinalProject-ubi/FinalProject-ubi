@@ -71,18 +71,23 @@ public class BoardController {
 	 * @return
 	 */
 	@GetMapping("/{boardCode:[0-9]+}/{boardNo:[0-9]+}")
-	public ResponseEntity<Map<String, Object>> getBoardDetail(@PathVariable("boardCode") int boardCode,
+	public ResponseEntity<Map<String, Object>> getBoardDetail(
+			@PathVariable("boardCode") int boardCode,
 			@PathVariable("boardNo") int boardNo,
-			@SessionAttribute(value = "loginMember", required = false) Member loginMember, HttpServletRequest req,
+			@SessionAttribute(value = "loginMember", required = false) Member loginMember, 
+			HttpServletRequest req,
 			HttpServletResponse resp) {
+		
 		Map<String, Integer> map = new HashMap<>();
 		map.put("boardCode", boardCode);
 		map.put("boardNo", boardNo);
+		
 		if (loginMember != null) {
 			map.put("memberNo", loginMember.getMemberNo());
 		}
 
 		Board board = service.selectOne(map);
+		
 		if (board == null) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "게시글이 존재하지 않습니다."));
 		}

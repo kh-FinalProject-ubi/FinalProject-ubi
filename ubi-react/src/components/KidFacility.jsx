@@ -24,6 +24,8 @@ function KidFacilityList() {
         },
       });
 
+      console.log("응답 데이터", res.data);
+
       const data = res.data;
       const newFeatures =
         data?.response?.result?.featureCollection?.features || [];

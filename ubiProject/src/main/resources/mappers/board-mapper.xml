@@ -110,7 +110,7 @@
 	<select id="selectImgList" resultType="BoardImage">
 		SELECT * FROM
 		"BOARD_IMAGE"
-		WHERE BOARD_NO = #{boardCode}
+		WHERE BOARD_NO = #{boardNo}
 		ORDER BY IMAGE_ORDER
 	</select>
 
