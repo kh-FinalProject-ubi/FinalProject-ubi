@@ -23,6 +23,7 @@ const Signup = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [memberStandard, setMemberStandard] = useState("");
   const [isDisabled, setIsDisabled] = useState(false);
+  const [isPregnant, setIsPregnant] = useState(false);
   const [authCode, setAuthCode] = useState("");
   const [emailSent, setEmailSent] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
@@ -123,6 +124,26 @@ const Signup = () => {
     }
   };
 
+  const getMemberStandardCode = (main, isDisabled, isPregnant) => {
+    if (isPregnant && !main && !isDisabled) return "A";
+    if (isPregnant && isDisabled && !main) return "B";
+    if (isPregnant && main === "청년") return "C";
+    if (isPregnant && main === "아동") return "D";
+    if (isPregnant && main === "노인") return "E";
+    if (isPregnant && isDisabled && main === "노인") return "F";
+
+    if (main === "노인" && isDisabled) return "4";
+    if (main === "청년" && isDisabled) return "5";
+    if (main === "아동" && isDisabled) return "6";
+
+    if (main === "노인") return "1";
+    if (main === "청년") return "2";
+    if (main === "아동") return "3";
+    if (isDisabled) return "7";
+
+    return "0"; // 일반
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIdError("");
@@ -133,27 +154,17 @@ const Signup = () => {
     if (!memberTaddress.trim()) return alert("상세주소 입력 필요");
     if (!agreeTerms || !agreePrivacy) return alert("약관에 모두 동의해주세요.");
 
-    const isIdOk = await checkIdDuplicate(memberId); // true면 사용 가능
-    const isNicknameOk = await checkNicknameDuplicate(memberNickname); // true면 사용 가능
+    const isIdOk = await checkIdDuplicate(memberId);
+    const isNicknameOk = await checkNicknameDuplicate(memberNickname);
 
-    if (!isIdOk) {
-      setIdError("이미 사용 중인 아이디입니다.");
-    }
-    if (!isNicknameOk) {
-      setNicknameError("이미 사용 중인 닉네임입니다.");
-    }
+    if (!isIdOk) setIdError("이미 사용 중인 아이디입니다.");
+    if (!isNicknameOk) setNicknameError("이미 사용 중인 닉네임입니다.");
     if (!isIdOk || !isNicknameOk) return;
 
     setIsSubmitting(true);
 
-    let code = "0";
-    if (memberStandard === "노인" && isDisabled) code = "4";
-    else if (memberStandard === "청년" && isDisabled) code = "5";
-    else if (memberStandard === "아동" && isDisabled) code = "6";
-    else if (memberStandard === "노인") code = "1";
-    else if (memberStandard === "청년") code = "2";
-    else if (memberStandard === "아동") code = "3";
-    else if (isDisabled) code = "7";
+    // ✅ 조합 코드 계산
+    const code = getMemberStandardCode(memberStandard, isDisabled, isPregnant);
 
     const formData = new FormData();
     formData.append("memberId", memberId);
@@ -169,6 +180,7 @@ const Signup = () => {
     formData.append("regionCity", regionCity);
     formData.append("regionDistrict", regionDistrict);
     formData.append("memberStandard", code);
+
     const kakaoId = localStorage.getItem("kakaoId");
     if (kakaoId) {
       formData.append("kakaoId", kakaoId);
@@ -387,6 +399,17 @@ const Signup = () => {
               />
               <span className="toggle-custom" />
               <span className="toggle-text">장애인 여부</span>
+            </label>
+          </div>
+          <div className="toggle-wrapper">
+            <label className="toggle-label">
+              <input
+                type="checkbox"
+                checked={isPregnant}
+                onChange={(e) => setIsPregnant(e.target.checked)}
+              />
+              <span className="toggle-custom" />
+              <span className="toggle-text">임산부 여부</span>
             </label>
           </div>
         </div>

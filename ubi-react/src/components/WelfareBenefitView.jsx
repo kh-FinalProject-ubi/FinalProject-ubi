@@ -2,20 +2,7 @@ import { useState, useMemo } from "react";
 import WelfareDetailModal from "./WelfareDetailModal";
 import useAuthStore from "../stores/useAuthStore";
 import "../styles/WelfareBenefitView.css";
-console.log("💡 Zustand 상태:", useAuthStore.getState());
-
-const authState = useAuthStore.getState();
-console.log("💡 현재 memberStandard:", authState.memberStandard);
-
-const standardKeywordMap = {
-  노인: "노인",
-  청년: "청년",
-  아동: "아동",
-  "노인+장애인": "노인",
-  "청년+장애인": "청년",
-  "아동+장애인": "아동",
-  장애인: "장애인",
-};
+import { filterBenefitsByStandard } from "../utils/filterBenefitsByStandard";
 
 const WelfareBenefitView = ({ district, benefits, isLoading }) => {
   const cleanDistrict = district?.trim().normalize("NFC");
@@ -26,50 +13,10 @@ const WelfareBenefitView = ({ district, benefits, isLoading }) => {
 
   const { token, memberStandard } = useAuthStore();
 
-  // 필터링 로직
   const filteredList = useMemo(() => {
-    console.log("✅ 필터링 실행됨");
-    console.log("memberStandard:", memberStandard);
-    console.log("로그인 여부(token):", !!token);
-    console.log("showAll 상태:", showAll);
-
-    if (showAll || !token) return list;
-
-    const keyword = standardKeywordMap[memberStandard];
-    if (!keyword) return list;
-
-    if (memberStandard === "일반") {
-      return list.filter((item) => {
-        const targets = Array.isArray(item.lifeNmArray)
-          ? item.lifeNmArray
-          : [item.lifeNmArray || ""];
-
-        const hasSpecialGroup = targets.some((life) =>
-          ["노인", "청년", "아동", "장애인"].includes(life)
-        );
-
-        if (hasSpecialGroup) {
-          console.log("🚫 제외됨:", item.servNm, targets);
-        } else {
-          console.log("✅ 포함됨:", item.servNm, targets);
-        }
-
-        return !hasSpecialGroup;
-      });
-    }
-
-    return list.filter((item) => {
-      const targets = Array.isArray(item.lifeNmArray)
-        ? item.lifeNmArray
-        : [item.lifeNmArray || ""];
-
-      const match = targets.includes(keyword);
-      if (match) {
-        console.log("✅ 포함됨:", item.servNm, targets);
-      }
-      return match;
-    });
+    return filterBenefitsByStandard(list, memberStandard, token, showAll);
   }, [list, token, memberStandard, showAll]);
+
   const fetchDetail = async (servId) => {
     try {
       const res = await fetch(
