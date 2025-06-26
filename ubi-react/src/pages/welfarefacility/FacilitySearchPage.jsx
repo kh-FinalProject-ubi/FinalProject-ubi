@@ -96,7 +96,7 @@ export default function FacilitySearchPage() {
     const matchesCategory =
       category === "전체" ||
       categoryKeywords.some((target) => type?.includes(target));
-
+    console.log(region);
     return matchesKeyword && matchesServiceType && matchesCategory;
   });
 
@@ -107,7 +107,7 @@ export default function FacilitySearchPage() {
       <div className="filter-bar">
         <div className="filter-row">
           <div className="region-text">
-            {region.city} {region.district}
+            {region.city?.split("^^^")[1] || region.city} {region.district}
           </div>
 
           <input

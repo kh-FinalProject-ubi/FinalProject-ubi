@@ -10,7 +10,16 @@ import { Link } from "react-router-dom";
  * 카테고리 매핑 테이블
  */
 const categoryMap = {
-  체육시설: ["체육시설", "테니스장", "다목적경기장"],
+  체육시설: [
+    "체육시설",
+    "테니스장",
+    "다목적경기장",
+    "풋살장",
+    "야구장",
+    "축구장",
+    "배구장",
+    "농구장",
+  ],
   요양시설: ["재가노인복지시설", "노인요양시설", "장기요양기관"],
   의료시설: [
     "장애인재활치료시설",
@@ -65,7 +74,7 @@ const getCategory = (facility) => {
 
 export default function FacilityCard({ facility }) {
   const name =
-    getField(facility, "시설명", "FACLT_NM", "facilityName") || "이름 없음";
+    getField(facility, "시설명", "FACLT_NM", "facilityAddr") || "이름 없음";
 
   const serviceTarget = getServiceTarget(facility);
   const category = getCategory(facility);
