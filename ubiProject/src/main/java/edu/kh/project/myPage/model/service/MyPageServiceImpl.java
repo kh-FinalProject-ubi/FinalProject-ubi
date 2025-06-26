@@ -103,6 +103,7 @@ public class MyPageServiceImpl implements MyPageService {
 	        return board;
 	    }
 	
+	// 작성 댓글 조회
 	@Override
 	public List<Comment> Comment(int memberNo) {
 		return mapper.Comment(memberNo);
@@ -113,6 +114,13 @@ public class MyPageServiceImpl implements MyPageService {
 	public List<BoardLike> like (int memberNo) {
 		
 		return mapper.like(memberNo);
+	}
+	
+	
+	// 내가 좋아요를 누른 댓글 조회
+	@Override
+	public List<Comment> likeComment(int memberNo) {
+		return mapper.likeComment(memberNo);
 	}
 	
 	
