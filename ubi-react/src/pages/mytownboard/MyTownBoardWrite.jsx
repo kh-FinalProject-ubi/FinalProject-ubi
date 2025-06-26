@@ -6,17 +6,19 @@ import "summernote/dist/summernote-lite";
 import useAuthStore from "../../stores/useAuthStore";
 
 const MyTownBoardWrite = () => {
-    const { memberNo } = useAuthStore();
+  const { token, memberNo, regionCity, regionDistrict } = useAuthStore();
   const [boardTitle, setTitle] = useState("");
   const [boardContent, setContent] = useState("");
   const navigate = useNavigate();
   const [hashtags, setHashtags] = useState("");
-  const [postType, setPostType] = useState(""); // 단일 선택
+  const [postTypeCheck, setPostTypeCheck] = useState(""); // 단일 선택
   // ✅ HTML 태그 제거 (순수 텍스트 추출)
   const plainContent = boardContent.replace(/<[^>]+>/g, "").trim();
 
-const postTypeOptions = ["자유", "자랑","복지시설후기","복지혜택후기"];
+
+const postTypeCheckOptions = ["자유", "자랑","복지시설후기","복지혜택후기"];
   const handleSubmit = () => {
+    //1. 입력하지 않는 경우 alert
     if (!boardTitle.trim()) {
       alert("제목을 입력해주세요.");
       return;
@@ -31,8 +33,8 @@ const postTypeOptions = ["자유", "자랑","복지시설후기","복지혜택�
     return;
   }
 
-  
-  // 1. #단어 #단어 → ['단어', '단어']
+  // 2. 데이터 가공 
+  // 2-1) #단어 #단어 → ['단어', '단어']
   const hashtagList = 
   hashtags
     .split("#")
@@ -40,7 +42,14 @@ const postTypeOptions = ["자유", "자랑","복지시설후기","복지혜택�
     .filter(tag => tag !== "")
     ;
   
-  // 2. 글쓰기 전송
+  // 2-2) 
+  // 선택값에 따라 postType 값 가공
+let postType = "";
+if (postTypeCheck === "자랑") postType = "자랑";
+else if (postTypeCheck === "자유") postType = "자유";
+else if (postTypeCheck === "복지시설후기" || postTypeCheck === "복지혜택후기") postType = "후기"; 
+
+  // 3. 글쓰기 전송
     // 서버로 전송 (예: POST api/editboard/mytown/write)
     fetch("/api/editboard/mytown/write", {
       method: "POST",
@@ -49,7 +58,10 @@ const postTypeOptions = ["자유", "자랑","복지시설후기","복지혜택�
         boardTitle, 
          boardContent: plainContent, //정제
        memberNo,
-        hashtagList  // ✅ 배열 형태로 전송
+         postType,  
+        hashtagList,  // ✅ 배열 형태로 전송
+                regionCity,        // ✅ 서버로 보낼 경우
+        regionDistrict     // ✅ 서버로 보낼 경우
       }),
     })
         .then(async res => {
@@ -87,32 +99,65 @@ console.log("hashtags:", hashtags);
     });
   }, []);
 
+
   return (
     <div>
       <h3>우리 동네 좋아요</h3>
       <br/>
 
 <div className="post-option-box">
-  <h4>작성유형</h4>
-  <div className="post-type-buttons">
-    {postTypeOptions.map((type) => (
-      <button
-        key={type}
-        onClick={() => setPostType(type)}
-        className={postType === type ? "selected" : ""}
-      >
-        {type}
-      </button>
-    ))}
-  </div></div>
+<p>
+  작성자 지역: {regionCity} {regionDistrict}
+</p>
+ <table border="1" style={{ width: "100%", marginTop: "20px", borderCollapse: "collapse" }}>
+  <tbody>
+    {/* 작성 유형 */}
+    <tr>
+      <th >작성유형</th>
+      <td >
+        {postTypeCheckOptions.map((type) => (
+          <label key={type} style={{ marginRight: "20px" }}>
+            <input
+              type="radio"
+              name="postTypeCheck"
+              value={type}
+              checked={postTypeCheck === type}
+              onChange={(e) => setPostTypeCheck(e.target.value)}
+            />
+            {type}
+          </label>
+        ))}
+      </td>
+    </tr>
+
+     {/* 작성복지 입력 */}
+    <tr>
+       <th >작성복지</th> 
+<td >작성복지</td>
+    </tr>
 
 
-           <input
-  type="text"
-  placeholder="#해시태그를 샵(#)으로 구분해 입력"
-  value={hashtags}
-  onChange={(e) => setHashtags(e.target.value)}
-/>
+
+    {/* 해시태그 입력 */}
+    <tr>
+      <th >해시태그</th>
+      <td >
+        <input
+          type="text"
+          placeholder="#해시태그를 샵(#)으로 구분해 입력"
+          value={hashtags}
+          onChange={(e) => setHashtags(e.target.value)}
+          style={{ width: "80%" }}
+        />
+      </td>
+    </tr>
+  </tbody>
+</table>
+  
+
+  </div>
+
+
 
 <br/><br/>
       <input
