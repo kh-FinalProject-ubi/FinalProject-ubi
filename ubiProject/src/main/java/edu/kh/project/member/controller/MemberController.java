@@ -37,24 +37,36 @@ public class MemberController {
 	private JwtUtil jwtUtil;
 
 	private String parseMemberStandard(String codeStr) {
-		switch (codeStr) {
-		case "1":
-			return "노인";
-		case "2":
-			return "청년";
-		case "3":
-			return "아동";
-		case "4":
-			return "노인+장애인";
-		case "5":
-			return "청년+장애인";
-		case "6":
-			return "아동+장애인";
-		case "7":
-			return "장애인";
-		default:
-			return "일반";
-		}
+	    switch (codeStr) {
+	        case "1":
+	            return "노인";
+	        case "2":
+	            return "청년";
+	        case "3":
+	            return "아동";
+	        case "4":
+	            return "노인+장애인";
+	        case "5":
+	            return "청년+장애인";
+	        case "6":
+	            return "아동+장애인";
+	        case "7":
+	            return "장애인";
+	        case "A":
+	            return "임산부";
+	        case "B":
+	            return "임산부+장애인";
+	        case "C":
+	            return "임산부+청년";
+	        case "D":
+	            return "임산부+아동";
+	        case "E":
+	            return "임산부+노인";
+	        case "F":
+	            return "임산부+노인+장애인";
+	        default:
+	            return "일반";
+	    }
 	}
 
 
@@ -90,6 +102,10 @@ public class MemberController {
         body.put("memberImg", loginMember.getMemberImg());
         body.put("memberNo", loginMember.getMemberNo());
         body.put("authority", loginMember.getAuthority()); // ✅ 반드시 포함
+        log.info("🧾 loginMember.getMemberStandard(): {}", loginMember.getMemberStandard());
+        System.out.println("====== 로그인 성공 ======");
+        log.info("🧾 loginMember.getMemberStandard(): {}", loginMember.getMemberStandard());
+        log.info("🔍 로그인 결과: {}", loginMember);
 
         return ResponseEntity.ok(body);
     }

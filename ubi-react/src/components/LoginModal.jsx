@@ -24,6 +24,7 @@ const LoginModal = () => {
         token: data.token,
         address: data.address,
         memberName: data.memberName,
+        memberStandard: data.memberStandard, // ✅ 이 줄 추가
         memberNo: data.memberNo,
         authority: data.authority,
       });
