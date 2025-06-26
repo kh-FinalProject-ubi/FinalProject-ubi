@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link, useLocation } from "react-router-dom";
-import { div } from "framer-motion/client";
+import { Link, Navigate, useLocation } from "react-router-dom";
+import { div, li } from "framer-motion/client";
 import useAuthStore from "../../stores/useAuthStore";
 
 const boardCodeMap = {
@@ -51,18 +51,23 @@ const NoticeBoard = () => {
     <div>
       <h2>공지게시판</h2>
       <ul>
-        {boardList.map((board) => (
+        {boardList.map((board, index) => (
           <li key={board.boardNo}>
             <Link to={`/${path.split("/")[1]}/detail/${board.boardNo}`}>
-              {board.postType}&nbsp;&nbsp;&nbsp;
-              <strong>{board.boardTitle}</strong> - {board.boardDate}
-              {board.readBoardCount}
+              {index + 1} &nbsp;&nbsp;&nbsp;
+              {board.postType} &nbsp; &nbsp; &nbsp;
+              <strong>{board.boardTitle}</strong>&nbsp; &nbsp; &nbsp;
+              {board.memberNickname}&nbsp; &nbsp; &nbsp;
+              {board.boardDate}
+              &nbsp;&nbsp;&nbsp;
+              {board.boardAnswer}&nbsp;&nbsp;&nbsp;
+              {board.boardReadCount}
             </Link>
           </li>
         ))}
       </ul>
       {isAdmin && (
-        <button onClick={() => navigate(`/editBoard/${boardCode}/${boardNo}`)}>
+        <button onClick={() => Navigate(`/editBoard/${boardCode}/insert`)}>
           글 작성
         </button>
       )}

@@ -33,6 +33,11 @@ function App() {
           <Route path="askBoard" element={<AskBoard />} />
           <Route path="noticeBoard" element={<NoticeBoard />} />
           <Route path="mytownBoard" element={<MyTownBoard />} />
+          <Route path="/:boardPath/detail/:boardNo" element={<BoardDetail />} />
+          <Route
+            path="/editBoard/:boardCode/:boardNo"
+            element={<EditBoard />}
+          />
           <Route path="mytownBoard/:boardNo" element={<MyTownBoardDetail />} />
           <Route path="/facility/search" element={<FacilitySearchPage />} />
           <Route path="/facility/detail" element={<FacilityDetailPage />} />
@@ -45,11 +50,6 @@ function App() {
           </Route>
           <Route path="signup" element={<Signup />} />
           <Route path="mytownBoard" element={<MyTownBoard />} />
-          <Route path="/:boardPath/detail/:boardNo" element={<BoardDetail />} />
-          <Route
-            path="/editBoard/:boardCode/:boardNo"
-            element={<EditBoard />}
-          />
         </Route>
 
         {/* 레이아웃이 필요 없는 단독 Route (예: 로그인 콜백) */}

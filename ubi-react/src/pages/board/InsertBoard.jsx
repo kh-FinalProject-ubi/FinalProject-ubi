@@ -4,8 +4,9 @@ import "summernote/dist/summernote-lite.css";
 import $ from "jquery";
 import "summernote/dist/summernote-lite";
 import useAuthStore from "../../stores/useAuthStore";
+import InsertBoard from "./InsertBoard";
 
-const MyTownBoardWrite = () => {
+const InsertBoard = () => {
   const { memberNo } = useAuthStore();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");

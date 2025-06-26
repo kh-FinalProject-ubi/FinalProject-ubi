@@ -91,6 +91,7 @@
 		IMAGE_ORDER = #{imageOrder},
 		IMAGE_NAME = #{imageName}
 		WHERE BOARD_NO = #{boardNo}
+		AND IMAGE_ORDER = #{imageOrder}
 	</update>
 	
 	<!-- 게시글 이미지 1행 삽입 -->
@@ -107,7 +108,7 @@
 	<update id="boardDelete">
 		UPDATE "BOARD" SET
 		BOARD_DEL_FL = 'Y'
-		WHERE BOARD_CODE = #{boardCode}
+		WHERE BOARD_TYPE = #{boardCode}
 		AND BOARD_NO = #{boardNo}
 		AND MEMBER_NO = #{memberNo}
 	</update>
