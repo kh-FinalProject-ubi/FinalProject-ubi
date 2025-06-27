@@ -1,79 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="edu.kh.project.board.model.mapper.EditBoardMapper">
-	
-	<!--
-		useGeneratedKeys 속성 : DB 내부적으로 생성한 키(시퀀스)를
-							    전달된 파라미터의 필드로 대입 가능 여부 지정
-							  
-		** 동적 SQL **					  
-		- 프로그램 수행 중 SQL을 변경하는 기능 (마이바티스의 가장 강력한 기능!)
-		
-		<selectKey> 태그 : INSERT/UPDATE 시 사용할 키(시퀀스)를
-						   조회해서 파라미터의 지정된 필드에 대입
-		
-		order 속성 : 메인 SQL이 수행되기 전/후에 selectKey가 수행되도록 지정
-		전 : BEFORE 
-		후 : AFTER
-		
-		keyProperty 속성: selectKey 조회 결과를 저장할 파라미터의 필드명
-	
-	-->
-	
-	<insert id="boardInsert" useGeneratedKeys="true" parameterType="Board">
-		<selectKey order="BEFORE" resultType="_int" keyProperty="boardNo"> 
-			SELECT SEQ_BOARD_NO.NEXTVAL FROM DUAL		
+<mapper
+	namespace="edu.kh.project.board.model.mapper.EditBoardMapper">
+
+	<!-- useGeneratedKeys 속성 : DB 내부적으로 생성한 키(시퀀스)를 전달된 파라미터의 필드로 대입 가능 여부 지정 
+		** 동적 SQL ** - 프로그램 수행 중 SQL을 변경하는 기능 (마이바티스의 가장 강력한 기능!) <selectKey> 태그 
+		: INSERT/UPDATE 시 사용할 키(시퀀스)를 조회해서 파라미터의 지정된 필드에 대입 order 속성 : 메인 SQL이 수행되기 
+		전/후에 selectKey가 수행되도록 지정 전 : BEFORE 후 : AFTER keyProperty 속성: selectKey 조회 
+		결과를 저장할 파라미터의 필드명 -->
+
+	<insert id="boardInsert" useGeneratedKeys="true"
+		parameterType="Board">
+		<selectKey order="BEFORE" resultType="_int"
+			keyProperty="boardNo">
+			SELECT SEQ_BOARD_NO.NEXTVAL FROM DUAL
 		</selectKey>
 
 		INSERT INTO "BOARD"
-		VALUES(#{boardNo},
-				#{boardTitle},
-				#{boardContent},
-				DEFAULT, DEFAULT, DEFAULT, DEFAULT,
-				#{boardCode},
-				#{memberNo})
+		VALUES(
+		#{boardNo},
+		#{boardTitle},
+		#{boardContent},
+		DEFAULT,
+		NULL,
+		DEFAULT,
+		DEFAULT,
+		#{boardCode},
+		NULL,
+		#{postType},
+		DEFAULT,
+		#{memberNo},
+		NULL,
+		NULL,
+		0
+		)
 	</insert>
-	
-	<!-- 
-		
-		동적 SQL 중 <foreach>
-		- Mybatis에서 제공하는 향상된 for문
-		
-		- 특정 sql 구문을 반복할 때 사용
-		
-		- 반복 사이에 구분자를(separator) 추가할 수 있음
 
-		[지원하는 속성]	
-		collection : 반복할 객체의 타입 작성(list, set ..)
-		item : collection에서 순차적으로 꺼낸 하나의 요소를 저장하는 변수
-		index : 현재 반복 접근 중인 인덱스 (0,1,2,3..)
-		open : 반복 전에 출력할 sql
-		close : 반복 종류 후에 출력할 sql
-		separator : 반복 사이사이 구분자
+	<!-- 동적 SQL 중 <foreach> - Mybatis에서 제공하는 향상된 for문 - 특정 sql 구문을 반복할 때 사용 
+		- 반복 사이에 구분자를(separator) 추가할 수 있음 [지원하는 속성] collection : 반복할 객체의 타입 작성(list, 
+		set ..) item : collection에서 순차적으로 꺼낸 하나의 요소를 저장하는 변수 index : 현재 반복 접근 중인 
+		인덱스 (0,1,2,3..) open : 반복 전에 출력할 sql close : 반복 종류 후에 출력할 sql separator : 
+		반복 사이사이 구분자 -->
 
-	 -->
-	
-	<insert id="insertUploadList">
-		INSERT INTO "BOARD_IMAGE"
-		
-		<foreach collection="list" item="img" 
-		open="(" close=")" separator=" UNION ">
-		 SELECT NEXT_IMG_NO(),
-		 #{img.imagePath},
-		 #{img.imageName},
-		 #{img.imageOrder},
-		 #{img.boardNo}
-		 FROM DUAL		
+	<insert id="insertUploadList" parameterType="list">
+		INSERT ALL
+		<foreach collection="list" item="img">
+			INTO BOARD_IMAGE (IMAGE_NO,
+			IMAGE_PATH, IMAGE_NAME, IMAGE_ORDER,
+			BOARD_NO)
+			VALUES
+			(SEQ_BOARD_IMAGE.NEXTVAL, #{img.imagePath}, #{img.imageName},
+			#{img.imageOrder}, #{img.boardNo})
 		</foreach>
+		SELECT * FROM DUAL
 	</insert>
 
 	<!-- 게시글 부분 수정 -->
 	<update id="boardUpdate">
 		UPDATE "BOARD" SET
 		BOARD_TITLE = #{boardTitle},
-		BOARD_CONTENT = #{boardContent}
+		BOARD_CONTENT = #{boardContent},
+		POST_TYPE = #{postType}
 		WHERE BOARD_TYPE = #{boardType}
-		AND BOARD_NO = #{boardNo}
+		AND
+		BOARD_NO = #{boardNo}
 		AND MEMBER_NO = #{memberNo}
 	</update>
 
@@ -81,34 +71,37 @@
 	<delete id="deleteImage">
 		DELETE FROM "BOARD_IMAGE"
 		WHERE BOARD_NO = #{boardNo}
-		AND IMG_ORDER IN(${deleteOrderList})  <!-- IN (1,2,3)으로 들어가야 함. ${} -->
+		AND IMG_ORDER
+		IN(${deleteOrderList})  <!-- IN (1,2,3)으로 들어가야 함. ${} -->
 	</delete>
-	
+
 	<!-- 게시글 이미지 1행 수정 -->
 	<update id="updateImage">
 		UPDATE "BOARD_IMAGE" SET
 		IMAGE_PATH = #{imagePath},
 		IMAGE_ORDER = #{imageOrder},
 		IMAGE_NAME = #{imageName}
-		WHERE BOARD_NO = #{boardNo}
+		WHERE BOARD_NO =
+		#{boardNo}
 		AND IMAGE_ORDER = #{imageOrder}
 	</update>
-	
+
 	<!-- 게시글 이미지 1행 삽입 -->
 	<insert id="insertImage">
 		INSERT INTO "BOARD_IMAGE"
 		VALUES(SEQ_BOARD_IMAGE.NEXTVAL,
-				#{imagePath},
-				#{imageOrder},
-				#{imageName},
-				#{boardNo})
+		#{imagePath},
+		#{imageOrder},
+		#{imageName},
+		#{boardNo})
 	</insert>
-	
+
 	<!-- 게시글 삭제 -->
 	<update id="boardDelete">
 		UPDATE "BOARD" SET
 		BOARD_DEL_FL = 'Y'
-		WHERE BOARD_TYPE = #{boardCode}
+		WHERE BOARD_TYPE
+		= #{boardCode}
 		AND BOARD_NO = #{boardNo}
 		AND MEMBER_NO = #{memberNo}
 	</update>

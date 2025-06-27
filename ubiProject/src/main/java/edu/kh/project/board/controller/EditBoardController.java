@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.multipart.MultipartFile;
@@ -62,40 +64,36 @@ public class EditBoardController {
 	 * @param ra
 	 * @return
 	 */
-	@PostMapping("{boardCode:[0-9]+}/insert")
-	public String boardInsert(@PathVariable("boardCode") int boardCode, @ModelAttribute Board inputBoard, // DTO에서 제목과
-																			//@RequestParam("files") MultipartFile[] files, 추가 // 내용만 얻어옴
-			@SessionAttribute("loginMember") Member loginMember,
-			@RequestParam(value = "images", required = false) List<MultipartFile> images, RedirectAttributes ra)
-			throws Exception {
+	@PostMapping("/{boardCode}/insert")
+	public ResponseEntity<Map<String, Object>> boardInsert(
+	        @PathVariable("boardCode") int boardCode,
+	        @RequestPart("board") Board inputBoard,
+	        @RequestPart(value = "images", required = false) List<MultipartFile> images,
+	        @RequestParam("postType") String postType,
+	        @RequestHeader("Authorization") String authHeader) throws Exception {
 
-		// 1. boardCode, 로그인한 회원번호 memberNo를 inputBoard에 세팅
-		inputBoard.setBoardCode(boardCode);
-		inputBoard.setMemberNo(loginMember.getMemberNo());
-		// -> inputBoard에는 총 네가지 세팅됨(boardTitle, boardCount, boardCode, memberNo)
+	    // "Bearer {token}" -> "{token}" 추출
+	    String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
 
-		// 2. 서비스 메서드 호출 후 결과 반환 받기
-		// -> 성공 시 [상세조회]를 요청할 수 있도록
-		// 삽입된 게시글의 번호를 반환받기
-		int boardNo = service.boardInsert(inputBoard, images);
+	    Long memberNoLong = jwtUtil.extractMemberNo(token);
+	    int memberNo = memberNoLong.intValue();
 
-		// 3. 서비스 결과에 따라 message, 리다이렉트 경로 지정
-		String path = null;
-		String message = null;
+	    inputBoard.setBoardCode(boardCode);
+	    inputBoard.setMemberNo(memberNo);
 
-		if (boardNo > 0) {
-			message = "게시글이 작성되었습니다.";
-			path = "/board/" + boardCode + "/" + boardNo;
+	    int boardNo = service.boardInsert(inputBoard, images);
 
-		} else {
-			path = "insert"; // /editBoard/1/insert 상대 경로
-			message = "게시글 작성 실패...";
+	    Map<String, Object> response = new HashMap<>();
+	    if (boardNo > 0) {
+	        response.put("success", true);
+	        response.put("boardNo", boardNo);
+	        response.put("message", "게시글이 작성되었습니다.");
+	    } else {
+	        response.put("success", false);
+	        response.put("message", "게시글 작성 실패...");
+	    }
 
-		}
-
-		ra.addFlashAttribute("message", message);
-
-		return "redirect:" + path;
+	    return ResponseEntity.ok(response);
 	}
 
 	/**
@@ -151,6 +149,7 @@ public class EditBoardController {
 			@RequestParam("boardContent") String boardContent,
 			@RequestParam(value = "images", required = false) List<MultipartFile> images,
 			@RequestParam(name = "boardType") int boardType,
+			@RequestParam("postType") String postType,
 			@RequestParam(value = "deleteOrderList", required = false) String deleteOrderList,
 			@RequestHeader("Authorization") String authHeader) throws Exception {
 
@@ -173,7 +172,7 @@ public class EditBoardController {
 		// 권한 체크
 		if (boardType == 2) {
 			if (!role.equals("ADMIN") && !memberNo.equals(Long.valueOf(board.getMemberNo()))) {
-			    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "접근 권한이 없습니다."));
+				return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "접근 권한이 없습니다."));
 			}
 		}
 

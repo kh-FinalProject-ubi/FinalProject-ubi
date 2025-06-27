@@ -60,7 +60,6 @@ const NoticeBoard = () => {
               {board.memberNickname}&nbsp; &nbsp; &nbsp;
               {board.boardDate}
               &nbsp;&nbsp;&nbsp;
-              {board.boardAnswer}&nbsp;&nbsp;&nbsp;
               {board.boardReadCount}
             </Link>
           </li>

@@ -24,6 +24,7 @@ import InsertBoard from "./pages/board/InsertBoard";
 import { useEffect } from "react";
 import { initAuthFromToken } from "./utils/initAuthFromToken";
 
+
 function App() {
   useEffect(() => {
     initAuthFromToken(); // 앱 진입 시 토큰 → 상태 복원
@@ -40,7 +41,7 @@ function App() {
           <Route path="askBoard" element={<AskBoard />} />
           <Route path="noticeBoard" element={<NoticeBoard />} />
           <Route path="mytownBoard" element={<MyTownBoard />} />
-          <Route path="/:boardPath/write" element={<InsertBoard />} />
+          <Route path="/:boardCode/write" element={<InsertBoard />} />
           <Route path="/:boardPath/edit/:boardNo" element={<EditBoard />} />
           <Route path="/:boardPath/:boardNo" element={<BoardDetail />} />
           <Route path="mytownBoard/:boardNo" element={<MyTownBoardDetail />} />
