@@ -172,8 +172,8 @@ public class EditBoardController {
 
 		// 권한 체크
 		if (boardType == 2) {
-			if (!role.equals("ADMIN") && !memberNo.equals(board.getMemberNo())) {
-				return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "접근 권한이 없습니다."));
+			if (!role.equals("ADMIN") && !memberNo.equals(Long.valueOf(board.getMemberNo()))) {
+			    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "접근 권한이 없습니다."));
 			}
 		}
 

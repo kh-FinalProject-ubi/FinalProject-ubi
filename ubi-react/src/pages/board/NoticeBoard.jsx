@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link, Navigate, useLocation } from "react-router-dom";
-import { div, li } from "framer-motion/client";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAuthStore from "../../stores/useAuthStore";
 
 const boardCodeMap = {
@@ -17,15 +16,16 @@ const NoticeBoard = () => {
   const { token, authority, memberNo: loginMemberNo } = useAuthStore();
 
   const location = useLocation();
+  const navigate = useNavigate();
+
   const path = location.pathname;
   const boardCode = boardCodeMap[path];
-  // 권한 체크 후 이동 및 alert 중복 방지용
-  const [hasAlerted, setHasAlerted] = useState(false);
+
+  // 권한 체크용 맵
   const authorityMap = {
     1: "USER",
     2: "ADMIN",
   };
-
   const isAdmin = authorityMap[authority] === "ADMIN";
 
   useEffect(() => {
@@ -53,7 +53,7 @@ const NoticeBoard = () => {
       <ul>
         {boardList.map((board, index) => (
           <li key={board.boardNo}>
-            <Link to={`/${path.split("/")[1]}/detail/${board.boardNo}`}>
+            <Link to={`/${path.split("/")[1]}/${board.boardNo}`}>
               {index + 1} &nbsp;&nbsp;&nbsp;
               {board.postType} &nbsp; &nbsp; &nbsp;
               <strong>{board.boardTitle}</strong>&nbsp; &nbsp; &nbsp;
@@ -67,9 +67,7 @@ const NoticeBoard = () => {
         ))}
       </ul>
       {isAdmin && (
-        <button onClick={() => Navigate(`/editBoard/${boardCode}/insert`)}>
-          글 작성
-        </button>
+        <button onClick={() => navigate(`/noticeBoard/write`)}>글 작성</button>
       )}
     </div>
   );

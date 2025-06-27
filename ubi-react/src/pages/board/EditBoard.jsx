@@ -7,32 +7,52 @@ import "summernote/dist/summernote-lite.js";
 import $ from "jquery";
 
 const EditBoard = () => {
-  const { boardCode, boardNo } = useParams();
+  const { boardPath, boardNo } = useParams();
   const navigate = useNavigate();
   const { token, role, memberNo: loginMemberNo } = useAuthStore();
   const summernoteInitialized = useRef(false);
+  const contentRef = useRef("");
+
+  const boardCodeMap = {
+    noticeBoard: 1,
+    askBoard: 2,
+  };
+  const boardCodeInt = boardCodeMap[boardPath];
+
+  // 잘못된 경로면 경고 후 리다이렉트 (useEffect 안에서 처리)
+  useEffect(() => {
+    if (!boardCodeInt) {
+      alert("잘못된 게시판 경로입니다.");
+      navigate("/", { replace: true });
+    }
+  }, [boardCodeInt, navigate]);
 
   const [board, setBoard] = useState(null);
   const [images, setImages] = useState([]);
   const [hasAlerted, setHasAlerted] = useState(false);
 
+  // 로그인 체크 및 게시글 조회
   useEffect(() => {
     if (!token) {
       if (!hasAlerted) {
         alert("로그인이 필요합니다.");
         setHasAlerted(true);
       }
-      navigate("/");
+      navigate("/", { replace: true });
       return;
     }
 
+    if (!boardCodeInt || !boardNo) return;
+
     const fetchBoard = async () => {
       try {
-        const res = await axios.get(`/api/editBoard/${boardCode}/${boardNo}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await axios.get(
+          `/api/editBoard/${boardCodeInt}/${boardNo}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
         const { board: boardData, role: userRole, memberNo: userNo } = res.data;
 
         // 권한 체크
@@ -42,7 +62,7 @@ const EditBoard = () => {
               alert("수정 권한이 없습니다.");
               setHasAlerted(true);
             }
-            navigate(`/askBoard/detail/${boardNo}`);
+            navigate(`/askBoard/${boardNo}`, { replace: true });
             return;
           }
         } else if (boardData.boardType === 1) {
@@ -51,7 +71,7 @@ const EditBoard = () => {
               alert("관리자만 수정할 수 있습니다.");
               setHasAlerted(true);
             }
-            navigate(`/noticeBoard/detail/${boardNo}`);
+            navigate(`/noticeBoard/${boardNo}`, { replace: true });
             return;
           }
         }
@@ -68,27 +88,22 @@ const EditBoard = () => {
           }
           setHasAlerted(true);
         }
-        navigate(`/noticeBoard/detail/${boardNo}`);
+        navigate(`/noticeBoard/${boardNo}`, { replace: true });
       }
     };
 
     fetchBoard();
-  }, [boardCode, boardNo, token, navigate, hasAlerted]);
+  }, [boardCodeInt, boardNo, token, navigate, hasAlerted]);
 
-  // summernote 초기화는 컴포넌트 최초 마운트 시 딱 1번만 실행
+  // summernote 초기화 (한번만)
   useEffect(() => {
     if (!summernoteInitialized.current) {
       $("#summernote").summernote({
         height: 300,
         focus: true,
         callbacks: {
-          onChange: function (contents) {
-            setBoard((prev) => {
-              if (prev.boardContent !== contents) {
-                return { ...prev, boardContent: contents };
-              }
-              return prev;
-            });
+          onChange: (contents) => {
+            contentRef.current = contents; // 여기서 state 업데이트 하지 않음
           },
         },
       });
@@ -101,9 +116,9 @@ const EditBoard = () => {
         summernoteInitialized.current = false;
       }
     };
-  }, []); // 빈 배열 => 딱 한번만 실행
+  }, []);
 
-  // board가 로드된 후에 summernote 내용 세팅
+  // board 데이터가 로드된 후 summernote 내용 세팅
   useEffect(() => {
     if (board && summernoteInitialized.current) {
       $("#summernote").summernote("code", board.boardContent || "");
@@ -120,21 +135,17 @@ const EditBoard = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!board) return;
-
-    const currentContent = $("#summernote").summernote("code");
-    // console.log("전송 시점 summernote 내용:", currentContent);
 
     const formData = new FormData();
     formData.append("boardTitle", board.boardTitle);
-    formData.append("boardContent", currentContent);
+    formData.append("boardContent", contentRef.current); // 여기
     images.forEach((img) => formData.append("images", img));
     formData.append("boardType", board.boardType);
 
     try {
       const res = await axios.post(
-        `/api/editBoard/${boardCode}/${boardNo}`,
+        `/api/editBoard/${boardCodeInt}/${boardNo}`,
         formData,
         {
           headers: {
