@@ -22,7 +22,6 @@ import MyTownBoardWrite from "./pages/mytownboard/MyTownBoardWrite";
 import LocalBenefitSection from "./components/welfareService/LocalBenefitSection";
 import InsertBoard from "./pages/board/InsertBoard";
 
-
 function App() {
   return (
     <Router>
@@ -36,7 +35,7 @@ function App() {
           <Route path="askBoard" element={<AskBoard />} />
           <Route path="noticeBoard" element={<NoticeBoard />} />
           <Route path="mytownBoard" element={<MyTownBoard />} />
-          <Route path="/:boardPath/write" element={<InsertBoard />} />
+          <Route path="/:boardCode/write" element={<InsertBoard />} />
           <Route path="/:boardPath/edit/:boardNo" element={<EditBoard />} />
           <Route path="/:boardPath/:boardNo" element={<BoardDetail />} />
           <Route path="mytownBoard/:boardNo" element={<MyTownBoardDetail />} />
