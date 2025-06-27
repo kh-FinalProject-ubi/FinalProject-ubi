@@ -14,6 +14,7 @@ const LocalBenefitSection = () => {
   const memberStandard = useAuthStore((state) => state.memberStandard);
   const regionCity = useAuthStore((state) => state.regionCity);
   const regionDistrict = useAuthStore((state) => state.regionDistrict);
+  console.log("🧭 지역 정보:", regionCity, regionDistrict); // ✅ 꼭 찍어보기
 
   const authState = { token, memberStandard, regionCity, regionDistrict };
 

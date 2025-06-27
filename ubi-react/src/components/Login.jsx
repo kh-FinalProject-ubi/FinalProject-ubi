@@ -7,17 +7,18 @@ const Login = () => {
   const [memberPw, setMemberPw] = useState("");
   const setAuth = useAuthStore((state) => state.setAuth);
 
-  const extractDistrict = (fullAddress) => {
-    if (!fullAddress) return "";
+  const extractRegion = (fullAddress) => {
+    if (!fullAddress) return { regionCity: null, regionDistrict: null };
     const parts = fullAddress.split("^^^");
     const baseAddress = parts.length >= 2 ? parts[1] : fullAddress;
     const tokens = baseAddress.trim().split(" ");
     if (tokens.length >= 2) {
-      const sido = normalizeSido(tokens[0]);
-      const sigungu = normalizeSigungu(tokens[1]);
-      return `${sido} ${sigungu}`; // ✅ 시도 + 시군구 반환
+      return {
+        regionCity: normalizeSido(tokens[0]),
+        regionDistrict: normalizeSigungu(tokens[1]),
+      };
     }
-    return baseAddress;
+    return { regionCity: null, regionDistrict: null };
   };
 
   const handleSubmit = async (e) => {
@@ -37,15 +38,25 @@ const Login = () => {
 
       const data = await res.json();
       if (res.ok) {
+        const parts = data.address?.split("^^^");
+        const baseAddress = parts.length >= 2 ? parts[1] : data.address;
+        const tokens = baseAddress.trim().split(" ");
+
+        const regionCity = normalizeSido(tokens[0]);
+        const regionDistrict = normalizeSigungu(tokens[1]);
+
         setAuth({
           token: data.token,
-          address: extractDistrict(data.address),
+          address: baseAddress,
           memberName: data.memberName,
           memberStandard: data.memberStandard,
           memberImg: data.memberImg || "",
           memberNo: data.memberNo,
           authority: data.authority,
+          regionCity: data.regionCity || normalizeSido(tokens[0]),
+          regionDistrict: data.regionDistrict || normalizeSigungu(tokens[1]),
         });
+
         console.log("✅ 일반 로그인 성공");
       } else {
         alert(data.message || "로그인 실패");
