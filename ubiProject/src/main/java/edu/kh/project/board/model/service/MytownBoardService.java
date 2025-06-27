@@ -1,8 +1,10 @@
 package edu.kh.project.board.model.service;
 
+import java.io.IOException;
 import java.util.List;
 
 import edu.kh.project.board.model.dto.Board;
+import edu.kh.project.board.model.dto.BoardImage;
 import edu.kh.project.member.model.dto.Member;
 
 public interface MytownBoardService {
@@ -33,6 +35,6 @@ public interface MytownBoardService {
 	    void insertHashtag(int boardNo, String tag);
 
 
-     
+	    void saveImage(BoardImage image) throws IOException;
 }
 
