@@ -17,8 +17,11 @@ const MyTownBoardWrite = () => {
   // ✅ HTML 태그 제거 (순수 텍스트 추출)
   const plainContent = boardContent.replace(/<[^>]+>/g, "").trim();
 const postTypeCheckOptions = ["자유", "자랑","복지시설후기","복지혜택후기"];
-const [showModal, setShowModal] = useState(false);
+const [starRating, setStarRating] = useState(0); // ⭐ 추가
+//const [showModal, setShowModal] = useState(false);
 
+ const [showFacilityModal, setShowFacilityModal] = useState(false);
+  const [showBenefitModal, setShowBenefitModal] = useState(false);
 const [selectedFacilityName, setSelectedFacilityName] = useState("");
 const [selectedFacilityId, setSelectedFacilityId] = useState("");
 
@@ -54,6 +57,15 @@ if (postTypeCheck === "자랑") postType = "자랑";
 else if (postTypeCheck === "자유") postType = "자유";
 else if (postTypeCheck === "복지시설후기" || postTypeCheck === "복지혜택후기") postType = "후기"; 
 
+// 2-3) 별점 alert
+if (
+  (postTypeCheck === "복지시설후기" || postTypeCheck === "복지혜택후기") &&
+  starRating === 0
+) {
+  alert("별점을 선택해주세요.");
+  return;
+}
+
   // 3. 글쓰기 전송
     // 서버로 전송 (예: POST api/editboard/mytown/write)
     fetch("/api/editboard/mytown/write", {
@@ -65,6 +77,7 @@ else if (postTypeCheck === "복지시설후기" || postTypeCheck === "복지혜�
        memberNo,
          postType,  
         hashtagList,  // ✅ 배열 형태로 전송
+        starCount: starRating, // ⭐ 포함
 facilityApiServiceId: selectedFacilityId || null, // 선택 안했을 경우 null
       }),
     })
@@ -92,14 +105,42 @@ console.log("hashtags:", hashtags);
   });
   };
 
+  // 썸머노트 설정
   React.useEffect(() => {
     $("#summernote").summernote({
       height: 300,
+     
       callbacks: {
-        onChange: function (contents) {
-          setContent(contents);
-        },
+      onChange: function (contents) {
+        setContent(contents);
       },
+
+       onImageUpload: function (files) {
+        const formData = new FormData();
+        formData.append("image", files[0]);
+
+        fetch("/api/editboard/mytown/uploadImage", {
+          method: "POST",
+          body: formData,
+        })
+          .then(res => res.text())
+          .then(imageUrl => {
+            $("#summernote").summernote("insertImage", imageUrl, "image");
+          })
+          .catch(err => {
+            alert("이미지 업로드 실패");
+            console.error(err);
+          });
+      },
+    },
+
+       // 툴바 
+       toolbar: [
+      ['style', ['bold', 'italic', 'underline']],
+      ['para', ['ul', 'ol']],
+      ['insert', ['link', 'picture']], // video, table 제거
+      ['misc', ['undo', 'redo']] // codeview, fullscreen 제거
+    ],
     });
   }, []);
 
@@ -116,11 +157,13 @@ console.log("hashtags:", hashtags);
  <table border="1" style={{ width: "100%", marginTop: "20px", borderCollapse: "collapse" }}>
   <tbody>
     {/* 작성 유형 */}
-    <tr>
-      <th >작성유형</th>
-      <td >
-        {postTypeCheckOptions.map((type) => (
-          <label key={type} style={{ marginRight: "20px" }}>
+   <tr>
+  <th>작성유형</th>
+  <td style={{ whiteSpace: "nowrap" }}>
+    <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
+      {postTypeCheckOptions.map((type) => (
+        <div key={type} style={{ display: "flex", alignItems: "center" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: "5px" }}>
             <input
               type="radio"
               name="postTypeCheck"
@@ -130,27 +173,52 @@ console.log("hashtags:", hashtags);
             />
             {type}
           </label>
-        ))}
 
-<br />
-
-{postTypeCheck === "복지시설후기" && (
-  <button onClick={() => setShowModal(true)}>복지시설 선택</button>
-)}
-
-{showModal && (
-  <Modal onClose={() => setShowModal(false)}>
-    <WelfareFacilityModal />
-  </Modal>
-)}
-
-{selectedFacilityName && (
-  <div style={{ marginTop: "10px", fontWeight: "bold", color: "#333" }}>
-    선택된 시설: {selectedFacilityName}
-  </div>
-)}
-      </td>
-    </tr>
+          {/* 선택된 유형일 때 버튼 표시 */}
+          {postTypeCheck === type && (
+            <>
+              {type === "복지시설후기" && (
+                <>
+                  <button onClick={() => setShowFacilityModal(true)} style={{ marginLeft: "10px" }}>
+                    복지시설 선택
+                  </button>
+                  {selectedFacilityName && (
+                    <span style={{ marginLeft: "10px", fontWeight: "bold" }}>
+                      선택: {selectedFacilityName}
+                    </span>
+                  )}
+                </>
+              )}
+              {type === "복지혜택후기" && (
+                <button onClick={() => setShowBenefitModal(true)} style={{ marginLeft: "10px" }}>
+                  복지혜택 선택
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      ))}
+    </div>
+  </td>
+</tr>
+{(postTypeCheck === "복지시설후기" || postTypeCheck === "복지혜택후기") && (
+       <tr>
+              <th>별점</th>
+              <td>
+                
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    onClick={() => setStarRating(star)}
+                    style={{ cursor: "pointer", color: starRating >= star ? "orange" : "lightgray", fontSize: "24px" }}
+                  >
+                    ★
+                  </span>
+                ))}
+                 <span style={{ marginLeft: "10px" }}>{starRating ? `별점: ${starRating}점` : "선택 안됨"}</span>
+              </td>
+            </tr>
+            )}
 
     {/* 해시태그 입력 */}
     <tr>
@@ -165,6 +233,8 @@ console.log("hashtags:", hashtags);
         />
       </td>
     </tr>
+
+             
   </tbody>
 </table>
   
