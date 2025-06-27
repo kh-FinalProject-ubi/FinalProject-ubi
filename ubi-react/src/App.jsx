@@ -19,6 +19,7 @@ import FacilitySearchPage from "./pages/welfarefacility/FacilitySearchPage";
 import FacilityDetailPage from "./pages/welfarefacility/FacilityDetailPage";
 import EditBoard from "./pages/board/EditBoard";
 import MyTownBoardWrite from "./pages/mytownboard/MyTownBoardWrite";
+import InsertBoard from "./pages/board/InsertBoard";
 
 function App() {
   return (
@@ -33,11 +34,9 @@ function App() {
           <Route path="askBoard" element={<AskBoard />} />
           <Route path="noticeBoard" element={<NoticeBoard />} />
           <Route path="mytownBoard" element={<MyTownBoard />} />
-          <Route path="/:boardPath/detail/:boardNo" element={<BoardDetail />} />
-          <Route
-            path="/editBoard/:boardCode/:boardNo"
-            element={<EditBoard />}
-          />
+          <Route path="/:boardPath/write" element={<InsertBoard />} />
+          <Route path="/:boardPath/edit/:boardNo" element={<EditBoard />} />
+          <Route path="/:boardPath/:boardNo" element={<BoardDetail />} />
           <Route path="mytownBoard/:boardNo" element={<MyTownBoardDetail />} />
           <Route path="/facility/search" element={<FacilitySearchPage />} />
           <Route path="/facility/detail" element={<FacilityDetailPage />} />
