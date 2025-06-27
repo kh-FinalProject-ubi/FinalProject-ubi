@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link, Navigate, useLocation } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 const boardCodeMap = {
   "/noticeBoard": 1,
@@ -16,6 +16,7 @@ const askBoard = () => {
   const location = useLocation();
   const path = location.pathname;
   const boardCode = boardCodeMap[path];
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!boardCode) return;
@@ -42,7 +43,7 @@ const askBoard = () => {
       <ul>
         {boardList.map((board, index) => (
           <li key={board.boardNo}>
-            <Link to={`/${path.split("/")[1]}/detail/${board.boardNo}`}>
+            <Link to={`/${path.split("/")[1]}/${board.boardNo}`}>
               {index + 1} &nbsp;&nbsp;&nbsp;
               {board.postType} &nbsp; &nbsp; &nbsp;
               <strong>{board.boardTitle}</strong>&nbsp; &nbsp; &nbsp;
@@ -56,9 +57,7 @@ const askBoard = () => {
         ))}
       </ul>
 
-      <button onClick={() => Navigate(`/editBoard/${boardCode}`)}>
-        글 작성
-      </button>
+      <button onClick={() => navigate(`/askBoard/write`)}>글 작성</button>
     </div>
   );
 };

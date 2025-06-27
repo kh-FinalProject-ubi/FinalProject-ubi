@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import useAuthStore from "../../stores/useAuthStore"; // Zustand 등 토큰, 회원정보 관리 스토어
+import useAuthStore from "../../stores/useAuthStore";
 
 const BoardDetail = () => {
   const navigate = useNavigate();
   const { boardPath, boardNo } = useParams();
   const { token, authority, memberNo: loginMemberNo } = useAuthStore();
 
-  // boardPath -> boardCode 매핑 (ex: noticeBoard -> 1, askBoard -> 2)
+  // 게시판 이름 -> 코드 매핑
   const boardCodeMap = {
     noticeBoard: 1,
     askBoard: 2,
@@ -47,7 +47,6 @@ const BoardDetail = () => {
 
         const boardData = res.data.board;
 
-        // 문의게시판 권한 체크: 작성자 또는 관리자만 접근 가능
         if (
           boardCode === 2 &&
           !(loginMemberNo === boardData.memberNo || authority === "ADMIN")
@@ -55,14 +54,13 @@ const BoardDetail = () => {
           if (!hasAlerted) {
             alert("해당 게시글을 볼 권한이 없습니다.");
             setHasAlerted(true);
-            setTimeout(() => navigate(`/${boardPath}`), 100); // 부드러운 이동
-            setLoading(false); // 로딩 종료
+            setTimeout(() => navigate(`/${boardPath}`), 100);
+            setLoading(false);
           }
 
           return;
         }
 
-        // 권한 있으면 게시글 세팅
         setBoard(boardData);
       } catch (err) {
         if (!hasAlerted) {
@@ -93,7 +91,6 @@ const BoardDetail = () => {
     hasAlerted,
   ]);
 
-  // 로딩 중이거나 권한 없는 경우 상세를 렌더링하지 않음
   if (loading || !board) return null;
 
   const isWriter = loginMemberNo === board.memberNo;
@@ -107,7 +104,11 @@ const BoardDetail = () => {
       <section className="board-view">
         <h2 className="view-title">{board.boardTitle}</h2>
         <div className="content-box">
-          <p>{board.boardContent}</p>
+          <div
+            className="board-content"
+            dangerouslySetInnerHTML={{ __html: board.boardContent }}
+          ></div>
+
           <div className="image-list">
             {board.imageList && board.imageList.length > 0
               ? board.imageList.map((img, index) => {
@@ -124,6 +125,7 @@ const BoardDetail = () => {
                 })
               : null}
           </div>
+
           <p>조회수: {board.boardReadCount}</p>
           <p>작성자 번호: {board.memberNo}</p>
         </div>
@@ -140,10 +142,22 @@ const BoardDetail = () => {
             <>
               <button
                 className="btn-yellow"
-                onClick={() => navigate(`/editBoard/${boardCode}/${boardNo}`)}
+                onClick={() => {
+                  // boardType → boardPath 다시 변환
+                  const path = Object.entries(boardCodeMap).find(
+                    ([, code]) => code === board.boardType
+                  )?.[0];
+
+                  if (path) {
+                    navigate(`/${path}/edit/${board.boardNo}`);
+                  } else {
+                    alert("게시판 경로를 찾을 수 없습니다.");
+                  }
+                }}
               >
                 수정
               </button>
+
               <button
                 className="btn-yellow"
                 onClick={() => {
