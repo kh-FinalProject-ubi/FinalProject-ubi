@@ -13,11 +13,11 @@ public class Comment {
 
 	private int commentNo;
 	private String commentContent;
-	private String commentWriteDate;
-	private String commentDelFl;
+	private String commentDate;
+	private String commentUpdateDelFl;
 	private int boardNo;
 	private int memberNo;
-	private int parentCommentNo;
+	private int commentParentNo;
 	
 	// 댓글 조회 시 회원 프로필, 닉네임
 	private String memberNickname;

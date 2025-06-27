@@ -122,30 +122,10 @@ public class MyPageServiceImpl implements MyPageService {
 	public List<Comment> likeComment(int memberNo) {
 		return mapper.likeComment(memberNo);
 	}
-	
-	
-	
-	
+
+	// 비밀번호 확인
 	@Override
-	public int updateInfo(Member inputMember, String[] memberAddress) {
-
-		// 입력된 주소가 있을 경우
-		if (!inputMember.getMemberAddress().equals(",,")) {
-
-			String address = String.join("^^^", memberAddress);
-			inputMember.setMemberAddress(address);
-
-		} else {
-			// 없을 경우
-			inputMember.setMemberAddress(null);
-		}
-
-		return mapper.updateInfo(inputMember);
-	}
-
-	// 비밀번호 변경 서비스
-	@Override
-	public int changePw(Map<String, String> paramMap, int memberNo) {
+	public int selectPw(String currentPassword, int memberNo) {
 
 		// 1. 현재 비밀번호가 일치하는지 확인하기
 		// - 현재 로그인한 회원의 암호화된 비밀번호를 DB에서 조회
@@ -153,29 +133,55 @@ public class MyPageServiceImpl implements MyPageService {
 
 		// 입력 받은 현재 비밀번호와(평문)
 		// DB에서 조회한 비밀번호(암호화)를 비교
-		// -> bcrypt.matched(평문, 암호화비번) 사용
+		// -> bcrypt.matches(평문, 암호화비번) 사용
 
 		// 다를 경우 "asd123"
-		if (!bcrypt.matches(paramMap.get("currentPw"), originPw)) {
+		if (!bcrypt.matches(currentPassword, originPw)) {
 			return 0;
 		}
 
+		return 1;
+	}
+	
+	// 비밀번호 변경
+	@Override
+	public int changePw(String newPw, int memberNo) {
+		
 		// 2. 같을 경우
 
 		// 새 비밀번호를 암호화(bcrypt.encode(평문) > 암호화된 비밀번호 반환)
-		String encPw = bcrypt.encode(paramMap.get("newPw"));
+		String encPw = bcrypt.encode(newPw);
 
 		// DB에 업데이트
 		// SQL 전달 해야하는 데이터 2개 (암호화한 새 비번 encPw, 회원번호 memberNo)
 		// -> mapper에 전달할 수 있는 전달인자는 단 1개..
 		// -> 묶어서 전달 (paramMap 재활용)
 
-		paramMap.put("encPw", encPw);
+		Map<String, String> paramMap = new HashMap<>();
+				
 		paramMap.put("memberNo", memberNo + ""); // 1 + "" => 문자열
+		
+		paramMap.put("encPw", encPw );
 
 		return mapper.changePw(paramMap);
 	}
 
+	@Override
+	public int updateInfo(Member inputMember, String[] memberAddress) {
+		
+		// 입력된 주소가 있을 경우
+		if (!inputMember.getMemberAddress().equals(",,")) {
+			
+			String address = String.join("^^^", memberAddress);
+			inputMember.setMemberAddress(address);
+			
+		} else {
+			// 없을 경우
+			inputMember.setMemberAddress(null);
+		}
+		
+		return mapper.updateInfo(inputMember);
+	}
 	// 회원 탈퇴 서비스
 	@Override
 	public int secession(String memberPw, int memberNo) {

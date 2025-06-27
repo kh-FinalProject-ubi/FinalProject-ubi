@@ -1,173 +1,202 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
+import { AnimatePresence, motion } from "framer-motion";
 import "../../styles/mypage/ChangePassword.css";
+import useAuthStore from '../../stores/useAuthStore';
 
 const ChangePassword = () => {
-  const [currentPw, setCurrentPw] = useState('');
-  const [newPw, setNewPw] = useState('');
-  const [confirmPw, setConfirmPw] = useState('');
 
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
+  const { memberNo } = useAuthStore(); 
 
-  const [validity, setValidity] = useState({
-    currentPw: { error: '', success: '' },
-    newPw: { error: '', success: '' },
-    confirmPw: { error: '', success: '' },
+  const [form, setForm] = useState({
+    currentPw: "",
+    newPw: "",
+    confirmPw: "",
   });
 
-  const isPasswordValid = (password) => {
-    return /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password);
-  };
+  const [validationErrors, setValidationErrors] = useState({});
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [completed, setCompleted] = useState(false); // 변경 완료 여부
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
-  // ✅ 현재 비밀번호 핸들러
-  const handleCurrentPwChange = (e) => {
-    const val = e.target.value;
-    setCurrentPw(val);
+  // 통합 유효성 검사
+  const validateFields = (fields) => {
+    const errors = {};
 
-    setValidity(prev => ({
-      ...prev,
-      currentPw: isPasswordValid(val)
-        ? { error: '', success: '사용 가능한 비밀번호입니다.' }
-        : { error: '영문과 숫자를 포함한 8자 이상이어야 합니다.', success: '' }
-    }));
-  };
-
-  // ✅ 새 비밀번호 핸들러
-  const handleNewPwChange = (e) => {
-    const val = e.target.value;
-    setNewPw(val);
-
-    const isValid = isPasswordValid(val);
-    const match = confirmPw && val === confirmPw;
-
-    setValidity(prev => ({
-      ...prev,
-      newPw: isValid
-        ? { error: '', success: '사용 가능한 비밀번호입니다.' }
-        : { error: '영문과 숫자를 포함한 8자 이상이어야 합니다.', success: '' },
-      confirmPw: match
-        ? { error: '', success: '비밀번호가 일치합니다.' }
-        : confirmPw
-          ? { error: '비밀번호가 일치하지 않습니다.', success: '' }
-          : prev.confirmPw
-    }));
-  };
-
-  // ✅ 새 비밀번호 확인 핸들러
-  const handleConfirmPwChange = (e) => {
-    const val = e.target.value;
-    setConfirmPw(val);
-
-    setValidity(prev => ({
-      ...prev,
-      confirmPw:
-        newPw === val
-          ? { error: '', success: '비밀번호가 일치합니다.' }
-          : { error: '비밀번호가 일치하지 않습니다.', success: '' }
-    }));
-  };
-
-  const handleChangePassword = async (e) => {
-    e.preventDefault();
-
-    // 에러 있는지 체크
-    if (
-      validity.currentPw.error ||
-      validity.newPw.error ||
-      validity.confirmPw.error
-    ) {
-      setError('입력값을 확인해주세요.');
-      return;
+    if (fields.currentPw !== undefined && fields.currentPw.length < 5) {
+      errors.currentPw = "현재 비밀번호는 5자 이상이어야 합니다.";
     }
 
+    if (
+      fields.newPw !== undefined &&
+      !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{5,}$/.test(fields.newPw)
+    ) {
+      errors.newPw = "영문+숫자 포함 5자 이상이어야 합니다.";
+    }
+
+    if (
+      fields.confirmPw !== undefined &&
+      fields.newPw !== undefined &&
+      fields.confirmPw !== fields.newPw
+    ) {
+      errors.confirmPw = "비밀번호가 일치하지 않습니다.";
+    }
+
+    return errors;
+  };
+
+  // 실시간 입력 핸들러
+  const handleChange = (field) => (e) => {
+    const updatedForm = { ...form, [field]: e.target.value };
+    setForm(updatedForm);
+
+    const errors = validateFields(updatedForm);
+    setValidationErrors(errors);
+    setError("");
+    setSuccess("");
+  };
+
+  // 현재 비밀번호 확인
+  const verifyCurrentPassword = async (e) => {
+    e.preventDefault(); // 폼 기본 동작 차단!!
+    setError("");
+    setSuccess("");
+
+    const errors = validateFields({ currentPw: form.currentPw });
+    setValidationErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
     try {
-      const res = await axios.post('/api/member/change-password', {
-        currentPassword: currentPw,
-        newPassword: newPw,
+      console.log("현재 비밀번호 전송!");
+      const res = await axios.post("/api/myPage/selectPw", {
+        memberPw: form.currentPw, memberNo : memberNo
       });
 
-      if (res.data.success) {
-        setMessage('비밀번호가 성공적으로 변경되었습니다.');
-        setCurrentPw('');
-        setNewPw('');
-        setConfirmPw('');
-        setValidity({
-          currentPw: { error: '', success: '' },
-          newPw: { error: '', success: '' },
-          confirmPw: { error: '', success: '' },
+      if (res.data === 1) {
+        setShowNewPw(true); // 비밀번호 확인 성공 → 새 비밀번호 창 표시
+        setError("");
+      } else {
+        setError("현재 비밀번호가 일치하지 않습니다.");
+      }
+    } catch {
+      setError("비밀번호 확인 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 최종 변경 제출
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    const errors = validateFields(form);
+    setValidationErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    try {
+      const res = await axios.post("/api/myPage/changePw", {
+        memberPw: form.newPw,
+        memberNo : memberNo
+      });
+
+      if (res.status === 200) {
+        setCompleted(true); // 변경 완료 시 완료 상태
+        setForm({
+          currentPw: "",
+          newPw: "",
+          confirmPw: "",
         });
       } else {
-        setError(res.data.message || '비밀번호 변경 실패');
+        setError(res.data.message || "비밀번호 변경 실패");
       }
-    } catch (err) {
-      setError('오류가 발생했습니다. 다시 시도해주세요.');
+    } catch {
+      setError("비밀번호 변경 중 오류가 발생했습니다.");
     }
   };
 
   return (
     <div className="change-password-container">
       <h2>비밀번호 변경</h2>
-      <form onSubmit={handleChangePassword}>
-        {/* 현재 비밀번호 */}
-        <div>
-          <label>현재 비밀번호</label>
-          <input
-            type="password"
-            value={currentPw}
-            onChange={handleCurrentPwChange}
-            required
-          />
-          {validity.currentPw.error && <p className="error-message">{validity.currentPw.error}</p>}
-          {!validity.currentPw.error && validity.currentPw.success && (
-            <p className="success-message">{validity.currentPw.success}</p>
-          )}
-        </div>
 
-        {/* 새 비밀번호 */}
-        <div>
-          <label>새 비밀번호</label>
-          <input
-            type="password"
-            value={newPw}
-            onChange={handleNewPwChange}
-            required
-          />
-          {validity.newPw.error && <p className="error-message">{validity.newPw.error}</p>}
-          {!validity.newPw.error && validity.newPw.success && (
-            <p className="success-message">{validity.newPw.success}</p>
-          )}
-        </div>
+      <AnimatePresence mode="wait">
+        {!completed ? (
+        <>
+          {/* 현재 비밀번호 입력 */}
+          <form onSubmit={verifyCurrentPassword}>
+            <div>
+              <label>현재 비밀번호</label>
+              <input
+                type="password"
+                name="currentPw"  
+                value={form.currentPw}
+                onChange={handleChange("currentPw")}
+              />
+              {validationErrors.currentPw && (
+                <p className="error">{validationErrors.currentPw}</p>
+              )}
+            </div>
+            <button type="submit">비밀번호 확인</button>
+          </form>
 
-        {/* 새 비밀번호 확인 */}
-        <div>
-          <label>새 비밀번호 확인</label>
-          <input
-            type="password"
-            value={confirmPw}
-            onChange={handleConfirmPwChange}
-            required
-          />
-          {validity.confirmPw.error && <p className="error-message">{validity.confirmPw.error}</p>}
-          {!validity.confirmPw.error && validity.confirmPw.success && (
-            <p className="success-message">{validity.confirmPw.success}</p>
+          {/* 새 비밀번호 입력 (확인 완료 시 슬라이드 표시) */}
+          {showNewPw && (
+            <motion.form
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              onSubmit={handleSubmit}
+            >
+              <div>
+                <label>새 비밀번호</label>
+                <input
+                  type="password"
+                  name="newPw"
+                  value={form.newPw}
+                  onChange={handleChange("newPw")}
+                />
+                {validationErrors.newPw && (
+                  <p className="error">{validationErrors.newPw}</p>
+                )}
+              </div>
+              <div>
+                <label>새 비밀번호 확인</label>
+                <input
+                  type="password"
+                  name="confirmPw"
+                  value={form.confirmPw}
+                  onChange={handleChange("confirmPw")}
+                />
+                {validationErrors.confirmPw && (
+                  <p className="error">{validationErrors.confirmPw}</p>
+                )}
+              </div>
+              <button type="submit" >변경</button>
+            </motion.form>
           )}
-        </div>
 
-        <button
-          type="submit"
-          disabled={
-            validity.currentPw.error ||
-            validity.newPw.error ||
-            validity.confirmPw.error
-          }
+          {error && <p className="error-message">{error}</p>}
+          {success && <p className="success-message">{success}</p>}
+        </>
+       ) : (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+          className="success-message-container"
         >
-          변경
-        </button>
-
-        {error && <p className="error-message">{error}</p>}
-        {message && <p className="success-message">{message}</p>}
-      </form>
+          <h3>비밀번호가 성공적으로 변경되었습니다.</h3>
+          <button
+            onClick={() => {
+              setCompleted(false);
+              setShowNewPw(false);
+            }}
+          >
+            확인
+          </button>
+        </motion.div>
+       )}
+      </AnimatePresence>
     </div>
   );
 };
