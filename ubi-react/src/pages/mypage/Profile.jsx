@@ -1,21 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import "../../styles/mypage/Profile.css";
 import useAuthStore from '../../stores/useAuthStore';
 import { AnimatePresence, motion } from 'framer-motion';
 import LoadingOverlay from '../../components/Loading';
 import { div } from 'framer-motion/client';
+import DaumPostcode from "react-daum-postcode";
 
 const Profile = () => {
   
   const { memberNo } = useAuthStore(); // Zustand에서 회원 정보 가져옴
-  console.log('memberNo:', memberNo);
+  const { token } = useAuthStore(); // Zustand에서 회원 정보 가져옴
   const [loading, setLoading] = useState(false);
 
   const [member, setMember] = useState(null);
   const [zipcode, setZipcode] = useState('');
   const [baseAddress, setBaseAddress] = useState('');
   const [detailAddress, setDetailAddress] = useState('');
+  const [editMode, setEditMode] = useState(false);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const detailAddressRef = useRef(null);
 
   const [benefits, setBenefits] = useState([]);
   const [category, setCategory] = useState('시설'); // or '채용', '혜택', '시설'
@@ -51,6 +55,27 @@ const Profile = () => {
       }
     } catch (err) {
       console.error("기본정보 조회 중 예외 발생 : ", err);
+    }
+  };
+
+  // 내 정보 수정
+  const saveMemberData = async () => {
+    try {
+      // 주소 합치기
+      const fullAddress = `${zipcode}^^^${baseAddress}^^^${detailAddress}`;
+
+      const payload = {
+        ...member,
+        memberNo: memberNo,
+        memberAddress : fullAddress
+      };
+
+      await axios.post("/api/myPage/update", { member : payload });
+      alert("수정되었습니다.");
+      setEditMode(false);
+    } catch (err) {
+      console.error(err);
+      alert("수정에 실패했습니다.");
     }
   };
   
@@ -125,6 +150,31 @@ const Profile = () => {
     }
   }, [member]);
 
+  const handleComplete = (data) => {
+  let fullAddress = data.address;
+  let extraAddress = "";
+
+  if (data.addressType === "R") {
+    if (data.bname !== "") {
+      extraAddress += data.bname;
+    }
+    if (data.buildingName !== "") {
+      extraAddress += extraAddress !== "" ? `, ${data.buildingName}` : data.buildingName;
+    }
+    if (extraAddress !== "") {
+      fullAddress += ` (${extraAddress})`;
+    }
+  }
+
+  setZipcode(data.zonecode);
+  setBaseAddress(fullAddress);
+  setIsPopupOpen(false);
+
+  if (detailAddressRef.current) {
+    detailAddressRef.current.focus();
+  }
+};
+
   useEffect(() => {
     if (!memberNo) return;
     console.log("useEffect 실행");
@@ -132,10 +182,6 @@ const Profile = () => {
 
   }, [memberNo, category, contentType, commentContentType]);
 
-
-  console.log("멤버:", member);
-  console.log("member.address:", member?.address);
-  console.log("zipcode, base, detail:", zipcode, baseAddress, detailAddress);
   return (
     <div className="mypage-profile">
       <h2>내 정보</h2>
@@ -154,17 +200,111 @@ const Profile = () => {
             </div>
             <div className="profile-right">
               <ul>
-                <li><strong>닉네임</strong> {member.memberNickname}</li>
-                <li><strong>아이디</strong> {member.memberId}</li>
-                <li><strong>이름</strong> {member.memberName}</li>
-                <li><strong>전화번호</strong> {member.memberTel}</li>
-                <li><strong>이메일</strong> {member.memberEmail}</li>
-                <li><strong>주소</strong> 
+                {editMode ? (
+                  <>
+                    <li>
+                      <strong>닉네임</strong>
+                      <input
+                        type="text"
+                        value={member.memberNickname}
+                        onChange={(e) =>
+                          setMember({ ...member, memberNickname: e.target.value })
+                        }
+                      />
+                    </li>
+                    <li>
+                      <strong>전화번호</strong>
+                      <input
+                        type="text"
+                        value={member.memberTel}
+                        onChange={(e) =>
+                          setMember({ ...member, memberTel: e.target.value })
+                        }
+                      />
+                    </li>
+                    <li>
+                      <strong>이메일</strong>
+                      <input
+                        type="text"
+                        value={member.memberEmail}
+                        onChange={(e) =>
+                          setMember({ ...member, memberEmail: e.target.value })
+                        }
+                      />
+                    </li>
+                    <li>
+                      <strong>주소</strong>
+                        <>
+                          <div style={{ marginBottom: '8px' }}>
+                            <button type="button" onClick={() => setIsPopupOpen(true)}>
+                              우편번호 검색
+                            </button>
+                          </div>
+
+                          <input
+                            value={zipcode}
+                            placeholder="우편번호"
+                            readOnly
+                            style={{ backgroundColor: '#f1f1f1', cursor: 'default' }}
+                          />
+
+                          <input
+                            value={baseAddress}
+                            placeholder="기본 주소"
+                            readOnly
+                            style={{ backgroundColor: '#f1f1f1', cursor: 'default' }}
+                          />
+
+                          <input
+                            ref={detailAddressRef}
+                            value={detailAddress}
+                            onChange={(e) => setDetailAddress(e.target.value)}
+                            placeholder="상세 주소"
+                          />
+
+                          {isPopupOpen && (
+                            <div style={{ position: "relative", zIndex: 1000 }}>
+                              <DaumPostcode
+                                onComplete={handleComplete}
+                                autoClose
+                                style={{ position: "absolute" }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setIsPopupOpen(false)}
+                                style={{
+                                  position: "absolute",
+                                  top: 0,
+                                  right: 0,
+                                  zIndex: 1001
+                                }}
+                              >
+                                닫기
+                              </button>
+                            </div>
+                          )}
+                        </>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li><strong>닉네임</strong> {member.memberNickname}</li>
+                    <li><strong>전화번호</strong> {member.memberTel}</li>
+                    <li><strong>이메일</strong> {member.memberEmail}</li>
+                    <li><strong>주소</strong> 
                     <p>우편번호 : {zipcode}</p>
                     <p>주소 : {baseAddress}</p>
                     <p>상세주소 : {detailAddress}</p>
-                </li>
+                    </li>
+                  </>
+                )}
               </ul>
+
+              {editMode ? (
+                <button onClick={saveMemberData}>저장</button>
+              ) : (
+                <button onClick={() => setEditMode(true)}>수정</button>
+              )}
             </div>
           </div>
         </section>

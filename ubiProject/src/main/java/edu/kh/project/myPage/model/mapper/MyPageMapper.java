@@ -20,14 +20,6 @@ import edu.kh.project.welfare.benefits.model.dto.Welfare;
  */
 @Mapper
 public interface MyPageMapper {
-
-	/** 회원 정보 수정
-	 * @param inputMember
-	 * @return
-	 */
-	int updateInfo(Member inputMember);
-
-	
 	
 	/** 회원 탈퇴
 	 * @param memberNo
@@ -60,6 +52,12 @@ public interface MyPageMapper {
 	 * @return
 	 */
 	Member info(int memberNo);
+	
+	/** 회원 정보 수정
+	 * @param inputMember
+	 * @return
+	 */
+	int updateInfo(Member member);
 
 	
 	/** 내가 찜한 혜택 조회

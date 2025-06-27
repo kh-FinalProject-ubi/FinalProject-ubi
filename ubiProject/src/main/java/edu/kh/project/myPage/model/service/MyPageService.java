@@ -17,13 +17,6 @@ import edu.kh.project.welfare.benefits.model.dto.Welfare;
 
 public interface MyPageService {
 
-	/** 회원 정보 수정 서비스
-	 * @param inputMember
-	 * @param memberAddress
-	 * @return
-	 */
-	int updateInfo(Member inputMember, String[] memberAddress);
-
 	/** 회원 탈퇴 서비스
 	 * @param memberPw
 	 * @param memberNo
@@ -76,6 +69,13 @@ public interface MyPageService {
 	 * @return
 	 */
 	Member info(int memberNo);
+	
+	/** 회원 정보 수정 서비스
+	 * @param inputMember
+	 * @param memberAddress
+	 * @return
+	 */
+	int updateInfo(Member member);
 	
 
 	/** 내가 찜한 혜택 조회

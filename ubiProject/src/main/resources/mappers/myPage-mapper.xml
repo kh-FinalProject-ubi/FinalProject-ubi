@@ -10,6 +10,16 @@
 			   WHERE MEMBER_NO = #{memeberNo}
 	</select>
 	
+	<!-- 회원 정보 수정 -->
+	<update id="updateInfo">
+	UPDATE "MEMBER" SET
+	MEMBER_NICKNAME = #{memberNickname},
+	MEMBER_TEL = #{memberTel},
+	MEMBER_ADDRESS = #{memberAddress},
+	MEMBER_EMAIL = #{memberEmail}
+	WHERE MEMBER_NO = #{memberNo}
+	</update>
+	
 	<!-- 내가 찜한 혜택 조회 -->
 	<select id="getWelfareBenefits">
 		SELECT SERVICE_NAME, AGENCY, DESCRIPTION, RECEPTION_START, RECEPTION_END, CATEGORY, SERVICE_NO
@@ -151,15 +161,6 @@
 	<update id="changePw">
 	UPDATE "MEMBER" SET
 	MEMBER_PW = #{encPw}
-	WHERE MEMBER_NO = #{memberNo}
-	</update>
-	
-	<!-- 회원 정보 수정 -->
-	<update id="updateInfo">
-	UPDATE "MEMBER" SET
-	MEMBER_NICKNAME = #{memberNickname},
-	MEMBER_TEL = #{memberTel},
-	MEMBER_ADDRESS = #{memberAddress}
 	WHERE MEMBER_NO = #{memberNo}
 	</update>
 	

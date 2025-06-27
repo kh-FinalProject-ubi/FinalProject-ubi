@@ -53,6 +53,11 @@ public class MyPageServiceImpl implements MyPageService {
 		return mapper.info(memberNo);
 	}
 	
+	// 회원 정보 수정
+	@Override
+	public int updateInfo(Member member) {
+		return mapper.updateInfo(member);
+	}
 	
 	// 내가 찜한 혜택 조회
 	@Override
@@ -166,22 +171,7 @@ public class MyPageServiceImpl implements MyPageService {
 		return mapper.changePw(paramMap);
 	}
 
-	@Override
-	public int updateInfo(Member inputMember, String[] memberAddress) {
-		
-		// 입력된 주소가 있을 경우
-		if (!inputMember.getMemberAddress().equals(",,")) {
-			
-			String address = String.join("^^^", memberAddress);
-			inputMember.setMemberAddress(address);
-			
-		} else {
-			// 없을 경우
-			inputMember.setMemberAddress(null);
-		}
-		
-		return mapper.updateInfo(inputMember);
-	}
+	
 	// 회원 탈퇴 서비스
 	@Override
 	public int secession(String memberPw, int memberNo) {
