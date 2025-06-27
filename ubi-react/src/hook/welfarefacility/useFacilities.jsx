@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-export function useFacilities(city, district) {
+export function useFacilities(city, district, apiType = "old") {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -14,9 +14,16 @@ export function useFacilities(city, district) {
       setError(null);
 
       try {
-        const res = await axios.get("/api/facility", {
-          params: { city, district },
-        });
+        // ✅ "경기" 또는 "경기도" 포함되면 경기도 전용 API 사용
+        const isGyeonggi = city.includes("경기");
+
+        const url = isGyeonggi ? "/api/gyeonggi-facility" : "/api/facility";
+
+        const params = isGyeonggi
+          ? { city, district, apiType } // 경기도 API는 apiType 필요
+          : { city, district }; // 기존 API는 필요 없음
+
+        const res = await axios.get(url, { params });
 
         console.log("📦 원본 응답:", res.data);
 
@@ -42,7 +49,7 @@ export function useFacilities(city, district) {
     };
 
     fetchFacilities();
-  }, [city, district]);
+  }, [city, district, apiType]);
 
   return { data, loading, error };
 }

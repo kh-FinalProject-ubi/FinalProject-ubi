@@ -5,5 +5,13 @@ import java.util.List;
 import edu.kh.project.welfare.facility.dto.GyeonggiFacility;
 
 public interface GyeonggiFacilityService {
-    List<GyeonggiFacility> getGyeonggiFacilities(String city, String district);
+	/**
+     * 경기도 지역 복지시설 조회
+     * 
+     * @param city      - 시/도 (ex: 경기도)
+     * @param district  - 시/군/구 (ex: 가평군)
+     * @param apiType   - API 유형 (old, child, public)
+     * @return          - 해당 지역에 해당하는 복지시설 리스트
+     */
+    List<GyeonggiFacility> getFacilitiesByRegion(String city, String district, String apiType);
 }
