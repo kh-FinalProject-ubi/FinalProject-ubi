@@ -30,7 +30,7 @@ const ChangePassword = () => {
 
     if (
       fields.newPw !== undefined &&
-      !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{5,}$/.test(fields.newPw)
+      !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_\-+=<>?]{5,}$/.test(fields.newPw)
     ) {
       errors.newPw = "영문+숫자 포함 5자 이상이어야 합니다.";
     }
