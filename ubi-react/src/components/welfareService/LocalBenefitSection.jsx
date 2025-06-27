@@ -1,44 +1,71 @@
-import React from "react";
-import "./LocalBenefitSection.css"; // 필요시 스타일 분리
-
-// 목업 예시 (API 연동 시 props로 대체)
-const mockBenefits = [
-  {
-    id: 1,
-    title: "출산 가정 지원금",
-    description: "출산 후 양육비 및 의료비 일부 지원",
-    district: "서울특별시 강남구",
-    tags: ["임산부", "영유아", "금전 지원"],
-  },
-  {
-    id: 2,
-    title: "장애인 교통비 지원",
-    description: "대중교통 이용 시 이용료 일부 환급",
-    district: "부산광역시",
-    tags: ["장애인", "교통", "생활 지원"],
-  },
-];
+import React, { useState } from "react";
+import useLocalBenefitData from "../../hook/welfareService/useLocalBenefitData";
+import useAuthStore from "../../stores/useAuthStore";
+import WelfareSearchFilter from "./WelfareSearchFilter";
+import { applyAllFilters } from "../../utils/applyAllFilters";
+import "../../styles/LocalBenefitSection.css";
 
 const LocalBenefitSection = () => {
+  // ✅ 데이터 받아오기 (data를 benefits로 alias)
+  const { data: benefits, loading, error } = useLocalBenefitData();
+
+  // ✅ Zustand 상태 개별 구독으로 무한 루프 방지
+  const token = useAuthStore((state) => state.token);
+  const memberStandard = useAuthStore((state) => state.memberStandard);
+  const regionCity = useAuthStore((state) => state.regionCity);
+  const regionDistrict = useAuthStore((state) => state.regionDistrict);
+
+  const authState = { token, memberStandard, regionCity, regionDistrict };
+
+  // ✅ 사용자 필터 상태
+  const [filterOptions, setFilterOptions] = useState({
+    keyword: "",
+    serviceType: "전체",
+    category: "전체",
+    sortOrder: "latest", // 향후 정렬 로직에도 활용 가능
+    showAll: false, // '전체 보기' 전환에 활용
+  });
+
+  // ✅ 필터 적용
+  const filteredData = applyAllFilters(benefits, filterOptions, authState);
+
   return (
     <section className="local-benefit-section">
-      <h3>🎁 지자체 복지 혜택</h3>
-      <p>거주 지역을 기반으로 한 맞춤 복지 서비스를 확인해보세요.</p>
+      <h2 className="section-title">🎁 지역 복지 혜택 모음</h2>
 
-      <div className="benefit-card-list">
-        {mockBenefits.map((benefit) => (
-          <div key={benefit.id} className="benefit-card">
-            <h4>{benefit.title}</h4>
-            <p>{benefit.description}</p>
-            <div className="benefit-meta">
-              <span>{benefit.district}</span>
-              <div className="tags">
-                {benefit.tags.map((tag, i) => (
-                  <span key={i} className="tag">
-                    #{tag}
-                  </span>
-                ))}
-              </div>
+      {/* ✅ 필터 컴포넌트 */}
+      <WelfareSearchFilter onFilterChange={setFilterOptions} />
+
+      {/* ✅ 로딩 & 에러 */}
+      {loading && <p>로딩 중...</p>}
+      {error && <p>데이터를 불러오는 데 실패했습니다.</p>}
+
+      {/* ✅ 혜택 카드 목록 */}
+      <div className="benefit-grid">
+        {filteredData.map((item) => (
+          <div className="benefit-card" key={item.id || item.title}>
+            <div className="card-header">
+              <h3>{item.title}</h3>
+              <span className="category">{item.category}</span>
+            </div>
+            <p className="description">{item.description}</p>
+            {item.imageUrl && (
+              <img
+                src={item.imageUrl}
+                alt="혜택 이미지"
+                className="thumbnail"
+              />
+            )}
+            <div className="card-footer">
+              <p>
+                {item.startDate} ~ {item.endDate}
+              </p>
+              <p className="region">{item.region}</p>
+              {item.link && (
+                <a href={item.link} target="_blank" rel="noopener noreferrer">
+                  바로가기
+                </a>
+              )}
             </div>
           </div>
         ))}

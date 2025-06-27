@@ -7,13 +7,12 @@ import XYZ from "ol/source/XYZ";
 import TileWMS from "ol/source/TileWMS";
 import CrimeLegend from "./CrimeLegend";
 
-// 🌍 배경 지도 URL 설정 (VWorld 키 반영됨)
+// 🌍 배경 지도 URL 설정
 const baseMapUrls = {
-  // vworld:
-  //   "https://api.vworld.kr/req/wmts/1.0.0/3E730203-99F6-3B7E-8DED-879E725F5801/Base/{z}/{y}/{x}.png",
   satellite:
     "https://api.vworld.kr/req/wmts/1.0.0/3E730203-99F6-3B7E-8DED-879E725F5801/Satellite/{z}/{y}/{x}.jpeg",
-  // osm: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+  hybrid:
+    "https://api.vworld.kr/req/wmts/1.0.0/3E730203-99F6-3B7E-8DED-879E725F5801/Hybrid/{z}/{y}/{x}.png",
 };
 
 // 🔍 범죄 유형 WMS 설정
@@ -43,22 +42,34 @@ const layerConfig = {
 const CrimeSafetyMap = () => {
   const mapRef = useRef(null);
   const wmsLayerRef = useRef(null);
+  const hybridLayerRef = useRef(null);
+
   const [selectedCrime, setSelectedCrime] = useState("전체");
-  // const [selectedBaseMap, setSelectedBaseMap] = useState("vworld");
-  const selectedBaseMap = "satellite";
+  const [showHybrid, setShowHybrid] = useState(true); // ✅ 지명 토글 상태
 
   // 🗺️ 지도 초기화
   useEffect(() => {
-    const baseLayer = new TileLayer({
+    const satelliteLayer = new TileLayer({
       source: new XYZ({
-        url: baseMapUrls[selectedBaseMap],
+        url: baseMapUrls.satellite,
         crossOrigin: "anonymous",
       }),
     });
 
+    const hybridLayer = new TileLayer({
+      source: new XYZ({
+        url: baseMapUrls.hybrid,
+        crossOrigin: "anonymous",
+      }),
+      visible: showHybrid,
+      zIndex: 1,
+    });
+
+    hybridLayerRef.current = hybridLayer;
+
     const map = new Map({
       target: mapRef.current,
-      layers: [baseLayer],
+      layers: [satelliteLayer, hybridLayer],
       view: new View({
         center: [14135362.197, 4518290.522],
         zoom: 10,
@@ -68,25 +79,18 @@ const CrimeSafetyMap = () => {
     });
 
     mapRef.current.olMap = map;
+
     return () => map.setTarget(null);
   }, []);
 
-  // 배경 지도 변경
+  // ✅ 지명 레이어 토글
   useEffect(() => {
-    const map = mapRef.current?.olMap;
-    if (!map) return;
+    if (hybridLayerRef.current) {
+      hybridLayerRef.current.setVisible(showHybrid);
+    }
+  }, [showHybrid]);
 
-    const baseLayer = new TileLayer({
-      source: new XYZ({
-        url: baseMapUrls[selectedBaseMap],
-        crossOrigin: "anonymous",
-      }),
-    });
-
-    map.getLayers().setAt(0, baseLayer);
-  }, [selectedBaseMap]);
-
-  // WMS 히트맵 변경
+  // 🔥 히트맵 레이어 설정
   useEffect(() => {
     const map = mapRef.current?.olMap;
     if (!map) return;
@@ -126,26 +130,17 @@ const CrimeSafetyMap = () => {
     <div>
       <h3>범죄지도 히트맵</h3>
 
-      {/* 지도 선택 */}
-      {/* <div style={{ marginBottom: "10px" }}>
-        {["vworld", "satellite", "osm"].map((type) => (
-          <button
-            key={type}
-            onClick={() => setSelectedBaseMap(type)}
-            style={{
-              marginRight: "6px",
-              backgroundColor: selectedBaseMap === type ? "#34495e" : "#bdc3c7",
-              color: "white",
-              padding: "6px 12px",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
-          >
-            {type.toUpperCase()}
-          </button>
-        ))}
-      </div> */}
+      {/* ✅ 지명 토글 버튼 */}
+      <div style={{ marginBottom: "8px" }}>
+        <label>
+          <input
+            type="checkbox"
+            checked={showHybrid}
+            onChange={() => setShowHybrid((prev) => !prev)}
+          />{" "}
+          지명 레이어 표시
+        </label>
+      </div>
 
       {/* 범죄 유형 선택 */}
       <div style={{ marginBottom: "10px" }}>

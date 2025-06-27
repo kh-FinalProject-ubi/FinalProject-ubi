@@ -19,6 +19,7 @@ import FacilitySearchPage from "./pages/welfarefacility/FacilitySearchPage";
 import FacilityDetailPage from "./pages/welfarefacility/FacilityDetailPage";
 import EditBoard from "./pages/board/EditBoard";
 import MyTownBoardWrite from "./pages/mytownboard/MyTownBoardWrite";
+import LocalBenefitSection from "./components/welfareService/LocalBenefitSection";
 
 function App() {
   return (
@@ -50,6 +51,7 @@ function App() {
           </Route>
           <Route path="signup" element={<Signup />} />
           <Route path="mytownBoard" element={<MyTownBoard />} />
+          <Route path="localBenefits" element={<LocalBenefitSection />} />
         </Route>
 
         {/* 레이아웃이 필요 없는 단독 Route (예: 로그인 콜백) */}

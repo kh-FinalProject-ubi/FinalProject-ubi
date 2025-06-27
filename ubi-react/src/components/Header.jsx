@@ -53,6 +53,7 @@ const Header = () => {
           <Link to="/mytownBoard">우리 동네 좋아요</Link>
           <Link to="/askBoard">문의게시판</Link>
           <Link to="/noticeBoard">공지사항</Link>
+          <Link to="/localBenefits">지역 복지 혜택</Link> {/* 추가 */}
         </nav>
 
         <div className="header-right">

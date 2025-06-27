@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import Pagination from "../components/Pagination"; // 경로는 실제 위치에 맞게
+import Pagination from "../components/Pagination";
+import "../styles/YouthPolicyList.css"; // 새로 추가할 CSS
 
 function YouthPolicyList() {
   const [policies, setPolicies] = useState([]);
@@ -15,7 +16,6 @@ function YouthPolicyList() {
         params: { pageNum, pageSize },
       })
       .then((res) => {
-        console.log("받은 응답:", res.data);
         setPolicies(res.data.result?.youthPolicyList || []);
         setTotalCount(res.data.result?.totalCount || 0);
       })
@@ -28,16 +28,19 @@ function YouthPolicyList() {
   const totalPages = Math.ceil(totalCount / pageSize);
 
   return (
-    <div>
-      <h1>청년 정책 목록</h1>
-      {error && <p>{error}</p>}
-      <ul>
+    <div className="benefit-card">
+      <h3 className="youth-title">청년 정책 목록</h3>
+      {error && <p className="error-message">{error}</p>}
+
+      <ul className="policy-list">
         {policies.map((policy) => (
-          <li key={policy.plcyNo}>
-            <strong>{policy.plcyNm}</strong> - {policy.plcyExplnCn}
+          <li key={policy.plcyNo} className="policy-item">
+            <strong className="policy-title">{policy.plcyNm}</strong>
+            <p className="policy-desc">{policy.plcyExplnCn}</p>
           </li>
         ))}
       </ul>
+
       <Pagination
         currentPage={pageNum}
         totalPages={totalPages}
