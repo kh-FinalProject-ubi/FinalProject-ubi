@@ -24,11 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MytownEditBoardController {
 
-//    @Value("${my.board.folder-path}")
-//    private String folderPath;
-//
-//    @Value("${my.board.web-path}")
-//    private String webPath;
+    @Value("${my.board.folder-path}")
+    private String folderPath;
+
+    @Value("${my.board.web-path}")
+    private String webPath;
 
 	@Autowired
 	private MytownBoardService Service;
