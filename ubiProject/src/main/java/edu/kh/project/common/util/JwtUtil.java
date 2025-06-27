@@ -26,18 +26,22 @@ public class JwtUtil {
 	    String role = switch (member.getAuthority()) {
 	        case "2" -> "ADMIN";
 	        case "1" -> "USER";
-	        default -> "GUEST"; // 예외적인 값 방지
+	        default -> "GUEST";
 	    };
 
 	    return Jwts.builder()
 	        .claim("memberNo", member.getMemberNo())
-	        .claim("role", role) // ✅ 올바르게 "ADMIN", "USER" 문자열로 넣어야 함
+	        .claim("role", role)
+	        .claim("memberStandard", member.getMemberStandard()) // ✅ 추가
+	        .claim("regionCity", member.getRegionCity())         // ✅ 추가
+	        .claim("regionDistrict", member.getRegionDistrict()) // ✅ 추가
+	        .claim("memberName", member.getMemberNickname())     // ✅ 선택 사항
+	        .claim("address", member.getMemberAddress())         // ✅ 선택 사항
 	        .setIssuedAt(new Date())
 	        .setExpiration(new Date(System.currentTimeMillis() + tokenValidityInMs))
 	        .signWith(SignatureAlgorithm.HS256, secretKey)
 	        .compact();
 	}
-
 	public Long extractMemberNo(String token) {
 		Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
 		return claims.get("memberNo", Long.class);
