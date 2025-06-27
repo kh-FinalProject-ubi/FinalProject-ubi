@@ -48,10 +48,14 @@ export default function FacilityDetailPage() {
     facility["REFINE_ROADNM_ADDR"] ||
     facility["ADDR"];
 
+  const tel =
+    facility.tel || facility["전화번호"] || facility["DETAIL_TELNO"] || "없음";
+
   const imageUrl = facility.imageUrl || null;
   const lat = facility.lat || facility["Y"];
   const lng = facility.lng || facility["X"];
-  const reservationUrl = facility.reservationUrl || facility["SVCURL"];
+  const reservationUrl =
+    facility.reservationUrl || facility["SVCURL"] || facility["HMPG_ADDR"];
   const rawDescription = facility.description || facility["DTLCONT"] || "";
   const description = cleanDescription(rawDescription);
 
@@ -60,6 +64,7 @@ export default function FacilityDetailPage() {
     시설명: name,
     시설주소: address,
     카테고리: facility.category,
+    전화번호: tel,
     예약주소: reservationUrl,
   };
 

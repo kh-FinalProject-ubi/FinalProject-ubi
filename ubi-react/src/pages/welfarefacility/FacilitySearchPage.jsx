@@ -86,7 +86,12 @@ export default function FacilitySearchPage() {
   const combinedFacilities = [...welfareData, ...sportsData];
 
   const filteredFacilities = combinedFacilities.filter((f) => {
-    const name = f["시설명"] || f["FACLT_NM"] || f["facilityName"] || "";
+    const name =
+      f["시설명"] ||
+      f["FACLT_NM"] ||
+      f["facilityName"] ||
+      f["OPEN_FACLT_NM"] ||
+      "";
     const type =
       f["상세유형"] || f["시설종류명"] || f["SVC_TYPE"] || f["category"] || "";
 
@@ -165,6 +170,7 @@ export default function FacilitySearchPage() {
             facility["시설명"] ||
             facility["FACLT_NM"] ||
             facility["facilityName"] ||
+            facility["OPEN_FACLT_NM"] ||
             "시설";
           const key = `${name}-${idx}`;
           return <FacilityCard key={key} facility={facility} />;
