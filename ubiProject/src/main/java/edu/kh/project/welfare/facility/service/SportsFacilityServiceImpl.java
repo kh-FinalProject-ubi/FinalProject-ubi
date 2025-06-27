@@ -71,7 +71,8 @@ public class SportsFacilityServiceImpl implements SportsFacilityService {
                 dto.setReservationUrl(node.path("SVCURL").asText("").trim());
                 dto.setDescription(node.path("DTLCONT").asText("").trim());
                 dto.setType("체육");
-
+                dto.setSvcId(node.path("SVCID").asText("").trim());
+                
                 result.add(dto);
             }
 

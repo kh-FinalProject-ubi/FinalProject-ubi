@@ -6,8 +6,10 @@ import { useSportsFacilities } from "../../hook/welfarefacility/useSportsFacilit
 import useSelectedRegionStore from "../../hook/welfarefacility/useSelectedRegionStore";
 import useLoginMember from "../../hook/login/useLoginMember";
 import { data } from "jquery";
+import useAuthStore from "../../stores/useAuthStore";
 
 export default function WelfareFacilityModal({ onSelect }) {
+    const { address } = useAuthStore(); // ✅ 회원 주소
   const { member, loading: memberLoading } = useLoginMember();
   const { selectedCity: selectedCityFromStore, selectedDistrict: selectedDistrictFromStore } = useSelectedRegionStore();
 
@@ -59,16 +61,38 @@ export default function WelfareFacilityModal({ onSelect }) {
   const { data: sportsData, loading: sportsLoading } = useSportsFacilities(region.city, region.district);
 
   const loading = welfareLoading || sportsLoading;
-  const combinedFacilities = [...welfareData, ...sportsData];
+
+  // ✅ 주소 비교 준비
+  const regionFull = (region.city + region.district).replace(/\s/g, "");
+  const userFull = (address || "").replace(/\s/g, "");
+
+  
+  const combinedFacilities = [...welfareData, ...sportsData]; // 데이터 합치기
+
+  
 
   const filteredFacilities = combinedFacilities.filter((f) => {
-    const name = f["시설명"] || f["FACLT_NM"] || f["facilityName"] || "";
-    const type = f["상세유형"] || f["시설종류명"] || f["SVC_TYPE"] || f["category"] || "";
+    const name = f["시설명"] || f["FACLT_NM"] || f["facilityName"] || ""; // 시설명 
+    const type = f["상세유형"] || f["시설종류명"] || f["SVC_TYPE"] || f["category"] || ""; // 시설유형
     const matchesKeyword = keyword === "" || name.includes(keyword);
-    const matchesServiceType = isMatchServiceTarget(f, serviceType);
-    const categoryKeywords = categoryMap[category] || [];
+    const matchesServiceType = isMatchServiceTarget(f, serviceType);// 삭제
+    const categoryKeywords = categoryMap[category] || []; //유형 키워드 
     const matchesCategory = category === "전체" || categoryKeywords.some((target) => type?.includes(target));
-    return matchesKeyword && matchesServiceType && matchesCategory;
+   
+   const facilityAddr =
+  f["FACLT_ADDR"] || f["시설주소"] || f["REFINE_ROADNM_ADDR"] || f["ADDR"] || f["facilityAddr"] || "";
+
+const cleanFacilityAddr = facilityAddr.replace(/\s/g, "");
+
+// 정확히 같은 지역인지 검사
+// const isSameRegion = cleanFacilityAddr.includes(userFull); // 또는 === 으로 더 엄격히
+
+   //const isSameRegion = userFull === regionFull;  // 🧩 또는 === 로 완전 일치 비교 가능
+console.log(userFull); // 서울특별시강남구 표시
+console.log(regionFull); // 서울특별시종로구 표시 
+console.log(facilityAddr); 
+
+    return matchesKeyword && matchesServiceType && matchesCategory&& isSameRegion;;
   });
 
   return (
