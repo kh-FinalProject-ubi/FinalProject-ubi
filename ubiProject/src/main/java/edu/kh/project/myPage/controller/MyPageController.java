@@ -84,6 +84,9 @@ public class MyPageController {
 	public ResponseEntity<Object> updateInfo(@RequestBody Member member) {
 
 		try {
+			
+			 log.debug("컨트롤러 도착 member: {}", member);
+			
            if (member.getMemberNo() == 0) {
                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
            }

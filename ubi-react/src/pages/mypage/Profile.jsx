@@ -70,6 +70,8 @@ const Profile = () => {
         memberAddress : fullAddress
       };
 
+      console.log(payload);
+      
       await axios.post("/api/myPage/update", { member : payload });
       alert("수정되었습니다.");
       setEditMode(false);
