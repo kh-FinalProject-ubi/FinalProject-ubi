@@ -75,7 +75,7 @@ public class MemberController {
 
     /** ✅ 로그인 (Zustand용 JSON 응답) */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Member input,  HttpSession session) {
+    public ResponseEntity<?> login(@RequestBody Member input, HttpSession session) {
         Member loginMember = service.login(input.getMemberId(), input.getMemberPw());
 
         if (loginMember == null) {
@@ -84,16 +84,13 @@ public class MemberController {
                 .body(Map.of("message", "아이디 또는 비밀번호가 일치하지 않습니다."));
         }
 
-
-        // 세션에 로그인 정보 저장 (동네게시판 구현)
         session.setAttribute("loginMember", loginMember);
-        
-        // 파싱 시작
+        log.info("🔍 loginMember = {}", loginMember); // regionCity, regionDistrict 포함되는지 확인용
+
         String readableStandard = parseMemberStandard(loginMember.getMemberStandard());
         String district = extractDistrict(loginMember.getMemberAddress());
-
         String token = jwtUtil.generateToken(loginMember);
-        
+
         Map<String, Object> body = new HashMap<>();
         body.put("token", token);
         body.put("memberName", loginMember.getMemberNickname());
@@ -101,9 +98,10 @@ public class MemberController {
         body.put("memberStandard", readableStandard);
         body.put("memberImg", loginMember.getMemberImg());
         body.put("memberNo", loginMember.getMemberNo());
-        body.put("authority", loginMember.getAuthority()); // ✅ 반드시 포함
-        log.info("🧾 loginMember.getMemberStandard(): {}", loginMember.getMemberStandard());
-        System.out.println("====== 로그인 성공 ======");
+        body.put("authority", loginMember.getAuthority());
+        body.put("regionCity", loginMember.getRegionCity());
+        body.put("regionDistrict", loginMember.getRegionDistrict());
+
         log.info("🧾 loginMember.getMemberStandard(): {}", loginMember.getMemberStandard());
         log.info("🔍 로그인 결과: {}", loginMember);
 
@@ -213,7 +211,8 @@ public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code) {
         body.put("memberStandard", readableStandard);
         body.put("memberImg", member.getMemberImg());
         body.put("memberNo", member.getMemberNo());
-
+        body.put("regionCity", member.getRegionCity());
+        body.put("regionDistrict", member.getRegionDistrict());
         return ResponseEntity.ok(body);
 
     } catch (Exception e) {
@@ -336,7 +335,10 @@ public String normalizeSigungu(String rawSigungu) {
 	            "memberName", member.getMemberNickname(),
 	            "address", district,
 	            "memberNo", member.getMemberNo(),
-	            "memberStandard", readableStandard
+	            "memberStandard", readableStandard,
+	            // ✅ 여기 추가
+	            "regionCity", member.getRegionCity(),
+	            "regionDistrict", member.getRegionDistrict()
 	        ));
 	    } catch (Exception e) {
 	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "유효하지 않은 토큰"));

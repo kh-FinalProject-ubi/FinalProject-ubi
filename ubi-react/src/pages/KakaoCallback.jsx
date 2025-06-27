@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../stores/useAuthStore";
+import { normalizeSido, normalizeSigungu } from "../utils/regionUtils";
 
 const KakaoCallback = () => {
   const navigate = useNavigate();
@@ -23,12 +24,26 @@ const KakaoCallback = () => {
           return res.json();
         })
         .then((data) => {
+          const parts = data.address?.split("^^^");
+          const baseAddress = parts.length >= 2 ? parts[1] : data.address;
+          const tokens = baseAddress?.trim()?.split(" ") || [];
+
+          const regionCity =
+            tokens.length >= 1 ? normalizeSido(tokens[0]) : null;
+          const regionDistrict =
+            tokens.length >= 2 ? normalizeSigungu(tokens[1]) : null;
+
           setAuth({
             token,
             memberName: data.memberName,
-            address: data.address,
+            address: baseAddress,
             memberNo: data.memberNo,
+            memberStandard: data.memberStandard,
+            authority: data.authority,
+            regionCity,
+            regionDistrict,
           });
+
           navigate("/");
         })
         .catch((err) => {

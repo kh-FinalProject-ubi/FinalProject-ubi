@@ -15,68 +15,58 @@ export const standardKeywordMap = {
 };
 
 export function filterBenefitsByStandard(list, memberStandard, token, showAll) {
-  console.log("memberStandard:", memberStandard);
+  console.log("🧪 memberStandard:", memberStandard);
 
   if (showAll || !token) return list;
 
-  const keyword = standardKeywordMap[String(memberStandard)];
-  if (!keyword) return list;
+  const keywords = standardKeywordMap[String(memberStandard)];
+  if (!keywords) return list;
 
-  if (memberStandard === "0" || memberStandard === "일반") {
-    return list.filter((item) => {
-      const rawTargets = item.lifeNmArray;
-
-      const targets = Array.isArray(rawTargets)
-        ? rawTargets.flatMap((t) => t.split(",").map((s) => s.trim()))
-        : typeof rawTargets === "string"
-        ? rawTargets.split(",").map((s) => s.trim())
-        : [];
-
-      const hasSpecialGroup = targets.some((life) =>
-        [
-          "노인",
-          "청년",
-          "아동",
-          "장애인",
-          "영유아",
-          "임산부",
-          "출산",
-          "임신",
-        ].includes(life)
-      );
-
-      if (hasSpecialGroup) {
-        console.log("🚫 제외됨:", item.servNm, targets);
-      } else {
-        console.log("✅ 포함됨:", item.servNm, targets);
-      }
-
-      return !hasSpecialGroup;
-    });
-  }
-
-  const keywords = Array.isArray(keyword) ? keyword : [keyword];
+  const isGeneral = memberStandard === "0" || memberStandard === "일반";
 
   return list.filter((item) => {
     const rawTargets = item.lifeNmArray;
 
+    // lifeNmArray → 배열로 변환 + 공백 제거 + 문자열 보장
     const targets = Array.isArray(rawTargets)
-      ? rawTargets.flatMap((t) => t.split(",").map((s) => s.trim()))
+      ? rawTargets
+          .flatMap((t) => String(t).split(","))
+          .map((s) => s.replace(/\s/g, "").trim())
       : typeof rawTargets === "string"
-      ? rawTargets.split(",").map((s) => s.trim())
+      ? rawTargets.split(",").map((s) => s.replace(/\s/g, "").trim())
       : [];
 
-    if (targets.length === 0 || targets.every((t) => t === "")) {
-      console.log("✅ 포함됨 (정보 없음):", item.servNm, targets);
-      return true;
-    }
+    if (isGeneral) {
+      // 일반 사용자는 특수계층 키워드가 없는 것만 보여야 함
+      const hasSpecialGroup = targets.some((t) =>
+        [
+          "노인",
+          "노년",
+          "청년",
+          "아동",
+          "영유아",
+          "장애인",
+          "임산부",
+          "임신",
+          "출산",
+        ].includes(t)
+      );
 
-    const match = targets.some((life) => keywords.includes(life));
-    if (match) {
-      console.log("✅ 포함됨 (매칭됨):", item.servNm, targets);
+      if (hasSpecialGroup) {
+        console.log("🚫 제외됨 (일반 제외 대상):", item.servNm, targets);
+        return false;
+      } else {
+        console.log("✅ 포함됨 (일반 대상):", item.servNm, targets);
+        return true;
+      }
     } else {
-      console.log("🚫 제외됨:", item.servNm, targets);
+      const match = targets.some((t) => keywords.includes(t));
+      if (match) {
+        console.log("✅ 포함됨 (매칭):", item.servNm, targets);
+      } else {
+        console.log("🚫 제외됨 (불일치):", item.servNm, targets);
+      }
+      return match;
     }
-    return match;
   });
 }

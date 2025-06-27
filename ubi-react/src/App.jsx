@@ -21,8 +21,14 @@ import EditBoard from "./pages/board/EditBoard";
 import MyTownBoardWrite from "./pages/mytownboard/MyTownBoardWrite";
 import LocalBenefitSection from "./components/welfareService/LocalBenefitSection";
 import InsertBoard from "./pages/board/InsertBoard";
+import { useEffect } from "react";
+import { initAuthFromToken } from "./utils/initAuthFromToken";
+
 
 function App() {
+  useEffect(() => {
+    initAuthFromToken(); // 앱 진입 시 토큰 → 상태 복원
+  }, []);
   return (
     <Router>
       <Routes>

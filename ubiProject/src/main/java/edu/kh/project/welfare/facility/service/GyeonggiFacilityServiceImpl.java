@@ -21,74 +21,89 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GyeonggiFacilityServiceImpl implements GyeonggiFacilityService {
 
-    @Value("${gyeonggi.api.key}")
-    private String serviceKey;
+	@Value("${gyeonggi.api.key}")
+	private String serviceKey;
 
-    private String getApiUrl(String apiType) {
-        return switch (apiType) {
-            case "old" -> "https://openapi.gg.go.kr/HtygdWelfaclt?KEY=%s";
-            case "child" -> "https://openapi.gg.go.kr/Childwelfarefaclt?KEY=%s";
-            case "public" -> "https://openapi.gg.go.kr/PublicFacilityOpening?KEY=%s";
-            default -> throw new IllegalArgumentException("지원하지 않는 API 유형: " + apiType);
-        };
-    }
+	// ✅ API 유형별 URL
+	private String getApiUrl(String apiType) {
+		return switch (apiType) {
+		case "old" -> "https://openapi.gg.go.kr/HtygdWelfaclt?KEY=%s";
+		case "child" -> "https://openapi.gg.go.kr/Childwelfarefaclt?KEY=%s";
+		case "public" -> "https://openapi.gg.go.kr/PublicFacilityOpening?KEY=%s";
+		default -> throw new IllegalArgumentException("지원하지 않는 API 유형: " + apiType);
+		};
+	}
 
-    @Override
-    public List<GyeonggiFacility> getFacilitiesByRegion(String city, String district, String apiType) {
-        // 1. city 정제
-        String cleanCity = city.contains("^^^") ? city.split("\\^\\^\\^")[1] : city;
-        if ("경기".equals(cleanCity)) cleanCity = "경기도";
-        log.debug("🧪 정제된 city 값: {}, 원본 city: {}", cleanCity, city);
+	// ✅ 문자열 정규화
+	private String normalize(String str) {
+		if (str == null)
+			return "";
+		return str.replaceAll("\\s+", "").trim().toLowerCase();
+	}
 
-        // ✅ 2. API 호출 URL 생성
-        String url = String.format(getApiUrl(apiType), serviceKey);
-        log.info("📱 API 호출 URL: {}", url);
+	@Override
+	public List<GyeonggiFacility> getFacilitiesByRegion(String city, String district, String apiType) {
+		String cleanCity = city.contains("^^^") ? city.split("\\^\\^\\^")[1] : city;
+		if ("경기".equals(cleanCity))
+			cleanCity = "경기도";
 
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-            restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
-            String xml = restTemplate.getForObject(url, String.class);
+		log.debug("🧪 정제된 city: {}, district: {}", cleanCity, district);
 
-            // 3. XML 파싱
-            XmlMapper xmlMapper = new XmlMapper();
-            JsonNode root = xmlMapper.readTree(xml);
-            JsonNode rowNode = root.get("row");
+		String baseUrl = getApiUrl(apiType);
+		List<GyeonggiFacility> allFacilities = new ArrayList<>();
+		int page = 1;
+		int pageSize = 1000; // 최대값
 
-            if (rowNode == null || !rowNode.isArray()) {
-                log.warn("❗ row 항목이 존재하지 않거나 배열 아님");
-                return Collections.emptyList();
-            }
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
+			XmlMapper xmlMapper = new XmlMapper();
 
-            List<GyeonggiFacility> allFacilities = new ArrayList<>();
-            for (JsonNode node : rowNode) {
-                GyeonggiFacility facility = xmlMapper.treeToValue(node, GyeonggiFacility.class);
-                allFacilities.add(facility);
-            }
+			while (true) {
+				String url = String.format("%s&Type=xml&pIndex=%d&pSize=%d", String.format(baseUrl, serviceKey), page,
+						pageSize);
+				log.info("📡 API 호출 URL: {}", url);
 
-            // 4. 필터링 (포함 여부 기반 비교로 개선)
-            List<GyeonggiFacility> filtered = new ArrayList<>();
-            for (GyeonggiFacility facility : allFacilities) {
-                String rawAddress = facility.getAddress();
-                if (rawAddress == null || rawAddress.isBlank()) continue;
+				String xml = restTemplate.getForObject(url, String.class);
+				JsonNode root = xmlMapper.readTree(xml);
+				JsonNode rowNode = root.get("row");
 
-                // address에서 "^^^" 제거 후 앞쪽 주소만 사용
-                String cleanAddress = rawAddress.contains("^^^") ? rawAddress.split("\\^\\^\\^")[1] : rawAddress;
-                String fullAddressPrefix = cleanAddress.trim().split(" ")[0] + " " + cleanAddress.trim().split(" ")[1];
+				if (rowNode == null || !rowNode.isArray() || rowNode.size() == 0) {
+					log.info("🔚 더 이상 데이터 없음. page={}", page);
+					break;
+				}
 
-                // ex) "경기도 용인시 처인구"가 포함되어 있는지 판단
-                if (cleanAddress.contains(cleanCity) && cleanAddress.contains(district)) {
-                    facility.setRegionCity(cleanCity);
-                    facility.setRegionDistrict(district);
-                    filtered.add(facility);
-                }
-            }
+				for (JsonNode node : rowNode) {
+					GyeonggiFacility facility = xmlMapper.treeToValue(node, GyeonggiFacility.class);
+					if (facility.getFacilityName() == null || facility.getRefineRoadnmAddr() == null)
+						continue;
+					allFacilities.add(facility);
+				}
 
-            log.info("✅ 필터링된 시설 수: {}", filtered.size());
-            return filtered;
+				log.info("📄 page {} 완료. 누적 개수: {}", page, allFacilities.size());
 
-        } catch (Exception e) {
-            log.error("💥 API 호출 또는 파싱 실패", e);
-            return Collections.emptyList();
-        }
-    }
+				// 다음 페이지로
+				page++;
+			}
+
+			// ✅ 주소 기준 필터링
+			String normDistrict = normalize(district);
+			List<GyeonggiFacility> filtered = new ArrayList<>();
+			for (GyeonggiFacility facility : allFacilities) {
+				String addressNorm = normalize(facility.getRefineRoadnmAddr());
+				if (addressNorm.contains(normDistrict)) {
+					facility.setRegionCity(cleanCity);
+					facility.setRegionDistrict(district);
+					filtered.add(facility);
+				}
+			}
+
+			log.info("✅ 최종 필터링된 시설 수: {}", filtered.size());
+			return filtered;
+
+		} catch (Exception e) {
+			log.error("💥 API 처리 실패", e);
+			return Collections.emptyList();
+		}
+	}
 }
