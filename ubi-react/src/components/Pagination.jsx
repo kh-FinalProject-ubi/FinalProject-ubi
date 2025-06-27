@@ -23,7 +23,27 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     );
   }
 
-  return <div style={{ marginTop: "1rem" }}>{pages}</div>;
+  return (
+    <div style={{ marginTop: "1rem" }}>
+      {currentPage > 1 && (
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          style={{ marginRight: "8px" }}
+        >
+          ◀ 이전
+        </button>
+      )}
+      {pages}
+      {currentPage < totalPages && (
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          style={{ marginLeft: "8px" }}
+        >
+          다음 ▶
+        </button>
+      )}
+    </div>
+  );
 };
 
 export default Pagination;
