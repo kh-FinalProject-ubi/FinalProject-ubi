@@ -22,11 +22,16 @@ public class GyeonggiFacilityController {
         this.gyeonggiFacilityService = gyeonggiFacilityService;
     }
 
+    /**
+     * 경기도 복지시설 조회 (노인/아동/공공 등 유형 구분)
+     * 예: /api/gyeonggi-facility?city=수원시&district=팔달구&apiType=old
+     */
     @GetMapping
     public List<GyeonggiFacility> getFacilities(
-            @RequestParam(defaultValue = "수원시") String city,
-            @RequestParam(defaultValue = "팔달구") String district) {
+            @RequestParam(name = "city") String city,
+            @RequestParam(name = "district") String district,
+            @RequestParam(name = "apiType", defaultValue = "old") String apiType) {
 
-        return gyeonggiFacilityService.getGyeonggiFacilities(city, district);
+        return gyeonggiFacilityService.getFacilitiesByRegion(city, district, apiType);
     }
 }
