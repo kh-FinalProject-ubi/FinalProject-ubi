@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -161,6 +162,76 @@ public class MyPageController {
 		}
 	}
 	
+	/**
+	 * 비밀번호 확인
+	 * 
+	 * @param paramMap    : 모든 파라미터(요청 데이터)를 맵으로 저장
+	 * @param loginMember : 세션에 등록된 현재 로그인한 회원 정보
+	 * @param ra
+	 * @return
+	 */
+	@PostMapping("selectPw") // /myPage/changePw POST 요청 매핑
+	public ResponseEntity<Object> selectPw(@RequestBody Member request) {
+		
+//		log.debug("현재 비밀번호 전송받음!");
+		
+		int memberNo = request.getMemberNo();
+		String currentPassword = request.getMemberPw();
+		
+		try {
+			if (memberNo == 0) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+			}
+			
+			// paramMap = {currentPw=asd123, newPw=pass02!, newPwConfirm=pass02!}
+	
+			// 현재 + 새 비번 + 새 비번 확인 (paramMap) + 회원번호(memberNo)를 서비스로 전달
+			int result = service.selectPw(currentPassword, memberNo);
+
+			return ResponseEntity.status(HttpStatus.OK).body(result);
+
+		} catch (Exception e) {
+				log.error("비밀번호 확인 중 오류 발생", e);
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+			}
+
+	}
+	
+	/** 비밀번호 변경
+	 * @param memberNo
+	 * @param currentPassword
+	 * @return
+	 */
+	@PostMapping("changePw")
+	public ResponseEntity<Object> changePw(@RequestBody Member request) {
+		
+		int memberNo = request.getMemberNo();
+		String newPw = request.getMemberPw(); 
+		
+		try {
+		if (memberNo == 0) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+		}
+		
+		
+		// 현재 + 새 비번 + 새 비번 확인 (paramMap) + 회원번호(memberNo)를 서비스로 전달
+		int result = service.changePw(newPw, memberNo);
+		
+		if(result > 0) {
+			return ResponseEntity.status(HttpStatus.OK).body("비밀번호가 변경되었습니다!");
+		} else {
+			return ResponseEntity.badRequest().body("비밀번호가 변경에 실패했습니다!");	
+		}
+		
+		
+		} catch (Exception e) {
+			log.error("비밀번호 변경 중 오류 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+		
+		}
+
+	
 	// ---------------------------------------------------------------------------------------------------------------------
 
 	/**
@@ -208,45 +279,6 @@ public class MyPageController {
 		ra.addFlashAttribute("message", message);
 		return "redirect:info";
 	}	
-
-	/**
-	 * 비밀번호 변경
-	 * 
-	 * @param paramMap    : 모든 파라미터(요청 데이터)를 맵으로 저장
-	 * @param loginMember : 세션에 등록된 현재 로그인한 회원 정보
-	 * @param ra
-	 * @return
-	 */
-	@PostMapping("changePw") // /myPage/changePw POST 요청 매핑
-	public String changePw(@RequestParam Map<String, String> paramMap,
-			@SessionAttribute("loginMember") Member loginMember, RedirectAttributes ra) {
-		// paramMap = {currentPw=asd123, newPw=pass02!, newPwConfirm=pass02!}
-
-		// 로그인한 회원 번호
-		int memberNo = loginMember.getMemberNo();
-
-		// 현재 + 새 비번 + 새 비번 확인 (paramMap) + 회원번호(memberNo)를 서비스로 전달
-		int result = service.changePw(paramMap, memberNo);
-
-		String path = null;
-		String message = null;
-
-		if (result > 0) {
-			// 변경 성공 시
-			message = "비밀번호가 변경되었습니다!";
-			path = "/myPage/info";
-
-		} else {
-			// 변경 실패 시
-			message = "현재 비밀번호가 일치하지 않습니다.";
-			path = "/myPage/changePw";
-		}
-
-		ra.addFlashAttribute("message", message);
-
-		return "redirect:" + path;
-	}
-
 	/**
 	 * 회원 탈퇴
 	 * 

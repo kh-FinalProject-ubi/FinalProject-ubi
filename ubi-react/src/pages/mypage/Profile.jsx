@@ -121,7 +121,7 @@ const Profile = () => {
       setZipcode(zip);
       setBaseAddress(base);
       setDetailAddress(detail);
-      // console.log("주소 분리됨:", zip, base, detail);
+      console.log("주소 분리됨:", zip, base, detail);
     }
   }, [member]);
 

@@ -24,13 +24,6 @@ public interface MyPageService {
 	 */
 	int updateInfo(Member inputMember, String[] memberAddress);
 
-	/** 비밀번호 변경 서비스
-	 * @param paramMap
-	 * @param memberNo
-	 * @return
-	 */
-	int changePw(Map<String, String> paramMap, int memberNo);
-
 	/** 회원 탈퇴 서비스
 	 * @param memberPw
 	 * @param memberNo
@@ -128,6 +121,20 @@ public interface MyPageService {
 	 * @return
 	 */
 	List<Comment> likeComment(int memberNo);
+	
+	/** 비밀번호 확인
+	 * @param currentPassword
+	 * @param memberNo
+	 * @return
+	 */
+	int selectPw(String currentPassword, int memberNo);
+
+	/** 비밀번호 변경
+	 * @param currentPw
+	 * @param memberNo
+	 * @return
+	 */
+	int changePw(String currentPw, int memberNo);
 
 
 

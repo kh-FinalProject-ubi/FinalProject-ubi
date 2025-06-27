@@ -59,7 +59,6 @@ const Header = () => {
           {isLogin ? (
             <>
               <button className="alarm-btn">🔔</button>
-              <span className="nickname">{memberName}님</span>
               <Link to="/mypage/Profile">
                 <img
                   className="profile-img"
@@ -67,6 +66,7 @@ const Header = () => {
                   alt="프로필"
                 />
               </Link>
+              <span className="nickname">{memberName}님</span>
               <button className="logout-btn" onClick={clearAuth}>
                 로그아웃
               </button>
