@@ -58,10 +58,11 @@ public class WelfareFacilityJobServiceImpl implements WelfareFacilityJobService{
         try {
             String url = "http://apis.data.go.kr/B552474/SenuriService/getJobList?"
                        + "ServiceKey=" + serviceKey1
-                       + "&numOfRows=1000&pageNo=1";
+                       + "&numOfRows=1000&pageNo=1"
+                       + "&_type=json";  // ✅ JSON 요청
 
-            String xml = restTemplate.getForObject(url, String.class);
-            JSONObject json = XML.toJSONObject(xml);
+            String jsonStr = restTemplate.getForObject(url, String.class);
+            JSONObject json = new JSONObject(jsonStr);
 
             Object itemObj = json.getJSONObject("response")
                                  .getJSONObject("body")
@@ -78,8 +79,8 @@ public class WelfareFacilityJobServiceImpl implements WelfareFacilityJobService{
             }
 
             return ids;
+
         } catch (Exception e) {
-        	   
             e.printStackTrace();
             return List.of();
         }
@@ -91,15 +92,20 @@ public class WelfareFacilityJobServiceImpl implements WelfareFacilityJobService{
     private WelfareFacilityJob getJobDetailFromApi1(String jobId) {
         try {
             String url = "http://apis.data.go.kr/B552474/SenuriService/getJobInfo?"
-                       + "ServiceKey=" + serviceKey1 + "&id=" + jobId;
+                       + "ServiceKey=" + serviceKey1
+                       + "&id=" + jobId
+                       + "&_type=json";  // ✅ JSON 명시
 
-            String xml = restTemplate.getForObject(url, String.class);
-            JSONObject item = XML.toJSONObject(xml)
-                    .getJSONObject("response")
-                    .getJSONObject("body")
-                    .getJSONObject("items")
-                    .getJSONObject("item");
-          //  System.out.println(xml);
+            String jsonStr = restTemplate.getForObject(url, String.class);
+            JSONObject json = new JSONObject(jsonStr);
+
+            if (!json.has("response")) return null;
+
+            JSONObject item = json.getJSONObject("response")
+                                  .getJSONObject("body")
+                                  .getJSONObject("items")
+                                  .getJSONObject("item");
+
             String address = item.optString("plDetAddr", "");
             String[] parts = address.split("\\s+");
 
@@ -120,13 +126,13 @@ public class WelfareFacilityJobServiceImpl implements WelfareFacilityJobService{
 
         } catch (Exception e) {
             e.printStackTrace();
-          
             return null;
         }
+    }
         
       
       
-    }
+    
 
 
     private List<Map<String, Object>> callApi2() {

@@ -3,6 +3,7 @@ import useLocalBenefitData from "../../hook/welfareService/useLocalBenefitData";
 import useAuthStore from "../../stores/useAuthStore";
 import WelfareSearchFilter from "./WelfareSearchFilter";
 import { applyAllFilters } from "../../utils/applyAllFilters";
+import LikeButton from "../welfareLike/LikeButton";
 import "../../styles/LocalBenefitSection.css";
 
 const LocalBenefitSection = () => {
@@ -46,37 +47,51 @@ const LocalBenefitSection = () => {
       {/* ✅ 혜택 카드 목록 */}
       <div className="benefit-grid">
         {filteredData.length > 0
-          ? filteredData.map((item) => (
-              <div className="benefit-card" key={item.id || item.title}>
-                <div className="card-header">
-                  <h3>{item.title}</h3>
-                  <span className="category">{item.category}</span>
-                </div>
-                <p className="description">{item.description}</p>
-                {item.imageUrl && (
-                  <img
-                    src={item.imageUrl}
-                    alt="혜택 이미지"
-                    className="thumbnail"
-                  />
-                )}
-                <div className="card-footer">
-                  <p>
-                    {item.startDate} ~ {item.endDate}
-                  </p>
-                  <p className="region">{item.region}</p>
-                  {item.link && (
-                    <a
-                      href={item.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      바로가기
-                    </a>
-                  )}
-                </div>
-              </div>
-            ))
+          ? filteredData.map(
+              (item) => (
+                console.log("📦 혜택 아이템 구조:", item), // ✅ 이 위치에 찍으세요
+                (
+                  <div className="benefit-card" key={item.id || item.title}>
+                    <div className="card-header">
+                      <h3>{item.title}</h3>
+                      <span className="category">{item.category}</span>
+                    </div>
+                    <p className="description">{item.description}</p>
+                    {item.imageUrl && (
+                      <img
+                        src={item.imageUrl}
+                        alt="혜택 이미지"
+                        className="thumbnail"
+                      />
+                    )}
+                    <div className="card-footer">
+                      <p>
+                        {item.startDate} ~ {item.endDate}
+                      </p>
+                      <p className="region">{item.region}</p>
+                      {item.link && (
+                        <a
+                          href={item.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          바로가기
+                        </a>
+                      )}
+                      {/* ✅ 찜 버튼 추가 */}
+                      <LikeButton
+                        apiServiceId={item.id}
+                        serviceName={item.title}
+                        category={item.category}
+                        regionCity={item.regionCity} // ✅ 추가
+                        regionDistrict={item.regionDistrict} // ✅ 추가
+                        token={token}
+                      />
+                    </div>
+                  </div>
+                )
+              )
+            )
           : !loading && <p>조건에 맞는 복지 혜택이 없습니다.</p>}
       </div>
     </section>

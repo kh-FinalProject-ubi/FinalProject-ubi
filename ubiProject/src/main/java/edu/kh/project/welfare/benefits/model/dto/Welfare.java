@@ -27,7 +27,7 @@ public class Welfare {
 	private int servicePay;			// 유료여부
 	private int lat;				// 위도
 	private int lng;				// 경도
-	private String regionDistrjct;	// 시군구명
+	private String regionDistrict;	// 시군구명
 	private String regionCity;		// 시도
 	private String jjTime;			// 찜시간
 	private String updatedAt;		// 알림 발송 시간
