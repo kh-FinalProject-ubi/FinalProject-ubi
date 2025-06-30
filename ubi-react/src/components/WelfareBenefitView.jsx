@@ -5,8 +5,9 @@ import "../styles/WelfareBenefitView.css";
 import { filterBenefitsByStandard } from "../utils/filterBenefitsByStandard";
 
 const WelfareBenefitView = ({ district, benefits, isLoading }) => {
-  const cleanDistrict = district?.trim().normalize("NFC");
-  const list = benefits[cleanDistrict] ?? [];
+  const cleanDistrict =
+    district?.trim().normalize("NFC") || "서울특별시 종로구";
+  const list = benefits?.[cleanDistrict] ?? [];
 
   const [selectedDetail, setSelectedDetail] = useState(null);
   const [showAll, setShowAll] = useState(false);

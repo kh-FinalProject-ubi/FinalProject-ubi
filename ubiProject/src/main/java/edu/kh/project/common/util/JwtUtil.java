@@ -19,6 +19,25 @@ public class JwtUtil {
 	@Value("${jwt.secret}")
 	private String secretKey;
 	
+	private String parseMemberStandard(String codeStr) {
+	    return switch (codeStr) {
+	        case "1" -> "노인";
+	        case "2" -> "청년";
+	        case "3" -> "아동";
+	        case "4" -> "노인+장애인";
+	        case "5" -> "청년+장애인";
+	        case "6" -> "아동+장애인";
+	        case "7" -> "장애인";
+	        case "A" -> "임산부";
+	        case "B" -> "임산부+장애인";
+	        case "C" -> "임산부+청년";
+	        case "D" -> "임산부+아동";
+	        case "E" -> "임산부+노인";
+	        case "F" -> "임산부+노인+장애인";
+	        default  -> "일반";
+	    };
+	}
+	
 
 	private final long tokenValidityInMs = 1000 * 60 * 60 * 2; // 2시간
 
@@ -32,7 +51,7 @@ public class JwtUtil {
 	    return Jwts.builder()
 	        .claim("memberNo", member.getMemberNo())
 	        .claim("role", role)
-	        .claim("memberStandard", member.getMemberStandard()) // ✅ 추가
+	        .claim("memberStandard", parseMemberStandard(member.getMemberStandard())) // ✅ 여기
 	        .claim("regionCity", member.getRegionCity())         // ✅ 추가
 	        .claim("regionDistrict", member.getRegionDistrict()) // ✅ 추가
 	        .claim("memberName", member.getMemberNickname())     // ✅ 선택 사항

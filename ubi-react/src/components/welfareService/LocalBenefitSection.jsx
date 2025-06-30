@@ -28,7 +28,9 @@ const LocalBenefitSection = () => {
   });
 
   // ✅ 필터 적용
-  const filteredData = applyAllFilters(benefits, filterOptions, authState);
+  const filteredData = Array.isArray(benefits)
+    ? applyAllFilters(benefits, filterOptions, authState)
+    : [];
 
   return (
     <section className="local-benefit-section">
@@ -43,33 +45,39 @@ const LocalBenefitSection = () => {
 
       {/* ✅ 혜택 카드 목록 */}
       <div className="benefit-grid">
-        {filteredData.map((item) => (
-          <div className="benefit-card" key={item.id || item.title}>
-            <div className="card-header">
-              <h3>{item.title}</h3>
-              <span className="category">{item.category}</span>
-            </div>
-            <p className="description">{item.description}</p>
-            {item.imageUrl && (
-              <img
-                src={item.imageUrl}
-                alt="혜택 이미지"
-                className="thumbnail"
-              />
-            )}
-            <div className="card-footer">
-              <p>
-                {item.startDate} ~ {item.endDate}
-              </p>
-              <p className="region">{item.region}</p>
-              {item.link && (
-                <a href={item.link} target="_blank" rel="noopener noreferrer">
-                  바로가기
-                </a>
-              )}
-            </div>
-          </div>
-        ))}
+        {filteredData.length > 0
+          ? filteredData.map((item) => (
+              <div className="benefit-card" key={item.id || item.title}>
+                <div className="card-header">
+                  <h3>{item.title}</h3>
+                  <span className="category">{item.category}</span>
+                </div>
+                <p className="description">{item.description}</p>
+                {item.imageUrl && (
+                  <img
+                    src={item.imageUrl}
+                    alt="혜택 이미지"
+                    className="thumbnail"
+                  />
+                )}
+                <div className="card-footer">
+                  <p>
+                    {item.startDate} ~ {item.endDate}
+                  </p>
+                  <p className="region">{item.region}</p>
+                  {item.link && (
+                    <a
+                      href={item.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      바로가기
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))
+          : !loading && <p>조건에 맞는 복지 혜택이 없습니다.</p>}
       </div>
     </section>
   );

@@ -1,24 +1,29 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import useAuthStore from "../../stores/useAuthStore";
-
-// hook 내부에서 상태 가져오기
-const memberStandard = useAuthStore.getState().memberStandard;
-const showAll = useAuthStore.getState().showAll; // 또는 filterOptions.showAll에서 가져오는 방식으로
+import useBenefitStore from "../../stores/useWelfareStore";
 
 function formatDate(dateStr) {
   if (!dateStr) return "-";
   return dateStr.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3");
 }
 
-/**
- * 통합 복지 혜택 데이터 가져오는 커스텀 훅
- * SeoulWelfare + YouthPolicy + FacilityJob + Bokjiro
- */
 export default function useLocalBenefitData() {
-  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const { benefitsData, lastFetchedAt, setBenefitsData } = useBenefitStore();
+
+  const memberStandard = useAuthStore.getState().memberStandard;
+  const showAll = useAuthStore.getState().showAll;
+
+  const isStale = () => {
+    if (!lastFetchedAt) return true;
+    const last = new Date(lastFetchedAt);
+    const now = new Date();
+    const diffInHours = (now - last) / (1000 * 60 * 60);
+    return diffInHours > 24;
+  };
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -33,7 +38,6 @@ export default function useLocalBenefitData() {
           axios.get("/api/facilityjob"),
           axios.get("/api/welfare-curl/welfare-list/all"),
         ]);
-        console.log("📦 seoulRes.data", seoulRes.data);
 
         const seoul = Array.isArray(seoulRes.data)
           ? seoulRes.data.map((item, index) => {
@@ -56,10 +60,9 @@ export default function useLocalBenefitData() {
             })
           : [];
 
-        // 필터 조건 반영
         const youth = Array.isArray(youthRes.data?.result?.youthPolicyList)
           ? youthRes.data.result.youthPolicyList
-              .filter(() => memberStandard === "청년" || showAll) // ✅ 조건 추가
+              .filter(() => memberStandard === "청년" || showAll)
               .map((item, index) => ({
                 id: `youth-${item.plcyNo || index}`,
                 title: item.plcyNm ?? "제목 없음",
@@ -68,6 +71,8 @@ export default function useLocalBenefitData() {
                 startDate: item.rceptStartDate ?? "-",
                 endDate: item.rceptEndDate ?? "-",
                 region: item.pblancAdres ?? "지역 정보 없음",
+                regionCity: "",
+                regionDistrict: "",
                 imageUrl: null,
                 link: item.pblancUrl ?? null,
               }))
@@ -94,20 +99,27 @@ export default function useLocalBenefitData() {
           : [];
 
         const bokjiro = Array.isArray(bokjiroRes.data?.servList)
-          ? bokjiroRes.data.servList.map((item, idx) => ({
-              id: `bokjiro-${item.servId || idx}`,
-              title: item.servNm ?? "복지 서비스",
-              description: item.servDgst ?? "설명 없음",
-              category: "지자체복지혜택",
-              startDate: "정보 없음",
-              endDate: item.lastModYmd ?? "-",
-              region: `${item.ctpvNm ?? ""} ${item.sggNm ?? ""}`.trim(),
-              imageUrl: null,
-              link: item.servDtlLink ?? null,
-            }))
+          ? bokjiroRes.data.servList.map((item, idx) => {
+              const regionCity = item.ctpvNm ?? "";
+              const regionDistrict = item.sggNm ?? "";
+              return {
+                id: `bokjiro-${item.servId || idx}`,
+                title: item.servNm ?? "복지 서비스",
+                description: item.servDgst ?? "설명 없음",
+                category: "지자체복지혜택",
+                startDate: "정보 없음",
+                endDate: item.lastModYmd ?? "-",
+                region: `${regionCity} ${regionDistrict}`.trim(),
+                regionCity,
+                regionDistrict,
+                imageUrl: null,
+                link: item.servDtlLink ?? null,
+              };
+            })
           : [];
 
-        setData([...seoul, ...youth, ...jobs, ...bokjiro]);
+        const all = [...seoul, ...youth, ...jobs, ...bokjiro];
+        setBenefitsData(all);
       } catch (err) {
         console.error("❌ useLocalBenefitData error:", err);
         setError(err);
@@ -116,42 +128,16 @@ export default function useLocalBenefitData() {
       }
     };
 
-    fetchAll();
+    if (!benefitsData || isStale()) {
+      fetchAll();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
-  return { data, loading, error };
-}
-
-// HTML 디코더
-function decodeHTML(html) {
-  if (!html) return "";
-  const txt = document.createElement("textarea");
-  txt.innerHTML = html;
-  return txt.value;
-}
-
-// HWP JSON 설명 추출
-function extractText(raw) {
-  try {
-    const decodedHtml = decodeHTML(raw);
-    const match = decodedHtml.match(/<!--\[data-hwpjson\]({[\s\S]*?})-->/);
-    if (!match) return decodedHtml;
-
-    const hwpJson = JSON.parse(match[1]);
-    const result = [];
-
-    if (Array.isArray(hwpJson.ru)) {
-      for (const block of hwpJson.ru) {
-        if (Array.isArray(block.ch)) {
-          for (const chunk of block.ch) {
-            if (chunk.t && chunk.t.trim()) result.push(chunk.t.trim());
-          }
-        }
-      }
-    }
-
-    return result.join(" ").slice(0, 100) + "...";
-  } catch {
-    return "내용 없음";
-  }
+  return {
+    data: Array.isArray(benefitsData) ? benefitsData : [],
+    loading,
+    error,
+  };
 }
