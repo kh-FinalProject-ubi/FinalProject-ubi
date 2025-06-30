@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios"; // imageUploader에서 axios를 사용하므로 import
 import "summernote/dist/summernote-lite.css";
 import $ from "jquery";
 import "summernote/dist/summernote-lite";
@@ -17,15 +18,18 @@ const InsertBoard = () => {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [postType, setPostType] = useState(""); // 기본값 설정
-  const [images, setImages] = useState([]);
+  const [postType, setPostType] = useState("");
+
+  // [수정 1] 별도의 이미지 상태 관리 제거
+  // const [images, setImages] = useState([]);
 
   const numericBoardCode = boardCodeMap[boardCode];
   const summernoteInitialized = useRef(false);
-  const contentRef = useRef("");
-  const originalBoardRef = useRef(null);
-  const deletedImagesRef = useRef(new Set());
+  // content는 이제 state로 관리하므로 ref는 필요 없습니다.
+  // const contentRef = useRef("");
 
+  // imageUploader는 컴포넌트 내에 정의하는 것이 좋습니다.
+  // (axios가 정의되지 않았다는 오류를 방지하기 위해 axios import 추가)
   const imageUploader = (file, el) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -35,7 +39,9 @@ const InsertBoard = () => {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then((res) => {
-        const imageUrl = `/images/board/${res.data}`; // res.data가 업로드된 파일명이라 가정
+        // 서버 응답이 이미지 파일명만 오는 경우, 전체 경로를 만들어줍니다.
+        // 만약 서버가 전체 URL을 준다면 res.data를 바로 사용하면 됩니다.
+        const imageUrl = `/images/board/${res.data}`;
         $("#summernote").summernote("insertImage", imageUrl, function ($image) {
           $image.css("width", "100%");
         });
@@ -61,7 +67,7 @@ const InsertBoard = () => {
         ],
         callbacks: {
           onChange: (contents) => {
-            contentRef.current = contents;
+            // Summernote의 내용이 변경될 때마다 content state를 업데이트합니다.
             setContent(contents);
           },
           onImageUpload: (files) => {
@@ -82,16 +88,30 @@ const InsertBoard = () => {
     };
   }, []);
 
-  const onFileChange = (e) => {
-    setImages(Array.from(e.target.files));
-  };
+  useEffect(() => {
+    if (numericBoardCode === 1) {
+      setPostType("공지");
+    } else if (numericBoardCode === 2) {
+      setPostType("문의");
+    } else {
+      setPostType("");
+    }
+  }, [numericBoardCode]);
+
+  // [수정 2] 별도의 파일 변경 핸들러 제거
+  // const onFileChange = (e) => {
+  //   setImages(Array.from(e.target.files));
+  // };
 
   const handleSubmit = () => {
     if (!title.trim()) {
       alert("제목을 입력해주세요.");
       return;
     }
-    if (!content.trim()) {
+    // Summernote는 기본적으로 <p><br></p> 태그를 가지므로,
+    // 실제 내용이 있는지 더 정확히 확인하려면 태그를 제거하고 비교하는 것이 좋습니다.
+    const pureContent = content.replace(/<[^>]*>?/g, "").trim();
+    if (!pureContent) {
       alert("내용을 입력해주세요.");
       return;
     }
@@ -104,10 +124,10 @@ const InsertBoard = () => {
 
     const boardObj = {
       boardTitle: title,
-      boardContent: content,
+      boardContent: content, // state에 저장된 최신 HTML 내용을 사용
       memberNo: loginMemberNo,
-      postType, // 여기 추가
-      boardCode: numericBoardCode, // 혹시 필요하면 같이 넣기
+      postType,
+      boardCode: numericBoardCode,
     };
 
     formData.append(
@@ -115,9 +135,10 @@ const InsertBoard = () => {
       new Blob([JSON.stringify(boardObj)], { type: "application/json" })
     );
 
-    images.forEach((file) => {
-      formData.append("images", file);
-    });
+    // [수정 3] handleSubmit에서 직접 이미지를 첨부하는 로직 완전 제거
+    // images.forEach((file) => {
+    //   formData.append("images", file);
+    // });
 
     fetch(`/api/editBoard/${numericBoardCode}/insert`, {
       method: "POST",
@@ -136,8 +157,8 @@ const InsertBoard = () => {
       .then((data) => {
         if (data && data.boardNo) {
           alert("작성 성공");
-          const boardNo = data.boardNo; // ✅ 여기서 boardNo 꺼내기
-          navigate(`/${boardCode}/${boardNo}`); // 예: /noticeBoard/69
+          const boardNo = data.boardNo;
+          navigate(`/${boardCode}/${boardNo}`);
         } else {
           alert("작성에 실패했습니다.");
         }
@@ -157,28 +178,26 @@ const InsertBoard = () => {
         onChange={(e) => setTitle(e.target.value)}
         style={{ marginRight: 10 }}
       />
-      {numericBoardCode === 2 && (
-        <select value={postType} onChange={(e) => setPostType(e.target.value)}>
-          <option value="문의">문의</option>
-          <option value="신고">신고</option>
-        </select>
-      )}
+      <select
+        name="postType"
+        value={postType}
+        onChange={(e) => setPostType(e.target.value)}
+      >
+        {numericBoardCode === 1 && (
+          <>
+            <option value="공지">공지</option>
+            <option value="이벤트">이벤트</option>
+            <option value="중요">중요</option>
+          </>
+        )}
+        {numericBoardCode === 2 && (
+          <>
+            <option value="신고">신고</option>
+            <option value="문의">문의</option>
+          </>
+        )}
+      </select>
 
-      {numericBoardCode === 1 && (
-        <select value={postType} onChange={(e) => setPostType(e.target.value)}>
-          <option value="공지">공지</option>
-          <option value="이벤트">이벤트</option>
-          <option value="중요">중요</option>
-        </select>
-      )}
-
-      <input
-        type="file"
-        multiple
-        accept="image/*"
-        onChange={onFileChange}
-        style={{ display: "block", marginTop: 10 }}
-      />
       <div id="summernote" style={{ marginTop: 10 }} />
       <button onClick={() => navigate(-1)}>목록</button>
       <button onClick={handleSubmit} style={{ marginTop: 10 }}>

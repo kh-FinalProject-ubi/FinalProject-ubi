@@ -32,6 +32,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.board.model.dto.BoardImage;
+import edu.kh.project.board.model.mapper.EditBoardMapper;
 import edu.kh.project.board.model.service.BoardService;
 import edu.kh.project.board.model.service.EditBoardService;
 import edu.kh.project.common.util.JwtUtil;
@@ -54,9 +55,12 @@ public class EditBoardController {
 	@Autowired
 	private JwtUtil jwtUtil;
 
-	 @Autowired
-	private WebApplicationContext context; 
-	
+	@Autowired
+	private WebApplicationContext context;
+
+	@Autowired
+	private EditBoardMapper mapper;
+
 	// 게시글 작성 화면 전환
 	@GetMapping("{boardCode:[0-9]+}/insert")
 	public String boardInsert(@PathVariable("boardCode") int boardCode) {
@@ -75,34 +79,33 @@ public class EditBoardController {
 	 * @return
 	 */
 	@PostMapping("/{boardCode}/insert")
-	public ResponseEntity<Map<String, Object>> boardInsert(
-	        @PathVariable("boardCode") int boardCode,
-	        @RequestPart("board") Board inputBoard,
-	        @RequestPart(value = "images", required = false) List<MultipartFile> images,
-	        @RequestHeader("Authorization") String authHeader) throws Exception {
+	public ResponseEntity<Map<String, Object>> boardInsert(@PathVariable("boardCode") int boardCode,
+			@RequestPart("board") Board inputBoard,
+			@RequestPart(value = "images", required = false) List<MultipartFile> images,
+			@RequestHeader("Authorization") String authHeader) throws Exception {
 
-	    // "Bearer {token}" -> "{token}" 추출
-	    String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+		// "Bearer {token}" -> "{token}" 추출
+		String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
 
-	    Long memberNoLong = jwtUtil.extractMemberNo(token);
-	    int memberNo = memberNoLong.intValue();
+		Long memberNoLong = jwtUtil.extractMemberNo(token);
+		int memberNo = memberNoLong.intValue();
 
-	    inputBoard.setBoardCode(boardCode);
-	    inputBoard.setMemberNo(memberNo);
+		inputBoard.setBoardCode(boardCode);
+		inputBoard.setMemberNo(memberNo);
 
-	    int boardNo = service.boardInsert(inputBoard, images);
+		int boardNo = service.boardInsert(inputBoard, images);
 
-	    Map<String, Object> response = new HashMap<>();
-	    if (boardNo > 0) {
-	        response.put("success", true);
-	        response.put("boardNo", boardNo);
-	        response.put("message", "게시글이 작성되었습니다.");
-	    } else {
-	        response.put("success", false);
-	        response.put("message", "게시글 작성 실패...");
-	    }
+		Map<String, Object> response = new HashMap<>();
+		if (boardNo > 0) {
+			response.put("success", true);
+			response.put("boardNo", boardNo);
+			response.put("message", "게시글이 작성되었습니다.");
+		} else {
+			response.put("success", false);
+			response.put("message", "게시글 작성 실패...");
+		}
 
-	    return ResponseEntity.ok(response);
+		return ResponseEntity.ok(response);
 	}
 
 	/**
@@ -157,8 +160,7 @@ public class EditBoardController {
 			@PathVariable("boardNo") int boardNo, @RequestParam("boardTitle") String boardTitle,
 			@RequestParam("boardContent") String boardContent,
 			@RequestParam(value = "images", required = false) List<MultipartFile> images,
-			@RequestParam(name = "boardType") int boardType,
-			@RequestParam("postType") String postType,
+			@RequestParam(name = "boardType") int boardType, @RequestParam("postType") String postType,
 			@RequestParam(value = "deleteOrderList", required = false) String deleteOrderList,
 			@RequestHeader("Authorization") String authHeader) throws Exception {
 
@@ -201,26 +203,63 @@ public class EditBoardController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "수정 실패"));
 		}
 	}
-	
+
+	// 이미지 인서트
 	@PostMapping("/image-upload")
-	public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
+	public ResponseEntity<String> uploadImageForInsert(@RequestParam("file") MultipartFile file) {
 	    if (file.isEmpty()) {
 	        return ResponseEntity.badRequest().body("파일이 없습니다.");
 	    }
 
-	    // 파일 저장 처리
-	    String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-	    File dest = new File("C:/uploadFiles/board/" + fileName);
-
 	    try {
-	        file.transferTo(dest);
-	        return ResponseEntity.ok(fileName);
+	        String originalName = file.getOriginalFilename();
+	        String extension = originalName.substring(originalName.lastIndexOf("."));
+	        String storedFileName = UUID.randomUUID().toString() + extension;
+
+	        String uploadPath = "C:/uploadFiles/board/";
+	        file.transferTo(new File(uploadPath + storedFileName));
+
+	        // 임시 저장이므로 DB에 boardNo 없이 저장해도 되고,
+	        // 혹은 아예 DB에는 안 넣고 글 작성 완료 시 한 번에 저장
+
+	        return ResponseEntity.ok("/images/board/" + storedFileName);
+
 	    } catch (IOException e) {
-	        return ResponseEntity.status(500).body("파일 업로드 실패");
+	        e.printStackTrace();
+	        return ResponseEntity.status(500).body("파일 업로드 중 오류 발생");
 	    }
 	}
-	
-	
+	// 이미지 수정 시 메서드
+	@PostMapping("/image-edit")
+	public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file,
+			@RequestParam("boardNo") int boardNo) {
+		if (file.isEmpty()) {
+			return ResponseEntity.badRequest().body("파일이 없습니다.");
+		}
+
+		String originalName = file.getOriginalFilename();
+		String extension = originalName.substring(originalName.lastIndexOf("."));
+		String storedFileName = UUID.randomUUID().toString() + extension;
+		String uploadFolder = "C:/uploadFiles/board/";
+		File dest = new File(uploadFolder + storedFileName);
+
+		try {
+			file.transferTo(dest);
+
+			BoardImage image = BoardImage.builder().imageName(storedFileName).imagePath("/images/board/").imageOrder(0) 
+																										
+					.boardNo(boardNo).build();
+
+			int result = mapper.insertImage(image);
+			if (result == 0)
+				throw new RuntimeException("썸머노트 이미지 DB 삽입 실패");
+
+			return ResponseEntity.ok("/images/board/" + storedFileName);
+		} catch (IOException e) {
+			return ResponseEntity.status(500).body("파일 업로드 실패");
+		}
+	}
+
 	// 삭제 메서드
 	// /editBoard/1/2000/delete?cp=1
 	@RequestMapping(value = "{boardCode:[0-9]+}/{boardNo:[0-9]+}/delete", method = { RequestMethod.GET,
@@ -259,7 +298,4 @@ public class EditBoardController {
 		return "redirect:" + path;
 	}
 
-	
-	
-	
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.web.multipart.MultipartFile;
 
 import edu.kh.project.board.model.dto.Board;
+import edu.kh.project.board.model.dto.BoardImage;
 
 public interface EditBoardService {
  
@@ -29,5 +30,9 @@ public interface EditBoardService {
 	 * @return
 	 */
 	int boardDelete(Map<String, Integer> map);
+
+
+
+	
 
 }
