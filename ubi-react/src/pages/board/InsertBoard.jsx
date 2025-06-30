@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "summernote/dist/summernote-lite.css";
 import $ from "jquery";
@@ -21,19 +21,64 @@ const InsertBoard = () => {
   const [images, setImages] = useState([]);
 
   const numericBoardCode = boardCodeMap[boardCode];
+  const summernoteInitialized = useRef(false);
+  const contentRef = useRef("");
+  const originalBoardRef = useRef(null);
+  const deletedImagesRef = useRef(new Set());
+
+  const imageUploader = (file, el) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    axios
+      .post("/api/editBoard/image-upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      .then((res) => {
+        const imageUrl = `/images/board/${res.data}`; // res.data가 업로드된 파일명이라 가정
+        $("#summernote").summernote("insertImage", imageUrl, function ($image) {
+          $image.css("width", "100%");
+        });
+      })
+      .catch((err) => {
+        alert("이미지 업로드 실패");
+        console.error(err);
+      });
+  };
 
   useEffect(() => {
-    $("#summernote").summernote({
-      height: 300,
-      callbacks: {
-        onChange: (contents) => {
-          setContent(contents);
+    if (!summernoteInitialized.current) {
+      $("#summernote").summernote({
+        height: 300,
+        toolbar: [
+          ["style", ["style"]],
+          ["font", ["bold", "italic", "underline", "strikethrough", "clear"]],
+          ["fontsize", ["fontsize"]],
+          ["color", ["color"]],
+          ["para", ["ul", "ol", "paragraph"]],
+          ["height", ["height"]],
+          ["insert", ["link", "picture"]],
+        ],
+        callbacks: {
+          onChange: (contents) => {
+            contentRef.current = contents;
+            setContent(contents);
+          },
+          onImageUpload: (files) => {
+            for (const file of files) {
+              imageUploader(file);
+            }
+          },
         },
-      },
-    });
+      });
+      summernoteInitialized.current = true;
+    }
 
     return () => {
-      $("#summernote").summernote("destroy");
+      if (summernoteInitialized.current) {
+        $("#summernote").summernote("destroy");
+        summernoteInitialized.current = false;
+      }
     };
   }, []);
 
@@ -114,8 +159,8 @@ const InsertBoard = () => {
       />
       {numericBoardCode === 2 && (
         <select value={postType} onChange={(e) => setPostType(e.target.value)}>
-          <option value="신고">신고</option>
           <option value="문의">문의</option>
+          <option value="신고">신고</option>
         </select>
       )}
 

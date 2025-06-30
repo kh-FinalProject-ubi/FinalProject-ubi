@@ -1,5 +1,7 @@
 package edu.kh.project.board.controller;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -51,6 +54,9 @@ public class EditBoardController {
 	@Autowired
 	private JwtUtil jwtUtil;
 
+	 @Autowired
+	private WebApplicationContext context; 
+	
 	// 게시글 작성 화면 전환
 	@GetMapping("{boardCode:[0-9]+}/insert")
 	public String boardInsert(@PathVariable("boardCode") int boardCode) {
@@ -73,7 +79,6 @@ public class EditBoardController {
 	        @PathVariable("boardCode") int boardCode,
 	        @RequestPart("board") Board inputBoard,
 	        @RequestPart(value = "images", required = false) List<MultipartFile> images,
-	        @RequestParam("postType") String postType,
 	        @RequestHeader("Authorization") String authHeader) throws Exception {
 
 	    // "Bearer {token}" -> "{token}" 추출
@@ -197,6 +202,26 @@ public class EditBoardController {
 		}
 	}
 	
+	@PostMapping("/image-upload")
+	public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
+	    if (file.isEmpty()) {
+	        return ResponseEntity.badRequest().body("파일이 없습니다.");
+	    }
+
+	    // 파일 저장 처리
+	    String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+	    File dest = new File("C:/uploadFiles/board/" + fileName);
+
+	    try {
+	        file.transferTo(dest);
+	        return ResponseEntity.ok(fileName);
+	    } catch (IOException e) {
+	        return ResponseEntity.status(500).body("파일 업로드 실패");
+	    }
+	}
+	
+	
+	// 삭제 메서드
 	// /editBoard/1/2000/delete?cp=1
 	@RequestMapping(value = "{boardCode:[0-9]+}/{boardNo:[0-9]+}/delete", method = { RequestMethod.GET,
 			RequestMethod.POST })
@@ -234,4 +259,7 @@ public class EditBoardController {
 		return "redirect:" + path;
 	}
 
+	
+	
+	
 }

@@ -1,10 +1,11 @@
+// EditBoard.jsx
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import useAuthStore from "../../stores/useAuthStore";
 import "summernote/dist/summernote-lite.css";
-import "summernote/dist/summernote-lite.js";
 import $ from "jquery";
+import "summernote/dist/summernote-lite.js";
 
 const IMAGE_BASE_URL = "/images/board";
 
@@ -26,21 +27,33 @@ const EditBoard = () => {
 
   const [board, setBoard] = useState(null);
   const [postType, setPostType] = useState("");
-  const [newImages, setNewImages] = useState([]);
   const [hasAlerted, setHasAlerted] = useState(false);
 
+  const imageUploader = (file, el) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    axios
+      .post("/api/editBoard/image-upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      .then((res) => {
+        const imageUrl = `/images/board/${res.data}`; // res.data가 업로드된 파일명이라 가정
+        $("#summernote").summernote("insertImage", imageUrl, function ($image) {
+          $image.css("width", "100%");
+        });
+      })
+      .catch((err) => {
+        alert("이미지 업로드 실패");
+        console.error(err);
+      });
+  };
   useEffect(() => {
     if (!boardCodeInt) {
       alert("잘못된 게시판 경로입니다.");
       navigate("/", { replace: true });
     }
   }, [boardCodeInt, navigate]);
-
-  const handleDeleteImage = useCallback((imageName) => {
-    deletedImagesRef.current.add(imageName);
-    const imageContainer = $(`[data-image-name="${imageName}"]`);
-    imageContainer.hide();
-  }, []);
 
   useEffect(() => {
     if (!token) {
@@ -92,19 +105,6 @@ const EditBoard = () => {
     fetchBoard();
   }, [boardCodeInt, boardNo, token, navigate, hasAlerted, boardPath]);
 
-  // 썸머노트 이미지 업로드 콜백: base64 미리보기 삽입 + 실제 파일 newImages에 저장
-  const onImageUpload = (files) => {
-    for (const file of files) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const preview = `<p style="color:gray;">[미리보기 이미지: ${file.name}]</p>`;
-        $("#summernote").summernote("pasteHTML", preview);
-      };
-      reader.readAsDataURL(file);
-      setNewImages((prev) => [...prev, file]);
-    }
-  };
-
   useEffect(() => {
     if (!summernoteInitialized.current && board) {
       $("#summernote").summernote({
@@ -122,7 +122,14 @@ const EditBoard = () => {
           onChange: (contents) => {
             contentRef.current = contents;
           },
-          onImageUpload: onImageUpload,
+          // ✅ 이 부분이 수정되었습니다.
+          onImageUpload: (files) => {
+            // Summernote는 여러 파일을 동시에 받을 수 있으므로 배열(files)로 전달됩니다.
+            // 배열의 각 파일에 대해 만들어두신 imageUploader 함수를 호출합니다.
+            for (const file of files) {
+              imageUploader(file);
+            }
+          },
         },
       });
       summernoteInitialized.current = true;
@@ -134,69 +141,7 @@ const EditBoard = () => {
         summernoteInitialized.current = false;
       }
     };
-  }, [board]);
-
-  useEffect(() => {
-    if (board && summernoteInitialized.current) {
-      let fullContent = board.boardContent || "";
-
-      if (board.images && board.images.length > 0) {
-        const imageHtml = board.images
-          .map(
-            (image) => `
-    <span class="image-wrapper" style="position:relative; display:inline-block;" data-image-name="${image.boardImageName}">
-      <img src="${IMAGE_BASE_URL}/${image.boardImageName}" style="max-width: 100%; height: auto;" />
-      <button type="button" class="delete-image-btn" data-image-name="${image.boardImageName}"
-        style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.5); color: white;
-               border: none; border-radius: 50%; width: 20px; height: 20px;
-               text-align: center; cursor: pointer; font-weight: bold;">x</button>
-    </span>
-  `
-          )
-          .join("");
-
-        $("#summernote").summernote("code", board.boardContent + imageHtml);
-      }
-
-      $("#summernote").summernote("code", fullContent);
-
-      const $summernoteEditable = $("#summernote")
-        .next(".note-editor")
-        .find(".note-editable");
-
-      $summernoteEditable.off("click", ".delete-image-btn");
-      $summernoteEditable.on("click", ".delete-image-btn", (e) => {
-        const imageName = $(e.currentTarget).data("image-name");
-        deletedImagesRef.current.add(imageName);
-        $(`[data-image-name="${imageName}"]`).hide(); // Summernote 안에서 시각적으로 삭제
-      });
-    }
-  }, [board, handleDeleteImage]);
-
-  function imageUploader(file, el) {
-    var formData = new FormData();
-    formData.append("file", file);
-
-    $.ajax({
-      data: formData,
-      type: "POST",
-      url: "/editBoard/image-upload",
-      contentType: false,
-      processData: false,
-      enctype: "multipart/form-data",
-      success: function (data) {
-        $(el).summernote(
-          "insertImage",
-          "${pageContext.request.contextPath}/assets/images/upload/" + data,
-          function ($image) {
-            $image.css("width", "100%");
-          }
-        );
-        // 값이 잘 넘어오는지 콘솔 확인 해보셔도됩니다.
-        console.log(data);
-      },
-    });
-  }
+  }, [board, imageUploader]);
 
   const handleChange = (e) => {
     setBoard({ ...board, [e.target.name]: e.target.value });
@@ -210,14 +155,12 @@ const EditBoard = () => {
       board.boardTitle !== originalBoardRef.current.boardTitle;
     const isContentChanged =
       contentRef.current !== originalBoardRef.current.boardContent;
-    const isImageAdded = newImages.length > 0;
     const isImageDeleted = deletedImagesRef.current.size > 0;
     const isPostTypeChanged = postType !== originalBoardRef.current.postType;
 
     if (
       !isTitleChanged &&
       !isContentChanged &&
-      !isImageAdded &&
       !isImageDeleted &&
       !isPostTypeChanged
     ) {
@@ -227,14 +170,10 @@ const EditBoard = () => {
 
     const formData = new FormData();
     formData.append("boardTitle", board.boardTitle);
-    formData.append("boardContent", board.boardContent);
+    formData.append("boardContent", contentRef.current);
     formData.append("postType", postType);
     formData.append("boardType", board.boardType);
 
-    // 실제 이미지 파일들은 formData로 첨부
-    newImages.forEach((img) => formData.append("images", img));
-
-    // 삭제된 이미지 order 리스트도 전송
     if (deletedImagesRef.current.size > 0) {
       const deleteList = Array.from(deletedImagesRef.current).join(",");
       formData.append("deleteOrderList", deleteList);

@@ -49,4 +49,5 @@ public interface BoardService {
 	 */
 	List<String> selectDBImageList();
 
+
 }
