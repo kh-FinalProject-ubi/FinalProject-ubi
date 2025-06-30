@@ -1,8 +1,11 @@
 package edu.kh.project.board.controller;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import edu.kh.project.board.model.dto.Board;
+import edu.kh.project.board.model.dto.BoardImage;
 import edu.kh.project.board.model.service.BoardService;
 import edu.kh.project.board.model.service.EditBoardService;
 import edu.kh.project.common.util.JwtUtil;
@@ -182,6 +186,7 @@ public class EditBoardController {
 
 		board.setBoardTitle(boardTitle);
 		board.setBoardContent(boardContent);
+		board.setPostType(postType);
 
 		int result = service.boardUpdate(board, images, deleteOrderList);
 
@@ -191,7 +196,7 @@ public class EditBoardController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "수정 실패"));
 		}
 	}
-
+	
 	// /editBoard/1/2000/delete?cp=1
 	@RequestMapping(value = "{boardCode:[0-9]+}/{boardNo:[0-9]+}/delete", method = { RequestMethod.GET,
 			RequestMethod.POST })

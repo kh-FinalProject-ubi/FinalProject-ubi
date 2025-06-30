@@ -21,7 +21,6 @@ const NoticeBoard = () => {
   const path = location.pathname;
   const boardCode = boardCodeMap[path];
 
-  // 권한 체크용 맵
   const authorityMap = {
     1: "USER",
     2: "ADMIN",
@@ -50,23 +49,48 @@ const NoticeBoard = () => {
   return (
     <div>
       <h2>공지게시판</h2>
-      <ul>
-        {boardList.map((board, index) => (
-          <li key={board.boardNo}>
-            <Link to={`/${path.split("/")[1]}/${board.boardNo}`}>
-              {index + 1} &nbsp;&nbsp;&nbsp;
-              {board.postType} &nbsp; &nbsp; &nbsp;
-              <strong>{board.boardTitle}</strong>&nbsp; &nbsp; &nbsp;
-              {board.memberNickname}&nbsp; &nbsp; &nbsp;
-              {board.boardDate}
-              &nbsp;&nbsp;&nbsp;
-              {board.boardReadCount}
-            </Link>
-          </li>
-        ))}
-      </ul>
+
+      <table
+        style={{
+          width: "100%",
+          textAlign: "center",
+          borderCollapse: "collapse",
+        }}
+      >
+        <thead>
+          <tr style={{ borderBottom: "2px solid #ccc" }}>
+            <th>번호</th>
+            <th>분류</th>
+            <th>제목</th>
+            <th>작성자</th>
+            <th>작성일</th>
+            <th>조회수</th>
+          </tr>
+        </thead>
+        <tbody>
+          {boardList.map((board, index) => (
+            <tr key={board.boardNo} style={{ borderBottom: "1px solid #eee" }}>
+              <td>{index + 1}</td>
+              <td>{board.postType}</td>
+              <td>
+                <Link to={`${path}/${board.boardNo}`}>
+                  <strong>{board.boardTitle}</strong>
+                </Link>
+              </td>
+              <td>{board.memberNickname}</td>
+              <td>{board.boardDate}</td>
+              <td>{board.boardReadCount}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
       {isAdmin && (
-        <button onClick={() => navigate(`/noticeBoard/write`)}>글 작성</button>
+        <div style={{ textAlign: "right", marginTop: "1rem" }}>
+          <button onClick={() => navigate(`/noticeBoard/write`)}>
+            글 작성
+          </button>
+        </div>
       )}
     </div>
   );

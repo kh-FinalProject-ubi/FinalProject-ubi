@@ -25,7 +25,7 @@ const EditBoard = () => {
   const boardCodeInt = boardCodeMap[boardPath];
 
   const [board, setBoard] = useState(null);
-  const [postType, setPostType] = useState(""); // ✅ postType 상태 추가
+  const [postType, setPostType] = useState("");
   const [newImages, setNewImages] = useState([]);
   const [hasAlerted, setHasAlerted] = useState(false);
 
@@ -38,10 +38,8 @@ const EditBoard = () => {
 
   const handleDeleteImage = useCallback((imageName) => {
     deletedImagesRef.current.add(imageName);
-    const imageContainer = $(`#summernote [data-image-name="${imageName}"]`);
-    if (imageContainer.length > 0) {
-      imageContainer.hide();
-    }
+    const imageContainer = $(`[data-image-name="${imageName}"]`);
+    imageContainer.hide();
   }, []);
 
   useEffect(() => {
@@ -67,34 +65,26 @@ const EditBoard = () => {
 
         const { board: boardData, role: userRole, memberNo: userNo } = res.data;
 
-        if (boardData.boardType === 2) {
-          if (!(userNo === boardData.memberNo || userRole === "ADMIN")) {
-            if (!hasAlerted) {
-              alert("수정 권한이 없습니다.");
-              setHasAlerted(true);
-            }
-            navigate(`/askBoard/${boardNo}`, { replace: true });
-            return;
-          }
-        } else if (boardData.boardType === 1) {
-          if (userRole !== "ADMIN") {
-            if (!hasAlerted) {
-              alert("관리자만 수정할 수 있습니다.");
-              setHasAlerted(true);
-            }
-            navigate(`/noticeBoard/${boardNo}`, { replace: true });
-            return;
-          }
+        if (
+          boardData.boardType === 2 &&
+          !(userNo === boardData.memberNo || userRole === "ADMIN")
+        ) {
+          alert("수정 권한이 없습니다.");
+          navigate(`/askBoard/${boardNo}`, { replace: true });
+          return;
+        }
+
+        if (boardData.boardType === 1 && userRole !== "ADMIN") {
+          alert("관리자만 수정할 수 있습니다.");
+          navigate(`/noticeBoard/${boardNo}`, { replace: true });
+          return;
         }
 
         setBoard(boardData);
         originalBoardRef.current = boardData;
-        setPostType(boardData.postType || ""); // ✅ postType 초기화
+        setPostType(boardData.postType || "");
       } catch (err) {
-        if (!hasAlerted) {
-          alert("게시글 조회 중 오류 발생");
-          setHasAlerted(true);
-        }
+        alert("게시글 조회 중 오류 발생");
         navigate(`/${boardPath}/${boardNo}`, { replace: true });
       }
     };
@@ -102,14 +92,37 @@ const EditBoard = () => {
     fetchBoard();
   }, [boardCodeInt, boardNo, token, navigate, hasAlerted, boardPath]);
 
+  // 썸머노트 이미지 업로드 콜백: base64 미리보기 삽입 + 실제 파일 newImages에 저장
+  const onImageUpload = (files) => {
+    for (const file of files) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const preview = `<p style="color:gray;">[미리보기 이미지: ${file.name}]</p>`;
+        $("#summernote").summernote("pasteHTML", preview);
+      };
+      reader.readAsDataURL(file);
+      setNewImages((prev) => [...prev, file]);
+    }
+  };
+
   useEffect(() => {
     if (!summernoteInitialized.current && board) {
       $("#summernote").summernote({
         height: 300,
+        toolbar: [
+          ["style", ["style"]],
+          ["font", ["bold", "italic", "underline", "strikethrough", "clear"]],
+          ["fontsize", ["fontsize"]],
+          ["color", ["color"]],
+          ["para", ["ul", "ol", "paragraph"]],
+          ["height", ["height"]],
+          ["insert", ["link", "picture"]],
+        ],
         callbacks: {
           onChange: (contents) => {
             contentRef.current = contents;
           },
+          onImageUpload: onImageUpload,
         },
       });
       summernoteInitialized.current = true;
@@ -131,54 +144,62 @@ const EditBoard = () => {
         const imageHtml = board.images
           .map(
             (image) => `
-            <span class="image-wrapper" style="position:relative; display:inline-block;" data-image-name="${image.boardImageName}">
-              <img src="${IMAGE_BASE_URL}/${image.boardImageName}" style="max-width: 100%; height: auto;" />
-              <button 
-                type="button" 
-                class="delete-image-btn" 
-                data-image-name="${image.boardImageName}"
-                style="
-                  position: absolute; 
-                  top: 5px; 
-                  right: 5px; 
-                  background: rgba(0,0,0,0.5); 
-                  color: white; 
-                  border: none; 
-                  border-radius: 50%; 
-                  width: 20px; 
-                  height: 20px; 
-                  line-height: 20px; 
-                  text-align: center; 
-                  cursor: pointer;
-                  font-weight: bold;
-                ">x</button>
-            </span>
-          `
+    <span class="image-wrapper" style="position:relative; display:inline-block;" data-image-name="${image.boardImageName}">
+      <img src="${IMAGE_BASE_URL}/${image.boardImageName}" style="max-width: 100%; height: auto;" />
+      <button type="button" class="delete-image-btn" data-image-name="${image.boardImageName}"
+        style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.5); color: white;
+               border: none; border-radius: 50%; width: 20px; height: 20px;
+               text-align: center; cursor: pointer; font-weight: bold;">x</button>
+    </span>
+  `
           )
           .join("");
-        fullContent += imageHtml;
+
+        $("#summernote").summernote("code", board.boardContent + imageHtml);
       }
 
       $("#summernote").summernote("code", fullContent);
-      contentRef.current = fullContent;
 
       const $summernoteEditable = $("#summernote")
         .next(".note-editor")
         .find(".note-editable");
+
       $summernoteEditable.off("click", ".delete-image-btn");
       $summernoteEditable.on("click", ".delete-image-btn", (e) => {
         const imageName = $(e.currentTarget).data("image-name");
-        handleDeleteImage(imageName);
+        deletedImagesRef.current.add(imageName);
+        $(`[data-image-name="${imageName}"]`).hide(); // Summernote 안에서 시각적으로 삭제
       });
     }
   }, [board, handleDeleteImage]);
 
+  function imageUploader(file, el) {
+    var formData = new FormData();
+    formData.append("file", file);
+
+    $.ajax({
+      data: formData,
+      type: "POST",
+      url: "/editBoard/image-upload",
+      contentType: false,
+      processData: false,
+      enctype: "multipart/form-data",
+      success: function (data) {
+        $(el).summernote(
+          "insertImage",
+          "${pageContext.request.contextPath}/assets/images/upload/" + data,
+          function ($image) {
+            $image.css("width", "100%");
+          }
+        );
+        // 값이 잘 넘어오는지 콘솔 확인 해보셔도됩니다.
+        console.log(data);
+      },
+    });
+  }
+
   const handleChange = (e) => {
     setBoard({ ...board, [e.target.name]: e.target.value });
-  };
-
-  const handleNewImageChange = (e) => {
-    setNewImages([...e.target.files]);
   };
 
   const handleSubmit = async (e) => {
@@ -206,14 +227,14 @@ const EditBoard = () => {
 
     const formData = new FormData();
     formData.append("boardTitle", board.boardTitle);
-    formData.append("boardContent", contentRef.current);
-    formData.append("postType", postType); // ✅ postType 추가
+    formData.append("boardContent", board.boardContent);
+    formData.append("postType", postType);
     formData.append("boardType", board.boardType);
 
-    console.log(postType);
-
+    // 실제 이미지 파일들은 formData로 첨부
     newImages.forEach((img) => formData.append("images", img));
 
+    // 삭제된 이미지 order 리스트도 전송
     if (deletedImagesRef.current.size > 0) {
       const deleteList = Array.from(deletedImagesRef.current).join(",");
       formData.append("deleteOrderList", deleteList);
@@ -256,6 +277,7 @@ const EditBoard = () => {
 
         {board.boardType === 2 && (
           <select
+            name="postType"
             value={postType}
             onChange={(e) => setPostType(e.target.value)}
           >
@@ -277,16 +299,6 @@ const EditBoard = () => {
 
         <label htmlFor="boardContent">내용</label>
         <div id="summernote" />
-
-        <label htmlFor="images">새 이미지 첨부</label>
-        <input
-          type="file"
-          id="images"
-          name="boardImage"
-          multiple
-          accept="image/*"
-          onChange={handleNewImageChange}
-        />
 
         <div style={{ marginTop: "1rem" }}>
           <button type="button" onClick={() => navigate(-1)}>
