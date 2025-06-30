@@ -7,6 +7,7 @@ import useSelectedRegionStore from "../../hook/welfarefacility/useSelectedRegion
 import useLoginMember from "../../hook/login/useLoginMember";
 import "../../styles/welfarefacility/FacilitySearchPage.css";
 import { useSportsFacilities } from "../../hook/welfarefacility/useSportsFacilities";
+import Pagination from "../../components/Pagination";
 
 export default function FacilitySearchPage() {
   const { member, loading: memberLoading } = useLoginMember();
@@ -19,6 +20,9 @@ export default function FacilitySearchPage() {
   const [keyword, setKeyword] = useState("");
   const [category, setCategory] = useState("전체");
   const [serviceType, setServiceType] = useState("전체");
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 25;
 
   const categoryMap = {
     체육시설: ["체육시설", "테니스장", "다목적경기장"],
@@ -34,8 +38,6 @@ export default function FacilitySearchPage() {
 
   const isMatchServiceTarget = (facility, selectedType) => {
     if (selectedType === "전체") return true;
-
-    // 체육시설은 서비스 대상 필터 무시하고 항상 true
     if (facility["type"] === "체육" || facility["category"] === "체육시설") {
       return true;
     }
@@ -101,9 +103,15 @@ export default function FacilitySearchPage() {
     const matchesCategory =
       category === "전체" ||
       categoryKeywords.some((target) => type?.includes(target));
-    console.log(region);
+
     return matchesKeyword && matchesServiceType && matchesCategory;
   });
+
+  const totalPages = Math.ceil(filteredFacilities.length / itemsPerPage);
+  const currentItems = filteredFacilities.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div className="facility-search-container">
@@ -165,7 +173,7 @@ export default function FacilitySearchPage() {
       )}
 
       <div className="facility-card-list">
-        {filteredFacilities.map((facility, idx) => {
+        {currentItems.map((facility, idx) => {
           const name =
             facility["시설명"] ||
             facility["FACLT_NM"] ||
@@ -176,6 +184,17 @@ export default function FacilitySearchPage() {
           return <FacilityCard key={key} facility={facility} />;
         })}
       </div>
+
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(page) => {
+            setCurrentPage(page);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        />
+      )}
     </div>
   );
 }
