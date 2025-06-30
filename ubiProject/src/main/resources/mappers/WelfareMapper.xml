@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="edu.kh.project.welfare.like.model.mapper.WelfareMapper">
+
+  <!-- 찜 여부 확인 -->
+  <select id="selectLike" resultType="Welfare">
+    SELECT *
+    FROM welfare
+    WHERE member_no = #{memberNo}
+      AND api_service_id = #{apiServiceId}
+  </select>
+
+  <!-- 찜 추가 -->
+<insert id="insertLike" parameterType="Welfare">
+  INSERT INTO welfare (
+    service_no,
+    member_no,
+    api_service_id,
+    service_name,
+    category,        
+        region_city,         
+    region_district,     
+    jj_time,
+    jj_del_fl,
+    alarm_sent_fl
+  ) VALUES (
+    welfare_seq.NEXTVAL,
+    #{memberNo},
+    #{apiServiceId},
+    #{serviceName},
+    #{category},      
+    #{regionCity},        
+    #{regionDistrict},    
+    SYSDATE,
+    'N',
+    'N'
+  )
+</insert>
+
+  <!-- 찜 복구 -->
+  <update id="reactivateLike">
+    UPDATE welfare
+    SET jj_del_fl = 'N',
+        jj_time = SYSDATE
+    WHERE member_no = #{memberNo}
+      AND api_service_id = #{apiServiceId}
+  </update>
+
+  <!-- 찜 취소 -->
+  <update id="deleteLike">
+    UPDATE welfare
+    SET jj_del_fl = 'Y'
+    WHERE member_no = #{memberNo}
+      AND api_service_id = #{apiServiceId}
+  </update>
+  
+  <select id="selectPopularWelfare" resultType="Welfare">
+  SELECT 
+    api_service_id,
+    service_name,
+    category,
+    COUNT(*) AS likeCount
+  FROM welfare
+  WHERE jj_del_fl = 'N'
+  GROUP BY api_service_id, service_name, category
+  ORDER BY likeCount DESC
+  FETCH FIRST 10 ROWS ONLY
+</select>
+
+</mapper>
