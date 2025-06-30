@@ -1,9 +1,5 @@
 import { standardKeywordMap } from "./filterBenefitsByStandard";
 
-// 🔹 지역명 정규화 함수 (특별시, 광역시, 도, 시, 구, 군 제거)
-const normalize = (value) =>
-  value?.replace(/(특별시|광역시|도|시|구|군)/g, "").trim();
-
 /**
  * 복지 혜택 데이터에 모든 필터 적용
  */
@@ -37,6 +33,11 @@ export function applyAllFilters(data, options, authState) {
           ? item.lifeNmArray.split(",").map((s) => s.trim())
           : [];
 
+        if (targets.length === 0 || targets.every((t) => t === "")) {
+          console.log("✅ 포함됨 (정보 없음):", item.title, targets);
+          return true;
+        }
+
         if (memberStandard === "일반" || memberStandard === "0") {
           const result = !targets.some((life) =>
             [
@@ -48,6 +49,7 @@ export function applyAllFilters(data, options, authState) {
               "임산부",
               "출산",
               "임신",
+              "노년",
             ].includes(life)
           );
           if (!result) console.log("🚫 제외됨 (일반 계층 제외):", item.title);
@@ -59,20 +61,17 @@ export function applyAllFilters(data, options, authState) {
         return result;
       })
 
-      // 🔹 1.5단계: 지역 필터링 (normalize 비교)
+      // 🔹 1.5단계: 지역 필터링 (normalize 제거)
       .filter((item) => {
         if (!token || showAll) return true;
 
-        const itemCity = normalize(item.regionCity);
-        const itemDistrict = normalize(item.regionDistrict);
-        const userCity = normalize(regionCity);
-        const userDistrict = normalize(regionDistrict);
-
-        const result = itemCity === userCity && itemDistrict === userDistrict;
+        const result =
+          item.regionCity === regionCity &&
+          item.regionDistrict === regionDistrict;
 
         if (!result) {
           console.log(
-            `🚫 제외됨 (지역 불일치): ${item.title} → item: ${itemCity} ${itemDistrict}, user: ${userCity} ${userDistrict}`
+            `🚫 제외됨 (지역 불일치): ${item.title} → item: ${item.regionCity} ${item.regionDistrict}, user: ${regionCity} ${regionDistrict}`
           );
         }
 
@@ -83,12 +82,19 @@ export function applyAllFilters(data, options, authState) {
       .filter((item) => {
         if (serviceType === "전체") return true;
 
-        const matchKeyword = standardKeywordMap[serviceType];
+        const matchKeyword = standardKeywordMap[serviceType]; // 예: ["장애인"]
         const targets = item.lifeNmArray || [];
 
-        const result = Array.isArray(targets)
-          ? targets.some((t) => matchKeyword?.includes(t))
-          : false;
+        const isUnspecified =
+          !Array.isArray(targets) ||
+          targets.length === 0 ||
+          targets.every((t) => !t);
+
+        const hasMatch =
+          Array.isArray(targets) &&
+          targets.some((t) => matchKeyword.includes(t));
+
+        const result = isUnspecified || hasMatch;
 
         if (!result) {
           console.log("🚫 제외됨 (서비스 대상 미일치):", item.title);
@@ -101,7 +107,19 @@ export function applyAllFilters(data, options, authState) {
       .filter((item) => {
         if (category === "전체") return true;
 
-        const result = item.category === category;
+        // 실제 데이터 카테고리 → UI 버튼 이름으로 매핑
+        const normalizedCategory = (() => {
+          if (item.category.includes("구인")) return "구인";
+          if (
+            ["서울시 복지", "청년 정책", "지자체복지혜택"].includes(
+              item.category
+            )
+          )
+            return "복지 혜택";
+          return "기타";
+        })();
+
+        const result = normalizedCategory === category;
 
         if (!result) {
           console.log("🚫 제외됨 (카테고리 불일치):", item.title);
@@ -109,7 +127,6 @@ export function applyAllFilters(data, options, authState) {
 
         return result;
       })
-
       // 🔹 4단계: 키워드 필터 (제목, 설명, 지역)
       .filter((item) => {
         if (!keyword.trim()) return true;
