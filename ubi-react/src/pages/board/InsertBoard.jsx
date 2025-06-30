@@ -20,16 +20,13 @@ const InsertBoard = () => {
   const [content, setContent] = useState("");
   const [postType, setPostType] = useState("");
 
-  // [수정 1] 별도의 이미지 상태 관리 제거
-  // const [images, setImages] = useState([]);
-
   const numericBoardCode = boardCodeMap[boardCode];
-  const summernoteInitialized = useRef(false);
-  // content는 이제 state로 관리하므로 ref는 필요 없습니다.
-  // const contentRef = useRef("");
 
-  // imageUploader는 컴포넌트 내에 정의하는 것이 좋습니다.
-  // (axios가 정의되지 않았다는 오류를 방지하기 위해 axios import 추가)
+  const contentRef = useRef("");
+  const originalBoardRef = useRef(null);
+  const deletedImagesRef = useRef(new Set());
+  const summernoteInitialized = useRef(false);
+
   const imageUploader = (file, el) => {
     const formData = new FormData();
     formData.append("file", file);

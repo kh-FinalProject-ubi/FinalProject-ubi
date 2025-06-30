@@ -204,33 +204,9 @@ public class EditBoardController {
 		}
 	}
 
-	// 이미지 인서트
-	@PostMapping("/image-upload")
-	public ResponseEntity<String> uploadImageForInsert(@RequestParam("file") MultipartFile file) {
-	    if (file.isEmpty()) {
-	        return ResponseEntity.badRequest().body("파일이 없습니다.");
-	    }
-
-	    try {
-	        String originalName = file.getOriginalFilename();
-	        String extension = originalName.substring(originalName.lastIndexOf("."));
-	        String storedFileName = UUID.randomUUID().toString() + extension;
-
-	        String uploadPath = "C:/uploadFiles/board/";
-	        file.transferTo(new File(uploadPath + storedFileName));
-
-	        // 임시 저장이므로 DB에 boardNo 없이 저장해도 되고,
-	        // 혹은 아예 DB에는 안 넣고 글 작성 완료 시 한 번에 저장
-
-	        return ResponseEntity.ok("/images/board/" + storedFileName);
-
-	    } catch (IOException e) {
-	        e.printStackTrace();
-	        return ResponseEntity.status(500).body("파일 업로드 중 오류 발생");
-	    }
-	}
+	
 	// 이미지 수정 시 메서드
-	@PostMapping("/image-edit")
+	@PostMapping("/image-upload")
 	public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file,
 			@RequestParam("boardNo") int boardNo) {
 		if (file.isEmpty()) {

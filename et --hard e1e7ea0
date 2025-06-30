@@ -1,0 +1,63 @@
+[33m9227f76[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mara[m[33m, [m[1;31morigin/ara[m[33m)[m HEAD@{0}: commit: 저장
+[33me1e7ea0[m HEAD@{1}: commit: 사진
+[33ma278cf0[m[33m ([m[1;31morigin/development[m[33m)[m HEAD@{2}: pull origin development: Fast-forward
+[33m73933da[m HEAD@{3}: commit: 저장
+[33m4fb5e43[m HEAD@{4}: pull origin development: Fast-forward
+[33mfc3156d[m HEAD@{5}: commit: 수정
+[33m7dee702[m HEAD@{6}: pull origin development: Fast-forward
+[33md14ae9c[m HEAD@{7}: commit: 수정
+[33mda9ede5[m HEAD@{8}: pull origin development: Fast-forward
+[33mf773013[m HEAD@{9}: commit: 머지
+[33m15e4e23[m HEAD@{10}: pull origin development: Fast-forward
+[33m5506b69[m HEAD@{11}: commit: 서버
+[33m7b5cca3[m HEAD@{12}: pull origin development: Fast-forward
+[33m59f6af5[m HEAD@{13}: commit: 25.06.26
+[33m1554281[m HEAD@{14}: pull origin development: Fast-forward
+[33m1cd7762[m HEAD@{15}: commit: 수정
+[33m3d96e21[m HEAD@{16}: pull origin development: Fast-forward
+[33mbfbd4b4[m HEAD@{17}: commit: 썸머노트 연결
+[33m2227c58[m HEAD@{18}: pull origin development: Fast-forward
+[33me9143cc[m HEAD@{19}: commit: 권한 수정
+[33m8ac9bb2[m HEAD@{20}: pull origin development: Fast-forward
+[33mac282f8[m HEAD@{21}: commit: 25.06.24
+[33m665f936[m HEAD@{22}: commit: 수정버튼
+[33m2e6b97b[m HEAD@{23}: pull origin development: Fast-forward
+[33mef46f42[m HEAD@{24}: commit: 상세페이지
+[33m5eb7bc3[m HEAD@{25}: pull origin development: Fast-forward
+[33mca1d758[m HEAD@{26}: commit: 1차 수정
+[33m8815aa9[m HEAD@{27}: pull origin development: Fast-forward
+[33mbd7c868[m HEAD@{28}: commit: 25.06.23
+[33ma2fa9a8[m HEAD@{29}: commit: 공지/ 문의 조회
+[33m51eee37[m HEAD@{30}: pull origin development: Fast-forward
+[33m5182008[m HEAD@{31}: reset: moving to origin/development
+[33mee5f912[m HEAD@{32}: commit: 주말
+[33m48b8f13[m HEAD@{33}: pull origin development: Fast-forward
+[33m14c9d88[m HEAD@{34}: commit: 서비스 목록 조회 대실패
+[33mf310643[m HEAD@{35}: pull origin development: Fast-forward
+[33m902f482[m HEAD@{36}: commit: @restController
+[33ma5737fa[m HEAD@{37}: commit: 수달이
+[33m50bf004[m HEAD@{38}: commit: 수정1차
+[33mec0e5f8[m HEAD@{39}: pull origin development: Fast-forward
+[33m935691c[m HEAD@{40}: commit: 아동시설
+[33mca3c727[m HEAD@{41}: commit: 아동시설출력
+[33m498d411[m HEAD@{42}: pull origin development: Fast-forward
+[33mc2a4e91[m HEAD@{43}: commit: 페이지네이션
+[33m769658d[m HEAD@{44}: commit: JSON 수정
+[33m3b26399[m HEAD@{45}: pull origin development: Fast-forward
+[33m2185f15[m HEAD@{46}: pull origin development: Fast-forward
+[33m87565cf[m HEAD@{47}: pull origin development: Fast-forward
+[33mf672183[m HEAD@{48}: pull origin development: Fast-forward
+[33mede0fe5[m HEAD@{49}: commit: 서울 공공서비스 조회
+[33m87bb5d6[m HEAD@{50}: pull origin development: Fast-forward
+[33mf0dbdf9[m HEAD@{51}: commit: 수정
+[33m10654c0[m HEAD@{52}: pull origin development: Fast-forward
+[33m06bd938[m HEAD@{53}: commit: 수정
+[33m393299e[m HEAD@{54}: commit: 수정
+[33m5d5921a[m HEAD@{55}: commit: 수정
+[33mc6843ca[m HEAD@{56}: commit: 수정
+[33m039468a[m HEAD@{57}: commit: 수정
+[33m5f1e964[m HEAD@{58}: commit: 확인
+[33m7b9d488[m[33m ([m[1;31morigin/hyowon[m[33m, [m[1;32mdevelopment[m[33m)[m HEAD@{59}: pull origin development: Fast-forward
+[33mff2d42e[m HEAD@{60}: checkout: moving from development to ara
+[33m7b9d488[m[33m ([m[1;31morigin/hyowon[m[33m, [m[1;32mdevelopment[m[33m)[m HEAD@{61}: checkout: moving from master to development
+[33me38abc3[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m HEAD@{62}: clone: from https://github.com/kh-FinalProject-ubi/FinalProject-ubi.git
