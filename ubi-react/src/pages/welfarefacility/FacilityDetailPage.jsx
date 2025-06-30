@@ -56,6 +56,11 @@ export default function FacilityDetailPage() {
   const lng = facility.lng || facility["X"];
   const reservationUrl =
     facility.reservationUrl || facility["SVCURL"] || facility["HMPG_ADDR"];
+  const phone =
+    facility.phone ||
+    facility["TELNO"] ||
+    facility["DETAIL_TELNO"] ||
+    facility["TEL"];
   const rawDescription = facility.description || facility["DTLCONT"] || "";
   const description = cleanDescription(rawDescription);
 
@@ -98,16 +103,29 @@ export default function FacilityDetailPage() {
       )}
 
       {/* ✅ 예약하기 버튼 (상세정보와 지도 사이) */}
-      {reservationUrl && (
+      {(reservationUrl || phone) && (
         <div style={{ textAlign: "center", margin: "20px 0" }}>
-          <a
-            href={reservationUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="reservation-button"
-          >
-            📅 예약하기
-          </a>
+          {reservationUrl ? (
+            <a
+              href={reservationUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="reservation-button"
+            >
+              📅 예약하기
+            </a>
+          ) : (
+            <button
+              className="reservation-button"
+              onClick={() => {
+                if (phone) {
+                  alert(`전화로 예약하세요: ${phone}`);
+                }
+              }}
+            >
+              📞 전화 예약하기
+            </button>
+          )}
         </div>
       )}
 

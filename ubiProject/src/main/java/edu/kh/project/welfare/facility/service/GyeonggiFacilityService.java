@@ -13,5 +13,7 @@ public interface GyeonggiFacilityService {
      * @param apiType   - API 유형 (old, child, public)
      * @return          - 해당 지역에 해당하는 복지시설 리스트
      */
-    List<GyeonggiFacility> getFacilitiesByRegion(String city, String district, String apiType);
+
+    // ✅ 3개 API를 모두 조회하여 병합한 결과 반환
+    List<GyeonggiFacility> getFacilitiesByRegion(String city, String district);
 }
