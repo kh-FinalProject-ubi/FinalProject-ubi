@@ -16,7 +16,6 @@ export default function FacilitySearchPage() {
     selectedDistrict: selectedDistrictFromStore,
   } = useSelectedRegionStore();
 
-  const [region, setRegion] = useState({ city: "", district: "" });
   const [keyword, setKeyword] = useState("");
   const [category, setCategory] = useState("전체");
   const [serviceType, setServiceType] = useState("전체");
@@ -82,7 +81,7 @@ export default function FacilitySearchPage() {
       "여주시",
       "양평군",
     ],
-    강원도: [
+    강원특별자치도: [
       "춘천시",
       "원주시",
       "강릉시",
@@ -104,7 +103,6 @@ export default function FacilitySearchPage() {
     ],
   };
 
-  // ✅ 초기 선택된 시/군/구 설정
   useEffect(() => {
     if (!memberLoading) {
       const fallbackCity = "서울특별시";
@@ -112,7 +110,6 @@ export default function FacilitySearchPage() {
 
       const city =
         member?.memberAddressCity || selectedCityFromStore || fallbackCity;
-
       const district =
         member?.memberAddressDistrict ||
         selectedDistrictFromStore ||
@@ -121,19 +118,30 @@ export default function FacilitySearchPage() {
       setSelectedCity(city);
       setAvailableDistricts(regionMap[city] || []);
       setSelectedDistrict(
-        (regionMap[city]?.includes(district) && district) ||
-          regionMap[city]?.[0] ||
-          fallbackDistrict
+        regionMap[city]?.includes(district)
+          ? district
+          : regionMap[city]?.[0] || fallbackDistrict
       );
     }
   }, [member, memberLoading, selectedCityFromStore, selectedDistrictFromStore]);
 
-  // ✅ 지역 상태 설정
   useEffect(() => {
-    if (selectedCity && selectedDistrict) {
-      setRegion({ city: selectedCity, district: selectedDistrict });
-    }
+    setCurrentPage(1);
   }, [selectedCity, selectedDistrict]);
+
+  const {
+    data: welfareData,
+    loading: welfareLoading,
+    error,
+  } = useFacilities("old", category, selectedCity, selectedDistrict);
+
+  const { data: sportsData, loading: sportsLoading } = useSportsFacilities(
+    selectedCity,
+    selectedDistrict
+  );
+
+  const loading = welfareLoading || sportsLoading;
+  const combinedFacilities = [...welfareData, ...sportsData];
 
   const categoryMap = {
     체육시설: ["체육시설", "테니스장", "다목적경기장"],
@@ -149,20 +157,25 @@ export default function FacilitySearchPage() {
 
   const isMatchServiceTarget = (facility, selectedType) => {
     if (selectedType === "전체") return true;
-    if (facility["type"] === "체육" || facility["category"] === "체육시설") {
+    if (facility["type"] === "체육" || facility["category"] === "체육시설")
       return true;
-    }
 
     const matchTable = {
-      노인: ["노인"],
-      청소년: ["청소년", "청년"],
-      아동: ["아동"],
-      장애인: ["장애인"],
+      노인: ["노인", "요양"],
+      청소년: ["청소년", "청년", "쉼터"],
+      아동: ["아동", "유아", "보육"],
+      장애인: ["장애인", "발달장애", "지체장애"],
     };
 
     const keywords = matchTable[selectedType] || [];
+
     const typeFields = [
+      facility["시설명"],
+      facility["facilityName"],
+      facility["FACLT_NM"],
+      facility["OPEN_FACLT_NM"],
       facility["시설종류명"],
+      facility["시설종류상세명"],
       facility["상세유형"],
       facility["SVC_TYPE"],
       facility["category"],
@@ -170,32 +183,18 @@ export default function FacilitySearchPage() {
     ];
 
     return keywords.some((keyword) =>
-      typeFields.some((field) => field?.includes(keyword))
+      typeFields.some((field) => field?.includes?.(keyword))
     );
   };
 
-  // ✅ API 호출
-  const {
-    data: welfareData,
-    loading: welfareLoading,
-    error,
-  } = useFacilities(region.city, region.district);
-
-  const { data: sportsData, loading: sportsLoading } = useSportsFacilities(
-    region.city,
-    region.district
-  );
-
-  const loading = welfareLoading || sportsLoading;
-  const combinedFacilities = [...welfareData, ...sportsData];
-
   const filteredFacilities = combinedFacilities.filter((f) => {
     const name =
+      f["facilityName"] ||
       f["시설명"] ||
       f["FACLT_NM"] ||
-      f["facilityName"] ||
       f["OPEN_FACLT_NM"] ||
       "";
+
     const type =
       f["상세유형"] || f["시설종류명"] || f["SVC_TYPE"] || f["category"] || "";
 
@@ -278,16 +277,13 @@ export default function FacilitySearchPage() {
         <div className="category-filter">
           {["전체", "체육시설", "요양시설", "의료시설", "행정시설"].map(
             (cat) => (
-              <label key={cat} className="radio-label">
-                <input
-                  type="radio"
-                  name="category"
-                  value={cat}
-                  checked={category === cat}
-                  onChange={() => setCategory(cat)}
-                />
+              <button
+                key={cat}
+                onClick={() => setCategory(cat)}
+                className={`service-btn ${category === cat ? "selected" : ""}`}
+              >
                 {cat}
-              </label>
+              </button>
             )
           )}
         </div>
@@ -304,9 +300,9 @@ export default function FacilitySearchPage() {
       <div className="facility-card-list">
         {currentItems.map((facility, idx) => {
           const name =
+            facility["facilityName"] ||
             facility["시설명"] ||
             facility["FACLT_NM"] ||
-            facility["facilityName"] ||
             facility["OPEN_FACLT_NM"] ||
             "시설";
           const key = `${name}-${idx}`;
