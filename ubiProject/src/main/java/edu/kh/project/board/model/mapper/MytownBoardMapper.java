@@ -51,10 +51,23 @@ public interface MytownBoardMapper {
 
 	    int checkHashtagExists(@Param("boardNo") int boardNo, @Param("tag") String tag);
 	    
-	    // 게시글 이미지 
-	    void insertBoardImage(BoardImage img);
 	    
 	    List<BoardImage> selectBoardImageList(int boardNo);
+	    
+	    
+		/** 게시글 이미지 모두 삽입
+		 * @param uploadList
+		 * @return
+		 */
+		int insertUploadList(List<BoardImage> uploadList);
+
+		/**
+		 * 이미지 삽입
+		 * @param image
+		 * @return
+		 */
+		int insertBoardImage(BoardImage image);
+
 
 	    
 }

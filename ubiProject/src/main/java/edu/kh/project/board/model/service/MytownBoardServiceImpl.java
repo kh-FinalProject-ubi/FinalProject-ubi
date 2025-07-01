@@ -2,6 +2,9 @@ package edu.kh.project.board.model.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,6 +17,7 @@ import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.board.model.dto.BoardImage;
 import edu.kh.project.board.model.dto.Pagination;
 import edu.kh.project.board.model.mapper.MytownBoardMapper;
+import edu.kh.project.common.util.Utility;
 
 @Service
 public class MytownBoardServiceImpl implements MytownBoardService {
@@ -73,14 +77,48 @@ public class MytownBoardServiceImpl implements MytownBoardService {
       * @return
       */
         @Override
-        public int writeBoard(Board dto) {
-        	 // 게시글 등록
-            mapper.insertBoard(dto);
+        public int writeBoard(Board dto, List<MultipartFile> images) throws Exception {
+        	  // 1. 게시글 INSERT
+    	    int result = mapper.insertBoard(dto);
             
-            
+    	    if (result == 0) return 0;
+
             int boardNo = mapper.getLastInsertedId();
 
-            
+            // 2. 이미지 업로드 처리
+    	    List<BoardImage> uploadList = new ArrayList<>();
+
+    	    if (images != null) {
+    	        for (int i = 0; i < images.size(); i++) {
+    	            MultipartFile file = images.get(i);
+
+    	            if (!file.isEmpty()) {
+    	                String originalName = file.getOriginalFilename();
+    	                String rename = Utility.fileRename(originalName);
+
+    	                BoardImage img = BoardImage.builder()
+    	                        .imageName(rename)
+    	                        .imagePath(webPath)
+    	                        .boardNo(boardNo)
+    	                        .imageOrder(i)
+    	                        .uploadFile(file)
+    	                        .build();
+
+    	                uploadList.add(img);
+    	            }
+    	        }
+    	    }
+
+    	    if (!uploadList.isEmpty()) {
+    	        result = mapper.insertUploadList(uploadList);
+    	        if (result == uploadList.size()) {
+    	            for (BoardImage img : uploadList) {
+    	                img.getUploadFile().transferTo(new File(folderPath + img.getImageName()));
+    	            }
+    	        } else {
+    	            throw new RuntimeException("이미지 일부 삽입 실패 → 전체 롤백");
+    	        }
+    	    }
             
             // 해시태그 중복 없이 삽입
             if (dto.getHashtagList() != null) {
@@ -92,22 +130,13 @@ public class MytownBoardServiceImpl implements MytownBoardService {
                     }
                 }  
                 
-                
-                
+        
+            }
+            return boardNo; 
             }
             
 
-            // ✅ 이미지 리스트 저장
-            List<BoardImage> imageList = dto.getImageList();
-            if (imageList != null && !imageList.isEmpty()) {
-                for (BoardImage img : imageList) {
-                    img.setBoardNo(boardNo);
-                    mapper.insertBoardImage(img);
-                }
-            }
-                return boardNo;
-        }
-        
+          
         
         
         
@@ -124,16 +153,5 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 		
             
             
-        @Override
-        public String saveBoardImage(MultipartFile uploadFile) throws IOException {
-            String fileName = UUID.randomUUID().toString() + "_" + uploadFile.getOriginalFilename();
-            File file = new File(folderPath + fileName);
-            uploadFile.transferTo(file);
-            return webPath + fileName;
         }
-        
-        
-        
-        }
-
 

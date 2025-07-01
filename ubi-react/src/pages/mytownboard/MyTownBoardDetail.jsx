@@ -15,11 +15,12 @@ function MyTownBoardDetail() {
   }, [boardNo]);
 
 if (!board) return <p>로딩 중...</p>; // ✅ null 방지
+
   // 이미지 경로가 상대경로인 경우 절대경로로 교체
   const contentWithImages = board.boardContent.replaceAll(
-  /<img src="\/uploadFiles\/board\//g,
-  '<img src="http://localhost:80/images/board/'
-  );
+  /<img src="\/images\/board\//g,
+  'http://localhost:80/images/board/'
+);
 const tagList = generateTagList(board);
 
 return (
@@ -28,7 +29,7 @@ return (
     <p><strong>작성자:</strong> {board.memberNickname}</p>
     <p><strong>작성일:</strong> {board.boardDate}</p>
     <p><strong>지역:</strong> {board.regionCity} {board.regionDistrict}</p>
-
+{board.content}
 
       {/* ✅ 글 내용과 이미지가 섞인 HTML 출력 */}
       <div
