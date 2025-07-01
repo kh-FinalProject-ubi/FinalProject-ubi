@@ -65,17 +65,28 @@ export function applyAllFilters(data, options, authState) {
       .filter((item) => {
         if (!token || showAll) return true;
 
-        const result =
-          item.regionCity === regionCity &&
-          item.regionDistrict === regionDistrict;
+        const itemCity = item.regionCity?.trim();
+        const itemDistrict = item.regionDistrict?.trim();
+        const userCity = regionCity?.trim();
+        const userDistrict = regionDistrict?.trim();
 
-        if (!result) {
+        const cityMatches = itemCity === userCity;
+
+        // case 1: item에 district가 없으면 city만 비교
+        if (cityMatches && (!itemDistrict || itemDistrict === "")) {
+          return true;
+        }
+
+        // case 2: 둘 다 있으면 정확히 비교
+        const fullMatch = cityMatches && itemDistrict === userDistrict;
+
+        if (!fullMatch) {
           console.log(
-            `🚫 제외됨 (지역 불일치): ${item.title} → item: ${item.regionCity} ${item.regionDistrict}, user: ${regionCity} ${regionDistrict}`
+            `🚫 제외됨 (지역 불일치): ${item.title} → item: ${itemCity} ${itemDistrict}, user: ${userCity} ${userDistrict}`
           );
         }
 
-        return result;
+        return fullMatch;
       })
 
       // 🔹 2단계: 서비스 대상 필터

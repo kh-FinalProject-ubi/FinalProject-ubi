@@ -23,6 +23,7 @@ const LikeButton = ({
       }
       return;
     }
+    console.log("🔥 보내는 token:", token);
 
     try {
       if (liked) {

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import useAuthStore from "../../stores/useAuthStore";
 import useBenefitStore from "../../stores/useWelfareStore";
+import { normalizeRegion } from "../../utils/regionUtils";
 
 function formatDate(dateStr) {
   if (!dateStr) return "-";
@@ -79,8 +80,11 @@ export default function useLocalBenefitData() {
 
         const jobs = Array.isArray(jobRes.data)
           ? jobRes.data.map((item, i) => {
-              const regionCity = item.regionCity ?? "";
-              const regionDistrict = item.regionDistrict ?? "";
+              const { regionCity, regionDistrict, region } = normalizeRegion(
+                item.ctpvNm,
+                item.sggNm
+              );
+
               return {
                 id: `job-${item.apiSource}-${i}`,
                 title: item.jobTitle ?? "구인 공고",
@@ -99,8 +103,11 @@ export default function useLocalBenefitData() {
 
         const bokjiro = Array.isArray(bokjiroRes.data?.servList)
           ? bokjiroRes.data.servList.map((item, idx) => {
-              const regionCity = item.ctpvNm ?? "";
-              const regionDistrict = item.sggNm ?? "";
+              const { regionCity, regionDistrict, region } = normalizeRegion(
+                item.ctpvNm,
+                item.sggNm
+              );
+
               return {
                 id: `bokjiro-${item.servId || idx}`,
                 title: item.servNm ?? "복지 서비스",
@@ -108,7 +115,7 @@ export default function useLocalBenefitData() {
                 category: "지자체복지혜택",
                 startDate: "정보 없음",
                 endDate: item.lastModYmd ?? "-",
-                region: `${regionCity} ${regionDistrict}`.trim(),
+                region,
                 regionCity,
                 regionDistrict,
                 imageUrl: null,

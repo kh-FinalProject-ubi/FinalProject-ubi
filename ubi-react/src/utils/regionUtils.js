@@ -18,7 +18,7 @@ export const normalizeSido = (rawSido) => {
     경남: "경상남도",
     제주: "제주특별자치도",
   };
-  return map[rawSido] || rawSido;
+  return map[rawSido] || rawSido || "";
 };
 
 export const normalizeSigungu = (rawSigungu) => {
@@ -29,5 +29,22 @@ export const normalizeSigungu = (rawSigungu) => {
     창원시: "창원특례시",
     성남시: "성남특례시",
   };
-  return map[rawSigungu] || rawSigungu;
+  return map[rawSigungu] || rawSigungu || "";
+};
+
+// ✅ undefined 방지 및 안전한 조합 처리
+export const normalizeRegion = (rawCity, rawDistrict) => {
+  const regionCity = normalizeSido(rawCity);
+  const regionDistrict = normalizeSigungu(rawDistrict);
+  const region = regionDistrict
+    ? `${regionCity} ${regionDistrict}`
+    : regionCity;
+  return { regionCity, regionDistrict, region };
+};
+
+export const mapCleanFullName = (fullName) => {
+  const tokens = fullName.split(" ");
+  if (tokens.length < 2) return fullName;
+  const [sido, sigungu] = tokens;
+  return `${normalizeSido(sido)} ${normalizeSigungu(sigungu)}`.trim();
 };
