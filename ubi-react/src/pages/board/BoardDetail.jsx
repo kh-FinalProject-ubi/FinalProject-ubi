@@ -8,7 +8,6 @@ const BoardDetail = () => {
   const { boardPath, boardNo } = useParams();
   const { token, authority, memberNo: loginMemberNo } = useAuthStore();
 
-  // 게시판 이름 -> 코드 매핑
   const boardCodeMap = {
     noticeBoard: 1,
     askBoard: 2,
@@ -18,6 +17,11 @@ const BoardDetail = () => {
   const [board, setBoard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [hasAlerted, setHasAlerted] = useState(false);
+
+  // --- 댓글 관련 상태 ---
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [commentLoading, setCommentLoading] = useState(false);
 
   useEffect(() => {
     if (!boardCode) {
@@ -30,7 +34,6 @@ const BoardDetail = () => {
     }
 
     if (!token && boardCode === 2) {
-      // 문의게시판은 비로그인 접근 불가
       if (!hasAlerted) {
         alert("로그인이 필요합니다.");
         setHasAlerted(true);
@@ -91,6 +94,53 @@ const BoardDetail = () => {
     hasAlerted,
   ]);
 
+  // --- 댓글 목록 조회 ---
+  useEffect(() => {
+    if (!boardCode || !boardNo) return;
+
+    const fetchComments = async () => {
+      setCommentLoading(true);
+      try {
+        const res = await axios.get(`/api/comments/${boardCode}/${boardNo}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        setComments(res.data.comments || []);
+      } catch (err) {
+        console.error("댓글 조회 실패", err);
+      } finally {
+        setCommentLoading(false);
+      }
+    };
+
+    fetchComments();
+  }, [boardCode, boardNo, token]);
+
+  // --- 댓글 작성 핸들러 ---
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!newComment.trim()) {
+      alert("댓글 내용을 입력해주세요.");
+      return;
+    }
+
+    try {
+      await axios.post(
+        `/api/comments/${boardCode}/${boardNo}/add`,
+        { content: newComment },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNewComment("");
+      // 댓글 재조회
+      const res = await axios.get(`/api/comments/${boardCode}/${boardNo}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      setComments(res.data.comments || []);
+    } catch (err) {
+      alert("댓글 작성에 실패했습니다.");
+    }
+  };
+
   if (loading || !board) return null;
 
   const isWriter = loginMemberNo === board.memberNo;
@@ -144,7 +194,6 @@ const BoardDetail = () => {
               <button
                 className="btn-yellow"
                 onClick={() => {
-                  // boardType → boardPath 다시 변환
                   const path = Object.entries(boardCodeMap).find(
                     ([, code]) => code === board.boardType
                   )?.[0];
@@ -184,6 +233,52 @@ const BoardDetail = () => {
             </>
           )}
         </div>
+
+        {/* 댓글 섹션 시작 */}
+        <section className="comment-section" style={{ marginTop: "40px" }}>
+          <h3>댓글</h3>
+
+          {commentLoading ? (
+            <p>댓글 불러오는 중...</p>
+          ) : comments.length === 0 ? (
+            <p>댓글이 없습니다.</p>
+          ) : (
+            <ul>
+              {comments.map((comment) => (
+                <li key={comment.commentNo} style={{ marginBottom: "10px" }}>
+                  <strong>
+                    {comment.memberNickname || `회원번호: ${comment.memberNo}`}
+                  </strong>{" "}
+                  <span style={{ color: "#888", fontSize: "0.9em" }}>
+                    ({new Date(comment.createdAt).toLocaleString()})
+                  </span>
+                  <p>{comment.content}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {token ? (
+            <form onSubmit={handleCommentSubmit}>
+              <textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                rows={3}
+                placeholder="댓글을 입력하세요."
+                style={{ width: "100%", resize: "vertical" }}
+              />
+              <button
+                type="submit"
+                className="btn-yellow"
+                style={{ marginTop: "5px" }}
+              >
+                댓글 작성
+              </button>
+            </form>
+          ) : (
+            <p>댓글을 작성하려면 로그인하세요.</p>
+          )}
+        </section>
       </section>
     </main>
   );
