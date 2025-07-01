@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAuthStore from "../../stores/useAuthStore";
+import Pagination from "../../components/Pagination";
 
 const boardCodeMap = {
   "/noticeBoard": 1,
@@ -12,6 +13,7 @@ const boardCodeMap = {
 const NoticeBoard = () => {
   const [boardList, setBoardList] = useState([]);
   const [pagination, setPagination] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const { token, authority, memberNo: loginMemberNo } = useAuthStore();
 
@@ -20,6 +22,10 @@ const NoticeBoard = () => {
 
   const path = location.pathname;
   const boardCode = boardCodeMap[path];
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
   const authorityMap = {
     1: "USER",
@@ -30,9 +36,14 @@ const NoticeBoard = () => {
   useEffect(() => {
     if (!boardCode) return;
 
+    setLoading(true);
+
     axios
-      .get(`/api/board/${boardCode}`)
+      .get(`/api/board/${boardCode}`, {
+        params: { cp: currentPage },
+      })
       .then((res) => {
+        console.log("pagination 확인", res.data.pagination);
         setBoardList(res.data.boardList);
         setPagination(res.data.pagination);
         setLoading(false);
@@ -41,7 +52,7 @@ const NoticeBoard = () => {
         console.error("게시판 목록 조회 실패:", err);
         window.location.href = "/";
       });
-  }, [boardCode]);
+  }, [boardCode, currentPage]);
 
   if (!boardCode) return <p>존재하지 않는 게시판입니다.</p>;
   if (loading) return <p>로딩 중...</p>;
@@ -70,7 +81,7 @@ const NoticeBoard = () => {
         <tbody>
           {boardList.map((board, index) => (
             <tr key={board.boardNo} style={{ borderBottom: "1px solid #eee" }}>
-              <td>{index + 1}</td>
+              <td>{index + 1 + (currentPage - 1) * 10}</td>
               <td>{board.postType}</td>
               <td>
                 <Link to={`${path}/${board.boardNo}`}>
@@ -84,6 +95,14 @@ const NoticeBoard = () => {
           ))}
         </tbody>
       </table>
+
+      {pagination && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={pagination.maxPage}
+          onPageChange={handlePageChange}
+        />
+      )}
 
       {isAdmin && (
         <div style={{ textAlign: "right", marginTop: "1rem" }}>
