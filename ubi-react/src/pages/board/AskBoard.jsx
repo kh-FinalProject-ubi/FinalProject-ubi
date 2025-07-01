@@ -9,11 +9,6 @@ const boardCodeMap = {
   "/askBoard": 2,
 };
 
-const authorityMap = {
-  1: "USER",
-  2: "ADMIN",
-};
-
 const AskBoard = () => {
   const [boardList, setBoardList] = useState([]);
   const [pagination, setPagination] = useState(null);
@@ -23,14 +18,14 @@ const AskBoard = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { token, authority, memberNo: loginMemberNo } = useAuthStore();
+  const { token, role, memberNo: loginMemberNo } = useAuthStore();
 
   const path = location.pathname;
   const boardCode = boardCodeMap[path];
 
   // authority 값이 있을 때만 isAdmin, isUser를 계산
-  const isAdmin = authority && authorityMap[authority] === "ADMIN";
-  const isUser = authority && authorityMap[authority] === "USER";
+  const isAdmin = role === "ADMIN";
+  const isUser = role === "USER";
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -59,6 +54,9 @@ const AskBoard = () => {
 
   if (!boardCode) return <p>존재하지 않는 게시판입니다.</p>;
   if (loading) return <p>로딩 중...</p>;
+
+  console.log("✅ 현재 role:", role);
+  console.log("✅ isAdmin?", isAdmin);
 
   return (
     <div>
