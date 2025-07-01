@@ -71,12 +71,13 @@ public class JwtUtil {
 	}
 
 	public boolean validateToken(String token) {
-		try {
-			Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
+	    try {
+	        Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token); // 🔍 여기서 오류날 수도 있음
+	        return true;
+	    } catch (Exception e) {
+	        System.out.println("❌ JWT 유효성 검사 실패: " + e.getMessage());
+	        return false;
+	    }
 	}
 
 	private Claims getClaims(String token) {
