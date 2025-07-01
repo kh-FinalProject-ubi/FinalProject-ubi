@@ -7,7 +7,13 @@ import { filterBenefitsByStandard } from "../utils/filterBenefitsByStandard";
 const WelfareBenefitView = ({ district, benefits, isLoading }) => {
   const cleanDistrict =
     district?.trim().normalize("NFC") || "서울특별시 종로구";
-  const list = benefits?.[cleanDistrict] ?? [];
+  const list = useMemo(() => {
+    return (benefits || []).filter(
+      (item) =>
+        `${item.regionCity} ${item.regionDistrict}`.trim().normalize("NFC") ===
+        cleanDistrict
+    );
+  }, [benefits, cleanDistrict]);
 
   const [selectedDetail, setSelectedDetail] = useState(null);
   const [showAll, setShowAll] = useState(false);
@@ -54,10 +60,10 @@ const WelfareBenefitView = ({ district, benefits, isLoading }) => {
       )}
 
       <div className="benefit-card-list">
-        {filteredList.map((item) => (
+        {filteredList.map((item, idx) => (
           <div
             className="benefit-card"
-            key={item.servId}
+            key={item.servId || item.id || idx}
             onClick={() => fetchDetail(item.servId)}
           >
             <h4 className="benefit-title">{item.servNm}</h4>

@@ -13,7 +13,6 @@ export default function useLocalBenefitData() {
   const [error, setError] = useState(null);
 
   const { benefitsData, lastFetchedAt, setBenefitsData } = useBenefitStore();
-
   const memberStandard = useAuthStore.getState().memberStandard;
   const showAll = useAuthStore.getState().showAll;
 
@@ -128,12 +127,13 @@ export default function useLocalBenefitData() {
       }
     };
 
+    // ✅ 로그인 여부와 관계없이 항상 fetch 시도
     if (!benefitsData || isStale()) {
       fetchAll();
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [benefitsData, memberStandard]); // ✅ 상태 바뀔 때마다 다시 판단
 
   return {
     data: Array.isArray(benefitsData) ? benefitsData : [],
