@@ -132,8 +132,6 @@ public class BoardController {
 
 		return ResponseEntity.ok(Map.of("status", 200, "board", board, "loginMemberNo", loginMemberNo));
 	}
-	
-	
 
 	/**
 	 * 게시글 좋아요 체크/해제
