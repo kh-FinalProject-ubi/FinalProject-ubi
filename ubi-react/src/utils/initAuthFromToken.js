@@ -19,6 +19,7 @@ export function initAuthFromToken() {
       memberNo,
       memberStandard,
       authority,
+      role,
       address,
       regionCity,
       regionDistrict,
@@ -31,6 +32,7 @@ export function initAuthFromToken() {
       memberStandard,
       memberNo,
       authority,
+      role,
       regionCity,
       regionDistrict,
     });

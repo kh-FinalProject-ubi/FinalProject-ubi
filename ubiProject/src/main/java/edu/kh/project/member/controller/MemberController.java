@@ -149,6 +149,7 @@ public class MemberController {
             body.put("address", extractDistrict(inputMember.getMemberAddress()));
             body.put("memberStandard", parseMemberStandard(inputMember.getMemberStandard()));
             body.put("memberNo", inputMember.getMemberNo());
+            body.put("authority", inputMember.getAuthority());
 
             return ResponseEntity.ok(body);
         } else {
@@ -211,6 +212,7 @@ public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code) {
         body.put("memberStandard", readableStandard);
         body.put("memberImg", member.getMemberImg());
         body.put("memberNo", member.getMemberNo());
+        body.put("authority", member.getAuthority());
         body.put("regionCity", member.getRegionCity());
         body.put("regionDistrict", member.getRegionDistrict());
         return ResponseEntity.ok(body);
@@ -282,6 +284,7 @@ public String normalizeSigungu(String rawSigungu) {
 		body.put("memberAddressDistrict", district.split(" ")[1]); // 종로구
 		body.put("memberStandard", readableStandard);
 		body.put("memberImg", loginMember.getMemberImg());
+		 body.put("authority", loginMember.getAuthority());
 
 		return ResponseEntity.ok(body);
 	}
@@ -296,6 +299,7 @@ public String normalizeSigungu(String rawSigungu) {
 	        return ResponseEntity.ok(Map.of(
 	            "token", "dummy-token",
 	            "memberName", loginMember.getMemberNickname(),
+	            "authority", loginMember.getAuthority(),
 	            "address", district,
 	            "memberNo", loginMember.getMemberNo(),
 	            "memberStandard", readableStandard
@@ -336,6 +340,7 @@ public String normalizeSigungu(String rawSigungu) {
 	            "address", district,
 	            "memberNo", member.getMemberNo(),
 	            "memberStandard", readableStandard,
+	            "authority",member.getAuthority(),
 	            // ✅ 여기 추가
 	            "regionCity", member.getRegionCity(),
 	            "regionDistrict", member.getRegionDistrict()

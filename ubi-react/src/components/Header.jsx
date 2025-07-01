@@ -59,7 +59,12 @@ const Header = () => {
         <div className="header-right">
           {isLogin ? (
             <>
-              <button className="alarm-btn">🔔</button>
+              <button className="alarm-btn">
+                <img src="/alarm.svg" alt="알림 아이콘" />
+              </button>
+              <button className="chatting-btn">
+                <img src="/chatting.svg" alt="채팅 아이콘" />
+              </button>
               <Link to="/mypage/Profile">
                 <img
                   className="profile-img"

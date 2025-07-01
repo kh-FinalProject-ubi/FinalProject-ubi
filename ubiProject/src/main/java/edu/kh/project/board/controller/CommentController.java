@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,7 +32,7 @@ import edu.kh.project.board.model.service.CommentService;
  * 
  */
 @RestController  
-@RequestMapping("comments")
+@RequestMapping("/api/comments")
 //@RequiredArgsConstructor + 메서드 안에 final => @Autowired 기능 
 public class CommentController {
 
@@ -41,39 +43,42 @@ public class CommentController {
 	 * @param boardNo
 	 * @return 
 	 */
-	@GetMapping("")
-	public List<Comment> select(@RequestParam("boardNo") int boardNo){
-		// List<Comment> (Java의 자료형 List)
-		// HttpMessageConverter가
-		// List -> JSON(문자열) 로 변환하여 응답 -> JS
-		return service.select(boardNo);
+	@GetMapping("/{boardCode}/{boardNo}")
+	public List<Comment> select(
+	    @PathVariable("boardCode") int boardCode,
+	    @PathVariable("boardNo") int boardNo) {
+
+	    return service.select(boardNo); 
 	}
 	
 	/** 댓글/답글 등록
 	 * @return
 	 */
-	@PostMapping("")
-	public int insert(@RequestBody Comment comment) {
-		return service.insert(comment);
-		
+	@PostMapping("/{boardCode}/{boardNo}/insert")
+	public int insert(
+	    @PathVariable("boardCode") int boardCode,
+	    @PathVariable("boardNo") int boardNo,
+	    @RequestBody Comment comment) {
+	    
+	    comment.setBoardNo(boardNo); 
+	    return service.insert(comment);
 	}
 	
 	/** 댓글 삭제
 	 * @param commentNo
 	 * @return
 	 */
-	@DeleteMapping("")
-	public int delete(@RequestBody int commentNo) {
-		return service.delete(commentNo);
+	@DeleteMapping("/{commentNo}")
+	public int delete(@PathVariable("commentNo") int commentNo) {
+	    return service.delete(commentNo);
 	}
 	
 	/** 댓글 수정
 	 * @param comment
 	 * @return 
 	 */
-	@PutExchange("")
+	@PutMapping("")
 	public int update(@RequestBody Comment comment) {
-		return service.update(comment);
+	    return service.update(comment);
 	}
-
 }

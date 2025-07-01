@@ -6,7 +6,7 @@ import useAuthStore from "../../stores/useAuthStore";
 const BoardDetail = () => {
   const navigate = useNavigate();
   const { boardPath, boardNo } = useParams();
-  const { token, authority, memberNo: loginMemberNo } = useAuthStore();
+  const { token, role, memberNo: loginMemberNo } = useAuthStore();
 
   const boardCodeMap = {
     noticeBoard: 1,
@@ -17,11 +17,13 @@ const BoardDetail = () => {
   const [board, setBoard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [hasAlerted, setHasAlerted] = useState(false);
-
-  // --- 댓글 관련 상태 ---
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
+
+  const isAdmin = role === "ADMIN";
+  const isWriter = loginMemberNo === board?.memberNo;
+  const isNotice = board?.boardType === 1;
 
   useEffect(() => {
     if (!boardCode) {
@@ -52,28 +54,24 @@ const BoardDetail = () => {
 
         if (
           boardCode === 2 &&
-          !(loginMemberNo === boardData.memberNo || authority === "2")
+          !(loginMemberNo === boardData.memberNo || isAdmin)
         ) {
           if (!hasAlerted) {
             alert("해당 게시글을 볼 권한이 없습니다.");
             setHasAlerted(true);
             setTimeout(() => navigate(`/${boardPath}`), 100);
-            setLoading(false);
           }
-
           return;
         }
 
         setBoard(boardData);
       } catch (err) {
         if (!hasAlerted) {
-          if (err.response?.status === 404) {
-            alert("존재하지 않는 게시글입니다.");
-          } else if (err.response?.status === 403) {
-            alert("해당 게시글을 볼 권한이 없습니다.");
-          } else {
-            alert("오류가 발생했습니다.");
-          }
+          alert(
+            err.response?.status === 404
+              ? "존재하지 않는 게시글입니다."
+              : "오류가 발생했습니다."
+          );
           setHasAlerted(true);
           setTimeout(() => navigate(`/${boardPath}`), 100);
         }
@@ -87,65 +85,83 @@ const BoardDetail = () => {
     boardCode,
     boardNo,
     token,
-    authority,
+    role,
     loginMemberNo,
     navigate,
     boardPath,
     hasAlerted,
   ]);
 
-  // --- 댓글 목록 조회 ---
+  // 댓글 로딩
+  const loadComments = async () => {
+    setCommentLoading(true);
+    try {
+      const res = await axios.get(`/api/comments/${boardCode}/${boardNo}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      setComments(res.data || []);
+    } catch (err) {
+      console.error("댓글 조회 실패", err);
+    } finally {
+      setCommentLoading(false);
+    }
+  };
+
   useEffect(() => {
-    if (!boardCode || !boardNo) return;
+    if (boardCode && boardNo) loadComments();
+  }, [boardCode, boardNo]);
 
-    const fetchComments = async () => {
-      setCommentLoading(true);
-      try {
-        const res = await axios.get(`/api/comments/${boardCode}/${boardNo}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        setComments(res.data.comments || []);
-      } catch (err) {
-        console.error("댓글 조회 실패", err);
-      } finally {
-        setCommentLoading(false);
-      }
-    };
-
-    fetchComments();
-  }, [boardCode, boardNo, token]);
-
-  // --- 댓글 작성 핸들러 ---
+  // 댓글 등록
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
-
-    if (!newComment.trim()) {
-      alert("댓글 내용을 입력해주세요.");
-      return;
-    }
+    if (!newComment.trim()) return alert("댓글 내용을 입력해주세요.");
 
     try {
       await axios.post(
-        `/api/comments/${boardCode}/${boardNo}/add`,
+        `/api/comments/${boardCode}/${boardNo}/insert`,
         { content: newComment },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setNewComment("");
-      // 댓글 재조회
-      const res = await axios.get(`/api/comments/${boardCode}/${boardNo}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      setComments(res.data.comments || []);
+      await loadComments();
     } catch (err) {
-      alert("댓글 작성에 실패했습니다.");
+      alert("댓글 작성 실패");
     }
   };
 
-  if (loading || !board) return null;
+  // 댓글 삭제
+  const handleCommentDelete = async (commentNo) => {
+    if (!window.confirm("댓글을 삭제하시겠습니까?")) return;
 
-  const isWriter = loginMemberNo === board.memberNo;
-  const isAdmin = authority === "2" || authority === "ADMIN";
-  const isNotice = board.boardType === 1;
+    try {
+      await axios.delete(`/api/comments/${commentNo}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      await loadComments();
+    } catch (err) {
+      alert("댓글 삭제 실패");
+    }
+  };
+
+  // 댓글 수정
+  const handleCommentUpdate = async (commentNo, content) => {
+    const newContent = prompt("댓글 수정", content);
+    if (!newContent?.trim()) return;
+
+    try {
+      await axios.put(
+        `/api/comments`,
+        { commentNo, content: newContent },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      await loadComments();
+    } catch (err) {
+      alert("댓글 수정 실패");
+    }
+  };
+
+  if (loading) return <p>로딩 중...</p>;
+  if (!board) return <p>게시글 정보를 불러올 수 없습니다.</p>;
 
   return (
     <main className="container">
@@ -154,6 +170,7 @@ const BoardDetail = () => {
       <section className="board-view">
         <h2>[{board.postType}]</h2>
         <h2 className="view-title">{board.boardTitle}</h2>
+
         <div className="content-box">
           <div
             className="board-content"
@@ -161,20 +178,18 @@ const BoardDetail = () => {
           ></div>
 
           <div className="image-list">
-            {board.imageList && board.imageList.length > 0
-              ? board.imageList.map((img, index) => {
-                  const encodedFileName = encodeURIComponent(img.imageName);
-                  const filePath = `http://localhost:80${img.imagePath}${encodedFileName}`;
-                  return (
-                    <img
-                      key={index}
-                      src={filePath}
-                      alt={`게시글 이미지 ${index + 1}`}
-                      style={{ maxWidth: "100%", marginBottom: "10px" }}
-                    />
-                  );
-                })
-              : null}
+            {board.imageList?.map((img, idx) => {
+              const encodedName = encodeURIComponent(img.imageName);
+              const filePath = `http://localhost:8080${img.imagePath}${encodedName}`;
+              return (
+                <img
+                  key={idx}
+                  src={filePath}
+                  alt={`게시글 이미지 ${idx + 1}`}
+                  style={{ maxWidth: "100%", marginBottom: "10px" }}
+                />
+              );
+            })}
           </div>
 
           <p>조회수: {board.boardReadCount}</p>
@@ -197,12 +212,9 @@ const BoardDetail = () => {
                   const path = Object.entries(boardCodeMap).find(
                     ([, code]) => code === board.boardType
                   )?.[0];
-
-                  if (path) {
-                    navigate(`/${path}/edit/${board.boardNo}`);
-                  } else {
-                    alert("게시판 경로를 찾을 수 없습니다.");
-                  }
+                  path
+                    ? navigate(`/${path}/edit/${board.boardNo}`)
+                    : alert("게시판 경로를 찾을 수 없습니다.");
                 }}
               >
                 수정
@@ -216,9 +228,7 @@ const BoardDetail = () => {
                       .post(
                         `/api/editBoard/${boardCode}/${boardNo}/delete`,
                         {},
-                        {
-                          headers: { Authorization: `Bearer ${token}` },
-                        }
+                        { headers: { Authorization: `Bearer ${token}` } }
                       )
                       .then(() => {
                         alert("삭제되었습니다.");
@@ -234,7 +244,7 @@ const BoardDetail = () => {
           )}
         </div>
 
-        {/* 댓글 섹션 시작 */}
+        {/* 댓글 */}
         <section className="comment-section" style={{ marginTop: "40px" }}>
           <h3>댓글</h3>
 
@@ -253,12 +263,34 @@ const BoardDetail = () => {
                     ({new Date(comment.createdAt).toLocaleString()})
                   </span>
                   <p>{comment.content}</p>
+                  {(isAdmin || comment.memberNo === loginMemberNo) && (
+                    <div>
+                      <button
+                        className="btn-yellow"
+                        onClick={() =>
+                          handleCommentUpdate(
+                            comment.commentNo,
+                            comment.content
+                          )
+                        }
+                      >
+                        수정
+                      </button>
+                      <button
+                        className="btn-yellow"
+                        onClick={() => handleCommentDelete(comment.commentNo)}
+                        style={{ marginLeft: "5px" }}
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
           )}
 
-          {token ? (
+          {token && (
             <form onSubmit={handleCommentSubmit}>
               <textarea
                 value={newComment}
@@ -275,8 +307,6 @@ const BoardDetail = () => {
                 댓글 작성
               </button>
             </form>
-          ) : (
-            <p>댓글을 작성하려면 로그인하세요.</p>
           )}
         </section>
       </section>
