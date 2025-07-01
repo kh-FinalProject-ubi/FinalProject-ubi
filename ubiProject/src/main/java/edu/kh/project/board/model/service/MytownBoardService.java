@@ -35,11 +35,11 @@ public interface MytownBoardService {
 	  * @param dto
 	  * @return
 	  */
-	    int writeBoard(Board dto);
+	    int writeBoard(Board dto, List<MultipartFile> images) throws Exception;
 	    void insertHashtag(int boardNo, String tag);
 
 
-	    String saveBoardImage(MultipartFile uploadFile) throws IOException;
+//	    String saveBoardImage(MultipartFile uploadFile) throws IOException;
 
 }
 

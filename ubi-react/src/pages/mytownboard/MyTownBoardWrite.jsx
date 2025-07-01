@@ -67,11 +67,14 @@ if (
 }
 
 // 글쓰기 전송 내부 추가
-const imageList = uploadedImagesRef.current.map((url, index) => ({
-  imagePath: url,
-  imageOrder: index,
-  imageName: url.split("/").pop(), // 파일명만 추출
-}));
+const imageList = uploadedImagesRef.current.map((url, index) => {
+  const segments = url.split('/');
+  return {
+    imagePath: '/' + segments.slice(0, -1).join('/'),  // 예: /images/board
+    imageOrder: index,
+    imageName: segments[segments.length - 1],          // 파일명만
+  };
+});
 
   // 3. 글쓰기 전송
     // 서버로 전송 (예: POST api/editboard/mytown/write)
@@ -125,7 +128,7 @@ console.log("hashtags:", hashtags);
 
        onImageUpload: function (files) {
         const formData = new FormData();
-        formData.append("image", files[0]);
+        formData.append("file", files[0]);
 
         fetch("/api/editboard/mytown/uploadImage", {
           method: "POST",
