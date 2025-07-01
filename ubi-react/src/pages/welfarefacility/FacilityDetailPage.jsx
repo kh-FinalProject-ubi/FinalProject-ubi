@@ -69,7 +69,6 @@ export default function FacilityDetailPage() {
     시설명: name,
     시설주소: address,
     카테고리: facility.category,
-    전화번호: tel,
     예약주소: reservationUrl,
   };
 

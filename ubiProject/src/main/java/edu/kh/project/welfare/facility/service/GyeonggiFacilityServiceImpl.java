@@ -95,6 +95,8 @@ public class GyeonggiFacilityServiceImpl implements GyeonggiFacilityService {
                         facility.setFacilityName(node.get("OPEN_FACLT_NM").asText());
                     } else if (node.has("BIZPLC_NM")) {
                         facility.setFacilityName(node.get("BIZPLC_NM").asText());
+                    } else if (node.has("INST_NM")) {
+                        facility.setFacilityName(node.get("INST_NM").asText());
                     }
 
                     if (node.has("REFINE_ROADNM_ADDR")) {
@@ -115,11 +117,16 @@ public class GyeonggiFacilityServiceImpl implements GyeonggiFacilityService {
                         facility.setTel(node.get("TELNO").asText());
                     } else if (node.has("PHONE")) {
                         facility.setTel(node.get("PHONE").asText());
+                    } else if (node.has("TELNO_INFO")) {
+                        facility.setTel(node.get("TELNO_INFO").asText());
                     }
+                    
                     if (node.has("HMPG_ADDR")) {
                         facility.setHomepage(node.get("HMPG_ADDR").asText());
                     } else if (node.has("SVCURL")) {
                         facility.setHomepage(node.get("SVCURL").asText());
+                    } else if (node.has("HMPG_URL")) {
+                        facility.setHomepage(node.get("HMPG_URL").asText());
                     }
 
                     facility.setApiType(apiType);

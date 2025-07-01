@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import useSelectedRegionStore from "../../hook/welfarefacility/useSelectedRegionStore";
 
-export function useFacilities(city, district, apiType = "old") {
+export function useFacilities(apiType = "old") {
+  const { selectedCity: city, selectedDistrict: district } =
+    useSelectedRegionStore();
+
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -14,14 +18,16 @@ export function useFacilities(city, district, apiType = "old") {
       setError(null);
 
       try {
-        // ✅ "경기" 또는 "경기도" 포함되면 경기도 전용 API 사용
-        const isGyeonggi = city.includes("경기");
+        let url = "/api/facility";
+        let params = { city, district };
 
-        const url = isGyeonggi ? "/api/gyeonggi-facility" : "/api/facility";
-
-        const params = isGyeonggi
-          ? { city, district, apiType } // 경기도 API는 apiType 필요
-          : { city, district }; // 기존 API는 필요 없음
+        // ✅ 시도명 기반 API 라우팅
+        if (city.includes("경기")) {
+          url = "/api/gyeonggi-facility";
+          params.apiType = apiType;
+        } else if (city.includes("강원")) {
+          url = "/api/gangwon-facility";
+        }
 
         const res = await axios.get(url, { params });
 
