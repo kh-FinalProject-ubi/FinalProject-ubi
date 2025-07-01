@@ -3,8 +3,11 @@ package edu.kh.project.board.model.service;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.board.model.dto.BoardImage;
+import edu.kh.project.board.model.dto.Pagination;
 import edu.kh.project.member.model.dto.Member;
 
 public interface MytownBoardService {
@@ -15,7 +18,8 @@ public interface MytownBoardService {
 	 * @param i
 	 * @return
 	 */
-	 List<Board> getLocalBoardList();
+	 List<Board> getLocalBoardList(int page);
+	 Pagination getPagination(int page);
 	 
 	 
 	/**
@@ -35,6 +39,7 @@ public interface MytownBoardService {
 	    void insertHashtag(int boardNo, String tag);
 
 
-	    void saveImage(BoardImage image) throws IOException;
+	    String saveBoardImage(MultipartFile uploadFile) throws IOException;
+
 }
 

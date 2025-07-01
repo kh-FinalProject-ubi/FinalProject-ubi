@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.board.model.dto.BoardImage;
+import edu.kh.project.board.model.dto.Pagination;
 import edu.kh.project.board.model.mapper.MytownBoardMapper;
 
 @Service
@@ -31,18 +32,39 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 	 * @param regionCity
 	 * @return
 	 */
-    @Override
-    public List<Board> getLocalBoardList() {
-        return mapper.selectLocalBoardList();
-    }
-        
+	@Override
+	public List<Board> getLocalBoardList(int page) {
+	    int listCount = mapper.getBoardLocalListCount(); // 전체 게시글 수 조회
+	    Pagination pagination = new Pagination(page, listCount);
+
+	    int start = (page - 1) * pagination.getLimit();
+	    int limit = pagination.getLimit();
+
+	    return mapper.selectLocalBoardList(start, limit);
+	}
+
+	@Override
+	public Pagination getPagination(int page) {
+		int listCount = mapper.getBoardLocalListCount();
+	    return new Pagination(page, listCount);
+	}
     /** 상세조회
      * 
      */
         @Override
         public Board selectLocalBoardDetail(int boardNo) {
-            return mapper.selectLocalBoardDetail(boardNo);
-        }    
+            Board board = mapper.selectLocalBoardDetail(boardNo);
+            
+            int result = mapper.increaseReadCount(boardNo);
+
+            if (board != null) {
+                List<BoardImage> imageList = mapper.selectBoardImageList(boardNo);
+                board.setImageList(imageList);
+            }
+        
+
+        return board;
+    } 
    
         
      /**
@@ -58,34 +80,6 @@ public class MytownBoardServiceImpl implements MytownBoardService {
             
             int boardNo = mapper.getLastInsertedId();
 
-            if (imageList != null && !imageList.isEmpty()) {
-                int imageOrder = 0;
-
-                for (BoardImage img : imageList) {
-                    MultipartFile uploadFile = img.getUploadFile();
-
-                    if (uploadFile != null && !uploadFile.isEmpty()) {
-                        String originalName = uploadFile.getOriginalFilename();
-                        String rename = UUID.randomUUID().toString() + "_" + originalName;
-
-                        File targetFile = new File(folderPath + rename);
-                        uploadFile.transferTo(targetFile);
-
-                        if (imageOrder > 0) { // 첫 번째 이미지는 썸네일용 (DB 저장 X)
-                            BoardImage boardImage = BoardImage.builder()
-                                    .boardNo(boardNo)
-                                    .imageOrder(imageOrder)
-                                    .imagePath(webPath + rename)
-                                    .imageName(rename)
-                                    .build();
-
-                            mapper.insertBoardImage(boardImage);
-                        }
-
-                        imageOrder++;
-                    }
-                }
-            }
             
             
             // 해시태그 중복 없이 삽입
@@ -100,6 +94,16 @@ public class MytownBoardServiceImpl implements MytownBoardService {
                 
                 
                 
+            }
+            
+
+            // ✅ 이미지 리스트 저장
+            List<BoardImage> imageList = dto.getImageList();
+            if (imageList != null && !imageList.isEmpty()) {
+                for (BoardImage img : imageList) {
+                    img.setBoardNo(boardNo);
+                    mapper.insertBoardImage(img);
+                }
             }
                 return boardNo;
         }
@@ -116,22 +120,20 @@ public class MytownBoardServiceImpl implements MytownBoardService {
             mapper.insertHashtag(boardNo, tag);
         }
 
-        @Override
-        public void saveImage(BoardImage image) throws IOException {
-            MultipartFile uploadFile = image.getUploadFile();
-
-            if (uploadFile != null && !uploadFile.isEmpty()) {
-                String originalName = uploadFile.getOriginalFilename();
-                String rename = UUID.randomUUID().toString() + "_" + originalName;
-
-                File targetFile = new File(folderPath + rename);
-                uploadFile.transferTo(targetFile);
-
-                image.setImageName(rename);
-                image.setImagePath(webPath + rename);
-
-                mapper.insertBoardImage(image);
-            }
+     
 		
+            
+            
+        @Override
+        public String saveBoardImage(MultipartFile uploadFile) throws IOException {
+            String fileName = UUID.randomUUID().toString() + "_" + uploadFile.getOriginalFilename();
+            File file = new File(folderPath + fileName);
+            uploadFile.transferTo(file);
+            return webPath + fileName;
+        }
+        
+        
+        
+        }
 
-        }}
+

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "summernote/dist/summernote-lite.css";
 import $ from "jquery";
@@ -24,7 +24,7 @@ const [starRating, setStarRating] = useState(0); // ⭐ 추가
   const [showBenefitModal, setShowBenefitModal] = useState(false);
 const [selectedFacilityName, setSelectedFacilityName] = useState("");
 const [selectedFacilityId, setSelectedFacilityId] = useState("");
-
+const uploadedImagesRef = useRef([]); // 이미지 경로 저장용
   const handleSubmit = () => {
     //1. 입력하지 않는 경우 alert
     if (!boardTitle.trim()) {
@@ -66,6 +66,13 @@ if (
   return;
 }
 
+// 글쓰기 전송 내부 추가
+const imageList = uploadedImagesRef.current.map((url, index) => ({
+  imagePath: url,
+  imageOrder: index,
+  imageName: url.split("/").pop(), // 파일명만 추출
+}));
+
   // 3. 글쓰기 전송
     // 서버로 전송 (예: POST api/editboard/mytown/write)
     fetch("/api/editboard/mytown/write", {
@@ -79,6 +86,7 @@ if (
         hashtagList,  // ✅ 배열 형태로 전송
         starCount: starRating, // ⭐ 포함
 facilityApiServiceId: selectedFacilityId || null, // 선택 안했을 경우 null
+imageList
       }),
     })
         .then(async res => {
@@ -126,6 +134,8 @@ console.log("hashtags:", hashtags);
           .then(res => res.text())
           .then(imageUrl => {
             $("#summernote").summernote("insertImage", imageUrl, "image");
+
+              uploadedImagesRef.current.push(imageUrl);
           })
           .catch(err => {
             alert("이미지 업로드 실패");
