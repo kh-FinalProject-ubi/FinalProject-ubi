@@ -14,15 +14,15 @@ import { Style, Stroke, Fill } from "ol/style";
 import WelfareCompareView from "./WelfareCompareView";
 import WelfareBenefitView from "./WelfareBenefitView";
 import Spinner from "./Spinner";
-import useBenefitStore from "../stores/useWelfareStore";
+import useLocalBenefitData from "../hook/welfareService/useLocalBenefitData";
 import useAuthStore from "../stores/useAuthStore";
 import useSelectedRegionStore from "../hook/welfarefacility/useSelectedRegionStore";
 import { normalizeSido, normalizeSigungu } from "../utils/regionUtils";
 import "../styles/WelfareMap.css";
-/* ------------------ 공통 유틸 ------------------ */
+
 export const mapCleanFullName = (fullName) => {
   const tokens = fullName.split(" ");
-  if (tokens.length < 2) return fullName; // 시·군·구가 하나뿐인 특수시 등
+  if (tokens.length < 2) return fullName;
   const [sido, sigungu] = tokens;
   return `${normalizeSido(sido)} ${normalizeSigungu(sigungu)}`.trim();
 };
@@ -30,15 +30,12 @@ export const mapCleanFullName = (fullName) => {
 const extractCleanAddress = (rawAddress) =>
   rawAddress?.includes("^^^") ? rawAddress.split("^^^")[1] : rawAddress || "";
 
-/* ------------------ 메인 컴포넌트 ------------------ */
 const WelfareMap = () => {
-  /* refs */
   const mapElement = useRef();
   const mapRef = useRef(null);
   const districtALayerRef = useRef(null);
   const districtBLayerRef = useRef(null);
 
-  /* A·B 지역 상태 */
   const { token, address } = useAuthStore();
   const districtARaw = token
     ? extractCleanAddress(address)
@@ -47,44 +44,11 @@ const WelfareMap = () => {
     () => mapCleanFullName(districtARaw),
     [districtARaw]
   );
-  const [districtB, setDistrictB] = useState(null); // 이미 정규화된 값만 저장
+  const [districtB, setDistrictB] = useState(null);
 
-  /* 스토어 */
-  const { benefitsData, setBenefitsData } = useBenefitStore();
+  const { data: benefitsData, loading: isLoading } = useLocalBenefitData();
   const { setRegion } = useSelectedRegionStore();
-  const [isLoading, setIsLoading] = useState(!benefitsData);
 
-  /* ---------------- 1. 복지 데이터 로드 ---------------- */
-  useEffect(() => {
-    if (benefitsData) return; // 이미 로드됨
-
-    fetch("/api/welfare-curl/welfare-list/all")
-      .then((res) => res.json())
-      .then((data) => {
-        const grouped = {}; // { "경기도 용인특례시": [...] }
-        const items = data?.servList ?? [];
-
-        items.forEach((item) => {
-          const fullName =
-            item.ctpvNm === "세종특별자치시"
-              ? "세종특별자치시"
-              : item.sggNm
-              ? `${item.ctpvNm} ${item.sggNm}`
-              : item.ctpvNm;
-
-          const clean = mapCleanFullName(fullName);
-
-          if (!grouped[clean]) grouped[clean] = [];
-          grouped[clean].push({ ...item, fullNameClean: clean });
-        });
-
-        setBenefitsData(grouped);
-      })
-      .catch((err) => console.error("❌ 복지API 호출 실패:", err))
-      .finally(() => setIsLoading(false));
-  }, []);
-
-  /* ---------------- 2. 지도 초기화 ---------------- */
   useEffect(() => {
     const map = new Map({
       target: mapElement.current,
@@ -105,6 +69,7 @@ const WelfareMap = () => {
     });
 
     mapRef.current = map;
+
     map.on("click", ({ coordinate }) => {
       const [lon, lat] = toLonLat(coordinate);
       reverseGeocode(lon, lat);
@@ -113,7 +78,6 @@ const WelfareMap = () => {
     return () => map.setTarget(null);
   }, []);
 
-  /* ---------------- 3. 역지오코딩 ---------------- */
   const reverseGeocode = (lon, lat) => {
     fetch(`/api/welfare-curl/reverse-geocode?lon=${lon}&lat=${lat}`)
       .then((res) => res.json())
@@ -121,19 +85,19 @@ const WelfareMap = () => {
         const structure = response?.result?.[0]?.structure;
         if (!structure) return;
 
-        setRegion(structure.level1, structure.level2);
-
         const cleanFull = mapCleanFullName(
           `${structure.level1} ${structure.level2}`
         );
 
-        if (cleanFull === normalizedDistrictA) return; // A와 동일 → 무시
+        setRegion(structure.level1, structure.level2);
+
+        if (cleanFull === normalizedDistrictA) return;
+
         displayBPolygon(cleanFull);
       })
-      .catch((err) => console.error("❌ 지오코딩 실패:", err));
+      .catch((err) => console.error("❌ 지오코딩 오류:", err));
   };
 
-  /* ---------------- 4. A·B 폴리곤 표시 ---------------- */
   const displayPolygon = (fullNameClean, color, layerRef) => {
     fetch("/TL_SCCO_SIG_KDJ.json")
       .then((res) => res.json())
@@ -168,28 +132,39 @@ const WelfareMap = () => {
       });
   };
 
-  /* A 지역 최초 표시 */
   useEffect(() => {
     if (mapRef.current)
       displayPolygon(normalizedDistrictA, "#dc3545", districtALayerRef);
   }, [normalizedDistrictA]);
 
-  /* B 지역 표시 */
   const displayBPolygon = (cleanFull) => {
     displayPolygon(cleanFull, "#007bff", districtBLayerRef);
     setDistrictB(cleanFull);
   };
 
-  /* ---------------- 5. 렌더 ---------------- */
+  const listA = useMemo(() => {
+    return benefitsData?.filter(
+      (item) =>
+        `${item.regionCity} ${item.regionDistrict}`.trim() ===
+        normalizedDistrictA
+    );
+  }, [benefitsData, normalizedDistrictA]);
+
+  const listB = useMemo(() => {
+    if (!districtB) return [];
+    return benefitsData?.filter(
+      (item) => `${item.regionCity} ${item.regionDistrict}`.trim() === districtB
+    );
+  }, [benefitsData, districtB]);
+
   return (
     <div>
-      {isLoading && <Spinner />}
       <h2 className="map-title">복지 지도</h2>
 
       <div className="map-wrapper">
-        {/* 지도 */}
+        {isLoading && <Spinner />}
         <div ref={mapElement} className="map-canvas" />
-        {/* 비교 패널 */}
+
         <aside className="benefit-panel">
           <div className="tab">지역</div>
           <div className="content">
@@ -200,7 +175,6 @@ const WelfareMap = () => {
               <div className="compare-text">비교 지역 (B): {districtB}</div>
             )}
 
-            {/* ✅ 여기에 혜택 뷰 컴포넌트 삽입 */}
             {!districtB && (
               <WelfareBenefitView
                 district={normalizedDistrictA}

@@ -4,11 +4,43 @@ import "../styles/WelfareCompareView.css";
 import useAuthStore from "../stores/useAuthStore";
 import { filterBenefitsByStandard } from "../utils/filterBenefitsByStandard";
 
+// ✅ 주소 문자열 정리 함수
+const cleanDistrictName = (name) => name?.trim().normalize("NFC") ?? "";
+
 const WelfareCompareView = ({ districtA, districtB, benefits, isLoading }) => {
   const [selectedDetail, setSelectedDetail] = useState(null);
   const [showAll, setShowAll] = useState(false);
 
   const { token, memberStandard } = useAuthStore();
+
+  const cleanA = cleanDistrictName(districtA);
+  const cleanB = cleanDistrictName(districtB);
+
+  const listA = useMemo(() => {
+    return (benefits ?? []).filter(
+      (item) =>
+        `${item.regionCity} ${item.regionDistrict}`.trim().normalize("NFC") ===
+        cleanA
+    );
+  }, [benefits, cleanA]);
+
+  const listB = useMemo(() => {
+    return (benefits ?? []).filter(
+      (item) =>
+        `${item.regionCity} ${item.regionDistrict}`.trim().normalize("NFC") ===
+        cleanB
+    );
+  }, [benefits, cleanB]);
+
+  const filteredListA = useMemo(
+    () => filterBenefitsByStandard(listA, memberStandard, token, showAll),
+    [listA, memberStandard, token, showAll]
+  );
+
+  const filteredListB = useMemo(
+    () => filterBenefitsByStandard(listB, memberStandard, token, showAll),
+    [listB, memberStandard, token, showAll]
+  );
 
   const fetchDetail = async (servId) => {
     try {
@@ -22,26 +54,9 @@ const WelfareCompareView = ({ districtA, districtB, benefits, isLoading }) => {
     }
   };
 
-  const cleanA =
-    districtA?.trim().normalize("NFC") || (!token && "서울특별시 종로구");
-  const cleanB = districtB?.trim().normalize("NFC");
-
-  const listA = benefits[cleanA] || [];
-  const listB = benefits[cleanB] || [];
-
-  const filteredListA = useMemo(
-    () => filterBenefitsByStandard(listA, memberStandard, token, showAll),
-    [listA, memberStandard, token, showAll]
-  );
-
-  const filteredListB = useMemo(
-    () => filterBenefitsByStandard(listB, memberStandard, token, showAll),
-    [listB, memberStandard, token, showAll]
-  );
-
   if (isLoading) return <p>복지 데이터를 불러오는 중입니다...</p>;
 
-  if (filteredListA.length === 0 || filteredListB.length === 0) {
+  if (!filteredListA.length || !filteredListB.length) {
     return <p>복지 혜택 데이터가 부족하여 비교할 수 없습니다.</p>;
   }
 
