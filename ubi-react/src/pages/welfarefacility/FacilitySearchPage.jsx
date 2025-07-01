@@ -20,9 +20,120 @@ export default function FacilitySearchPage() {
   const [keyword, setKeyword] = useState("");
   const [category, setCategory] = useState("전체");
   const [serviceType, setServiceType] = useState("전체");
-
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 25;
+
+  const [selectedCity, setSelectedCity] = useState("");
+  const [availableDistricts, setAvailableDistricts] = useState([]);
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+
+  const regionMap = {
+    서울특별시: [
+      "종로구",
+      "중구",
+      "용산구",
+      "성동구",
+      "광진구",
+      "동대문구",
+      "중랑구",
+      "성북구",
+      "강북구",
+      "도봉구",
+      "노원구",
+      "은평구",
+      "서대문구",
+      "마포구",
+      "양천구",
+      "강서구",
+      "구로구",
+      "금천구",
+      "영등포구",
+      "동작구",
+      "관악구",
+      "서초구",
+      "강남구",
+      "송파구",
+      "강동구",
+    ],
+    경기도: [
+      "수원시",
+      "성남시",
+      "고양시",
+      "용인시",
+      "부천시",
+      "화성시",
+      "남양주시",
+      "안산시",
+      "안양시",
+      "평택시",
+      "의정부시",
+      "시흥시",
+      "파주시",
+      "김포시",
+      "광명시",
+      "군포시",
+      "하남시",
+      "오산시",
+      "이천시",
+      "안성시",
+      "구리시",
+      "포천시",
+      "의왕시",
+      "여주시",
+      "양평군",
+    ],
+    강원도: [
+      "춘천시",
+      "원주시",
+      "강릉시",
+      "동해시",
+      "태백시",
+      "속초시",
+      "삼척시",
+      "홍천군",
+      "횡성군",
+      "영월군",
+      "평창군",
+      "정선군",
+      "철원군",
+      "화천군",
+      "양구군",
+      "인제군",
+      "고성군",
+      "양양군",
+    ],
+  };
+
+  // ✅ 초기 선택된 시/군/구 설정
+  useEffect(() => {
+    if (!memberLoading) {
+      const fallbackCity = "서울특별시";
+      const fallbackDistrict = "종로구";
+
+      const city =
+        member?.memberAddressCity || selectedCityFromStore || fallbackCity;
+
+      const district =
+        member?.memberAddressDistrict ||
+        selectedDistrictFromStore ||
+        fallbackDistrict;
+
+      setSelectedCity(city);
+      setAvailableDistricts(regionMap[city] || []);
+      setSelectedDistrict(
+        (regionMap[city]?.includes(district) && district) ||
+          regionMap[city]?.[0] ||
+          fallbackDistrict
+      );
+    }
+  }, [member, memberLoading, selectedCityFromStore, selectedDistrictFromStore]);
+
+  // ✅ 지역 상태 설정
+  useEffect(() => {
+    if (selectedCity && selectedDistrict) {
+      setRegion({ city: selectedCity, district: selectedDistrict });
+    }
+  }, [selectedCity, selectedDistrict]);
 
   const categoryMap = {
     체육시설: ["체육시설", "테니스장", "다목적경기장"],
@@ -63,16 +174,7 @@ export default function FacilitySearchPage() {
     );
   };
 
-  useEffect(() => {
-    if (!memberLoading) {
-      const city =
-        member?.memberAddressCity || selectedCityFromStore || "서울특별시";
-      const district =
-        member?.memberAddressDistrict || selectedDistrictFromStore || "종로구";
-      setRegion({ city, district });
-    }
-  }, [member, memberLoading, selectedCityFromStore, selectedDistrictFromStore]);
-
+  // ✅ API 호출
   const {
     data: welfareData,
     loading: welfareLoading,
@@ -119,8 +221,35 @@ export default function FacilitySearchPage() {
 
       <div className="filter-bar">
         <div className="filter-row">
-          <div className="region-text">
-            {region.city?.split("^^^")[1] || region.city} {region.district}
+          <div className="region-select-row">
+            <select
+              value={selectedCity}
+              onChange={(e) => {
+                const city = e.target.value;
+                setSelectedCity(city);
+                setAvailableDistricts(regionMap[city] || []);
+                setSelectedDistrict(regionMap[city]?.[0] || "");
+              }}
+            >
+              <option value="">시도 선택</option>
+              {Object.keys(regionMap).map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={selectedDistrict}
+              onChange={(e) => setSelectedDistrict(e.target.value)}
+              disabled={!selectedCity}
+            >
+              {availableDistricts.map((district) => (
+                <option key={district} value={district}>
+                  {district}
+                </option>
+              ))}
+            </select>
           </div>
 
           <input

@@ -69,9 +69,11 @@ public class GyeonggiFacility {
     private String department;
 
     @JsonProperty("DETAIL_TELNO")
+    @JsonAlias({"TELNO_INFO"})	
     private String tel;
 
     @JsonProperty("HMPG_ADDR")
+    @JsonAlias({"HMPG_URL"})	
     private String homepage;
 
     @JsonProperty("REFINE_ROADNM_ADDR")
