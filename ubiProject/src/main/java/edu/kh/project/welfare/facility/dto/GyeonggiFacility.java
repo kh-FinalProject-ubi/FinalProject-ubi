@@ -1,8 +1,8 @@
 package edu.kh.project.welfare.facility.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
 import lombok.Data;
 
@@ -11,6 +11,7 @@ import lombok.Data;
 public class GyeonggiFacility {
 
 	@JsonProperty("FACLT_NM")
+	@JsonAlias({"BIZPLC_NM","INST_NM"})	
     private String facilityName;
 	
 	@JsonProperty("OPEN_FACLT_NM")
@@ -94,4 +95,8 @@ public class GyeonggiFacility {
     // 내부 주소 기반 필터용
     private String regionCity;
     private String regionDistrict;
+    
+    private String apiType;
+    private String type;          // 서비스 대상 (노인, 아동 등)
+   
 }

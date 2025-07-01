@@ -21,89 +21,164 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GyeonggiFacilityServiceImpl implements GyeonggiFacilityService {
 
-	@Value("${gyeonggi.api.key}")
-	private String serviceKey;
+    @Value("${gyeonggi.api.key}")
+    private String serviceKey;
 
-	// ✅ API 유형별 URL
-	private String getApiUrl(String apiType) {
-		return switch (apiType) {
-		case "old" -> "https://openapi.gg.go.kr/HtygdWelfaclt?KEY=%s";
-		case "child" -> "https://openapi.gg.go.kr/Childwelfarefaclt?KEY=%s";
-		case "public" -> "https://openapi.gg.go.kr/PublicFacilityOpening?KEY=%s";
-		default -> throw new IllegalArgumentException("지원하지 않는 API 유형: " + apiType);
-		};
-	}
+    private String getApiUrl(String apiType) {
+        return switch (apiType) {
+            case "old" -> "https://openapi.gg.go.kr/HtygdWelfaclt?KEY=%s";
+            case "old2" -> "https://openapi.gg.go.kr/SenircentFaclt?KEY=%s";
+            case "old3" -> "https://openapi.gg.go.kr/OldpsnLsrWelfaclt?KEY=%s";
+            case "child" -> "https://openapi.gg.go.kr/Childwelfarefaclt?KEY=%s";
+            case "public" -> "https://openapi.gg.go.kr/PublicFacilityOpening?KEY=%s";
+            case "disabled" -> "https://openapi.gg.go.kr/Ggminddspsnreturn?KEY=%s";
+            case "disabled2" -> "https://openapi.gg.go.kr/Ggdspsnrelatefaclt?KEY=%s";
+            default -> throw new IllegalArgumentException("지원하지 않는 API 유형: " + apiType);
+        };
+    }
 
-	// ✅ 문자열 정규화
-	private String normalize(String str) {
-		if (str == null)
-			return "";
-		return str.replaceAll("\\s+", "").trim().toLowerCase();
-	}
+    private String normalize(String str) {
+        if (str == null) return "";
+        return str.replaceAll("\\s+", "").trim().toLowerCase();
+    }
 
-	@Override
-	public List<GyeonggiFacility> getFacilitiesByRegion(String city, String district, String apiType) {
-		String cleanCity = city.contains("^^^") ? city.split("\\^\\^\\^")[1] : city;
-		if ("경기".equals(cleanCity))
-			cleanCity = "경기도";
+    @Override
+    public List<GyeonggiFacility> getFacilitiesByRegion(String city, String district) {
+        List<GyeonggiFacility> totalFacilities = new ArrayList<>();
 
-		log.debug("🧪 정제된 city: {}, district: {}", cleanCity, district);
+        for (String apiType : List.of("old", "old2", "old3", "child", "public", "disabled", "disabled2")) {
+            List<GyeonggiFacility> oneTypeList = fetchFromApi(city, district, apiType);
+            totalFacilities.addAll(oneTypeList);
+        }
 
-		String baseUrl = getApiUrl(apiType);
-		List<GyeonggiFacility> allFacilities = new ArrayList<>();
-		int page = 1;
-		int pageSize = 1000; // 최대값
+        log.info("✅ 전체 병합된 시설 수: {}", totalFacilities.size());
+        return totalFacilities;
+    }
 
-		try {
-			RestTemplate restTemplate = new RestTemplate();
-			restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
-			XmlMapper xmlMapper = new XmlMapper();
+    private List<GyeonggiFacility> fetchFromApi(String city, String district, String apiType) {
+        String cleanCity = city.contains("^^^") ? city.split("\\^\\^\\^")[1] : city;
+        if ("경기".equals(cleanCity)) cleanCity = "경기도";
 
-			while (true) {
-				String url = String.format("%s&Type=xml&pIndex=%d&pSize=%d", String.format(baseUrl, serviceKey), page,
-						pageSize);
-				log.info("📡 API 호출 URL: {}", url);
+        log.debug("🔍 [API:{}] 정제된 city: {}, district: {}", apiType, cleanCity, district);
 
-				String xml = restTemplate.getForObject(url, String.class);
-				JsonNode root = xmlMapper.readTree(xml);
-				JsonNode rowNode = root.get("row");
+        String baseUrl = getApiUrl(apiType);
+        List<GyeonggiFacility> allFacilities = new ArrayList<>();
+        int page = 1;
+        int pageSize = 1000;
 
-				if (rowNode == null || !rowNode.isArray() || rowNode.size() == 0) {
-					log.info("🔚 더 이상 데이터 없음. page={}", page);
-					break;
-				}
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
+            XmlMapper xmlMapper = new XmlMapper();
 
-				for (JsonNode node : rowNode) {
-					GyeonggiFacility facility = xmlMapper.treeToValue(node, GyeonggiFacility.class);
-					if (facility.getFacilityName() == null || facility.getRefineRoadnmAddr() == null)
-						continue;
-					allFacilities.add(facility);
-				}
+            while (true) {
+                String url = String.format("%s&Type=xml&pIndex=%d&pSize=%d", String.format(baseUrl, serviceKey), page, pageSize);
+                log.info("📡 [{}] API 호출 URL: {}", apiType, url);
 
-				log.info("📄 page {} 완료. 누적 개수: {}", page, allFacilities.size());
+                String xml = restTemplate.getForObject(url, String.class);
+                JsonNode root = xmlMapper.readTree(xml);
+                JsonNode rowNode = root.get("row");
 
-				// 다음 페이지로
-				page++;
-			}
+                if (rowNode == null || !rowNode.isArray() || rowNode.size() == 0) {
+                    log.info("🔚 [{}] 더 이상 데이터 없음. page={}", apiType, page);
+                    break;
+                }
 
-			// ✅ 주소 기준 필터링
-			String normDistrict = normalize(district);
-			List<GyeonggiFacility> filtered = new ArrayList<>();
-			for (GyeonggiFacility facility : allFacilities) {
-				String addressNorm = normalize(facility.getRefineRoadnmAddr());
-				if (addressNorm.contains(normDistrict)) {
-					facility.setRegionCity(cleanCity);
-					facility.setRegionDistrict(district);
-					filtered.add(facility);
-				}
-			}
+                for (JsonNode node : rowNode) {
+                    GyeonggiFacility facility = new GyeonggiFacility();
 
-			log.info("✅ 최종 필터링된 시설 수: {}", filtered.size());
-			return filtered;
+                    log.info("📞 DETAIL_TELNO: {}", node.get("DETAIL_TELNO"));
+                    
+                    if (node.has("FACLT_NM")) {
+                        facility.setFacilityName(node.get("FACLT_NM").asText());
+                    } else if (node.has("OPEN_FACLT_NM")) {
+                        facility.setFacilityName(node.get("OPEN_FACLT_NM").asText());
+                    } else if (node.has("BIZPLC_NM")) {
+                        facility.setFacilityName(node.get("BIZPLC_NM").asText());
+                    }
 
-		} catch (Exception e) {
-			log.error("💥 API 처리 실패", e);
-			return Collections.emptyList();
-		}
-	}
+                    if (node.has("REFINE_ROADNM_ADDR")) {
+                        facility.setRefineRoadnmAddr(node.get("REFINE_ROADNM_ADDR").asText());
+                    } else if (node.has("REFINE_LOTNO_ADDR")) {
+                        facility.setRefineRoadnmAddr(node.get("REFINE_LOTNO_ADDR").asText());
+                    }
+
+                    if (node.has("REFINE_WGS84_LAT")) {
+                        facility.setLat(node.get("REFINE_WGS84_LAT").asText());
+                    }
+                    if (node.has("REFINE_WGS84_LOGT")) {
+                        facility.setLng(node.get("REFINE_WGS84_LOGT").asText());
+                    }
+                    if (node.has("DETAIL_TELNO")) {
+                        facility.setTel(node.get("DETAIL_TELNO").asText());
+                    } else if (node.has("TELNO")) {
+                        facility.setTel(node.get("TELNO").asText());
+                    } else if (node.has("PHONE")) {
+                        facility.setTel(node.get("PHONE").asText());
+                    }
+                    if (node.has("HMPG_ADDR")) {
+                        facility.setHomepage(node.get("HMPG_ADDR").asText());
+                    } else if (node.has("SVCURL")) {
+                        facility.setHomepage(node.get("SVCURL").asText());
+                    }
+
+                    facility.setApiType(apiType);
+
+                    // ✅ 핵심: apiType에 따른 type/category 매핑
+                    switch (apiType) {
+                        case "old", "old2", "old3" -> {
+                            facility.setType("노인");
+                            facility.setCategory("요양시설");
+                        }
+                        case "child" -> {
+                            facility.setType("아동");
+                            facility.setCategory("행정시설");
+                        }
+                        case "public" -> {
+                            facility.setType("전체");
+                            facility.setCategory("행정시설");
+                        }
+                        case "disabled", "disabled2" -> {
+                            facility.setType("장애인");
+                            facility.setCategory("의료시설");
+                        }
+                        default -> {
+                            facility.setType("전체");
+                            facility.setCategory("기타");
+                        }
+                    }
+
+                    if (facility.getFacilityName() == null || facility.getRefineRoadnmAddr() == null)
+                        continue;
+
+                    allFacilities.add(facility);
+                }
+
+                log.info("📄 [{}] page {} 완료. 누적 개수: {}", apiType, page, allFacilities.size());
+                page++;
+            }
+
+            String simplifiedDistrict = district.contains(" ") ? district.split(" ")[0] : district;
+            String normCity = normalize(cleanCity);
+            String normDistrict = normalize(simplifiedDistrict);
+
+            List<GyeonggiFacility> filtered = new ArrayList<>();
+            for (GyeonggiFacility facility : allFacilities) {
+                String addressNorm = normalize(facility.getRefineRoadnmAddr());
+
+                if (addressNorm.contains(normCity) && addressNorm.contains(normDistrict)) {
+                    facility.setRegionCity(cleanCity);
+                    facility.setRegionDistrict(district);
+                    filtered.add(facility);
+                }
+            }
+
+            log.info("✅ [{}] 필터링된 시설 수: {}", apiType, filtered.size());
+            return filtered;
+
+        } catch (Exception e) {
+            log.error("💥 [{}] API 처리 실패", apiType, e);
+            return Collections.emptyList();
+        }
+    }
 }

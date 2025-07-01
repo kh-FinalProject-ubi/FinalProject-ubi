@@ -49,7 +49,7 @@ const BoardDetail = () => {
 
         if (
           boardCode === 2 &&
-          !(loginMemberNo === boardData.memberNo || authority === "ADMIN")
+          !(loginMemberNo === boardData.memberNo || authority === "2")
         ) {
           if (!hasAlerted) {
             alert("해당 게시글을 볼 권한이 없습니다.");
@@ -94,7 +94,7 @@ const BoardDetail = () => {
   if (loading || !board) return null;
 
   const isWriter = loginMemberNo === board.memberNo;
-  const isAdmin = authority === "ADMIN";
+  const isAdmin = authority === "2" || authority === "ADMIN";
   const isNotice = board.boardType === 1;
 
   return (
@@ -102,6 +102,7 @@ const BoardDetail = () => {
       <h1>{isNotice ? "공지게시판" : "문의게시판"}</h1>
 
       <section className="board-view">
+        <h2>[{board.postType}]</h2>
         <h2 className="view-title">{board.boardTitle}</h2>
         <div className="content-box">
           <div

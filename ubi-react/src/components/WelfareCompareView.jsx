@@ -22,7 +22,8 @@ const WelfareCompareView = ({ districtA, districtB, benefits, isLoading }) => {
     }
   };
 
-  const cleanA = districtA?.trim().normalize("NFC");
+  const cleanA =
+    districtA?.trim().normalize("NFC") || (!token && "서울특별시 종로구");
   const cleanB = districtB?.trim().normalize("NFC");
 
   const listA = benefits[cleanA] || [];
