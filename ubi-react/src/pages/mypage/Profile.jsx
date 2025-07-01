@@ -7,6 +7,33 @@ import LoadingOverlay from '../../components/Loading';
 import { div } from 'framer-motion/client';
 import DaumPostcode from "react-daum-postcode";
 
+const parseMemberStandardCode = (code) => {
+  switch (code) {
+    case "A": return { main: "일반", isDisabled: true, isPregnant: true };
+    case "B": return { main: "노인", isDisabled: true, isPregnant: true };
+    case "C": return { main: "청년", isDisabled: true, isPregnant: true };
+    case "D": return { main: "아동", isDisabled: true, isPregnant: true };
+
+    case "E": return { main: "일반", isDisabled: false, isPregnant: true };
+    case "F": return { main: "노인", isDisabled: false, isPregnant: true };
+    case "G": return { main: "청년", isDisabled: false, isPregnant: true };
+    case "H": return { main: "아동", isDisabled: false, isPregnant: true };
+
+    case "I": return { main: "일반", isDisabled: true, isPregnant: false };
+    case "J": return { main: "노인", isDisabled: true, isPregnant: false };
+    case "K": return { main: "청년", isDisabled: true, isPregnant: false };
+    case "L": return { main: "아동", isDisabled: true, isPregnant: false };
+
+    case "0": return { main: "일반", isDisabled: false, isPregnant: false };
+    case "1": return { main: "노인", isDisabled: false, isPregnant: false };
+    case "2": return { main: "청년", isDisabled: false, isPregnant: false };
+    case "3": return { main: "아동", isDisabled: false, isPregnant: false };
+
+    default:
+      return { main: "일반", isDisabled: false, isPregnant: false };
+  }
+};
+
 const Profile = () => {
   
   const { memberNo } = useAuthStore(); // Zustand에서 회원 정보 가져옴
@@ -22,26 +49,17 @@ const Profile = () => {
   const [zipcode2, setZipcode2] = useState('');
   const [baseAddress2, setBaseAddress2] = useState('');
   const [detailAddress2, setDetailAddress2] = useState('');
+  const [addressTarget, setAddressTarget] = useState("main");
 
-  const memberStandardMap = {
-    "0": "일반",
-    "1": "노인",
-    "2": "청년",
-    "3": "아동",
-    "4": "노인+장애인",
-    "5": "청년+장애인",
-    "6": "아동+장애인",
-    "7": "장애인",
-    A: "임산부",
-    B: "임산부+장애인",
-    C: "임산부+청년",
-    D: "임산부+아동",
-    E: "임산부+노인",
-    F: "임산부+노인+장애인"
-  };
+  const [memberStandard, setMemberStandard] = useState('0'); 
+  const [mainType, setMainType] = useState(null); // 라디오
+  const [disabled, setDisabled] = useState(false); // 체크박스
+  const [pregnant, setPregnant] = useState(false); // 체크박스
+  const parsed = parseMemberStandardCode(member?.memberStandard || "0");
 
+
+  
   const [editMode, setEditMode] = useState(false);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const detailAddressRef = useRef(null);
 
 
@@ -79,6 +97,14 @@ const Profile = () => {
       if (res.status === 200) {
         setMember(res.data);
       }
+
+      const { main, isDisabled, isPregnant } = parseMemberStandardCode(member.memberStandard);
+
+      setMemberStandard(member.memberStandard);
+      setMainType(main);
+      setDisabled(isDisabled);
+      setPregnant(isPregnant);
+
     } catch (err) {
       console.error("기본정보 조회 중 예외 발생 : ", err);
     }
@@ -87,25 +113,32 @@ const Profile = () => {
   // 내 정보 수정
   const saveMemberData = async () => {
     try {
-      // 주소 합치기
       const fullAddress = `${zipcode}^^^${baseAddress}^^^${detailAddress}`;
       const fullAddress2 = `${zipcode2}^^^${baseAddress2}^^^${detailAddress2}`;
 
-      // 유형 합치기
-      const code = getMemberStandardCode(member.memberStandard, isDisabled, isPregnant);
+      const code = getMemberStandardCode(mainType, disabled, pregnant);
 
       const payload = {
         ...member,
-        memberAddress : fullAddress,
-        memberTaddress : fullAddress2,
-        memberStandard : code
+        memberAddress: fullAddress,
+        memberTaddress: fullAddress2,
+        memberStandard: code,
       };
 
-      console.log(payload);
-      
-      await axios.post("/api/myPage/update", payload, {headers: { Authorization: `Bearer ${token}` }});
-      alert("수정되었습니다.");
-      setEditMode(false);
+      console.log("저장 payload:", payload);
+
+      const res = await axios.post("/api/myPage/update", payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // 저장 성공 확인
+      if (res.status === 200) {
+        alert("수정되었습니다.");
+        await getMemberData(); // ⬅️ 최신 데이터 다시 가져오기
+        setEditMode(false);
+      } else {
+        alert("수정에 실패했습니다.");
+      }
     } catch (err) {
       console.error(err);
       alert("수정에 실패했습니다.");
@@ -174,83 +207,124 @@ const Profile = () => {
 
   // 주소 분리
   useEffect(() => {
-    if (member?.memberAddress) {
+    if (typeof member?.memberAddress === "string" && member.memberAddress) {
       const [zip, base, detail] = member.memberAddress.split("^^^");
       setZipcode(zip);
       setBaseAddress(base);
       setDetailAddress(detail);
-      console.log("주소 분리됨:", zip, base, detail);
+      console.log("기본 주소 분리됨:", zip, base, detail);
+    } else {
+      // 주소 없으면 빈값 초기화
+      setZipcode("");
+      setBaseAddress("");
+      setDetailAddress("");
     }
   }, [member]);
 
   // 임시 주소 분리
   useEffect(() => {
-    if (member?.memberTaddress) {
-      const [zip, base, detail] = member.memberAddress.split("^^^");
+    if (typeof member?.memberTaddress === "string" && member.memberTaddress) {
+      const [zip, base, detail] = member.memberTaddress.split("^^^");
       setZipcode2(zip);
       setBaseAddress2(base);
       setDetailAddress2(detail);
-      console.log("주소 분리됨:", zip, base, detail);
+      console.log("임시 주소 분리됨:", zip, base, detail);
+    } else {
+      // 주소 없으면 빈값 초기화
+      setZipcode2("");
+      setBaseAddress2("");
+      setDetailAddress2("");
     }
   }, [member]);
 
-  const openPostcodePopup = (addressType) => {
-    new daum.Postcode({
-      oncomplete: (data) => handleComplete(data, addressType)
+  // 주소 수정
+  const openPostcodePopup = (target) => {
+    new window.daum.Postcode({
+      oncomplete: function (data) {
+        let fullAddress = data.address;
+        let extraAddress = "";
+
+        if (data.addressType === "R") {
+          if (data.bname !== "") {
+            extraAddress += data.bname;
+          }
+          if (data.buildingName !== "") {
+            extraAddress += extraAddress !== "" ? `, ${data.buildingName}` : data.buildingName;
+          }
+          if (extraAddress !== "") {
+            fullAddress += ` (${extraAddress})`;
+          }
+        }
+
+        if (target === "main") {
+          setZipcode(data.zonecode);
+          setBaseAddress(fullAddress);
+        } else if (target === "temp") {
+          setZipcode2(data.zonecode);
+          setBaseAddress2(fullAddress);
+        }
+
+        if (detailAddressRef.current) {
+          detailAddressRef.current.focus();
+        }
+      }
     }).open();
   };
 
-  // 주소 수정
-  const handleComplete = (data, addressType) => {
-  let fullAddress = data.address;
-  let extraAddress = "";
+  const handleEdit = () => {
+    // memberStandard 값 파싱
+    const parsed = parseMemberStandardCode(member.memberStandard);
 
-  if (data.addressType === "R") {
-    if (data.bname !== "") {
-      extraAddress += data.bname;
-    }
-    if (data.buildingName !== "") {
-      extraAddress += extraAddress !== "" ? `, ${data.buildingName}` : data.buildingName;
-    }
-    if (extraAddress !== "") {
-      fullAddress += ` (${extraAddress})`;
-    }
+    setMainType(parsed.main || "일반");
+    setDisabled(parsed.isDisabled);
+    setPregnant(parsed.isPregnant);
 
-  }
-  
-  if (addressType === "main") {
-      setZipcode(data.zonecode);
-      setBaseAddress(fullAddress);
-    } else if (addressType === "temp") {
-      setZipcode2(data.zonecode);
-      setBaseAddress2(fullAddress);
-    }
-    setIsPopupOpen(false);
-
-    if (detailAddressRef.current) {
-      detailAddressRef.current.focus();
-    }
+    setEditMode(true);
   };
 
-
   const getMemberStandardCode = (main, isDisabled, isPregnant) => {
-    if (isPregnant && !main && !isDisabled) return "A";
-    if (isPregnant && isDisabled && !main) return "B";
-    if (isPregnant && main === "청년") return "C";
-    if (isPregnant && main === "아동") return "D";
-    if (isPregnant && main === "노인") return "E";
-    if (isPregnant && isDisabled && main === "노인") return "F";
+    if (main === "일반" && isDisabled && isPregnant) return "A";
+    if (main === "노인" && isDisabled && isPregnant) return "B";
+    if (main === "청년" && isDisabled && isPregnant) return "C";
+    if (main === "아동" && isDisabled && isPregnant) return "D";
 
-    if (main === "노인" && isDisabled) return "4";
-    if (main === "청년" && isDisabled) return "5";
-    if (main === "아동" && isDisabled) return "6";
+    if (main === "일반" && isPregnant) return "E";
+    if (main === "노인" && isPregnant) return "F";
+    if (main === "청년" && isPregnant) return "G";
+    if (main === "아동" && isPregnant) return "H";
 
+    if (main === "일반" && isDisabled) return "I";
+    if (main === "노인" && isDisabled) return "J";
+    if (main === "청년" && isDisabled) return "K";
+    if (main === "아동" && isDisabled) return "L";
+
+    if (main === "일반") return "0";
     if (main === "노인") return "1";
     if (main === "청년") return "2";
     if (main === "아동") return "3";
-    if (isDisabled) return "7";
+  };
 
-    return "0"; // 일반
+
+  const getMemberStandardLabel = (code) => {
+    const { main, isDisabled, isPregnant } = parseMemberStandardCode(code);
+
+    let labels = [];
+
+    if (main) {
+      labels.push(main);
+    } else {
+      labels.push("일반");
+    }
+
+    if (isDisabled) {
+      labels.push("장애인");
+    }
+
+    if (isPregnant) {
+      labels.push("임산부");
+    }
+
+    return labels.join(", ");
   };
 
   useEffect(() => {
@@ -292,7 +366,7 @@ const Profile = () => {
                     </li>
                     <li>
                       <strong>카카오 아이디</strong>
-                      <p>{member.kakaoId ? member.kakaoId : "없음"}</p>
+                      <p>{member.kakaoId ? "연동 가능" : "없음"}</p>
                     </li>
                     <li>
                       <strong>닉네임</strong>
@@ -326,18 +400,41 @@ const Profile = () => {
                     </li>
                     <li>
                       <strong>회원 유형</strong>
-                      <select
-                        value={member.memberStandard}
-                        onChange={(e) =>
-                          setMember({ ...member, memberStandard: e.target.value })
-                        }
-                      >
-                        {Object.entries(memberStandardMap).map(([code, label]) => (
-                          <option key={code} value={code}>
-                            {label}
-                          </option>
+                      {/* 라디오 버튼 */}
+                      <div>
+                        {["일반", "노인", "청년", "아동"].map((type) => (
+                          <label key={type}>
+                            <input
+                              type="radio"
+                              name="mainType"
+                              value={type}
+                              checked={mainType === type}
+                              onChange={() => setMainType(type)}
+                            />
+                            {type}
+                          </label>
                         ))}
-                      </select>
+                      </div>
+
+                      {/* 체크박스 */}
+                      <div>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={disabled}
+                            onChange={(e) => setDisabled(e.target.checked)}
+                          />
+                          장애인
+                        </label>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={pregnant}
+                            onChange={(e) => setPregnant(e.target.checked)}
+                          />
+                          임산부
+                        </label>
+                      </div>
                     </li>
                     <li>
                       <strong>가입일</strong>
@@ -351,126 +448,98 @@ const Profile = () => {
                     </li>
                     <li>
                       <strong>주소</strong>
-                        <>
-                          <div style={{ marginBottom: '8px' }}>
-                            <button type="button" onClick={() => openPostcodePopup("main")}>
-                              우편번호 검색
-                            </button>
-                          </div>
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            openPostcodePopup("main");
+                          }}
+                        >
+                          우편번호 검색
+                        </button>
 
-                          <input
-                            value={zipcode}
-                            placeholder="우편번호"
-                            readOnly
-                            style={{ backgroundColor: '#f1f1f1', cursor: 'default' }}
-                          />
+                        <input
+                          value={zipcode}
+                          placeholder="우편번호"
+                          readOnly
+                          style={{ backgroundColor: '#f1f1f1', cursor: 'default' }}
+                        />
 
-                          <input
-                            value={baseAddress}
-                            placeholder="기본 주소"
-                            readOnly
-                            style={{ backgroundColor: '#f1f1f1', cursor: 'default' }}
-                          />
+                        <input
+                          value={baseAddress}
+                          placeholder="기본 주소"
+                          readOnly
+                          style={{ backgroundColor: '#f1f1f1', cursor: 'default' }}
+                        />
 
-                          <input
-                            ref={detailAddressRef}
-                            value={detailAddress}
-                            onChange={(e) => setDetailAddress(e.target.value)}
-                            placeholder="상세 주소"
-                          />
-
-                          {isPopupOpen && (
-                            <div style={{ position: "relative", zIndex: 1000 }}>
-                              <DaumPostcode
-                                onComplete={handleComplete}
-                                autoClose
-                                style={{ position: "absolute" }}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setIsPopupOpen(false)}
-                                style={{
-                                  position: "absolute",
-                                  top: 0,
-                                  right: 0,
-                                  zIndex: 1001
-                                }}
-                              >
-                                닫기
-                              </button>
-                            </div>
-                          )}
-                        </>
+                        <input
+                          ref={detailAddressRef}
+                          value={detailAddress}
+                          onChange={(e) => setDetailAddress(e.target.value)}
+                          placeholder="상세 주소"
+                        />
+                      </>
                     </li>
+
                     <li>
                       <strong>임시주소</strong>
-                        <>
-                          <div style={{ marginBottom: '8px' }}>
-                            <button type="button" onClick={() => openPostcodePopup("temp")}>
-                              우편번호 검색
-                            </button>
-                          </div>
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            openPostcodePopup("temp");
+                          }}
+                        >
+                          우편번호 검색
+                        </button>
 
-                          <input
-                            value={zipcode2}
-                            placeholder="우편번호"
-                            readOnly
-                            style={{ backgroundColor: '#f1f1f1', cursor: 'default' }}
-                          />
+                        <input
+                          value={zipcode2}
+                          placeholder="우편번호"
+                          readOnly
+                          style={{ backgroundColor: '#f1f1f1', cursor: 'default' }}
+                        />
 
-                          <input
-                            value={baseAddress2}
-                            placeholder="기본 주소"
-                            readOnly
-                            style={{ backgroundColor: '#f1f1f1', cursor: 'default' }}
-                          />
+                        <input
+                          value={baseAddress2}
+                          placeholder="기본 주소"
+                          readOnly
+                          style={{ backgroundColor: '#f1f1f1', cursor: 'default' }}
+                        />
 
-                          <input
-                            ref={detailAddressRef}
-                            value={detailAddress2}
-                            onChange={(e) => setDetailAddress(e.target.value)}
-                            placeholder="상세 주소"
-                          />
-
-                          {isPopupOpen && (
-                            <div style={{ position: "relative", zIndex: 1000 }}>
-                              <DaumPostcode
-                                onComplete={handleComplete}
-                                autoClose
-                                style={{ position: "absolute" }}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setIsPopupOpen(false)}
-                                style={{
-                                  position: "absolute",
-                                  top: 0,
-                                  right: 0,
-                                  zIndex: 1001
-                                }}
-                              >
-                                닫기
-                              </button>
-                            </div>
-                          )}
-                        </>
+                        <input
+                          ref={detailAddressRef}
+                          value={detailAddress2}
+                          onChange={(e) => setDetailAddress2(e.target.value)}
+                          placeholder="상세 주소"
+                        />
+                      </>
                     </li>
                   </>
                 ) : (
                   <>
                     <li><strong>아이디</strong> {member.memberId}</li>
-                    <li><strong>카카오아이디</strong> {member.kakaoId ? member.kakaoId : "없음"}</li>
+                    <li><strong>카카오아이디</strong> {member.kakaoId ? "연동 가능" : "없음"}</li>
                     <li><strong>닉네임</strong> {member.memberNickname}</li>
                     <li><strong>전화번호</strong> {member.memberTel}</li>
                     <li><strong>이메일</strong> {member.memberEmail}</li>
-                    <li><strong>회원유형</strong> {memberStandardMap[member.memberStandard] || "없음"}</li>
+                    <li className="member-standard-view">
+                      <strong>회원유형</strong>
+                      <div className="member-standard-labels">
+                        <span className="main-type">
+                          {mainType || "일반"}
+                        </span>
+                        {disabled && <span className="tag-disabled">장애인</span>}
+                        {pregnant && <span className="tag-pregnant">임산부</span>}
+                      </div>
+                    </li>
                     <li><strong>가입일</strong> {member.enrollDate}</li>
                     <li><strong>주소</strong> 
                     <p>우편번호 : {zipcode}</p>
                     <p>주소 : {baseAddress}</p>
                     <p>상세주소 : {detailAddress}</p>
                     </li>
-                    <li><strong>임시</strong> 
+                    <li><strong>임시 주소</strong> 
                     <p>우편번호 : {zipcode2 ? zipcode2 : "없음"}</p>
                     <p>주소 : {baseAddress2 ? baseAddress2 : "없음"}</p>
                     <p>상세주소 : {detailAddress2 ? detailAddress2 : "없음"}</p>
@@ -482,7 +551,7 @@ const Profile = () => {
               {editMode ? (
                 <button onClick={saveMemberData}>저장</button>
               ) : (
-                <button onClick={() => setEditMode(true)}>수정</button>
+                <button onClick={handleEdit}>수정</button>
               )}
             </div>
           </div>
