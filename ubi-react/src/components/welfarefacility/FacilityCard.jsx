@@ -74,7 +74,8 @@ const getCategory = (facility) => {
 
 export default function FacilityCard({ facility }) {
   const name =
-    getField(facility, "시설명", "FACLT_NM", "facilityAddr") || "이름 없음";
+    getField(facility, "facilityName", "시설명", "FACLT_NM", "facilityAddr") ||
+    "이름 없음";
 
   const serviceTarget = getServiceTarget(facility);
   const category = getCategory(facility);

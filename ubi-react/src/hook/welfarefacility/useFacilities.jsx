@@ -1,11 +1,14 @@
+// 📁 src/hook/welfarefacility/useFacilities.js
+
 import { useState, useEffect } from "react";
 import axios from "axios";
-import useSelectedRegionStore from "../../hook/welfarefacility/useSelectedRegionStore";
 
-export function useFacilities(apiType = "old") {
-  const { selectedCity: city, selectedDistrict: district } =
-    useSelectedRegionStore();
-
+export function useFacilities(
+  apiType = "old",
+  category = "전체",
+  city,
+  district
+) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -21,7 +24,12 @@ export function useFacilities(apiType = "old") {
         let url = "/api/facility";
         let params = { city, district };
 
-        // ✅ 시도명 기반 API 라우팅
+        // ✅ 서울용 category 파라미터 추가
+        if (category && category !== "전체") {
+          params.category = category;
+        }
+
+        // ✅ 경기도 API는 apiType 필요
         if (city.includes("경기")) {
           url = "/api/gyeonggi-facility";
           params.apiType = apiType;
@@ -55,7 +63,7 @@ export function useFacilities(apiType = "old") {
     };
 
     fetchFacilities();
-  }, [city, district, apiType]);
+  }, [city, district, apiType, category]);
 
   return { data, loading, error };
 }

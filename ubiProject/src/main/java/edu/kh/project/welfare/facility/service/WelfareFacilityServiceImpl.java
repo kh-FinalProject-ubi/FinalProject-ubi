@@ -29,6 +29,8 @@ public class WelfareFacilityServiceImpl implements WelfareFacilityService {
 	@Override
 	public List<WelfareFacility> getFacilitiesByRegion(String city, String district) {
 
+		log.info("🧭 getFacilitiesByRegion() 호출됨 - city: {}, district: {}", city, district);
+
 		var apiInfo = regionMapper.selectApiInfo(city, district);
 		log.debug("🧪 조회된 apiInfo: {}", apiInfo);
 
@@ -37,18 +39,25 @@ public class WelfareFacilityServiceImpl implements WelfareFacilityService {
 			return Collections.emptyList();
 		}
 
-		//  RestTemplate 직접 생성 (한글 인코딩 방지용 설정 포함)
+		// RestTemplate 생성 (UTF-8 인코딩)
 		RestTemplate restTemplate = new RestTemplate();
-		restTemplate.getMessageConverters().add(0,
-			new org.springframework.http.converter.StringHttpMessageConverter(java.nio.charset.StandardCharsets.UTF_8));
+		restTemplate.getMessageConverters().add(0, new org.springframework.http.converter.StringHttpMessageConverter(
+				java.nio.charset.StandardCharsets.UTF_8));
 
-		//  DB에서 불러온 URL에 서비스 키만 삽입 (추가 파라미터 없이 사용)
+		// API URL 생성
 		String url = String.format(apiInfo.getApiUrl(), serviceKey);
 		log.info("📡 외부 API 호출 URL: {}", url);
 
 		try {
 			String xmlResponse = restTemplate.getForObject(url, String.class);
-			
+
+			if (xmlResponse == null || xmlResponse.isBlank()) {
+				log.warn("📭 응답 본문이 비어 있음");
+				return Collections.emptyList();
+			}
+
+			log.info("📄 응답 XML 일부: {}",
+					xmlResponse.substring(0, Math.min(300, xmlResponse.length())).replaceAll("\n", ""));
 
 			XmlMapper xmlMapper = new XmlMapper();
 			WelfareFacilityResponse response = xmlMapper.readValue(xmlResponse, WelfareFacilityResponse.class);
@@ -56,8 +65,10 @@ public class WelfareFacilityServiceImpl implements WelfareFacilityService {
 			List<WelfareFacility> facilities = response.getRow();
 
 			if (facilities != null && !facilities.isEmpty()) {
+				log.info("✅ 파싱된 시설 수: {}", facilities.size());
+
 				for (WelfareFacility f : facilities) {
-					log.info("🏠 시설명: {}, 주소: {}", f.get시설명(), f.get주소());
+					log.debug("🏠 시설명: {}, 주소: {}", f.get시설명(), f.get주소());
 				}
 				return facilities;
 			} else {
