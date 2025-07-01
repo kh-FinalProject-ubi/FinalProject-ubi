@@ -1,4 +1,3 @@
-// WelfareMap.jsx
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import "ol/ol.css";
 import Map from "ol/Map";
@@ -14,12 +13,14 @@ import { Style, Stroke, Fill } from "ol/style";
 import WelfareCompareView from "./WelfareCompareView";
 import WelfareBenefitView from "./WelfareBenefitView";
 import Spinner from "./Spinner";
-import useLocalBenefitData from "../hook/welfareService/useLocalBenefitData";
 import useAuthStore from "../stores/useAuthStore";
 import useSelectedRegionStore from "../hook/welfarefacility/useSelectedRegionStore";
+import useLocalBenefitData from "../hook/welfareService/useLocalBenefitData";
 import { normalizeSido, normalizeSigungu } from "../utils/regionUtils";
+
 import "../styles/WelfareMap.css";
 
+/* ------------------ 지역 정규화 유틸 ------------------ */
 export const mapCleanFullName = (fullName) => {
   const tokens = fullName.split(" ");
   if (tokens.length < 2) return fullName;
@@ -30,6 +31,7 @@ export const mapCleanFullName = (fullName) => {
 const extractCleanAddress = (rawAddress) =>
   rawAddress?.includes("^^^") ? rawAddress.split("^^^")[1] : rawAddress || "";
 
+/* ------------------ 메인 컴포넌트 ------------------ */
 const WelfareMap = () => {
   const mapElement = useRef();
   const mapRef = useRef(null);
@@ -46,9 +48,23 @@ const WelfareMap = () => {
   );
   const [districtB, setDistrictB] = useState(null);
 
-  const { data: benefitsData, loading: isLoading } = useLocalBenefitData();
   const { setRegion } = useSelectedRegionStore();
+  const { data: allBenefits, loading, error } = useLocalBenefitData();
 
+  /* ✅ 지역별 복지 데이터 grouping */
+  const groupedData = useMemo(() => {
+    const result = {};
+    allBenefits.forEach((item) => {
+      const clean = mapCleanFullName(
+        `${item.regionCity} ${item.regionDistrict}`
+      );
+      if (!result[clean]) result[clean] = [];
+      result[clean].push(item);
+    });
+    return result;
+  }, [allBenefits]);
+
+  /* ---------------- 지도 초기화 ---------------- */
   useEffect(() => {
     const map = new Map({
       target: mapElement.current,
@@ -69,7 +85,6 @@ const WelfareMap = () => {
     });
 
     mapRef.current = map;
-
     map.on("click", ({ coordinate }) => {
       const [lon, lat] = toLonLat(coordinate);
       reverseGeocode(lon, lat);
@@ -78,6 +93,7 @@ const WelfareMap = () => {
     return () => map.setTarget(null);
   }, []);
 
+  /* ---------------- 역지오코딩 ---------------- */
   const reverseGeocode = (lon, lat) => {
     fetch(`/api/welfare-curl/reverse-geocode?lon=${lon}&lat=${lat}`)
       .then((res) => res.json())
@@ -85,19 +101,19 @@ const WelfareMap = () => {
         const structure = response?.result?.[0]?.structure;
         if (!structure) return;
 
+        setRegion(structure.level1, structure.level2);
+
         const cleanFull = mapCleanFullName(
           `${structure.level1} ${structure.level2}`
         );
 
-        setRegion(structure.level1, structure.level2);
-
         if (cleanFull === normalizedDistrictA) return;
-
         displayBPolygon(cleanFull);
       })
-      .catch((err) => console.error("❌ 지오코딩 오류:", err));
+      .catch((err) => console.error("❌ 지오코딩 실패:", err));
   };
 
+  /* ---------------- 폴리곤 표시 ---------------- */
   const displayPolygon = (fullNameClean, color, layerRef) => {
     fetch("/TL_SCCO_SIG_KDJ.json")
       .then((res) => res.json())
@@ -142,29 +158,14 @@ const WelfareMap = () => {
     setDistrictB(cleanFull);
   };
 
-  const listA = useMemo(() => {
-    return benefitsData?.filter(
-      (item) =>
-        `${item.regionCity} ${item.regionDistrict}`.trim() ===
-        normalizedDistrictA
-    );
-  }, [benefitsData, normalizedDistrictA]);
-
-  const listB = useMemo(() => {
-    if (!districtB) return [];
-    return benefitsData?.filter(
-      (item) => `${item.regionCity} ${item.regionDistrict}`.trim() === districtB
-    );
-  }, [benefitsData, districtB]);
-
+  /* ---------------- 렌더링 ---------------- */
   return (
     <div>
+      {loading && <Spinner />}
       <h2 className="map-title">복지 지도</h2>
 
       <div className="map-wrapper">
-        {isLoading && <Spinner />}
         <div ref={mapElement} className="map-canvas" />
-
         <aside className="benefit-panel">
           <div className="tab">지역</div>
           <div className="content">
@@ -178,16 +179,16 @@ const WelfareMap = () => {
             {!districtB && (
               <WelfareBenefitView
                 district={normalizedDistrictA}
-                benefits={benefitsData}
-                isLoading={isLoading}
+                benefits={groupedData[normalizedDistrictA] ?? []}
+                isLoading={loading}
               />
             )}
             {districtB && (
               <WelfareCompareView
                 districtA={normalizedDistrictA}
                 districtB={districtB}
-                benefits={benefitsData}
-                isLoading={isLoading}
+                benefits={groupedData}
+                isLoading={loading}
               />
             )}
           </div>

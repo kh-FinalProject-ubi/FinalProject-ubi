@@ -1,22 +1,22 @@
 package edu.kh.project.common.config;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
 import edu.kh.project.common.filter.JwtAuthenticationFilter;
 import edu.kh.project.common.util.JwtUtil;
 import edu.kh.project.member.model.mapper.MemberMapper;
 import edu.kh.project.member.model.service.CustomOAuth2UserService;
 import edu.kh.project.member.model.service.OAuth2SuccessHandler;
+
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -25,42 +25,73 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    /**
+     * OAuth2 성공 시 사용자 DB 조회 후 JWT 발급
+     */
     @Bean
     public OAuth2SuccessHandler successHandler(MemberMapper mapper, JwtUtil jwtUtil) {
         return new OAuth2SuccessHandler(mapper, jwtUtil);
     }
-	
+
+    /**
+     * Spring Security 보안 설정
+     */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http,
-                                            CustomOAuth2UserService oAuth2UserService,
-                                            OAuth2SuccessHandler successHandler) throws Exception {
+    public SecurityFilterChain filterChain(
+            HttpSecurity http,
+            CustomOAuth2UserService oAuth2UserService,
+            OAuth2SuccessHandler successHandler
+    ) throws Exception {
+
         http
-        .csrf(csrf -> csrf.disable())
-        .sessionManagement(session -> session
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // ✅ 세션 사용 안 함 (JWT 기반)
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers(
-                "/", "/css/**", "/js/**", "/img/**", "/images/**", "/images/board/**",
-                "/login/**", "/oauth2/**", "/kid/**"
-            ).permitAll()
+            // ✅ 인증/인가 실패 시 JSON 응답 반환
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"error\": \"Unauthorized\"}");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"error\": \"Access Denied\"}");
+                })
+            )
 
-            // 여기에 찜 관련 API 보호
-            .requestMatchers("/api/welfare/like", "/api/welfare/my-likes").authenticated()
-            .anyRequest().permitAll()
-        )
+            // ✅ 경로별 인증 설정
+            .authorizeHttpRequests(auth -> auth
+                // 정적 리소스 허용
+                .requestMatchers("/", "/css/**", "/js/**", "/img/**", "/images/**", "/images/board/**").permitAll()
 
-        // ✅ JWT 필터 등록
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                // 로그인, OAuth2 등 인증 없이 접근 가능
+                .requestMatchers("/login/**", "/oauth2/**", "/kid/**").permitAll()
 
-        // ✅ OAuth2 로그인 그대로 유지
-        .oauth2Login(oauth -> oauth
-            .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService))
-            .successHandler(successHandler)
-        );
+                // 인증 필요 API
+                .requestMatchers("/api/welfare/like", "/api/welfare/my-likes").authenticated()
+
+                // 그 외 전체 허용
+                .anyRequest().permitAll()
+            )
+
+            // ✅ JWT 필터 등록: UsernamePasswordAuthenticationFilter 이전에 실행되도록
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+
+            // ✅ OAuth2 로그인 설정
+            .oauth2Login(oauth -> oauth
+                .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService))
+                .successHandler(successHandler)
+            );
 
         return http.build();
     }
+
+    /**
+     * 비밀번호 암호화기 등록
+     */
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();

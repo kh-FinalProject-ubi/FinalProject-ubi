@@ -9,15 +9,18 @@ const PopularPostCarousel = () => {
     fetch("/api/board/mytownBoard")
       .then((res) => res.json())
       .then((data) => {
-        const sorted = [...data]
+        console.log("📦 게시글 응답:", data);
+
+        const rawList = Array.isArray(data.boardList) ? data.boardList : [];
+
+        const sorted = rawList
           .sort((a, b) => b.boardReadCount - a.boardReadCount)
           .slice(0, 10);
+
         setPosts(sorted);
       })
       .catch((err) => console.error("🔥 인기 게시글 로딩 실패:", err));
   }, []);
-
-  if (posts.length === 0) return null;
 
   return (
     <div className="carousel-wrapper">

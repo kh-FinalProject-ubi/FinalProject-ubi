@@ -32,12 +32,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
+            System.out.println("📌 받은 토큰: " + token);
+
 
             if (jwtUtil.validateToken(token)) {
                 Long memberNo = jwtUtil.extractMemberNo(token);
                 String role = jwtUtil.extractRole(token);
 
                 CustomUser customUser = new CustomUser(memberNo.intValue(), role);
+                System.out.println("✅ 토큰 유효. memberNo: " + memberNo);
+
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
@@ -49,7 +53,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-        }
+           } else {
+            System.err.println("❌ JWT 유효성 검사 실패");
+        
+    } 
 
         filterChain.doFilter(request, response);
     }

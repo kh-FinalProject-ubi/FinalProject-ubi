@@ -7,10 +7,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -89,43 +95,61 @@ public class WelfareFacilityJobServiceImpl implements WelfareFacilityJobService{
     
     // 상세조회 http:// apis.data.go.kr/B552474/SenuriService/getJobInfo?ServiceKey=인증키&id=채용공고ID
 
-    private WelfareFacilityJob getJobDetailFromApi1(String jobId) {
+    public WelfareFacilityJob getJobDetailFromApi1(String id) {
         try {
             String url = "http://apis.data.go.kr/B552474/SenuriService/getJobInfo?"
                        + "ServiceKey=" + serviceKey1
-                       + "&id=" + jobId
-                       + "&_type=json";  // ✅ JSON 명시
+                       + "&id=" + id
+                       + "&_type=json";
 
-            String jsonStr = restTemplate.getForObject(url, String.class);
-            JSONObject json = new JSONObject(jsonStr);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Accept", MediaType.APPLICATION_JSON_VALUE);
 
-            if (!json.has("response")) return null;
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+            ResponseEntity<String> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                String.class
+            );
 
-            JSONObject item = json.getJSONObject("response")
-                                  .getJSONObject("body")
-                                  .getJSONObject("items")
-                                  .getJSONObject("item");
+            String body = response.getBody();
+            JSONObject json = new JSONObject(body);
 
-            String address = item.optString("plDetAddr", "");
+            JSONObject jobInfo = json.getJSONObject("response")
+                                     .getJSONObject("body")
+                                     .getJSONObject("items")
+                                     .getJSONObject("item");
+
+            String address = jobInfo.optString("compAddr", "");
             String[] parts = address.split("\\s+");
+            String termDate = jobInfo.optString("termDate", "");
+            String[] dateParts = termDate.split("~");
+            String start = dateParts.length > 0 ? dateParts[0].trim() : "";
+            String end = dateParts.length > 1 ? dateParts[1].trim() : "";
+            String salary = jobInfo.optString("salary", "") + " 원 / " + jobInfo.optString("salaryType", "");
+            String requirement = "경력: " + jobInfo.optString("reqCareer", "") + ", 학력: " + jobInfo.optString("reqEduc", "");
 
             return WelfareFacilityJob.builder()
-                    .jobTitle(item.optString("wantedTitle"))
-                    .jobStartDate(item.optString("frAcptDd"))
-                    .jobEndDate(item.optString("toAcptDd"))
-                    .jobSalary("문의바람")
-                    .jobPosition("노년층")
-                    .jobContact(item.optString("repr"))
-                    .jobContactTel(item.optString("clerkContt"))
-                    .jobRequirement(item.optString("etcItm"))
-                    .regionDistrict(parts.length > 2 ? parts[2] : "")
-                    .regionCity(parts.length > 1 ? parts[1] : "")
+                    .jobTitle(join(jobInfo.optString("busplaName"), jobInfo.optString("jobNm"), jobInfo.optString("empType"), "모집"))
+                    .jobStartDate(start)
+                    .jobEndDate(end)
+                    .jobSalary(salary)
+                    .jobPosition("노년층") // API1 용
+                    .jobContact(jobInfo.optString("regagnName"))
+                    .jobContactTel(jobInfo.optString("cntctNo"))
+                    .jobRequirement(requirement)
+                    .regionDistrict(parts.length > 1 ? parts[1] : "")
+                    .regionCity(parts.length > 0 ? parts[0] : "")
                     .jobAddress(address)
                     .apiSource("API1")
                     .build();
 
+        } catch (JSONException e) {
+            System.err.println("❌ JSON 파싱 실패: " + e.getMessage());
+            return null;
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("❌ API1 상세조회 실패: " + e.getMessage());
             return null;
         }
     }
