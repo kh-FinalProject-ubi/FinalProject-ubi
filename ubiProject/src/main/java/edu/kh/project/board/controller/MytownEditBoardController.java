@@ -47,26 +47,16 @@ public class MytownEditBoardController {
         return ResponseEntity.ok(Map.of("boardNo", boardNo));
     }
 	
-	/**
-	 * 
-	 * @param image
-	 * @return
-	 * @throws IOException
-	 */
+/**
+ * 
+ * @param uploadFile
+ * @return
+ * @throws IOException
+ */
 	
-	@PostMapping("/uploadImage")
-	public String uploadImage(@RequestParam("image") MultipartFile image) throws IOException {
-//	    // 저장 경로
-//	    String folderPath = FolderPath; // "C:/uploadFiles/board/"
-//	    String webPath = WebPath;       // "/images/board/"
 
-	    // 원본 파일명
-	    String originalName = image.getOriginalFilename();
-	    String rename = UUID.randomUUID().toString() + "_" + originalName;
-
-	    File targetFile = new File(folderPath + rename);
-	    image.transferTo(targetFile); // 실제 저장
-
-	    return webPath + rename; // 클라이언트에 반환 (썸머노트에 삽입될 src)
-	}
+    @PostMapping("/uploadImage")
+    public String uploadImage(@RequestParam("image") MultipartFile uploadFile) throws IOException {
+        return Service.saveBoardImage(uploadFile);
+    }
 }

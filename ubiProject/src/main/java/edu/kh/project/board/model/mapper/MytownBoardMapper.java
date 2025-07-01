@@ -24,27 +24,37 @@ public interface MytownBoardMapper {
 	 * @param regionCity
 	 * @return
 	 */
-	  List<Board> selectLocalBoardList();
-
+	List<Board> selectLocalBoardList(@Param("start") int start, @Param("limit") int limit);
+	int getBoardLocalListCount();
 	  /**상세조회
 	   * 
 	   * @param boardNo
 	   * @return
 	   */
 	    Board selectLocalBoardDetail(int boardNo);
+	    
+	    /** 조회수 증가
+	     * 
+	     * @param boardNo
+	     * @return
+	     */
+	    int increaseReadCount(int boardNo);
 
 	    
-	    
-	    
+	   // 게시글 작성 
 	    int insertBoard(Board dto);
 
 	    int getLastInsertedId();
 
+	    // 해시태그 
 	    void insertHashtag(@Param("boardNo") int boardNo, @Param("tag") String tag);
 
 	    int checkHashtagExists(@Param("boardNo") int boardNo, @Param("tag") String tag);
 	    
+	    // 게시글 이미지 
+	    void insertBoardImage(BoardImage img);
+	    
+	    List<BoardImage> selectBoardImageList(int boardNo);
 
-	    int insertBoardImage(BoardImage image);
 	    
 }
