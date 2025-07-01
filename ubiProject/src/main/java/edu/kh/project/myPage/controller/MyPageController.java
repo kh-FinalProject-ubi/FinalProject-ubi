@@ -81,20 +81,38 @@ public class MyPageController {
 	 * @return
 	 */
 	@PostMapping("update")
-	public ResponseEntity<Object> updateInfo(@RequestBody Member member) {
+	public ResponseEntity<Object> updateInfo(@RequestBody Member member,
+											 @RequestHeader("Authorization") String authorizationHeader) {
 
 		try {
-           if (member.getMemberNo() == 0) {
+			
+		  if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
+	        }
+		  
+		  String token = authorizationHeader.substring(7);
+			
+		  if (!jwtU.validateToken(token)) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
+	        }
+
+	        // 3️⃣ 토큰에서 회원 번호 추출
+	        Long memberNoLong = jwtU.extractMemberNo(token);
+	        int memberNo = memberNoLong.intValue();
+	        
+	        member.setMemberNo(memberNo);
+	       
+	        if (memberNo == 0) {
                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
-           }
+	        }
            
-           int result = service.updateInfo(member);
+	        int result = service.updateInfo(member);
            
-           if(result > 0) {
+	        if(result > 0) {
         	   return ResponseEntity.status(HttpStatus.OK).body("회원 정보 수정을 완료했습니다!");        	   
-           } else {
-        	   return ResponseEntity.badRequest().body("회원 정보 수정을 실패했습니다");	      	   
-           }
+	        } else {
+	        	return ResponseEntity.badRequest().body("회원 정보 수정을 실패했습니다");	      	   
+	        }
            
        } catch (Exception e) {
            log.error("내 정보 조회 중 에러 발생", e);

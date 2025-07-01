@@ -5,7 +5,7 @@
 	<!-- 내 기본 정보 조회 -->
 	<select id="info">
 		SELECT MEMBER_ID, MEMBER_NICKNAME, MEMBER_EMAIL, MEMBER_TEL, MEMBER_ADDRESS,
-			   ENROLL_DATE, MEMBER_IMG, MEMBER_STANDARD
+			   ENROLL_DATE, MEMBER_TADDRESS, MEMBER_IMG, MEMBER_STANDARD
 			   FROM MEMBER
 			   WHERE MEMBER_NO = #{memeberNo}
 	</select>
@@ -16,6 +16,8 @@
 	MEMBER_NICKNAME = #{memberNickname},
 	MEMBER_TEL = #{memberTel},
 	MEMBER_ADDRESS = #{memberAddress},
+	MEMBER_TADDRESS = #{memberTaddress},
+	MEMBER_STANDARD = #{memberStandard},
 	MEMBER_EMAIL = #{memberEmail}
 	WHERE MEMBER_NO = #{memberNo}
 	</update>
