@@ -18,8 +18,11 @@ const BoardDetail = () => {
   const [loading, setLoading] = useState(true);
   const [hasAlerted, setHasAlerted] = useState(false);
   const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState("");
+  const [commentContent, setCommentContent] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
+
+  const [replyTarget, setReplyTarget] = useState(null); // 답글 대상
+  const [replyContent, setReplyContent] = useState(""); // 답글 내용
 
   const isAdmin = role === "ADMIN";
   const isWriter = loginMemberNo === board?.memberNo;
@@ -44,6 +47,7 @@ const BoardDetail = () => {
       return;
     }
 
+    // 게시판 상세 조회
     const fetchBoard = async () => {
       try {
         const res = await axios.get(`/api/board/${boardCode}/${boardNo}`, {
@@ -92,7 +96,7 @@ const BoardDetail = () => {
     hasAlerted,
   ]);
 
-  // 댓글 로딩
+  // 댓글 불러오기
   const loadComments = async () => {
     setCommentLoading(true);
     try {
@@ -107,29 +111,70 @@ const BoardDetail = () => {
     }
   };
 
+  console.log("BoardDetail 렌더링됨");
+
+  // boardCode와 boardNo가 수정되면 댓글 불러오기
   useEffect(() => {
     if (boardCode && boardNo) loadComments();
   }, [boardCode, boardNo]);
 
-  // 댓글 등록
+  // 댓글 작성
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
-    if (!newComment.trim()) return alert("댓글 내용을 입력해주세요.");
+    if (!commentContent.trim()) return alert("댓글 내용을 입력해주세요.");
 
     try {
       await axios.post(
         `/api/comments/${boardCode}/${boardNo}/insert`,
-        { content: newComment },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          commentContent: commentContent,
+          memberNo: loginMemberNo,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
-      setNewComment("");
-      await loadComments();
+      console.log(commentContent);
+      setCommentContent(""); // 입력값 초기화
+      await loadComments(); // 댓글 다시 불러오기
     } catch (err) {
       alert("댓글 작성 실패");
     }
   };
 
-  // 댓글 삭제
+  // 답글 작성
+  const handleReplySubmit = async (e, parentNo) => {
+    e.preventDefault();
+    if (!replyContent.trim()) return alert("답글 내용을 입력해주세요.");
+
+    try {
+      await axios.post(
+        `/api/comments/${boardCode}/${boardNo}/insert`,
+        {
+          commentContent: commentContent,
+          commentParentContent: commentParentContent,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setReplyContent("");
+      setReplyTarget(null);
+      await loadComments();
+    } catch (err) {
+      alert("답글 작성 실패");
+    }
+  };
+
+  // 답글 제출
+  const handleReplyClick = (commentNo) => {
+    if (replyTarget === commentNo) {
+      setReplyTarget(null);
+      setReplyContent("");
+    } else {
+      setReplyTarget(commentNo);
+      setReplyContent("");
+    }
+  };
+
   const handleCommentDelete = async (commentNo) => {
     if (!window.confirm("댓글을 삭제하시겠습니까?")) return;
 
@@ -143,7 +188,6 @@ const BoardDetail = () => {
     }
   };
 
-  // 댓글 수정
   const handleCommentUpdate = async (commentNo, content) => {
     const newContent = prompt("댓글 수정", content);
     if (!newContent?.trim()) return;
@@ -250,63 +294,107 @@ const BoardDetail = () => {
 
           {commentLoading ? (
             <p>댓글 불러오는 중...</p>
-          ) : comments.length === 0 ? (
-            <p>댓글이 없습니다.</p>
           ) : (
-            <ul>
-              {comments.map((comment) => (
-                <li key={comment.commentNo} style={{ marginBottom: "10px" }}>
-                  <strong>
-                    {comment.memberNickname || `회원번호: ${comment.memberNo}`}
-                  </strong>{" "}
-                  <span style={{ color: "#888", fontSize: "0.9em" }}>
-                    ({new Date(comment.createdAt).toLocaleString()})
-                  </span>
-                  <p>{comment.content}</p>
-                  {(isAdmin || comment.memberNo === loginMemberNo) && (
-                    <div>
-                      <button
-                        className="btn-yellow"
-                        onClick={() =>
-                          handleCommentUpdate(
-                            comment.commentNo,
-                            comment.content
-                          )
-                        }
-                      >
-                        수정
-                      </button>
-                      <button
-                        className="btn-yellow"
-                        onClick={() => handleCommentDelete(comment.commentNo)}
-                        style={{ marginLeft: "5px" }}
-                      >
-                        삭제
-                      </button>
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
+            <>
+              {/* ✅ 댓글 작성 form은 map 바깥에 위치시켜야 깜빡이지 않음 */}
+              {token && (
+                <form
+                  onSubmit={handleCommentSubmit}
+                  style={{ marginTop: "20px" }}
+                >
+                  <textarea
+                    value={commentContent}
+                    onChange={(e) => setCommentContent(e.target.value)}
+                    rows={3}
+                    placeholder="댓글을 입력하세요."
+                    style={{ width: "100%", resize: "vertical" }}
+                  />
+                  <button
+                    type="submit"
+                    className="btn-yellow"
+                    style={{ marginTop: "5px" }}
+                  >
+                    댓글 작성
+                  </button>
+                </form>
+              )}
 
-          {token && (
-            <form onSubmit={handleCommentSubmit}>
-              <textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                rows={3}
-                placeholder="댓글을 입력하세요."
-                style={{ width: "100%", resize: "vertical" }}
-              />
-              <button
-                type="submit"
-                className="btn-yellow"
-                style={{ marginTop: "5px" }}
-              >
-                댓글 작성
-              </button>
-            </form>
+              <ul>
+                {comments.length === 0 ? (
+                  <p>댓글이 없습니다.</p>
+                ) : (
+                  comments.map((comment) => (
+                    <li
+                      key={comment.commentNo}
+                      style={{ marginBottom: "10px" }}
+                    >
+                      <strong>
+                        {comment.memberNickname ||
+                          `회원번호: ${comment.memberNo}`}
+                      </strong>{" "}
+                      <span style={{ color: "#888", fontSize: "0.9em" }}>
+                        {comment.createdAt &&
+                          `(${new Date(comment.createdAt).toLocaleString()})`}
+                      </span>
+                      <p>{comment.commentContent}</p>
+                      {(isAdmin || comment.memberNo === loginMemberNo) && (
+                        <div>
+                          <button
+                            className="btn-yellow"
+                            onClick={() => handleReplyClick(comment.commentNo)}
+                          >
+                            답글
+                          </button>
+                          <button
+                            className="btn-yellow"
+                            onClick={() =>
+                              handleCommentUpdate(
+                                comment.commentNo,
+                                comment.commentContent
+                              )
+                            }
+                          >
+                            수정
+                          </button>
+                          <button
+                            className="btn-yellow"
+                            onClick={() =>
+                              handleCommentDelete(comment.commentNo)
+                            }
+                            style={{ marginLeft: "5px" }}
+                          >
+                            삭제
+                          </button>
+                        </div>
+                      )}
+                      {replyTarget === comment.commentNo && (
+                        <form
+                          onSubmit={(e) =>
+                            handleReplySubmit(e, comment.commentNo)
+                          }
+                          style={{ marginTop: "10px" }}
+                        >
+                          <textarea
+                            value={replyContent}
+                            onChange={(e) => setReplyContent(e.target.value)}
+                            rows={3}
+                            placeholder="답글을 입력하세요."
+                            style={{ width: "100%", resize: "vertical" }}
+                          />
+                          <button
+                            type="submit"
+                            className="btn-yellow"
+                            style={{ marginTop: "5px" }}
+                          >
+                            답글 작성
+                          </button>
+                        </form>
+                      )}
+                    </li>
+                  ))
+                )}
+              </ul>
+            </>
           )}
         </section>
       </section>
