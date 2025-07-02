@@ -83,7 +83,7 @@ const imageList = uploadedImagesRef.current.map((url, index) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
         boardTitle, 
-         boardContent: plainContent, //정제
+   boardContent, // HTML 그대로 저장됨 ✅
        memberNo,
          postType,  
         hashtagList,  // ✅ 배열 형태로 전송
@@ -128,7 +128,7 @@ console.log("hashtags:", hashtags);
 
        onImageUpload: function (files) {
         const formData = new FormData();
-        formData.append("file", files[0]);
+        formData.append("image", files[0]);
 
         fetch("/api/editboard/mytown/uploadImage", {
           method: "POST",

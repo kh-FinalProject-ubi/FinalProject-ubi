@@ -24,14 +24,17 @@ public interface MytownBoardMapper {
 	 * @param regionCity
 	 * @return
 	 */
-	List<Board> selectLocalBoardList(@Param("start") int start, @Param("limit") int limit);
+	List<Board> selectLocalBoardList(RowBounds rowBounds);
+	
 	int getBoardLocalListCount();
+	
 	  /**상세조회
 	   * 
 	   * @param boardNo
 	   * @return
 	   */
 	    Board selectLocalBoardDetail(int boardNo);
+
 	    
 	    /** 조회수 증가
 	     * 
@@ -40,6 +43,8 @@ public interface MytownBoardMapper {
 	     */
 	    int increaseReadCount(int boardNo);
 
+	    
+	    
 	    
 	   // 게시글 작성 
 	    int insertBoard(Board dto);
@@ -51,23 +56,15 @@ public interface MytownBoardMapper {
 
 	    int checkHashtagExists(@Param("boardNo") int boardNo, @Param("tag") String tag);
 	    
+	    // 게시글 이미지 
+	    void insertBoardImage(BoardImage img);
 	    
 	    List<BoardImage> selectBoardImageList(int boardNo);
 	    
+	    // 이미지 정제 추후 삭제
+	    List<BoardImage> selectAllImages();
+	    int updateImagePath(@Param("imageNo") int imageNo, @Param("imagePath") String imagePath);
 	    
-		/** 게시글 이미지 모두 삽입
-		 * @param uploadList
-		 * @return
-		 */
-		int insertUploadList(List<BoardImage> uploadList);
-
-		/**
-		 * 이미지 삽입
-		 * @param image
-		 * @return
-		 */
-		int insertBoardImage(BoardImage image);
-
-
+	    
 	    
 }
