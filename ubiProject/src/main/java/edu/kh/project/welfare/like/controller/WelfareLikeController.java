@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 
 
 @RestController
@@ -32,11 +34,15 @@ public class WelfareLikeController {
     @PostMapping("/like")
     public ResponseEntity<String> addLike(@RequestBody Welfare dto,
                                           @AuthenticationPrincipal CustomUser user) {
-        dto.setMemberNo(user.getId());  // JWT 기반 사용자 ID
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("✅ 인증 객체: " + auth);
+        System.out.println("✅ 권한: " + auth.getAuthorities());
+
+        dto.setMemberNo(user.getId());
         welfareService.addLike(dto);
         return ResponseEntity.ok("찜 등록 완료");
     }
-
     // ✅ 찜 취소
     @DeleteMapping("/like")
     public ResponseEntity<String> cancelLike(@RequestBody Welfare dto,

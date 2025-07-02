@@ -51,10 +51,15 @@ const WelfareMap = () => {
   const { setRegion } = useSelectedRegionStore();
   const { data: allBenefits, loading, error } = useLocalBenefitData();
 
-  /* ✅ 지역별 복지 데이터 grouping */
+  // 🔍 복지로(bokjiro) 데이터만 필터링
+  const bokjiroOnly = useMemo(() => {
+    return allBenefits.filter((item) => item.id?.startsWith("bokjiro-"));
+  }, [allBenefits]);
+
+  /* ✅ 복지로 데이터만 지역별로 그룹핑 */
   const groupedData = useMemo(() => {
     const result = {};
-    allBenefits.forEach((item) => {
+    bokjiroOnly.forEach((item) => {
       const clean = mapCleanFullName(
         `${item.regionCity} ${item.regionDistrict}`
       );
@@ -62,7 +67,7 @@ const WelfareMap = () => {
       result[clean].push(item);
     });
     return result;
-  }, [allBenefits]);
+  }, [bokjiroOnly]);
 
   /* ---------------- 지도 초기화 ---------------- */
   useEffect(() => {
@@ -161,7 +166,6 @@ const WelfareMap = () => {
   /* ---------------- 렌더링 ---------------- */
   return (
     <div>
-      {loading && <Spinner />}
       <h2 className="map-title">복지 지도</h2>
 
       <div className="map-wrapper">

@@ -57,15 +57,17 @@
       AND api_service_id = #{apiServiceId}
   </update>
   
-  <select id="selectPopularWelfare" resultType="Welfare">
+<select id="selectPopularWelfare" resultType="Welfare">
   SELECT 
     api_service_id,
     service_name,
     category,
+    region_city,
+    region_district,
     COUNT(*) AS likeCount
   FROM welfare
   WHERE jj_del_fl = 'N'
-  GROUP BY api_service_id, service_name, category
+  GROUP BY api_service_id, service_name, category, region_city, region_district
   ORDER BY likeCount DESC
   FETCH FIRST 10 ROWS ONLY
 </select>
