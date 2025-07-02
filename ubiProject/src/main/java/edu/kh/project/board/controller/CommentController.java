@@ -3,12 +3,14 @@ package edu.kh.project.board.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +18,7 @@ import org.springframework.web.service.annotation.PutExchange;
 
 import edu.kh.project.board.model.dto.Comment;
 import edu.kh.project.board.model.service.CommentService;
+import edu.kh.project.common.util.JwtUtil;
 
 /* @RestController (REST API구축을 위해서 사용하는 컨트롤러용 어노테이션)
  * 
@@ -39,6 +42,9 @@ public class CommentController {
 	@Autowired
 	private CommentService service;
 	
+	@Autowired
+	private JwtUtil jwtUtil;
+	
 	/** 댓글 목록 조회
 	 * @param boardNo
 	 * @return 
@@ -58,9 +64,17 @@ public class CommentController {
 	public int insert(
 	    @PathVariable("boardCode") int boardCode,
 	    @PathVariable("boardNo") int boardNo,
-	    @RequestBody Comment comment) {
+	    @RequestBody Comment comment,
+	    @RequestHeader("Authorization") String authHeader
+	    ) {
 	    
+		String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+
+	    Long memberNoLong = jwtUtil.extractMemberNo(token);
+	    int memberNo = memberNoLong.intValue();
+		
 	    comment.setBoardNo(boardNo); 
+	    comment.setMemberNo(memberNo);
 	    return service.insert(comment);
 	}
 	

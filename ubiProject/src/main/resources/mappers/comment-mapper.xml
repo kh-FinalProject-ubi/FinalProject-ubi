@@ -30,8 +30,9 @@
 	 <!-- 댓글/자식 댓글 등록 -->
 	 <insert id="insert">
 	  INSERT INTO "COMMENTS"	
-	  VALUES( SEQ_COMMENT_NO.NEXTVAL,
+	  VALUES(SEQ_COMMENT_NO.NEXTVAL,
 	  		  #{commentContent},
+	  		  DEFAULT,
 	  		  DEFAULT,
 	  		  DEFAULT,
 	  		  #{boardNo},
