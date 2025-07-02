@@ -26,7 +26,7 @@ export function filterBenefitsByStandard(list, memberStandard, token, showAll) {
   const isGeneral = memberStandard === "0" || memberStandard === "일반";
   const keywords = standardKeywordMap[String(memberStandard)];
 
-  if (!keywords) {
+  if (!keywords && !isGeneral) {
     console.log("⚠️ 알 수 없는 memberStandard:", memberStandard);
     return list;
   }

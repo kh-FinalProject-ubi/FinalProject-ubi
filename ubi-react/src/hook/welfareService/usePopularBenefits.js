@@ -14,8 +14,11 @@ const usePopularBenefits = () => {
       .get("/api/welfare/popular", {
         headers: { Authorization: `Bearer ${token}` },
       })
-      .then((res) => setData(res.data))
-      .catch((err) => console.error("인기 복지 조회 실패", err))
+      .then((res) => {
+        console.log("🎯 인기 복지 응답 데이터:", res.data); // ✅ 응답 확인
+        setData(res.data);
+      })
+      .catch((err) => console.error("❌ 인기 복지 조회 실패", err))
       .finally(() => setLoading(false));
   }, [token]); // 🔁 token 변경 감지 후 실행
 

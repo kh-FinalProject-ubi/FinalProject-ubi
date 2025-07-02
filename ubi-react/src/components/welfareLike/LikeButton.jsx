@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // 로그인 리디렉션용
+import useModalStore from "../../stores/useModalStore";
 
 const LikeButton = ({
   apiServiceId,
@@ -11,7 +11,7 @@ const LikeButton = ({
   token,
 }) => {
   const [liked, setLiked] = useState(false);
-  const navigate = useNavigate();
+  const { openLoginModal } = useModalStore();
 
   const handleClick = async () => {
     if (!token) {
@@ -19,7 +19,9 @@ const LikeButton = ({
         "로그인이 필요한 기능입니다. 로그인하시겠습니까?"
       );
       if (goLogin) {
-        navigate("/login"); // 또는 "/oauth2/authorization/kakao" 직접 이동도 가능
+        {
+          openLoginModal();
+        }
       }
       return;
     }
@@ -39,7 +41,7 @@ const LikeButton = ({
             serviceName,
             category,
             regionCity,
-            regionDistrict,
+            regionDistrict: regionDistrict || "제한없음", // ✅ 기본값 처리
           },
           {
             headers: { Authorization: `Bearer ${token}` },
