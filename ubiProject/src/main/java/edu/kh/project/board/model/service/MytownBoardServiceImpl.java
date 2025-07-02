@@ -140,6 +140,42 @@ public class MytownBoardServiceImpl implements MytownBoardService {
         
         
         
+
+        @Override
+        public int checkBoardLike(int boardNo, int memberNo) {
+            return mapper.checkBoardLike(boardNo, memberNo);
+        }
+
+        @Override
+        public int insertBoardLike(int boardNo, int memberNo) {
+            return mapper.insertBoardLike(boardNo, memberNo);
+        }
+
+        @Override
+        public int deleteBoardLike(int boardNo, int memberNo) {
+            return mapper.deleteBoardLike(boardNo, memberNo);
+        }
+        
+        
+        /**
+         * 삭제하기
+         */
+        @Override
+        public int deleteBoard(int boardNo, int memberNo) {
+            return mapper.deleteBoard(boardNo, memberNo);
+        }
+        
+        
+        /** 수정 하기 
+         * 
+         */
+        @Override
+        public int updateBoard(Board dto) {
+            return mapper.updateBoard(dto);
+        }
+
+
+        
         }
 
 

@@ -41,5 +41,40 @@ public interface MytownBoardService {
 
 	    String saveBoardImage(MultipartFile uploadFile) throws IOException;
 
+	    
+	    /** 좋아요
+	     * 
+	     * @param boardNo
+	     * @param memberNo
+	     * @return
+	     */
+	    
+	    // 좋아요 여부 확인
+	    int checkBoardLike(int boardNo, int memberNo);
+
+	    // 좋아요 등록
+	    int insertBoardLike(int boardNo, int memberNo);
+
+	    // 좋아요 취소
+	    int deleteBoardLike(int boardNo, int memberNo);
+
+	    
+/**
+ * 삭제 	    
+ * @param boardNo
+ * @param memberNo
+ * @return
+ */
+	    int deleteBoard(int boardNo, int memberNo);
+
+	    
+/**수정 
+ * 	    
+ * @param dto
+ * @return
+ */
+	    int updateBoard(Board dto);
+
+	    
 }
 
