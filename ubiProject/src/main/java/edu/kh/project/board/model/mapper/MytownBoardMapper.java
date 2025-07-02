@@ -65,6 +65,30 @@ public interface MytownBoardMapper {
 	    List<BoardImage> selectAllImages();
 	    int updateImagePath(@Param("imageNo") int imageNo, @Param("imagePath") String imagePath);
 	    
+		 // 좋아요 확인
+	    int checkBoardLike(@Param("boardNo") int boardNo, @Param("memberNo") int memberNo);
+
+	    // 좋아요 등록
+	    int insertBoardLike(@Param("boardNo") int boardNo, @Param("memberNo") int memberNo);
+
+	    // 좋아요 취소
+	    int deleteBoardLike(@Param("boardNo") int boardNo, @Param("memberNo") int memberNo);
 	    
 	    
+	    /** 게시글 삭제
+	     * 
+	     * @param boardNo
+	     * @param memberNo
+	     * @return
+	     */
+	    int deleteBoard(@Param("boardNo") int boardNo, @Param("memberNo") int memberNo);
+	    
+	    
+	    /** 수정하기 
+	     * 
+	     * @param dto
+	     * @return
+	     */
+	    int updateBoard(Board dto);
+
 }
