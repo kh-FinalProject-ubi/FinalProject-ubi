@@ -23,8 +23,7 @@ import LocalBenefitSection from "./components/welfareService/LocalBenefitSection
 import InsertBoard from "./pages/board/InsertBoard";
 import { useEffect } from "react";
 import { initAuthFromToken } from "./utils/initAuthFromToken";
-
-
+import WelfareDetailPage from "./pages/welfareService/WelfareDetailPage";
 function App() {
   useEffect(() => {
     initAuthFromToken(); // 앱 진입 시 토큰 → 상태 복원
@@ -57,6 +56,10 @@ function App() {
           <Route path="signup" element={<Signup />} />
           <Route path="mytownBoard" element={<MyTownBoard />} />
           <Route path="localBenefits" element={<LocalBenefitSection />} />
+          <Route
+            path="/welfareService/detail"
+            element={<WelfareDetailPage />}
+          />
         </Route>
 
         {/* 레이아웃이 필요 없는 단독 Route (예: 로그인 콜백) */}
