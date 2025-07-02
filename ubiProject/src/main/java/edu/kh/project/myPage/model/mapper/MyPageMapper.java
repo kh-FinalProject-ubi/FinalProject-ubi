@@ -21,11 +21,6 @@ import edu.kh.project.welfare.benefits.model.dto.Welfare;
 @Mapper
 public interface MyPageMapper {
 	
-	/** 회원 탈퇴
-	 * @param memberNo
-	 * @return
-	 */
-	int secession(int memberNo);
 
 	/** 파일 정보를 DB에 삽입
 	 * @param uf
@@ -121,6 +116,11 @@ public interface MyPageMapper {
 	 */
 	int changePw(Map<String, String> paramMap);
 
+	/** 회원 탈퇴
+	 * @param memberNo
+	 * @return
+	 */
+	int withdraw(int memberNo);
 
 
 

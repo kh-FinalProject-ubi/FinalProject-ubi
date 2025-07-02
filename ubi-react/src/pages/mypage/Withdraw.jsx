@@ -1,22 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import "../../styles/mypage/Withdraw.css";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import useAuthStore from '../../stores/useAuthStore';
 
 const Withdraw = () => {
-  const { memberNo } = useAuthStore(); 
+  const { memberNo, clearAuth } = useAuthStore(); 
   const { token } = useAuthStore(); // Zustand에서 회원 정보 가져옴
 
   const [form, setForm] = useState({
-    currentPw: "",
-    newPw: "",
-    confirmPw: "",
+    currentPw: ""
   });
 
   const [validationErrors, setValidationErrors] = useState({});
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();
+  const [countdown, setCountdown] = useState(5);
+  const [progress, setProgress] = useState(0);
 
   const [step, setStep] = useState(1);
   const [agree, setAgree] = useState(false);
@@ -26,23 +29,11 @@ const Withdraw = () => {
   const validateFields = (fields) => {
     const errors = {};
 
-    if (fields.currentPw !== undefined && fields.currentPw.length < 5) {
-      errors.currentPw = "현재 비밀번호는 5자 이상이어야 합니다.";
-    }
-
     if (
-      fields.newPw !== undefined &&
-      !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_\-+=<>?]{5,}$/.test(fields.newPw)
+      fields.currentPw !== undefined &&
+      !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_\-+=<>?]{5,}$/.test(fields.currentPw)
     ) {
-      errors.newPw = "영문+숫자 포함 5자 이상이어야 합니다.";
-    }
-
-    if (
-      fields.confirmPw !== undefined &&
-      fields.newPw !== undefined &&
-      fields.confirmPw !== fields.newPw
-    ) {
-      errors.confirmPw = "비밀번호가 일치하지 않습니다.";
+      errors.currentPw = "영문+숫자 포함 5자 이상이어야 합니다.";
     }
 
     return errors;
@@ -55,8 +46,17 @@ const Withdraw = () => {
 
     const errors = validateFields(updatedForm);
     setValidationErrors(errors);
+
+    if (
+      updatedForm.currentPw && // 값이 있고
+      !errors.currentPw       // 오류가 없으면
+    ) {
+      setSuccess("사용 가능한 비밀번호입니다.");
+    } else {
+      setSuccess("");
+    }
+
     setError("");
-    setSuccess("");
   };
 
   // 현재 비밀번호 확인
@@ -95,17 +95,16 @@ const Withdraw = () => {
     }
   };
 
-  const handleNextStep2 = (e) => {
-    e.preventDefault();
+  // const handleNextStep2 = (e) => {
+  //   e.preventDefault();
+  // };
+
+  const withdraw = async (e) => {
+    e.preventDefault(); // 폼 기본 동작 차단!!
     if (!agree) {
       alert('약관에 동의해야 다음 단계로 진행할 수 있습니다.');
       return;
     }
-    setStep(3);
-  };
-
-  const withdraw = async (e) => {
-    e.preventDefault(); // 폼 기본 동작 차단!!
     setError("");
     setSuccess("");
 
@@ -114,9 +113,10 @@ const Withdraw = () => {
         memberNo : memberNo
       });
 
-      if (res.data === 200) {
+      if (res.data === 1) {
           console.log("응답받음");
           setError("");
+          setStep(3);
         }
       } catch {
         setError("회원 탈퇴 중 오류가 발생했습니다.");
@@ -124,8 +124,54 @@ const Withdraw = () => {
   }
 
   const handleGoHome = () => {
+    useAuthStore.getState().clearAuth();
     window.location.href = '/';
   };
+
+  useEffect(() => {
+    if (step === 3) {
+      useAuthStore.getState().clearAuth();
+      localStorage.removeItem("kakaoId");
+
+      setCountdown(5);
+      setProgress(0);
+
+      const duration = 5000;
+      const interval = 50;
+      const totalTicks = duration / interval;
+      let tick = 0;
+
+      const timer = setInterval(() => {
+        tick++;
+
+        // 1초마다 countdown -1
+        if (tick % (1000 / interval) === 0) {
+          setCountdown(prev => (prev > 0 ? prev - 1 : 0));
+        }
+
+        // progress 부드럽게 증가
+        setProgress(Math.min((tick / totalTicks) * 100, 100));
+
+        if (tick >= totalTicks) {
+          clearInterval(timer);
+        }
+      }, interval);
+
+      return () => clearInterval(timer);
+    }
+  }, [step]);
+
+  useEffect(() => {
+    if (progress >= 100 && step === 3) {
+      const timeout = setTimeout(() => {
+        window.location.href = "/";
+      }, 500);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [progress, step]);
+
+
 
   return (
     <div className="withdraw-container">
@@ -139,10 +185,14 @@ const Withdraw = () => {
               type="password"
               name="currentPw"  
               value={form.currentPw}
+              placeholder='비밀번호를 입력해주세요.'
               onChange={handleChange("currentPw")}
             />
             {validationErrors.currentPw && (
               <p className="error">{validationErrors.currentPw}</p>
+            )}
+            {error && (
+              <p className="error">{error}</p>
             )}
           <button type="submit">다음</button>
         </form>
@@ -150,7 +200,7 @@ const Withdraw = () => {
 
       {/* STEP 2 */}
       {step === 2 && (
-        <form onSubmit={handleNextStep2}>
+        <form>
           <div className="terms-box">
             <h3>회원 탈퇴 전 반드시 아래 내용을 확인해 주세요.</h3>
             <ul>
@@ -227,6 +277,13 @@ const Withdraw = () => {
       {step === 3 && (
         <div className="complete-step">
           <p><strong>회원 탈퇴가 완료되었습니다.</strong></p>
+           <p>{countdown}초 후 홈으로 이동합니다.</p>
+           <div className="progress-bar-container">
+              <div
+                className="progress-bar"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           <button onClick={handleGoHome}>홈으로</button>
         </div>
       )}
