@@ -1,0 +1,119 @@
+/* 전체 댓글 섹션 */
+.comment-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* 개별 댓글 아이템 (부모) */
+.comment-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 16px 0; /* 상하 여백 조정 */
+  border-bottom: 1px solid #f0f0f0; /* 연한 구분선 */
+}
+
+/* 댓글 내용 전체를 감싸는 영역 */
+.comment-content-area {
+  flex-grow: 1; /* 남은 공간을 모두 차지 */
+}
+
+/* 상단: 닉네임, 날짜, 수정/삭제 버튼 */
+.comment-header {
+  display: flex;
+  justify-content: space-between; /* 양쪽 끝으로 정렬 */
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.comment-author-info {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* 닉네임과 날짜 사이 간격 */
+}
+
+.comment-author-nickname {
+  font-weight: bold;
+  font-size: 0.95rem; /* 15px */
+}
+
+.comment-date {
+  font-size: 0.8rem; /* 13px */
+  color: #888;
+}
+
+/* 수정/삭제 버튼 그룹 */
+.comment-actions-right button {
+  background: none;
+  border: none;
+  color: #888; /* 날짜와 비슷한 톤 */
+  cursor: pointer;
+  font-size: 0.8rem; /* 날짜와 같은 크기 */
+  margin-left: 8px;
+  padding: 2px 4px;
+}
+
+.comment-actions-right button:hover {
+  color: #333;
+}
+
+/* 댓글 본문 텍스트 */
+.comment-text {
+  margin: 8px 0 12px 0; /* 상하 여백 조정 */
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* 하단: 좋아요, 답글 버튼 */
+.comment-actions-bottom button {
+  background: none;
+  border: none;
+  color: #555;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0;
+  margin-right: 12px;
+}
+
+.comment-actions-bottom button:hover {
+  text-decoration: underline;
+}
+
+/* 답글 목록을 감싸는 ul */
+.reply-list li .comment-item {
+  margin-left: 50px; /* 부모 댓글보다 오른쪽으로 들여쓰기 */
+  border-left: 3px solid #e0e0e0;
+  padding-left: 15px;
+  border-radius: 6px;
+}
+
+/* 삭제된 댓글의 자식이라는 안내 문구 */
+.parent-deleted-notice {
+  font-size: 0.9rem;
+  color: #777;
+  background-color: #f5f5f5;
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  display: inline-block;
+}
+
+/* 답글 작성 폼 */
+.comment-section form {
+  margin-top: 10px;
+}
+
+.comment-section form textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  font-size: 0.95rem;
+}
+
+.comment-section form button {
+  margin-top: 8px;
+  /* 버튼 스타일은 기존 btn-yellow 등을 따르도록 비워둠 */
+}
