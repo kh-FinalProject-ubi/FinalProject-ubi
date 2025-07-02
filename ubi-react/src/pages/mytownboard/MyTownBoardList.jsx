@@ -28,7 +28,7 @@ const [pagination, setPagination] = useState({});
         setPagination(data.pagination);
   })
       .catch((err) => console.error("Error:", err));
-  }, []);
+  }, [page]);
 
   return (
     <div>
@@ -104,15 +104,14 @@ const [pagination, setPagination] = useState({});
                 {board.boardTitle}
               </Link>
             </h3>
-            <img
-              src={board.thumbnail|| "/default-thumbnail.png"}
-              alt="썸네일"
-              width="120"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "/default-thumbnail.png";
-              }}
-            />
+          <img
+  src={
+    board.thumbnail
+      ? board.thumbnail.replace(/\/{2,}/g, "/")  // ✅ 정규식으로 슬래시 2개 이상 제거
+      : "/default-thumbnail.png"
+  }
+  alt="썸네일"
+/>
 
             <p>
               <img
@@ -166,41 +165,60 @@ const [pagination, setPagination] = useState({});
       </button>
 
  {/* 페이지네이션 버튼 */}
-      <div style={{ marginTop: "20px" }}>
-        <button
-          onClick={() => setPage(pagination.prevPage)}
-          disabled={page <= 1}
-        >
-          &laquo;
-        </button>
+<div style={{ marginTop: "20px" }}>
+  {/* 맨 처음 페이지로 이동 */}
+  <button
+    onClick={() => setPage(1)}
+    disabled={page <= 1}
+  >
+    &laquo;
+  </button>
 
-        {Array.from(
-          { length: (pagination.endPage || 0) - (pagination.startPage || 0) + 1 },
-          (_, i) => {
-            const pageNum = (pagination.startPage || 0) + i;
-            return (
-              <button
-                key={pageNum}
-                onClick={() => setPage(pageNum)}
-                disabled={pageNum === page}
-                style={{
-                  fontWeight: pageNum === page ? "bold" : "normal",
-                  margin: "0 5px",
-                }}
-              >
-                {pageNum}
-              </button>
-            );
-          }
-        )}
+  {/* 한 페이지 뒤로 */}
+  <button
+    onClick={() => setPage(page - 1)}
+    disabled={page <= 1}
+  >
+    &lt;
+  </button>
 
+  {Array.from(
+    { length: (pagination.endPage || 0) - (pagination.startPage || 0) + 1 },
+    (_, i) => {
+      const pageNum = (pagination.startPage || 0) + i;
+      return (
         <button
-          onClick={() => setPage(pagination.nextPage)}
-          disabled={page >= pagination.maxPage}
+          key={pageNum}
+          onClick={() => setPage(pageNum)}
+          disabled={pageNum === page}
+          style={{
+            fontWeight: pageNum === page ? "bold" : "normal",
+            margin: "0 5px",
+          }}
         >
-          &raquo;
+          {pageNum}
         </button>
-      </div>
+      );
+    }
+  )}
+
+  {/* 한 페이지 앞으로 */}
+  <button
+    onClick={() => setPage(page + 1)}
+    disabled={page >= pagination.maxPage}
+  >
+    &gt;
+  </button>
+
+  {/* 마지막 페이지로 이동 */}
+  <button
+    onClick={() => setPage(pagination.maxPage)}
+    disabled={page >= pagination.maxPage}
+  >
+    &raquo;
+  </button>
+</div>
+
 
     </div>
 
