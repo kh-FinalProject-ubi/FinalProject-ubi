@@ -1,20 +1,98 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import "../../styles/mypage/Withdraw.css";
 import { motion, AnimatePresence } from "framer-motion";
+import useAuthStore from '../../stores/useAuthStore';
 
 const Withdraw = () => {
+  const { memberNo } = useAuthStore(); 
+  const { token } = useAuthStore(); // Zustand에서 회원 정보 가져옴
+
+  const [form, setForm] = useState({
+    currentPw: "",
+    newPw: "",
+    confirmPw: "",
+  });
+
+  const [validationErrors, setValidationErrors] = useState({});
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
+
   const [step, setStep] = useState(1);
-  const [password, setPassword] = useState('');
   const [agree, setAgree] = useState(false);
   const [showFullTerms, setShowFullTerms] = useState(false); // 👈 아코디언 상태
 
-  const handleNextStep1 = (e) => {
-    e.preventDefault();
-    if (!password) {
+  // 통합 유효성 검사
+  const validateFields = (fields) => {
+    const errors = {};
+
+    if (fields.currentPw !== undefined && fields.currentPw.length < 5) {
+      errors.currentPw = "현재 비밀번호는 5자 이상이어야 합니다.";
+    }
+
+    if (
+      fields.newPw !== undefined &&
+      !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*()_\-+=<>?]{5,}$/.test(fields.newPw)
+    ) {
+      errors.newPw = "영문+숫자 포함 5자 이상이어야 합니다.";
+    }
+
+    if (
+      fields.confirmPw !== undefined &&
+      fields.newPw !== undefined &&
+      fields.confirmPw !== fields.newPw
+    ) {
+      errors.confirmPw = "비밀번호가 일치하지 않습니다.";
+    }
+
+    return errors;
+  };
+
+  // 실시간 입력 핸들러
+  const handleChange = (field) => (e) => {
+    const updatedForm = { ...form, [field]: e.target.value };
+    setForm(updatedForm);
+
+    const errors = validateFields(updatedForm);
+    setValidationErrors(errors);
+    setError("");
+    setSuccess("");
+  };
+
+  // 현재 비밀번호 확인
+  const verifyPassword = async (e) => {
+    e.preventDefault(); // 폼 기본 동작 차단!!
+    setError("");
+    setSuccess("");
+    console.log("✅ verifyPassword 실행됨!");
+
+    if (!form.currentPw) {
       alert('비밀번호를 입력해주세요.');
       return;
     }
-    setStep(2);
+
+     console.log("🚀 axios.post 호출 준비");
+
+    const errors = validateFields({ currentPw: form.currentPw });
+    setValidationErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    try {
+      console.log("현재 비밀번호 전송!");
+      const res = await axios.post("/api/myPage/selectPw", {
+        memberPw: form.currentPw, memberNo : memberNo
+      });
+
+      if (res.data === 1) {
+        console.log("응답받음");
+        setError("");
+        setStep(2);
+      } else {
+        setError("현재 비밀번호가 일치하지 않습니다.");
+      }
+    } catch {
+      setError("비밀번호 확인 중 오류가 발생했습니다.");
+    }
   };
 
   const handleNextStep2 = (e) => {
@@ -26,6 +104,25 @@ const Withdraw = () => {
     setStep(3);
   };
 
+  const withdraw = async (e) => {
+    e.preventDefault(); // 폼 기본 동작 차단!!
+    setError("");
+    setSuccess("");
+
+    try {
+      const res = await axios.post("/api/myPage/withdraw", {
+        memberNo : memberNo
+      });
+
+      if (res.data === 200) {
+          console.log("응답받음");
+          setError("");
+        }
+      } catch {
+        setError("회원 탈퇴 중 오류가 발생했습니다.");
+      }
+  }
+
   const handleGoHome = () => {
     window.location.href = '/';
   };
@@ -36,15 +133,17 @@ const Withdraw = () => {
 
       {/* STEP 1 */}
       {step === 1 && (
-        <form onSubmit={handleNextStep1}>
+        <form onSubmit={verifyPassword}>
           <p>탈퇴를 위해 비밀번호를 입력해주세요.</p>
-          <input
-            type="password"
-            placeholder="비밀번호 입력"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+           <input
+              type="password"
+              name="currentPw"  
+              value={form.currentPw}
+              onChange={handleChange("currentPw")}
+            />
+            {validationErrors.currentPw && (
+              <p className="error">{validationErrors.currentPw}</p>
+            )}
           <button type="submit">다음</button>
         </form>
       )}
@@ -120,7 +219,7 @@ const Withdraw = () => {
               위 약관을 모두 읽고 동의합니다.
             </label>
           </div>
-          <button type="submit">탈퇴하기</button>
+          <button type="submit" onClick={withdraw}>탈퇴하기</button>
         </form>
       )}
 
