@@ -225,8 +225,6 @@ public class MyPageController {
 	@PostMapping("selectPw") // /myPage/changePw POST 요청 매핑
 	public ResponseEntity<Object> selectPw(@RequestBody Member request) {
 		
-//		log.debug("현재 비밀번호 전송받음!");
-		
 		int memberNo = request.getMemberNo();
 		String currentPassword = request.getMemberPw();
 		
@@ -283,7 +281,37 @@ public class MyPageController {
 		
 		}
 	
+	/**
+	 * 비밀번호 확인
+	 * 
+	 * @param paramMap    : 모든 파라미터(요청 데이터)를 맵으로 저장
+	 * @param loginMember : 세션에 등록된 현재 로그인한 회원 정보
+	 * @param ra
+	 * @return
+	 */
+	@PostMapping("withdraw") // /myPage/changePw POST 요청 매핑
+	public ResponseEntity<Object> withdraw(@RequestBody Member request) {
+		
+		int memberNo = request.getMemberNo();
+		
+		try {
+			if (memberNo == 0) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+			}
+			
+			// paramMap = {currentPw=asd123, newPw=pass02!, newPwConfirm=pass02!}
 	
+			// 현재 + 새 비번 + 새 비번 확인 (paramMap) + 회원번호(memberNo)를 서비스로 전달
+//			int result = service.selectPw(memberNo);
+
+			return ResponseEntity.status(HttpStatus.OK).body(null);
+
+		} catch (Exception e) {
+				log.error("비밀번호 확인 중 오류 발생", e);
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+			}
+
+	}
 
 	
 	// ---------------------------------------------------------------------------------------------------------------------

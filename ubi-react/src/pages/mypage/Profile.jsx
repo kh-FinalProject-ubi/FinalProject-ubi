@@ -117,6 +117,7 @@ const Profile = () => {
       const fullAddress2 = `${zipcode2}^^^${baseAddress2}^^^${detailAddress2}`;
 
       const code = getMemberStandardCode(mainType, disabled, pregnant);
+      console.log("저장되는 코드:", code);
 
       const payload = {
         ...member,
@@ -283,6 +284,7 @@ const Profile = () => {
   };
 
   const getMemberStandardCode = (main, isDisabled, isPregnant) => {
+      console.log("코드 생성 파라미터:", main, isDisabled, isPregnant);
     if (main === "일반" && isDisabled && isPregnant) return "A";
     if (main === "노인" && isDisabled && isPregnant) return "B";
     if (main === "청년" && isDisabled && isPregnant) return "C";
@@ -304,6 +306,14 @@ const Profile = () => {
     if (main === "아동") return "3";
   };
 
+  useEffect(() => {
+    if (member?.memberStandard) {
+      const { main, isDisabled, isPregnant } = parseMemberStandardCode(member.memberStandard);
+      setMainType(main);
+      setDisabled(isDisabled);
+      setPregnant(isPregnant);
+    }
+  }, [member]);
 
   const getMemberStandardLabel = (code) => {
     const { main, isDisabled, isPregnant } = parseMemberStandardCode(code);
