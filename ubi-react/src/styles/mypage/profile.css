@@ -22,18 +22,19 @@
   font-weight: 500;
 }
 
+
+
 .member-standard-labels .tag-disabled {
   background-color: #d0e6ff;
   color: #0057b7;
 }
 
+
+
 .member-standard-labels .tag-pregnant {
   background-color: #ffe1e1;
   color: #b70000;
 }
-
-
-
 
 .description-preview {
   display: -webkit-box;
