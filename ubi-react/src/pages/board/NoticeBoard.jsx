@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Pagination from "../../components/Pagination";
-import useLoginMember from "../../hook/login/useLoginMember";
 import useAuthStore from "../../stores/useAuthStore";
 
 const boardCodeMap = {
@@ -12,7 +11,6 @@ const boardCodeMap = {
 };
 
 const NoticeBoard = () => {
-  useLoginMember();
   const [boardList, setBoardList] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
