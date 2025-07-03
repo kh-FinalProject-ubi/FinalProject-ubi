@@ -16,3 +16,22 @@
   font-size: 14px;
   line-height: 1.6;
 }
+
+/* progress bar 전체 컨테이너 */
+.progress-bar-container {
+  width: 80%;
+  height: 10px;
+  background-color: #F9FBFD;
+  border-radius: 5px;
+  margin: 20px auto;
+  overflow: hidden;
+}
+
+/* progress 바 */
+.progress-bar {
+  height: 100%;
+  background-color: #FFE56D;
+  transition: width 0.5s ease;
+  width: 0; /* 초기값은 0% */
+  border-radius: 5px 0 0 5px; /* 왼쪽 끝 둥글게 */
+}

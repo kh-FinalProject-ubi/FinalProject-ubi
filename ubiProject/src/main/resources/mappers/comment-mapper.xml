@@ -6,7 +6,7 @@
 	<select id="select" resultType="Comment">
 	SELECT LEVEL, C.* FROM
 	(SELECT COMMENT_NO, COMMENT_CONTENT,
-	    TO_CHAR(COMMENT_DATE, 'YYYY"년" MM"월" DD"일" HH24"시" MI"분" SS"초"') COMMENT_DATE,
+	    TO_CHAR(COMMENT_DATE, 'YYYY"." MM"." DD"." HH24":" MI') COMMENT_DATE,
 	    BOARD_NO, MEMBER_NO, MEMBER_NICKNAME, MEMBER_IMG, COMMENT_PARENT_NO, COMMENT_DEL_FL
 	FROM "COMMENTS"
 	JOIN MEMBER USING(MEMBER_NO)
@@ -19,6 +19,7 @@
 	CONNECT BY PRIOR COMMENT_NO = COMMENT_PARENT_NO
 	ORDER SIBLINGS BY COMMENT_NO
 	</select>
+	 
 	 
 	 <!-- 동적 SQL : <if>
 	 	조건식을 작성할 수 있는 태그
@@ -59,8 +60,9 @@
 
 	<!-- 댓글 수정 서비스 -->
 	<update id="update">
-	UPDATE "COMMENT" SET
-	COMMENT_CONTENT = #{commentContent}
+	UPDATE "COMMENTS" SET
+	COMMENT_CONTENT = #{commentContent},
+	COMMENT_UPDATE_DATE = SYSDATE
 	WHERE COMMENT_NO = #{commentNo}
 	</update>
 	

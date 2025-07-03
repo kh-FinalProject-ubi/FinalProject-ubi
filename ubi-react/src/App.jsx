@@ -24,7 +24,7 @@ import InsertBoard from "./pages/board/InsertBoard";
 import { useEffect } from "react";
 import { initAuthFromToken } from "./utils/initAuthFromToken";
 import MytownBoardUpdate from "./pages/mytownboard/MytownBoardUpdate";
-
+import WelfareDetailPage from "./pages/welfareService/WelfareDetailPage";
 
 function App() {
   useEffect(() => {
@@ -59,6 +59,10 @@ function App() {
           <Route path="signup" element={<Signup />} />
           <Route path="mytownBoard" element={<MyTownBoard />} />
           <Route path="localBenefits" element={<LocalBenefitSection />} />
+          <Route
+            path="/welfareService/detail"
+            element={<WelfareDetailPage />}
+          />
         </Route>
 
         {/* 레이아웃이 필요 없는 단독 Route (예: 로그인 콜백) */}

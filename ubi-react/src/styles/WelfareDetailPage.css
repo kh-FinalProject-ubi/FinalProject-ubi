@@ -1,0 +1,38 @@
+.welfare-detail-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  font-family: "Segoe UI", sans-serif;
+  line-height: 1.6;
+}
+
+.welfare-detail-page h2 {
+  font-size: 1.8rem;
+  margin-bottom: 16px;
+  color: #2c3e50;
+}
+
+.welfare-detail-page p {
+  margin: 8px 0;
+}
+
+.welfare-detail-page strong {
+  color: #34495e;
+}
+
+.welfare-detail-page pre {
+  background-color: #f9f9f9;
+  padding: 12px;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+.welfare-detail-page img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 16px 0;
+}

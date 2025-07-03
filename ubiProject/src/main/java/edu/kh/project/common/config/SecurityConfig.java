@@ -64,18 +64,18 @@ public class SecurityConfig {
 
             // ✅ 경로별 인증 설정
             .authorizeHttpRequests(auth -> auth
-                // 정적 리소스 허용
-                .requestMatchers("/", "/css/**", "/js/**", "/img/**", "/images/**", "/images/board/**").permitAll()
+            	    .requestMatchers("/", "/css/**", "/js/**", "/img/**", "/images/**", "/images/board/**").permitAll()
+            	    .requestMatchers("/login/**", "/oauth2/**", "/kid/**").permitAll()
 
-                // 로그인, OAuth2 등 인증 없이 접근 가능
-                .requestMatchers("/login/**", "/oauth2/**", "/kid/**").permitAll()
+            	    // ✅ 인기 복지혜택만 예외적으로 허용
+            	    .requestMatchers("/api/welfare/like/popular").permitAll()
+            	    .requestMatchers("/api/welfare-curl/welfare-detail").permitAll()
 
-                // 인증 필요 API
-                .requestMatchers("/api/welfare/like", "/api/welfare/my-likes").authenticated()
+            	    // ✅ 나머지 찜 API는 인증 필요
+            	    .requestMatchers("/api/welfare/like/**", "/api/welfare/my-likes").authenticated()
 
-                // 그 외 전체 허용
-                .anyRequest().permitAll()
-            )
+            	    .anyRequest().permitAll()
+            	)
 
             // ✅ JWT 필터 등록: UsernamePasswordAuthenticationFilter 이전에 실행되도록
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

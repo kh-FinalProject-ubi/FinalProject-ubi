@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import useAuthStore from "../../stores/useAuthStore";
+import cityDistrictMap from "../../constants/cityDistrictMap"; // 👈 경로 확인
 
 const SERVICE_TYPES = [
   "전체",
@@ -12,6 +14,15 @@ const SERVICE_TYPES = [
 const CATEGORIES = ["전체", "복지 혜택", "구인", "기타"];
 
 const WelfareSearchFilter = ({ onFilterChange }) => {
+  const token = useAuthStore((state) => state.token);
+  const userCity = useAuthStore((state) => state.regionCity);
+  const userDistrict = useAuthStore((state) => state.regionDistrict);
+
+  const [region, setRegion] = useState({
+    city: token ? userCity : "서울특별시",
+    district: token ? userDistrict : "종로구",
+  });
+
   const [filterState, setFilterState] = useState({
     keyword: "",
     serviceType: "전체",
@@ -20,18 +31,20 @@ const WelfareSearchFilter = ({ onFilterChange }) => {
     showAll: false,
   });
 
-  // 상태 변경 & 외부에 알림
   const updateFilter = (changes) => {
     const newState = { ...filterState, ...changes };
     setFilterState(newState);
-    onFilterChange(newState);
+    onFilterChange({ ...newState, region });
   };
+
+  useEffect(() => {
+    onFilterChange({ ...filterState, region });
+  }, [region]);
 
   return (
     <div className="welfare-search-filter">
       <h3>공공 서비스 조회</h3>
 
-      {/* 🔎 검색창 + 정렬 토글 */}
       <div className="search-bar">
         <input
           type="text"
@@ -51,7 +64,35 @@ const WelfareSearchFilter = ({ onFilterChange }) => {
         </button>
       </div>
 
-      {/* 🧑‍🤝‍🧑 대상 버튼 */}
+      <div className="region-select">
+        <select
+          value={region.city}
+          onChange={(e) =>
+            setRegion({
+              city: e.target.value,
+              district: cityDistrictMap[e.target.value]?.[0] || "",
+            })
+          }
+        >
+          {Object.keys(cityDistrictMap).map((city) => (
+            <option key={city} value={city}>
+              {city}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={region.district}
+          onChange={(e) => setRegion({ ...region, district: e.target.value })}
+        >
+          {(cityDistrictMap[region.city] || []).map((d) => (
+            <option key={d} value={d}>
+              {d}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div className="service-type-buttons">
         {SERVICE_TYPES.map((type) => (
           <button
@@ -64,7 +105,6 @@ const WelfareSearchFilter = ({ onFilterChange }) => {
         ))}
       </div>
 
-      {/* 📂 카테고리 버튼 */}
       <div className="category-buttons">
         {CATEGORIES.map((cat) => (
           <button
@@ -77,7 +117,6 @@ const WelfareSearchFilter = ({ onFilterChange }) => {
         ))}
       </div>
 
-      {/* ✅ 전체 혜택 보기 토글 */}
       <div className="show-all-toggle">
         <label>
           <input

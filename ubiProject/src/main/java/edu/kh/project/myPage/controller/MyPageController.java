@@ -282,7 +282,7 @@ public class MyPageController {
 		}
 	
 	/**
-	 * 비밀번호 확인
+	 * 회원탈퇴
 	 * 
 	 * @param paramMap    : 모든 파라미터(요청 데이터)를 맵으로 저장
 	 * @param loginMember : 세션에 등록된 현재 로그인한 회원 정보
@@ -299,12 +299,11 @@ public class MyPageController {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
 			}
 			
-			// paramMap = {currentPw=asd123, newPw=pass02!, newPwConfirm=pass02!}
 	
-			// 현재 + 새 비번 + 새 비번 확인 (paramMap) + 회원번호(memberNo)를 서비스로 전달
-//			int result = service.selectPw(memberNo);
+//			 현재 + 새 비번 + 새 비번 확인 (paramMap) + 회원번호(memberNo)를 서비스로 전달
+			int result = service.withdraw(memberNo);
 
-			return ResponseEntity.status(HttpStatus.OK).body(null);
+			return ResponseEntity.status(HttpStatus.OK).body(result);
 
 		} catch (Exception e) {
 				log.error("비밀번호 확인 중 오류 발생", e);
@@ -317,46 +316,46 @@ public class MyPageController {
 	// ---------------------------------------------------------------------------------------------------------------------
 
 
-	/**
-	 * 회원 탈퇴
-	 * 
-	 * @param memberPw    : 입력받은 비밀번호
-	 * @param loginMember : 로그인한 회원 정보(세션)
-	 * @param status      : 세션 완료 용도의 객체 -> @SessionAttributes로 등록된 세션을 완료
-	 * @return
-	 */
-	@PostMapping("secession")
-	public String secession(@RequestParam("memberPw") String memberPw,
-			@SessionAttribute("loginMember") Member loginMember, RedirectAttributes ra, SessionStatus status) {
-
-		// 로그인한 회원의 회원번호 꺼내기
-		int memberNo = loginMember.getMemberNo();
-
-		// 서비스 호출 (입력받은 비밀번호, 로그인한 회원번호)
-		int result = service.secession(memberPw, memberNo);
-
-		String message = null;
-		String path = null;
-
-		if (result > 0) {
-			message = "탈퇴 되었습니다.";
-			path = "/";
-
-			status.setComplete(); // 세션 완료 시킴 > 로그아웃
-
-		} else {
-			message = "비밀번호가 일치하지 않습니다.";
-			path = "secession";
-		}
-
-		ra.addFlashAttribute("message", message);
-
-		// 탈퇴 성공 -> redirect:/ (메인페이지)
-		// 탈퇴 실패 -> redirect:secession" (상대경로)
-		// -> /myPage/secession (현재경로 POST)
-		// -> /myPage/secession (GET 요청)
-		return "redirect:" + path;
-	}
+//	/**
+//	 * 회원 탈퇴
+//	 * 
+//	 * @param memberPw    : 입력받은 비밀번호
+//	 * @param loginMember : 로그인한 회원 정보(세션)
+//	 * @param status      : 세션 완료 용도의 객체 -> @SessionAttributes로 등록된 세션을 완료
+//	 * @return
+//	 */
+//	@PostMapping("secession")
+//	public String secession(@RequestParam("memberPw") String memberPw,
+//			@SessionAttribute("loginMember") Member loginMember, RedirectAttributes ra, SessionStatus status) {
+//
+//		// 로그인한 회원의 회원번호 꺼내기
+//		int memberNo = loginMember.getMemberNo();
+//
+//		// 서비스 호출 (입력받은 비밀번호, 로그인한 회원번호)
+//		int result = service.secession(memberPw, memberNo);
+//
+//		String message = null;
+//		String path = null;
+//
+//		if (result > 0) {
+//			message = "탈퇴 되었습니다.";
+//			path = "/";
+//
+//			status.setComplete(); // 세션 완료 시킴 > 로그아웃
+//
+//		} else {
+//			message = "비밀번호가 일치하지 않습니다.";
+//			path = "secession";
+//		}
+//
+//		ra.addFlashAttribute("message", message);
+//
+//		// 탈퇴 성공 -> redirect:/ (메인페이지)
+//		// 탈퇴 실패 -> redirect:secession" (상대경로)
+//		// -> /myPage/secession (현재경로 POST)
+//		// -> /myPage/secession (GET 요청)
+//		return "redirect:" + path;
+//	}
 
 	/*
 	 * Spring에서 파일 업로드를 처리하는 방법

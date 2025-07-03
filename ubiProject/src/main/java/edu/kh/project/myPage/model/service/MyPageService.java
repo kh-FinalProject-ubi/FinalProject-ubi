@@ -17,13 +17,6 @@ import edu.kh.project.welfare.benefits.model.dto.Welfare;
 
 public interface MyPageService {
 
-	/** 회원 탈퇴 서비스
-	 * @param memberPw
-	 * @param memberNo
-	 * @return
-	 */
-	int secession(String memberPw, int memberNo);
-
 	/** 파일 업로드 테스트 1
 	 * @param uploadFile
 	 * @return path
@@ -135,6 +128,12 @@ public interface MyPageService {
 	 * @return
 	 */
 	int changePw(String currentPw, int memberNo);
+
+	/** 회원탈퇴
+	 * @param memberNo
+	 * @return
+	 */
+	int withdraw(int memberNo);
 
 
 
