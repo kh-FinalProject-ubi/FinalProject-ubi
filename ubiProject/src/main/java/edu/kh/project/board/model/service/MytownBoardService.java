@@ -39,6 +39,7 @@ public interface MytownBoardService {
 	    void insertHashtag(int boardNo, String tag);
 
 
+	    
 	    String saveBoardImage(MultipartFile uploadFile) throws IOException;
 
 	    
@@ -76,5 +77,13 @@ public interface MytownBoardService {
 	    int updateBoard(Board dto);
 
 	    
+/** 이미지 
+ * 
+ * @param boardNo
+ * @return
+ */
+//	    int deleteImagesByBoardNo(int boardNo); // 이미지 삭제용
+//	    int insertBoardImage(BoardImage image); // 이미지 삽입용
+//	    
 }
 

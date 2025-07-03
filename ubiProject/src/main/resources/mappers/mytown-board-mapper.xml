@@ -192,4 +192,19 @@ WHERE B.BOARD_NO = #{boardNo}
     WHERE BOARD_NO = #{boardNo} AND MEMBER_NO = #{memberNo}
 </update>
 
+
+<!-- 기존 이미지 삭제 -->
+<delete id="deleteImagesByBoardNo">
+  DELETE FROM BOARD_IMAGE
+  WHERE BOARD_NO = #{boardNo}
+</delete>
+
+<!-- 새 이미지 삽입
+<insert id="insertBoardImage" parameterType="BoardImage">
+  INSERT INTO BOARD_IMAGE (IMAGE_NO, BOARD_NO, IMAGE_PATH, IMAGE_ORDER)
+  VALUES (SEQ_BOARD_IMAGE_NO.NEXTVAL, #{boardNo}, #{imagePath}, #{imageOrder})
+</insert>
+
+ -->
+
 </mapper>

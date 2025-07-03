@@ -140,7 +140,9 @@ public class MytownBoardServiceImpl implements MytownBoardService {
         
         
         
-
+/** 게시글 좋아요 
+ * 
+ */
         @Override
         public int checkBoardLike(int boardNo, int memberNo) {
             return mapper.checkBoardLike(boardNo, memberNo);
@@ -171,11 +173,31 @@ public class MytownBoardServiceImpl implements MytownBoardService {
          */
         @Override
         public int updateBoard(Board dto) {
-            return mapper.updateBoard(dto);
+        	 // 1. 게시글 수정
+            int result = mapper.updateBoard(dto);
+
+            // 2. 기존 이미지 삭제
+            mapper.deleteImagesByBoardNo(dto.getBoardNo());
+
+            // 3. 새 이미지 삽입
+            if (dto.getImageList() != null && !dto.getImageList().isEmpty()) {
+                for (int i = 0; i < dto.getImageList().size(); i++) {
+                    BoardImage img = dto.getImageList().get(i);
+                    img.setBoardNo(dto.getBoardNo());
+                    img.setImageOrder(i); // 0번이 썸네일
+
+                    mapper.insertBoardImage(img);
+                }
+            }
+
+            return result;
         }
 
+
+		
 
         
         }
+        
 
 

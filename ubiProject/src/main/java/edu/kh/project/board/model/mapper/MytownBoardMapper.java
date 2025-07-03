@@ -57,12 +57,13 @@ public interface MytownBoardMapper {
 	    int checkHashtagExists(@Param("boardNo") int boardNo, @Param("tag") String tag);
 	    
 	    // 게시글 이미지 
-	    void insertBoardImage(BoardImage img);
+	    int insertBoardImage(BoardImage img);
 	    
 	    List<BoardImage> selectBoardImageList(int boardNo);
 	    
 	    // 이미지 정제 추후 삭제
 	    List<BoardImage> selectAllImages();
+	    
 	    int updateImagePath(@Param("imageNo") int imageNo, @Param("imagePath") String imagePath);
 	    
 		 // 좋아요 확인
@@ -90,5 +91,13 @@ public interface MytownBoardMapper {
 	     * @return
 	     */
 	    int updateBoard(Board dto);
+	    
+	    /**
+	     * 
+	     * @param boardNo
+	     * @return
+	     */
+	    int deleteImagesByBoardNo(int boardNo);
+	    int insertBoardImage1(BoardImage image);
 
 }

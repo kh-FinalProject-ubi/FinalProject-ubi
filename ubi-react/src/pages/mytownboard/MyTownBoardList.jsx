@@ -20,6 +20,12 @@ const [page, setPage] = useState(1);
 const [boardList, setBoardList] = useState([]);
 const [pagination, setPagination] = useState({});
 
+// HTML 태그 제거 후 100자까지 요약
+const stripHtml = (html) => {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return doc.body.textContent || "";
+};
+
   useEffect(() => {
     fetch(`/api/board/mytownBoard?page=${page}`)
       .then((res) => res.json())
@@ -103,9 +109,7 @@ const [pagination, setPagination] = useState({});
               />{" "}
               {board.memberNickname}
             </p>
-            <p>
-              <div dangerouslySetInnerHTML={{ __html: board.boardContent }} />...
-            </p>
+<p>{stripHtml(board.boardContent).slice(0, 100)}...</p>
             <p>
               <strong>작성일:</strong> {board.boardDate}
             </p>
