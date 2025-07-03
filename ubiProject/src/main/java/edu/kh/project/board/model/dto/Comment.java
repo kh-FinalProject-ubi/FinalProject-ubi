@@ -24,5 +24,5 @@ public class Comment {
 	private String memberNickname;
 	private String profileImg;
 	
-	private int likeCount;
+	private int commentLike;
 }
