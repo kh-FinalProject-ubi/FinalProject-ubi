@@ -343,7 +343,9 @@ public String normalizeSigungu(String rawSigungu) {
 	            "authority",member.getAuthority(),
 	            // ✅ 여기 추가
 	            "regionCity", member.getRegionCity(),
-	            "regionDistrict", member.getRegionDistrict()
+	            "regionDistrict", member.getRegionDistrict(),
+	            "taddress", member.getMemberTaddress()
+
 	        ));
 	    } catch (Exception e) {
 	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "유효하지 않은 토큰"));
