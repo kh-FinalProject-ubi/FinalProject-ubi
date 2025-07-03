@@ -23,7 +23,9 @@ import LocalBenefitSection from "./components/welfareService/LocalBenefitSection
 import InsertBoard from "./pages/board/InsertBoard";
 import { useEffect } from "react";
 import { initAuthFromToken } from "./utils/initAuthFromToken";
+import MytownBoardUpdate from "./pages/mytownboard/MytownBoardUpdate";
 import WelfareDetailPage from "./pages/welfareService/WelfareDetailPage";
+
 function App() {
   useEffect(() => {
     initAuthFromToken(); // 앱 진입 시 토큰 → 상태 복원
@@ -47,6 +49,7 @@ function App() {
           <Route path="/facility/search" element={<FacilitySearchPage />} />
           <Route path="/facility/detail" element={<FacilityDetailPage />} />
           <Route path="mytownBoard/write" element={<MyTownBoardWrite />} />
+          <Route path="/mytownBoard/update/:boardNo" element={<MytownBoardUpdate />} />
           <Route path="/mypage" element={<MypageLayout />}>
             <Route path="profile" element={<Profile />} />
             <Route path="chat" element={<Chat />} />

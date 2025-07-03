@@ -53,38 +53,18 @@ const [pagination, setPagination] = useState({});
             {type}
           </label>
 
-          {/* 선택된 유형일 때 버튼 표시 */}
-          {postTypeCheck === type && (
-            <>
-              {type === "복지시설후기" && (
-                <>
-                  <button onClick={() => setShowFacilityModal(true)} style={{ marginLeft: "10px" }}>
-                    복지시설 선택
-                  </button>
-                  {selectedFacilityName && (
-                    <span style={{ marginLeft: "10px", fontWeight: "bold" }}>
-                      선택: {selectedFacilityName}
-                    </span>
-                  )}
-                </>
-              )}
-              {type === "복지혜택후기" && (
-                <button onClick={() => setShowBenefitModal(true)} style={{ marginLeft: "10px" }}>
-                  복지혜택 선택
-                </button>
-              )}
-            </>
-          )}
+   
         </div>
       ))}
     </div></td>
     </tr>
-{(postTypeCheck === "복지시설후기" || postTypeCheck === "복지혜택후기") && (
+
     <tr>
-     <th>작성 복지</th>
+     <th>지역</th>
     <td> 준비중 </td>
     </tr>
-)}
+
+
     <tr>
      <th>해시태그</th>
     <td> 준비중 </td>

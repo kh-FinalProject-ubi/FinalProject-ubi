@@ -108,10 +108,10 @@ return (
 {loginMemberNo === writerNo && (
   <div style={{ marginTop: '20px' }}>
        <button
-        onClick={() => navigate("/mytownBoard/update")}
+        onClick={() => navigate(`/mytownBoard/update/${board.boardNo}`)}
         className="write-btn"
       >
-        글쓰기
+        수정하기
 
       </button>
         
