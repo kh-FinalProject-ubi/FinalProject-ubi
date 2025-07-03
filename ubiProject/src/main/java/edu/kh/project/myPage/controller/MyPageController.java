@@ -1,5 +1,8 @@
 package edu.kh.project.myPage.controller;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
@@ -312,50 +315,50 @@ public class MyPageController {
 
 	}
 
+	/** 프로필 이미지 변경
+	 * @param profileImage
+	 * @param memberNo
+	 * @return
+	 * @throws Exception
+	 */
+	@PostMapping("profile")
+	public ResponseEntity<Object> profile(@RequestParam("profileImage") MultipartFile profileImage,
+										  @RequestHeader("Authorization") String authorizationHeader ) throws Exception {
+
+		try {
+			
+			if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+		        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
+		    }
+
+		    String token = authorizationHeader.substring(7);
+
+		    if (!jwtU.validateToken(token)) {
+		        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
+		    }
+
+		    Long memberNoLong = jwtU.extractMemberNo(token);
+		    int memberNo = memberNoLong.intValue();
+
+		    String result = service.profile(memberNo, profileImage);
+
+		    if (result != null) {
+		        return ResponseEntity.ok(result); // 🔹 새 경로 반환
+		    } else {
+		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("프로필 이미지 변경 실패");
+		    }
+			
+		} catch (Exception e) {
+			
+			log.error("비밀번호 확인 중 오류 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+
+		
+	}
+
 	
 	// ---------------------------------------------------------------------------------------------------------------------
-
-
-//	/**
-//	 * 회원 탈퇴
-//	 * 
-//	 * @param memberPw    : 입력받은 비밀번호
-//	 * @param loginMember : 로그인한 회원 정보(세션)
-//	 * @param status      : 세션 완료 용도의 객체 -> @SessionAttributes로 등록된 세션을 완료
-//	 * @return
-//	 */
-//	@PostMapping("secession")
-//	public String secession(@RequestParam("memberPw") String memberPw,
-//			@SessionAttribute("loginMember") Member loginMember, RedirectAttributes ra, SessionStatus status) {
-//
-//		// 로그인한 회원의 회원번호 꺼내기
-//		int memberNo = loginMember.getMemberNo();
-//
-//		// 서비스 호출 (입력받은 비밀번호, 로그인한 회원번호)
-//		int result = service.secession(memberPw, memberNo);
-//
-//		String message = null;
-//		String path = null;
-//
-//		if (result > 0) {
-//			message = "탈퇴 되었습니다.";
-//			path = "/";
-//
-//			status.setComplete(); // 세션 완료 시킴 > 로그아웃
-//
-//		} else {
-//			message = "비밀번호가 일치하지 않습니다.";
-//			path = "secession";
-//		}
-//
-//		ra.addFlashAttribute("message", message);
-//
-//		// 탈퇴 성공 -> redirect:/ (메인페이지)
-//		// 탈퇴 실패 -> redirect:secession" (상대경로)
-//		// -> /myPage/secession (현재경로 POST)
-//		// -> /myPage/secession (GET 요청)
-//		return "redirect:" + path;
-//	}
 
 	/*
 	 * Spring에서 파일 업로드를 처리하는 방법
@@ -471,23 +474,6 @@ public class MyPageController {
 		
 		return "redirect:/myPage/fileTest";
 	}
-
-	@PostMapping("profile")
-	public String profile(@RequestParam("profileImg") MultipartFile profileImg,
-						  @SessionAttribute("loginMember") Member loginMember,
-						  RedirectAttributes ra ) throws Exception {
-		
-		// 업로드된 파일 정보를 DB에 INSERT 후 결과 행의 갯수 반환 받을 예정
-		int result = service.profile(profileImg, loginMember);
-		
-		String message = null;
-		
-		if(result > 0) message = "변경 성공";	
-		else 		   message = "변경 실패";
-		
-		ra.addFlashAttribute("message", message);
-		
-		return "redirect:profile";
-		
-	}
 }
+
+
