@@ -15,6 +15,16 @@ function MytownBoardUpdate() {
   const uploadedImagesRef = useRef([]);
   const navigate = useNavigate();
 const isInitialSet = useRef(true); // 처음 한 번만 true
+// ✅ handleUpdate 내부에서 imageList를 객체 형태로 변환
+const imageList = uploadedImagesRef.current.map((url, index) => ({
+  imagePath: url,
+  imageOrder: index
+}));
+
+
+
+
+
   // 1. 게시글 데이터 불러오기
   useEffect(() => {
     if (!boardNo || isNaN(boardNo)) {
@@ -90,6 +100,17 @@ const isInitialSet = useRef(true); // 처음 한 번만 true
   const handleUpdate = async () => {
     const updatedContent = $('#summernote').summernote('code');
 
+  // ✅ 이미지 리스트 생성
+  const imageList = uploadedImagesRef.current.map((url, index) => {
+    const segments = url.split('/');
+    return {
+      imagePath: '/' + segments.slice(0, -1).join('/'),
+      imageName: segments[segments.length - 1],
+      imageOrder: index
+    };
+  });
+
+
     const updatedBoard = {
       boardTitle: boardTitle,
       boardContent: updatedContent,
@@ -97,7 +118,8 @@ const isInitialSet = useRef(true); // 처음 한 번만 true
       postType: board?.postType ?? '',
       memberNo: board?.memberNo ?? loginMemberNo,
       hashtagList: board?.hashtagList ?? [],
-      imageList: board?.imageList ?? []
+          imageList // ✅ 추가!
+
     };
 
     try {
