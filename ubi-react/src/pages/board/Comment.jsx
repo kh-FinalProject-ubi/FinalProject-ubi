@@ -111,6 +111,35 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
     setEditingContent("");
   };
 
+  // 신고하는 함수
+  const handleReport = async (commentNo) => {
+    try {
+      await axios.get(`/api/comments`, {
+        params: { commentNo: commentNo }, // <- GET 요청에선 params로 보내야 함
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (err) {
+      alert("신고 실패");
+    }
+  };
+
+  // 좋아요 함수
+  const handleCommentLike = async (commentNo) => {
+    try {
+      await axios.post(
+        "/api/comments",
+        { commentNo }, // POST 요청의 body
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    } catch (err) {
+      alert("좋아요 와리가리");
+    }
+  };
+
   // 트리 구조로 변환
   const buildCommentTree = (comments) => {
     const map = {};
@@ -149,10 +178,13 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
               <div className="comment-header">
                 <div className="comment-author-info">
                   <strong>{comment.memberNickname}</strong>
-                  <button className="report-btn">
+                  <span className="comment-date">{comment.commentDate}</span>
+                  <button
+                    className="report-btn"
+                    onClick={() => handleReport(comment.memberNo)}
+                  >
                     <img src="/report.svg" alt="신고 아이콘" />
                   </button>
-                  <span className="comment-date">{comment.commentDate}</span>
                 </div>
                 {(isAdmin || comment.memberNo === loginMemberNo) &&
                   editingCommentNo !== comment.commentNo && (
@@ -202,11 +234,19 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
               )}
 
               {editingCommentNo !== comment.commentNo && (
-                <button onClick={() => handleReplyClick(comment.commentNo)}>
-                  답글
-                </button>
+                <>
+                  <button
+                    className="comment-like-btn"
+                    onClick={() => handleCommentLike(comment.commenNo)}
+                  >
+                    <img src="/commentLike.svg" alt="좋아요 아이콘" />
+                  </button>
+                  {comment.commentLike ? comment.commentLike : ""}
+                  <button onClick={() => handleReplyClick(comment.commentNo)}>
+                    답글
+                  </button>
+                </>
               )}
-
               {replyTarget === comment.commentNo && (
                 <form
                   onSubmit={(e) => handleReplySubmit(e, comment.commentNo)}
