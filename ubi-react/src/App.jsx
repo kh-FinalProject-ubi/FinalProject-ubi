@@ -23,6 +23,7 @@ import LocalBenefitSection from "./components/welfareService/LocalBenefitSection
 import InsertBoard from "./pages/board/InsertBoard";
 import { useEffect } from "react";
 import { initAuthFromToken } from "./utils/initAuthFromToken";
+import MytownBoardUpdate from "./pages/mytownboard/MytownBoardUpdate";
 
 
 function App() {
@@ -48,6 +49,7 @@ function App() {
           <Route path="/facility/search" element={<FacilitySearchPage />} />
           <Route path="/facility/detail" element={<FacilityDetailPage />} />
           <Route path="mytownBoard/write" element={<MyTownBoardWrite />} />
+          <Route path="/mytownBoard/update/:boardNo" element={<MytownBoardUpdate />} />
           <Route path="/mypage" element={<MypageLayout />}>
             <Route path="profile" element={<Profile />} />
             <Route path="chat" element={<Chat />} />

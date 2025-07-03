@@ -75,7 +75,8 @@ public class MytownEditBoardController {
 	 * @return
 	 */
 	@PostMapping("/{boardNo}/update")
-	public ResponseEntity<?> updateBoard(@PathVariable int boardNo, @RequestBody Board dto) {
+	public ResponseEntity<?> updateBoard(@PathVariable("boardNo") int boardNo,
+											@RequestBody Board dto) {
 	    dto.setBoardNo(boardNo);
 	    int result = Service.updateBoard(dto);
 	    if (result > 0) {
