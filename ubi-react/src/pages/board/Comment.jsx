@@ -149,6 +149,9 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
               <div className="comment-header">
                 <div className="comment-author-info">
                   <strong>{comment.memberNickname}</strong>
+                  <button className="report-btn">
+                    <img src="/report.svg" alt="신고 아이콘" />
+                  </button>
                   <span className="comment-date">{comment.commentDate}</span>
                 </div>
                 {(isAdmin || comment.memberNo === loginMemberNo) &&
