@@ -8,19 +8,18 @@ const usePopularBenefits = () => {
   const token = useAuthStore((state) => state.token);
 
   useEffect(() => {
-    if (!token) return; // 🔐 토큰 없으면 요청하지 않음
+    // ✅ 토큰이 있으면 헤더에 포함, 없어도 요청은 보냄
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
     axios
-      .get("/api/welfare/popular", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      .get("/api/welfare/popular", { headers })
       .then((res) => {
-        console.log("🎯 인기 복지 응답 데이터:", res.data); // ✅ 응답 확인
+        console.log("🎯 인기 복지 응답 데이터:", res.data);
         setData(res.data);
       })
       .catch((err) => console.error("❌ 인기 복지 조회 실패", err))
       .finally(() => setLoading(false));
-  }, [token]); // 🔁 token 변경 감지 후 실행
+  }, [token]);
 
   return { data, loading };
 };
