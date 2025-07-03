@@ -4,6 +4,7 @@ import "../../styles/mypage/Profile.css";
 import useAuthStore from '../../stores/useAuthStore';
 import { AnimatePresence, motion } from 'framer-motion';
 import LoadingOverlay from '../../components/Loading';
+import ProfileImgUploader from "./ProfileImgUploader";
 import { div } from 'framer-motion/client';
 import DaumPostcode from "react-daum-postcode";
 
@@ -354,11 +355,15 @@ const Profile = () => {
             {loading && <LoadingOverlay />}
             <h3>기본 정보</h3>
             <div className="profile-left">
-              <img
-                src={member.profileImg || "/assets/profile-example.png"}
-                alt="프로필"
-                className="profile-img"
-              />
+              <ProfileImgUploader
+                  member={member}
+                  onSave={(newImage) => {
+                    // 저장 로직: 예) 서버에 저장
+                    console.log("저장할 이미지:", newImage);
+                    // 예: 상태 업데이트
+                    setMember({ ...member, profileImg: newImage });
+                  }}
+                />
             </div>
             <div className="profile-right">
               <ul>
