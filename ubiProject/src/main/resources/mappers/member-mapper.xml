@@ -11,6 +11,7 @@
     MEMBER_PW,
     MEMBER_TEL,
     MEMBER_ADDRESS,
+   MEMBER_TADDRESS, <!-- ✅ 이 줄 추가 -->
     MEMBER_STANDARD, <!-- ✅ 추가 -->
     MEMBER_IMG,
     AUTHORITY,
@@ -73,6 +74,7 @@
     MEMBER_PW,
     MEMBER_TEL,
     MEMBER_ADDRESS,
+    MEMBER_TADDRESS,     <!-- ✅ 추가 -->
     MEMBER_STANDARD,
     MEMBER_IMG,
     KAKAO_ID, 
@@ -91,6 +93,7 @@
     MEMBER_PW,
     MEMBER_TEL,
     MEMBER_ADDRESS,
+    MEMBER_TADDRESS,     <!-- ✅ 추가 -->
     MEMBER_STANDARD,
     MEMBER_IMG,
     KAKAO_ID,

@@ -1,5 +1,6 @@
 import { jwtDecode } from "jwt-decode";
 import useAuthStore from "../stores/useAuthStore";
+import { extractRegionFromTaddress } from "./extractRegionFromTaddress";
 
 export function initAuthFromToken() {
   const token = useAuthStore.getState().token;
@@ -23,7 +24,11 @@ export function initAuthFromToken() {
       address,
       regionCity,
       regionDistrict,
+      taddress, // ✅ 새로 추가
     } = decoded;
+
+    const { city: tempRegionCity, district: tempRegionDistrict } =
+      extractRegionFromTaddress(taddress); // ✅ 파싱
 
     useAuthStore.getState().setAuth({
       token,
@@ -35,6 +40,8 @@ export function initAuthFromToken() {
       role,
       regionCity,
       regionDistrict,
+      tempRegionCity,
+      tempRegionDistrict,
     });
 
     console.log("✅ useAuthStore 재설정 완료");

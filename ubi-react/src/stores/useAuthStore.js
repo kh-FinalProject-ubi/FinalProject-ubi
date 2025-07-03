@@ -12,6 +12,8 @@ const useAuthStore = create(
       role: null, // ✅ 추가
       regionCity: null, // ✅ 여기도 초기화 필요
       regionDistrict: null,
+      tempRegionCity: null, // ✅ 추가
+      tempRegionDistrict: null, // ✅ 추가
 
       setAuth: ({
         token,
@@ -23,6 +25,8 @@ const useAuthStore = create(
         role,
         regionCity, // ✅ 지역 추가
         regionDistrict,
+        tempRegionCity, // ✅ 추가
+        tempRegionDistrict, // ✅ 추가
       }) =>
         set({
           token,
@@ -34,6 +38,8 @@ const useAuthStore = create(
           role, // ✅ 지역 추가
           regionCity,
           regionDistrict,
+          tempRegionCity, // ✅ 추가
+          tempRegionDistrict, // ✅ 추가
         }),
 
       clearAuth: () =>
@@ -47,6 +53,8 @@ const useAuthStore = create(
           role: null,
           regionCity: null, // ✅ 추가
           regionDistrict: null,
+          tempRegionCity: null, // ✅ 추가
+          tempRegionDistrict: null, // ✅ 추가
         }),
     }),
     {

@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import useAuthStore from "../../stores/useAuthStore";
+import { extractRegionFromTaddress } from "../../utils/extractRegionFromTaddress";
 
 export default function useLoginMember() {
   const [member, setMember] = useState(null);
   const [loading, setLoading] = useState(true);
   const setAuth = useAuthStore((state) => state.setAuth);
+
+  const { city: tempRegionCity, district: tempRegionDistrict } =
+    extractRegionFromTaddress(res.data.taddress || "");
 
   useEffect(() => {
     const fetchMember = async () => {
@@ -27,6 +31,8 @@ export default function useLoginMember() {
           role: res.data.authority === "2" ? "ADMIN" : "USER",
           regionCity: res.data.regionCity,
           regionDistrict: res.data.regionDistrict,
+          tempRegionCity, // ✅ 추가
+          tempRegionDistrict, // ✅ 추가
         });
 
         setMember(res.data);

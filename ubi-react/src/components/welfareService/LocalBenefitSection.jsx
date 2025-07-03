@@ -1,27 +1,79 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import useLocalBenefitData from "../../hook/welfareService/useLocalBenefitData";
 import useAuthStore from "../../stores/useAuthStore";
+import useSelectedRegionStore from "../../hook/welfarefacility/useSelectedRegionStore";
 import WelfareSearchFilter from "./WelfareSearchFilter";
 import { applyAllFilters } from "../../utils/applyAllFilters";
 import LikeButton from "../welfareLike/LikeButton";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+import { extractRegionFromTaddress } from "../../utils/extractRegionFromTaddress";
 import "../../styles/LocalBenefitSection.css";
 
 const LocalBenefitSection = () => {
   const { data: benefits, loading, error } = useLocalBenefitData();
+  const navigate = useNavigate();
 
+  // ✅ 로그인 상태 및 주소
   const token = useAuthStore((state) => state.token);
   const memberStandard = useAuthStore((state) => state.memberStandard);
-  const regionCity = useAuthStore((state) => state.regionCity);
-  const regionDistrict = useAuthStore((state) => state.regionDistrict);
+  const tokenCity = useAuthStore((state) => state.regionCity);
+  const tokenDistrict = useAuthStore((state) => state.regionDistrict);
 
-  // 초기값: 로그인 O → 토큰 정보 / 로그인 X → 기본값
-  const [region, setRegion] = useState({
-    city: token ? regionCityFromToken : "서울특별시",
-    district: token ? regionDistrictFromToken : "종로구",
-  });
+  // ✅ 선택된 주소 (지도 클릭 등)
+  const selectedCity = useSelectedRegionStore((state) => state.selectedCity);
+  const selectedDistrict = useSelectedRegionStore(
+    (state) => state.selectedDistrict
+  );
 
-  const authState = { token, memberStandard, regionCity, regionDistrict };
+  // ✅ 임시주소: 직접 토큰에서 파싱
+  let tempRegionCity = null;
+  let tempRegionDistrict = null;
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      const extracted = extractRegionFromTaddress(decoded?.taddress);
+      tempRegionCity = extracted.city;
+      tempRegionDistrict = extracted.district;
+    } catch (e) {
+      console.warn("⚠️ 임시주소 파싱 실패:", e);
+    }
+  }
+
+  // ✅ 주소 소스 탭 상태 (기본: 'token')
+  const [addressSource, setAddressSource] = useState("token"); // "token" | "selected" | "temp"
+
+  // ✅ 실제 적용될 주소 계산
+  const region = useMemo(() => {
+    if (!token) return { city: "서울특별시", district: "종로구" };
+
+    switch (addressSource) {
+      case "selected":
+        return {
+          city: selectedCity ?? tokenCity,
+          district: selectedDistrict ?? tokenDistrict,
+        };
+      case "temp":
+        return {
+          city: tempRegionCity,
+          district: tempRegionDistrict,
+        };
+      case "token":
+      default:
+        return { city: tokenCity, district: tokenDistrict };
+    }
+  }, [
+    addressSource,
+    token,
+    tokenCity,
+    tokenDistrict,
+    selectedCity,
+    selectedDistrict,
+    tempRegionCity,
+    tempRegionDistrict,
+  ]);
+
+  // ✅ 필터 상태
   const [filterOptions, setFilterOptions] = useState({
     keyword: "",
     serviceType: "전체",
@@ -30,16 +82,57 @@ const LocalBenefitSection = () => {
     showAll: false,
   });
 
+  const authState = {
+    token,
+    memberStandard,
+    regionCity: region.city,
+    regionDistrict: region.district,
+  };
+
+  // ✅ 필터 적용
   const filteredData = Array.isArray(benefits)
     ? applyAllFilters(benefits, filterOptions, authState)
     : [];
 
-  const navigate = useNavigate();
-
   return (
     <section className="local-benefit-section">
       <h2 className="section-title">🎁 지역 복지 혜택 모음</h2>
-      <WelfareSearchFilter onFilterChange={setFilterOptions} />
+
+      {/* 🔘 주소 소스 선택 탭 */}
+      {!token ? null : (
+        <div className="address-tab">
+          <button
+            className={addressSource === "token" ? "selected" : ""}
+            onClick={() => setAddressSource("token")}
+          >
+            내 주소
+          </button>
+
+          <button
+            className={addressSource === "selected" ? "selected" : ""}
+            onClick={() => setAddressSource("selected")}
+          >
+            선택한 주소
+          </button>
+
+          {tempRegionCity && tempRegionDistrict && (
+            <button
+              className={addressSource === "temp" ? "selected" : ""}
+              onClick={() => setAddressSource("temp")}
+            >
+              임시 주소
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* 🔎 필터 UI */}
+      <WelfareSearchFilter
+        onFilterChange={setFilterOptions}
+        fixedRegion={region}
+        disabledRegionSelect={!!token}
+      />
+
       {loading && <p>로딩 중...</p>}
       {error && <p>데이터를 불러오는 데 실패했습니다.</p>}
 
@@ -68,8 +161,6 @@ const LocalBenefitSection = () => {
                 <p className="description">
                   {item.description?.slice(0, 80)}...
                 </p>
-
-                {/* 찜 버튼 (이벤트 전파 막기) */}
                 <div
                   className="card-footer"
                   onClick={(e) => e.stopPropagation()}

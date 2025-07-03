@@ -56,6 +56,7 @@ public class JwtUtil {
 	        .claim("regionDistrict", member.getRegionDistrict()) // ✅ 추가
 	        .claim("memberName", member.getMemberNickname())     // ✅ 선택 사항
 	        .claim("address", member.getMemberAddress())         // ✅ 선택 사항
+	        .claim("taddress", member.getMemberTaddress()) // ✅ taddress 포함
 	        .setIssuedAt(new Date())
 	        .setExpiration(new Date(System.currentTimeMillis() + tokenValidityInMs))
 	        .signWith(SignatureAlgorithm.HS256, secretKey)
