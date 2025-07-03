@@ -111,7 +111,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
     setEditingContent("");
   };
 
-  // ✨ 트리 구조로 변환
+  // 트리 구조로 변환
   const buildCommentTree = (comments) => {
     const map = {};
     const roots = [];
