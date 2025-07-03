@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { standardKeywordMap } from "./filterBenefitsByStandard";
 
 // 🔹 계층 필터 적용 대상 카테고리
@@ -94,33 +95,25 @@ export function applyAllFilters(data, options, authState) {
     showAll = false,
   } = options;
 
-  const { token, memberStandard, regionCity, regionDistrict } = authState;
+  const {
+    token,
+    memberStandard,
+    regionCity = "서울특별시", // 기본값
+    regionDistrict = "종로구",
+  } = authState;
 
-  return (
-    data
-      // 🔹 계층 필터
-      .filter((item) => {
-        if (!token || showAll) return true;
-        if (!FILTERABLE_CATEGORIES.includes(item.category)) return true;
-        return matchesStandard(item, memberStandard);
-      })
-
-      // 🔹 지역 필터
-      .filter((item) => {
-        if (!token || showAll) return true;
-        return matchesRegion(item, regionCity, regionDistrict);
-      })
-
-      // 🔹 대상 필터
-      .filter((item) => matchesServiceType(item, serviceType))
-
-      // 🔹 카테고리 필터
-      .filter((item) => matchesCategory(item, category))
-
-      // 🔹 키워드 필터
-      .filter((item) => matchesKeyword(item, keyword))
-
-      // 🔹 정렬
-      .sort((a, b) => sortByDate(a, b, sortOrder))
-  );
+  return data
+    .filter((item) => {
+      if (!token || showAll) return true;
+      if (!FILTERABLE_CATEGORIES.includes(item.category)) return true;
+      return matchesStandard(item, memberStandard);
+    })
+    .filter((item) => {
+      if (!token || showAll) return true;
+      return matchesRegion(item, regionCity, regionDistrict);
+    })
+    .filter((item) => matchesServiceType(item, serviceType))
+    .filter((item) => matchesCategory(item, category))
+    .filter((item) => matchesKeyword(item, keyword))
+    .sort((a, b) => sortByDate(a, b, sortOrder));
 }

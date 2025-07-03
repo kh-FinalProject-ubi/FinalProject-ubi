@@ -15,6 +15,12 @@ const LocalBenefitSection = () => {
   const regionCity = useAuthStore((state) => state.regionCity);
   const regionDistrict = useAuthStore((state) => state.regionDistrict);
 
+  // 초기값: 로그인 O → 토큰 정보 / 로그인 X → 기본값
+  const [region, setRegion] = useState({
+    city: token ? regionCityFromToken : "서울특별시",
+    district: token ? regionDistrictFromToken : "종로구",
+  });
+
   const authState = { token, memberStandard, regionCity, regionDistrict };
   const [filterOptions, setFilterOptions] = useState({
     keyword: "",
