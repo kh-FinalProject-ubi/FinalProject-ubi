@@ -47,15 +47,15 @@ public interface MyPageService {
 			List<MultipartFile> bbbList, 
 			int memberNo) throws Exception;
 
+	
+	//==========================================================================================
 	/** 프로필 이미지 수정 서비스
-	 * @param profileImg
-	 * @param loginMember
+	 * @param memberNo
+	 * @param memberImg
 	 * @return
 	 * @throws Exception
 	 */
-	int profile(MultipartFile profileImg, Member loginMember) throws Exception;
-	
-	//==========================================================================================
+	String profile(int memberNo, MultipartFile memberImg) throws Exception;
 
 	/** 내 기본 정보 조회
 	 * @param memberNo

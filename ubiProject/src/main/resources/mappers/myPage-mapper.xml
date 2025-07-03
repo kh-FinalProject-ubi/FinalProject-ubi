@@ -173,6 +173,13 @@
 	WHERE MEMBER_NO = #{memberNo}
 	</update>
 	
+	<!-- 프로필 이미지 변경 -->
+	<update id="profile">
+	UPDATE "MEMBER" SET
+	MEMBER_IMG = #{memberImg}
+	WHERE MEMBER_NO = #{memberNo}
+	</update>
+	
 	<insert id="insertUploadFile">
 	INSERT INTO "UPLOAD_FILE"
 	VALUES(SEQ_FILE_NO.NEXTVAL, #{filePath},
@@ -189,11 +196,5 @@
 	WHERE "UPLOAD_FILE".MEMBER_NO = #{memberNo}
 	ORDER BY FILE_NO DESC		
 	</select>
-	
-	<!-- 프로필 이미지 변경 -->
-	<update id="profile">
-	UPDATE "MEMBER" SET
-	PROFILE_IMG = #{profileImg}
-	WHERE MEMBER_NO = #{memberNo}
-	</update>
+
 </mapper>

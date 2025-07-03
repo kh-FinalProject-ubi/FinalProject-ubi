@@ -2,6 +2,9 @@ package edu.kh.project.myPage.model.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -310,46 +313,29 @@ public class MyPageServiceImpl implements MyPageService {
 
 	// 프로필 이미지 변경 서비스
 	@Override
-	public int profile(MultipartFile profileImg, Member loginMember) throws Exception {
+	public String profile(int memberNo, MultipartFile profileImg) throws Exception {
 
-		// 프로필 이미지 경로
-		String updatePath = null;
+		String uploadDir = "C:/uploadFiles/profile";
+	    String fileName = System.currentTimeMillis() + "_" + profileImg.getOriginalFilename();
+	    Path savePath = Paths.get(uploadDir, fileName);
 
-		// 변경명 저장
-		String rename = null;
+	    Files.createDirectories(savePath.getParent());
+	    profileImg.transferTo(savePath.toFile());
 
-		// 업로드한 이미지가 있을 경우
-		// - 있을 경우 : 경로 조합 (클라이언트 접근 경로 + 리네임파일명)
-		if (!profileImg.isEmpty()) {
-			// 1. 파일명 변경
-			rename = Utility.fileRename(profileImg.getOriginalFilename());
+	    String dbPath = "/resources/profile/" + fileName;
 
-			// 2. /myPage/profile/변경된 파일명
-			updatePath = profileWebPath + rename;
+	    Member member = Member.builder()
+	            .memberNo(memberNo)
+	            .memberImg(dbPath)
+	            .build();
 
-		}
+	    int result = mapper.profile(member);
 
-		// 수정된 프로필 이미지 경로 + 회원 번호를 저장할 DTO 객체
-		Member member = Member.builder().memberNo(loginMember.getMemberNo()).memberImg(updatePath).build();
+	    if (result > 0) {
+	        return dbPath; // 🔹 저장된 경로 반환
+	    } else {
+	        return null;
+	    }
 
-		int result = mapper.profile(member);
-
-		if (result > 0) {
-
-			// 프로필 이미지를 없애는 update 를 한 경우
-			// -> 업로드한 이미지가 있을 경우
-			if (!profileImg.isEmpty()) {
-				// 파일을 서버에 저장
-				profileImg.transferTo(new File(profileFolderPath + rename));
-				// C:/uploadFiles/profile/변경한 이름
-			}
-
-			// 세션에 저장된 loginMember의 프로필 이미지 경로를
-			// DB와 동기화
-			loginMember.setMemberImg(updatePath);
-
-		}
-
-		return result;
 	}
 }

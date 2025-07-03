@@ -1,23 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from 'axios';
+import useAuthStore from '../../stores/useAuthStore';
 import "../../styles/mypage/ProfileImgUploader.css";
 
 export default function ProfileImgUploader({ member, onSave }) {
   const [isHovered, setIsHovered] = useState(false);
+  const { token } = useAuthStore(); // Zustand에서 회원 정보 가져옴
   const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const defaultImg = "/default-thumbnail.png";
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    console.log("선택된 파일:", file);
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      console.log("읽은 파일 데이터:", reader.result);
-      setSelectedFile(reader.result);
-    };
-    reader.readAsDataURL(file);
+
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
   };
+
+  // 저장 후 (선택 해제 시) URL 정리
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  // 실제 표시할 src
+  const imageSrc = previewUrl || member?.profileImg || defaultImg;
 
   const handleRemoveImage = () => {
     setSelectedFile(null);
@@ -27,30 +39,31 @@ export default function ProfileImgUploader({ member, onSave }) {
     if (!selectedFile) return;
 
     try {
-      // 서버에 이미지 업로드 요청 (예: base64 대신 FormData)
       const formData = new FormData();
-      formData.append("profileImage", dataURLtoFile(selectedFile, "profile.png"));
+      formData.append("profileImage", selectedFile);
 
-      const res = await fetch("/api/profile/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await axios.post(
+        "/api/myPage/profile",
+        formData, // ✅ 두 번째 인자로 FormData
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            // Content-Type은 생략해야 axios가 boundary 포함해서 자동으로 채움
+          },
+        }
+      );
 
-      if (!res.ok) throw new Error("업로드 실패");
+      if (res.status === 200) {
+        const newImageUrl = res.data;  // 여기 경로 받기
+        onSave(newImageUrl);
+        setSelectedFile(null);
+      }
 
-      const result = await res.json();
-
-      // 업로드 후 응답에서 이미지 URL 받아서 부모에 알림
-      onSave(result.imageUrl);
-
-      setSelectedFile(null);
     } catch (error) {
       console.error(error);
       alert("프로필 이미지 저장에 실패했습니다.");
     }
   };
-
-  const imageSrc = selectedFile || member?.profileImg || defaultImg;
 
   return (
     <div className="profile-wrapper">
