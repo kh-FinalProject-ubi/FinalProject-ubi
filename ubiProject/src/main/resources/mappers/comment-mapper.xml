@@ -20,6 +20,7 @@
 	ORDER SIBLINGS BY COMMENT_NO
 	</select>
 	 
+	 
 	 <!-- 동적 SQL : <if>
 	 	조건식을 작성할 수 있는 태그
 	 	
@@ -60,7 +61,8 @@
 	<!-- 댓글 수정 서비스 -->
 	<update id="update">
 	UPDATE "COMMENTS" SET
-	COMMENT_CONTENT = #{commentContent}
+	COMMENT_CONTENT = #{commentContent},
+	COMMENT_UPDATE_DATE = SYSDATE
 	WHERE COMMENT_NO = #{commentNo}
 	</update>
 	
