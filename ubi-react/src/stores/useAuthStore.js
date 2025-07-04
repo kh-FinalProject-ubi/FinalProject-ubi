@@ -8,6 +8,7 @@ const useAuthStore = create(
       address: null,
       memberName: null,
       memberStandard: null,
+      memberImg: null,
       authority: null,
       role: null, // ✅ 추가
       regionCity: null, // ✅ 여기도 초기화 필요
@@ -21,6 +22,7 @@ const useAuthStore = create(
         memberName,
         memberStandard,
         memberNo,
+        memberImg,
         authority,
         role,
         regionCity, // ✅ 지역 추가
@@ -34,6 +36,7 @@ const useAuthStore = create(
           memberName,
           memberStandard,
           memberNo,
+          memberImg,
           authority,
           role, // ✅ 지역 추가
           regionCity,
@@ -49,6 +52,7 @@ const useAuthStore = create(
           memberName: null,
           memberStandard: null,
           memberNo: null,
+          memberImg: null,
           authority: null,
           role: null,
           regionCity: null, // ✅ 추가

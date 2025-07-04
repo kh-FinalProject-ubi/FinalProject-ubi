@@ -1,0 +1,156 @@
+.chat-wrapper {
+  display: flex;
+  height: 100vh;
+  border: 1px solid #ddd;
+  font-family: sans-serif;
+}
+
+/* 왼쪽 채팅방 목록 */
+.chat-room-list {
+  width: 300px;
+  border-right: 1px solid #ddd;
+  background-color: #f9f9f9;
+  overflow-y: auto;
+}
+
+.chat-room-list h3 {
+  margin: 0;
+  padding: 10px;
+  background-color: #1976d2;
+  color: white;
+}
+
+.chat-room-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.chat-room-item:hover,
+.chat-room-item.selected {
+  background-color: #e0f2f1;
+}
+
+.room-profile {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  margin-right: 10px;
+}
+
+.room-info {
+  flex: 1;
+}
+
+.room-name {
+  font-weight: bold;
+}
+
+.room-last-message {
+  font-size: 0.9em;
+  color: gray;
+}
+
+.room-meta {
+  text-align: right;
+}
+
+.room-time {
+  font-size: 0.75em;
+  color: gray;
+}
+
+.room-unread {
+  background-color: #d32f2f;
+  color: white;
+  font-size: 0.75em;
+  padding: 2px 6px;
+  border-radius: 12px;
+  margin-top: 4px;
+}
+
+/* 오른쪽 채팅 */
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-header {
+  padding: 10px;
+  background-color: #1976d2;
+  color: white;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  background-color: #f5f5f5;
+}
+
+.chat-message {
+  max-width: 60%;
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 5px;
+}
+
+.my-message {
+  background-color: #d1e7dd;
+  align-self: flex-end;
+}
+
+.other-message {
+  background-color: white;
+  align-self: flex-start;
+}
+
+.message-sender {
+  font-weight: bold;
+  margin-bottom: 3px;
+}
+
+.message-content {
+  word-wrap: break-word;
+}
+
+.message-timestamp {
+  font-size: 0.75em;
+  color: gray;
+  text-align: right;
+}
+
+.chat-input {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #ddd;
+  background-color: white;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.chat-input button {
+  margin-left: 5px;
+  padding: 8px 12px;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.chat-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: gray;
+  font-size: 1.2em;
+}

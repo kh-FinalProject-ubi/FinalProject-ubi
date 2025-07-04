@@ -65,3 +65,13 @@
   background: #3478f6;
   color: white;
 }
+
+
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.clickable-row:hover {
+  background-color: #f0f0f0;
+}

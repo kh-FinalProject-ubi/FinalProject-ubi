@@ -38,11 +38,10 @@ public class ChattigController {
      * @return
      */
     @GetMapping("list")
-    public String chatting(@SessionAttribute("loginMember") Member loginMember, 
-    						Model model) {
+    @ResponseBody
+    public String chatting(@RequestParam("memberNo") int memberNo) {
     	
-        List<ChattingRoom> roomList = service.selectRoomList(loginMember.getMemberNo());
-        model.addAttribute("roomList", roomList);
+        List<ChattingRoom> roomList = service.selectRoomList(memberNo);
         
         return "chatting/chatting";
     }
