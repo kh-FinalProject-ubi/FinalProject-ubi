@@ -8,7 +8,7 @@ import WelfareFacilityModal from "./WelfareFacilityModal";
 import Modal from "../../components/common/Modal";
 
 const MyTownBoardWrite = () => {
-  const { memberNo, address } = useAuthStore();
+    const {memberNo,  regionCity, regionDistrict } = useAuthStore();
   const [boardTitle, setTitle] = useState("");
   const [boardContent, setContent] = useState("");
   const navigate = useNavigate();
@@ -179,7 +179,7 @@ console.log("hashtags:", hashtags);
 
 <div className="post-option-box">
 <p>
-  작성자 지역: {address}
+  작성자 지역: {regionCity} {regionDistrict}
 </p>
  <table border="1" style={{ width: "100%", marginTop: "20px", borderCollapse: "collapse" }}>
   <tbody>
