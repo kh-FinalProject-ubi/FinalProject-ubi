@@ -51,8 +51,17 @@ public interface MytownBoardMapper {
 
 	    int getLastInsertedId();
 
-	    // 해시태그 
+	    
+	    /**해시태그 
+	     * 
+	     * @param boardNo
+	     * @param tag
+	     */
 	    void insertHashtag(@Param("boardNo") int boardNo, @Param("tag") String tag);
+	    void deleteHashtags(int boardNo);
+
+	
+
 
 	    int checkHashtagExists(@Param("boardNo") int boardNo, @Param("tag") String tag);
 	    
@@ -92,7 +101,7 @@ public interface MytownBoardMapper {
 	     */
 	    int updateBoard(Board dto);
 	    
-	    /**
+	    /**이미지 처리 
 	     * 
 	     * @param boardNo
 	     * @return

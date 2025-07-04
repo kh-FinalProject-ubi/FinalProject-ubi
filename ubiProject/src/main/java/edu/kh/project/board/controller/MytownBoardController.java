@@ -41,21 +41,24 @@ import edu.kh.project.board.model.service.MytownBoardService;
     
     
     @GetMapping("/mytownBoard/{boardNo}")
-    public ResponseEntity<Board> getLocalBoardDetail(@PathVariable("boardNo") int boardNo) {
+    public ResponseEntity<Board> getLocalBoardDetail(
+    		 @PathVariable("boardNo") int boardNo,
+    	        @RequestParam(value = "memberNo", required = false) Integer memberNo){
         
         // ✅ 게시글 상세조회
     	Board board = service.selectLocalBoardDetail(boardNo);
-        
-        if (board != null) {
-            return ResponseEntity.ok(board);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        if (board != null && memberNo != null) {
+            int likeCheck = service.checkBoardLike(boardNo, memberNo); // 1 or 0
+            board.setLikeCheck(likeCheck);
+        } else if (board != null) {
+            board.setLikeCheck(0); // 비회원 등
         }
-        
-        
-        
+
+        return board != null
+            ? ResponseEntity.ok(board)
+            : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
-    
     
     @PostMapping("/mytownBoard/{boardNo}/like")
     public ResponseEntity<?> toggleBoardLike(

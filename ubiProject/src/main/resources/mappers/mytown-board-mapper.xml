@@ -9,6 +9,7 @@
  SELECT
     B.BOARD_NO,
     B.BOARD_TITLE,
+       B.POST_TYPE, 
  SUBSTR(B.BOARD_CONTENT, 1, 100) AS BOARD_CONTENT,
   <![CDATA[
   CASE 
@@ -73,6 +74,7 @@ SELECT
   B.BOARD_CONTENT,
   B.BOARD_DATE,
   B.BOARD_READ_COUNT,
+   B.POST_TYPE, 
   NVL(B.STAR_COUNT, 0) AS STAR_COUNT,
   NVL((SELECT COUNT(*) FROM BOARD_LIKE WHERE BOARD_NO = B.BOARD_NO), 0) AS LIKE_COUNT,
   M.MEMBER_NICKNAME,
@@ -125,7 +127,11 @@ WHERE B.BOARD_NO = #{boardNo}
     WHERE BOARD_NO = #{boardNo} AND HASHTAG_NAME = #{tag}
 </select>
 
-
+<!-- 기존 해시태그 삭제 -->
+<delete id="deleteHashtags">
+  DELETE FROM BOARD_HASHTAG
+  WHERE BOARD_NO = #{boardNo}
+</delete>
 
 
     <select id="selectBoard" resultType="edu.kh.project.board.model.dto.Board">

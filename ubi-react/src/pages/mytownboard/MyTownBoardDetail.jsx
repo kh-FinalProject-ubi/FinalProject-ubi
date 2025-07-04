@@ -41,16 +41,19 @@ const handleLike = async () => {
   }
 };
 
-  useEffect(() => {
-    fetch(`/api/board/mytownBoard/${boardNo}`)
-      .then(res => res.json())
-      .then(data => {
-        setBoard(data)
-              setLikeCount(data.likeCount);
-      setLiked(data.liked); // 서버에서 liked 여부도 함께 내려줘야 함
-      })
-      .catch(err => console.error('Error:', err));
-  }, [boardNo]);
+useEffect(() => {
+  const memberParam = loginMemberNo ? `?memberNo=${loginMemberNo}` : "";
+
+  fetch(`/api/board/mytownBoard/${boardNo}${memberParam}`)
+    .then(res => res.json())
+    .then(data => {
+      setBoard(data);
+      setLikeCount(data.likeCount);
+      setLiked(data.likeCheck === 1); // ✅ 서버에서 내려온 likeCheck 사용
+    })
+    .catch(err => console.error('Error:', err));
+}, [boardNo, loginMemberNo]);
+
 
 if (!board) return <p>로딩 중...</p>; // ✅ null 방지
 

@@ -41,7 +41,7 @@ public class MytownEditBoardController {
 	 */
 	@PostMapping("/write")
     public ResponseEntity<?> write(@RequestBody Board dto) {
-
+	    log.info("🔥 Controller 받은 postType = {}", dto.getPostType());
         int boardNo = Service.writeBoard(dto);
         
         return ResponseEntity.ok(Map.of("boardNo", boardNo));

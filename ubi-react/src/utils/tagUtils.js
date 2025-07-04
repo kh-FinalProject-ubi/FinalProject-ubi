@@ -15,7 +15,7 @@ export function generateTagList(board) {
   } else if (board.facilityApiServiceId) {
     tagList.push('복지시설후기');
   } else if (board.postType) {
-    tagList.push(board.postType);
+    tagList.push(board.postType); // 자유, 자랑, 복지시설후기, 복지혜택후기
   }
 
 
