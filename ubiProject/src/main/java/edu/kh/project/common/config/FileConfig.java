@@ -58,9 +58,13 @@ public class FileConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry
-            .addResourceHandler(webPath + "**") // ex: /images/board/**
-            .addResourceLocations("file:///" + folderPath); // ex: file:///C:/uploadFiles/board/
+    	 registry
+         .addResourceHandler(webPath + "**") // ex: /images/board/**
+         .addResourceLocations("file:///" + folderPath); // ex: file:///C:/uploadFiles/board/
+    	 
+ 		registry
+ 		.addResourceHandler(profileResourceHandler)
+ 		.addResourceLocations(profileResourceLocation);
     }
 	
 	// MultipartResolver 설정

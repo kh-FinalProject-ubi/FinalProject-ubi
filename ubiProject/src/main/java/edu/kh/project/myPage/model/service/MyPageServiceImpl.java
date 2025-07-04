@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -315,27 +317,44 @@ public class MyPageServiceImpl implements MyPageService {
 	@Override
 	public String profile(int memberNo, MultipartFile profileImg) throws Exception {
 
-		String uploadDir = "C:/uploadFiles/profile";
-	    String fileName = System.currentTimeMillis() + "_" + profileImg.getOriginalFilename();
-	    Path savePath = Paths.get(uploadDir, fileName);
+		// 프로필 이미지 경로
+		String updatePath = null;
 
-	    Files.createDirectories(savePath.getParent());
-	    profileImg.transferTo(savePath.toFile());
+		// 변경명 저장
+		String rename = null;
 
-	    String dbPath = "/resources/profile/" + fileName;
+		if (!profileImg.isEmpty()) {
+		    String folderPath = profileFolderPath;
+		    if (!folderPath.endsWith("/") && !folderPath.endsWith("\\")) {
+		        folderPath += File.separator;
+		    }
 
-	    Member member = Member.builder()
-	            .memberNo(memberNo)
-	            .memberImg(dbPath)
-	            .build();
+		    File dir = new File(folderPath);
+		    if (!dir.exists()) {
+		        dir.mkdirs();
+		    }
 
-	    int result = mapper.profile(member);
+		    // 파일명 변경 및 저장
+		    rename = Utility.fileRename(profileImg.getOriginalFilename());
+		    File targetFile = new File(folderPath + rename);
+		    profileImg.transferTo(targetFile);
 
-	    if (result > 0) {
-	        return dbPath; // 🔹 저장된 경로 반환
-	    } else {
-	        return null;
-	    }
+		    // 클라이언트가 접근할 수 있는 경로 설정 (예: /myPage/profile/파일명)
+		    updatePath = profileWebPath + rename;
+		}
 
+		// 수정된 프로필 이미지 경로 + 회원 번호를 저장할 DTO 객체
+		Member member = Member.builder()
+		        .memberNo(memberNo)
+		        .memberImg(updatePath)
+		        .build();
+
+		int result = mapper.profile(member);
+
+		if (result > 0) {
+		    return updatePath;
+		} else {
+		    return null;
+		}
 	}
 }

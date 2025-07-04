@@ -4,22 +4,27 @@ import useAuthStore from '../../stores/useAuthStore';
 import "../../styles/mypage/ProfileImgUploader.css";
 
 export default function ProfileImgUploader({ member, onSave }) {
+
+  console.log("ProfileImgUploader member prop:", member);
+  console.log("member.memberImg:", member?.memberImg);
+
   const [isHovered, setIsHovered] = useState(false);
-  const { token } = useAuthStore(); // Zustand에서 회원 정보 가져옴
+  const { token } = useAuthStore();
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [currentImage, setCurrentImage] = useState(member?.profileImg);
 
-  const defaultImg = "/default-thumbnail.png";
+  const defaultImg = "/default-profile.png";
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
+    
     setSelectedFile(file);
     setPreviewUrl(URL.createObjectURL(file));
   };
 
-  // 저장 후 (선택 해제 시) URL 정리
   useEffect(() => {
     return () => {
       if (previewUrl) {
@@ -28,42 +33,55 @@ export default function ProfileImgUploader({ member, onSave }) {
     };
   }, [previewUrl]);
 
-  // 실제 표시할 src
-  const imageSrc = previewUrl || member?.profileImg || defaultImg;
-
   const handleRemoveImage = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
     setSelectedFile(null);
+    setPreviewUrl(null);
   };
+
+  const imageSrc = previewUrl
+    ? previewUrl
+    : member?.memberImg
+      ? `http://localhost:8080${member.memberImg}`
+      : defaultImg;
+  console.log("이미지 경로 : " + imageSrc);
 
   const handleSave = async () => {
     if (!selectedFile) return;
 
-    try {
+    try{
+      
       const formData = new FormData();
       formData.append("profileImage", selectedFile);
 
       const res = await axios.post(
         "/api/myPage/profile",
-        formData, // ✅ 두 번째 인자로 FormData
+        formData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            // Content-Type은 생략해야 axios가 boundary 포함해서 자동으로 채움
           },
         }
       );
 
       if (res.status === 200) {
-        const newImageUrl = res.data;  // 여기 경로 받기
-        onSave(newImageUrl);
         setSelectedFile(null);
+        setPreviewUrl(null);
+        onSave && onSave(); // 부모가 상태 업데이트 하도록 호출
       }
-
     } catch (error) {
       console.error(error);
       alert("프로필 이미지 저장에 실패했습니다.");
     }
   };
+
+  useEffect(() => {
+    if (member?.profileImg) {
+      setCurrentImage(member.profileImg);
+    }
+  }, [member?.profileImg]);
 
   return (
     <div className="profile-wrapper">

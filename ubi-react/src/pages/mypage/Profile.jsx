@@ -93,18 +93,20 @@ const Profile = () => {
       // console.log("기본정보 axios 요청 시작");
       const res = await axios.get('/api/myPage/info', { params: {memberNo : memberNo} },);
       console.log("기본정보 응답 받음:", res);
-      // console.log("기본정보 응답 값:", res.data);
+      console.log("기본정보 응답 값:", res.data);
       
       if (res.status === 200) {
+        console.log("프로필 이미지:", res.data.memberImg);
         setMember(res.data);
+
+        // 여기서 res.data.memberStandard를 사용해야 함
+        const { main, isDisabled, isPregnant } = parseMemberStandardCode(res.data.memberStandard);
+
+        setMemberStandard(res.data.memberStandard);
+        setMainType(main);
+        setDisabled(isDisabled);
+        setPregnant(isPregnant);
       }
-
-      const { main, isDisabled, isPregnant } = parseMemberStandardCode(member.memberStandard);
-
-      setMemberStandard(member.memberStandard);
-      setMainType(main);
-      setDisabled(isDisabled);
-      setPregnant(isPregnant);
 
     } catch (err) {
       console.error("기본정보 조회 중 예외 발생 : ", err);
@@ -307,6 +309,11 @@ const Profile = () => {
     if (main === "아동") return "3";
   };
 
+  const onProfileSave = async () => {
+    await getMemberData(); // 최신 프로필 데이터 다시 불러오기
+    alert("프로필 사진이 변경되었습니다!"); // 알림창 띄우기
+  };
+
   useEffect(() => {
     if (member?.memberStandard) {
       const { main, isDisabled, isPregnant } = parseMemberStandardCode(member.memberStandard);
@@ -356,13 +363,8 @@ const Profile = () => {
             <h3>기본 정보</h3>
             <div className="profile-left">
               <ProfileImgUploader
-                  member={member}
-                  onSave={(newImage) => {
-                    // 저장 로직: 예) 서버에 저장
-                    console.log("저장할 이미지:", newImage);
-                    // 예: 상태 업데이트
-                    setMember({ ...member, profileImg: newImage });
-                  }}
+                member={member}
+                onSave={onProfileSave}
                 />
             </div>
             <div className="profile-right">
