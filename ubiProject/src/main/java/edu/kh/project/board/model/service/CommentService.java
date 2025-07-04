@@ -29,5 +29,12 @@ public interface CommentService {
 	 * @return
 	 */
 	int update(Comment comment);
+	
+	/** 좋아요 서비스
+	 * @param commentNo
+	 * @param memberNo
+	 * @return
+	 */
+	boolean toggleCommentLike(int commentNo, int memberNo);
 
 }

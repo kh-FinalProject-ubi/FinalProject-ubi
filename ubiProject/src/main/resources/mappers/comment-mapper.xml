@@ -11,25 +11,32 @@
 		SELECT
 		C.COMMENT_NO,
 		C.COMMENT_CONTENT,
-		TO_CHAR(C.COMMENT_DATE, 'YYYY"."MM"."DD
-		HH24":"MI') AS COMMENT_DATE,
+		TO_CHAR(C.COMMENT_DATE, 'YYYY"."MM"."DD HH24":"MI') AS COMMENT_DATE,
 		C.BOARD_NO,
 		C.MEMBER_NO,
 		M.MEMBER_NICKNAME,
 		M.MEMBER_IMG,
 		C.COMMENT_PARENT_NO,
 		C.COMMENT_DEL_FL,
+
+		-- 좋아요 수
 		(SELECT COUNT(*)
 		FROM COMMENT_LIKE CL
-		WHERE CL.COMMENT_NO = C.COMMENT_NO) AS
-		COMMENT_LIKE
+		WHERE CL.COMMENT_NO = C.COMMENT_NO) AS COMMENT_LIKE,
+
+		-- 로그인한 회원의 좋아요 여부
+		(SELECT COUNT(*)
+		FROM COMMENT_LIKE CL
+		WHERE CL.COMMENT_NO = C.COMMENT_NO
+		AND CL.MEMBER_NO = #{memberNo}) AS COMMENT_LIKED
+
 		FROM COMMENTS C
-		JOIN MEMBER M ON C.MEMBER_NO = M.MEMBER_NO
+		JOIN
+		MEMBER M ON C.MEMBER_NO = M.MEMBER_NO
 		WHERE C.BOARD_NO = #{boardNo}
 		) C
 		WHERE C.COMMENT_DEL_FL = 'N'
-		OR EXISTS
-		(
+		OR EXISTS (
 		SELECT 1
 		FROM COMMENTS SUB
 		WHERE SUB.COMMENT_PARENT_NO = C.COMMENT_NO
@@ -37,10 +44,8 @@
 		)
 		START WITH C.COMMENT_PARENT_NO IS NULL
 		CONNECT BY PRIOR C.COMMENT_NO = C.COMMENT_PARENT_NO
-		ORDER SIBLINGS BY
-		C.COMMENT_NO
+		ORDER SIBLINGS BY C.COMMENT_NO
 	</select>
-
 
 	<!-- 동적 SQL : <if> 조건식을 작성할 수 있는 태그 - else 문 없음 - test 속성 : 조건식을 작성하는 속성 -->
 
@@ -87,19 +92,25 @@
 	</update>
 
 	<!-- 좋아요 체크 -->
-	<insert id="insertCommentLike">
-		INSERT INTO "COMMENT_LIKE"
-		VALUES(#{memberNo},
-		#{commentNo})
-	</insert>
+	<select id="checkCommentLike" resultType="_int">
+		SELECT COUNT(*)
+		FROM
+		COMMENT_LIKE
+		WHERE COMMENT_NO = #{commentNo}
+		AND MEMBER_NO = #{memberNo}
+	</select>
 
-	<!-- 좋아요 해제 -->
 	<delete id="deleteCommentLike">
-		DELETE FROM "COMMENT_LIKE"
-		WHERE MEMBER_NO =
-		#{memberNo}
-		AND COMMENT_NO = #{commentNo}
+		DELETE FROM COMMENT_LIKE
+		WHERE COMMENT_NO =
+		#{commentNo}
+		AND MEMBER_NO = #{memberNo}
 	</delete>
+
+	<insert id="insertCommentLike">
+		INSERT INTO COMMENT_LIKE (COMMENT_NO, MEMBER_NO)
+		VALUES (#{commentNo}, #{memberNo})
+	</insert>
 
 	<!-- 신고 체크 -->
 	<update id="insertReport">
@@ -115,10 +126,12 @@
 	<update id="deleteReport">
 		UPDATE "COMMENTS"
 		SET COMMENT_REPORT_COUNT = CASE
-		WHEN COMMENT_REPORT_COUNT > 0 THEN COMMENT_REPORT_COUNT - 1
+		WHEN
+		COMMENT_REPORT_COUNT > 0 THEN COMMENT_REPORT_COUNT - 1
 		ELSE 0
 		END
-		WHERE COMMENT_NO = #{commentNo}
+		WHERE
+		COMMENT_NO = #{commentNo}
 	</update>
 
 

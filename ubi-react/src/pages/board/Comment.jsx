@@ -129,17 +129,35 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
   // 좋아요 함수
   const handleCommentLike = async (commentNo) => {
     try {
-      await axios.post(
-        "/api/comments",
-        { commentNo }, // POST 요청의 body
+      const res = await axios.post(
+        `/api/comments/${commentNo}/like`,
+        {},
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
+
+      const updatedLikeStatus = res.data.liked; // true: 좋아요 추가, false: 좋아요 취소
+
+      // 해당 댓글만 업데이트
+      setComments((prev) =>
+        prev.map((comment) =>
+          comment.commentNo === commentNo
+            ? {
+                ...comment,
+                commentLiked: updatedLikeStatus,
+                commentLike: updatedLikeStatus
+                  ? comment.commentLike + 1
+                  : comment.commentLike - 1,
+              }
+            : comment
+        )
+      );
     } catch (err) {
-      alert("좋아요 와리가리");
+      alert("좋아요 처리 실패");
+      console.error(err);
     }
   };
 
@@ -239,12 +257,14 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
               {editingCommentNo !== comment.commentNo && (
                 <>
                   <button
-                    className="comment-like-btn"
-                    onClick={() => handleCommentLike(comment.commenNo)}
+                    className={`comment-like-btn ${
+                      comment.commentLiked ? "liked" : ""
+                    }`}
+                    onClick={() => handleCommentLike(comment.commentNo)}
                   >
                     <img src="/commentLike.svg" alt="좋아요 아이콘" />
                   </button>
-                  {comment.commentLike ? comment.commentLike : ""}
+                  <span>{comment.commentLike}</span>
                   <button onClick={() => handleReplyClick(comment.commentNo)}>
                     답글
                   </button>

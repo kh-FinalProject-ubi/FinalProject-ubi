@@ -3,6 +3,7 @@ package edu.kh.project.board.model.mapper;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import edu.kh.project.board.model.dto.Comment;
 
@@ -32,5 +33,11 @@ public interface CommentMapper {
 	 * @return
 	 */
 	int update(Comment comment);
+
+	int checkCommentLike(@Param("commentNo") int commentNo, @Param("memberNo") int memberNo);
+
+	void insertCommentLike(@Param("commentNo") int commentNo, @Param("memberNo") int memberNo);
+
+	void deleteCommentLike(@Param("commentNo") int commentNo, @Param("memberNo") int memberNo);
 
 }

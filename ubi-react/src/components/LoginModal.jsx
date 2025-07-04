@@ -72,6 +72,7 @@ const LoginModal = () => {
           />
           <button type="submit">로그인</button>
         </form>
+        <button>ID/PW 찾기</button>
         <hr />
         <button onClick={handleKakaoLogin} className="kakao-btn">
           카카오로 로그인
