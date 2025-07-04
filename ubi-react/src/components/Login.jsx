@@ -59,7 +59,11 @@ const Login = () => {
 
         console.log("✅ 일반 로그인 성공");
       } else {
-        alert(data.message || "로그인 실패");
+        if (res.status === 403 && data.message.includes("정지")) {
+          alert(data.message); // ✅ 신고 누적 안내
+        } else {
+          alert(data.message || "로그인 실패");
+        }
       }
     } catch (err) {
       console.error("로그인 오류:", err);

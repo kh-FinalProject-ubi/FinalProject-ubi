@@ -43,13 +43,16 @@ function App() {
           <Route path="noticeBoard" element={<NoticeBoard />} />
           <Route path="mytownBoard" element={<MyTownBoard />} />
           <Route path="/:boardCode/write" element={<InsertBoard />} />
-          <Route path="/:boardPath/edit/:boardNo" element={<EditBoard />} />
+          <Route path="/:boardPath/:boardNo/edit" element={<EditBoard />} />
           <Route path="/:boardPath/:boardNo" element={<BoardDetail />} />
           <Route path="mytownBoard/:boardNo" element={<MyTownBoardDetail />} />
           <Route path="/facility/search" element={<FacilitySearchPage />} />
           <Route path="/facility/detail" element={<FacilityDetailPage />} />
           <Route path="mytownBoard/write" element={<MyTownBoardWrite />} />
-          <Route path="/mytownBoard/update/:boardNo" element={<MytownBoardUpdate />} />
+          <Route
+            path="/mytownBoard/update/:boardNo"
+            element={<MytownBoardUpdate />}
+          />
           <Route path="/mypage" element={<MypageLayout />}>
             <Route path="profile" element={<Profile />} />
             <Route path="chat" element={<Chat />} />

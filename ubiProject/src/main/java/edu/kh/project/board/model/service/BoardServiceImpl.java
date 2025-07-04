@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import edu.kh.project.board.model.dto.Board;
+import edu.kh.project.board.model.dto.BoardPagination;
 import edu.kh.project.board.model.dto.Pagination;
 
 import javax.sql.DataSource;
@@ -47,7 +48,7 @@ public class BoardServiceImpl implements BoardService {
 		// 2. 1번의 결과 + cp를 이용해서
 		// Pagination 객체를 생성
 		// * Pagination 객체 : 게시글 목록 구성에 필요한 값을 저장한 객체
-		Pagination pagination = new Pagination(cp, listCount);
+		BoardPagination pagination = new BoardPagination(cp, listCount);
 
 		// 3. 특정 게시판의 지정된 페이지 목록 조회
 		/*
