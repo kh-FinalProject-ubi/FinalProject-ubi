@@ -6,7 +6,6 @@ import WelfareSearchFilter from "./WelfareSearchFilter";
 import { applyAllFilters } from "../../utils/applyAllFilters";
 import LikeButton from "../welfareLike/LikeButton";
 import { useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
 import { extractRegionFromTaddress } from "../../utils/extractRegionFromTaddress";
 import "../../styles/LocalBenefitSection.css";
 
@@ -19,6 +18,7 @@ const LocalBenefitSection = () => {
   const memberStandard = useAuthStore((state) => state.memberStandard);
   const tokenCity = useAuthStore((state) => state.regionCity);
   const tokenDistrict = useAuthStore((state) => state.regionDistrict);
+  const taddress = useAuthStore((state) => state.taddress);
 
   // ✅ 선택된 주소 (지도 클릭 등)
   const selectedCity = useSelectedRegionStore((state) => state.selectedCity);
@@ -26,19 +26,14 @@ const LocalBenefitSection = () => {
     (state) => state.selectedDistrict
   );
 
-  // ✅ 임시주소: 직접 토큰에서 파싱
-  let tempRegionCity = null;
-  let tempRegionDistrict = null;
-  if (token) {
-    try {
-      const decoded = jwtDecode(token);
-      const extracted = extractRegionFromTaddress(decoded?.taddress);
-      tempRegionCity = extracted.city;
-      tempRegionDistrict = extracted.district;
-    } catch (e) {
-      console.warn("⚠️ 임시주소 파싱 실패:", e);
-    }
-  }
+  // ✅ taddress 파싱 → 임시주소
+  const parsedTempRegion = useMemo(() => {
+    if (!taddress) return { city: null, district: null };
+    return extractRegionFromTaddress(taddress);
+  }, [taddress]);
+
+  const tempRegionCity = parsedTempRegion.city;
+  const tempRegionDistrict = parsedTempRegion.district;
 
   // ✅ 주소 소스 탭 상태 (기본: 'token')
   const [addressSource, setAddressSource] = useState("token"); // "token" | "selected" | "temp"

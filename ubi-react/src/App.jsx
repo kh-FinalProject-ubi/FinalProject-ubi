@@ -49,7 +49,10 @@ function App() {
           <Route path="/facility/search" element={<FacilitySearchPage />} />
           <Route path="/facility/detail" element={<FacilityDetailPage />} />
           <Route path="mytownBoard/write" element={<MyTownBoardWrite />} />
-          <Route path="/mytownBoard/update/:boardNo" element={<MytownBoardUpdate />} />
+          <Route
+            path="/mytownBoard/update/:boardNo"
+            element={<MytownBoardUpdate />}
+          />
           <Route path="/mypage" element={<MypageLayout />}>
             <Route path="profile" element={<Profile />} />
             <Route path="chat" element={<Chat />} />
@@ -61,6 +64,10 @@ function App() {
           <Route path="localBenefits" element={<LocalBenefitSection />} />
           <Route
             path="/welfareService/detail"
+            element={<WelfareDetailPage />}
+          />
+          <Route
+            path="/welfareDetail/:servId"
             element={<WelfareDetailPage />}
           />
         </Route>

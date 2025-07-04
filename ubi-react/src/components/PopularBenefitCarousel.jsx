@@ -1,31 +1,19 @@
-import React, { useState } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import usePopularBenefits from "../hook/welfareService/usePopularBenefits";
 import { normalizeRegion } from "../utils/regionUtils";
-import WelfareDetailModal from "./WelfareDetailModal"; // ✅ 모달 컴포넌트 import
 import "../styles/Carousel.css";
 
 const PopularBenefitCarousel = () => {
   const { data: popularBenefits, loading } = usePopularBenefits();
-  const [selectedDetail, setSelectedDetail] = useState(null);
+  const navigate = useNavigate();
 
-  const fetchDetail = async (servId) => {
-    if (!servId) return;
-    const pureId = servId.replace("bokjiro-", ""); // ✅ bokjiro- 제거
-    try {
-      const res = await fetch(
-        `/api/welfare-curl/welfare-detail?servId=${pureId}`
-      );
-      const data = await res.json();
+  const handleClick = (benefit) => {
+    const servId = benefit.apiServiceId.replace("bokjiro-", "");
 
-      if (data?.detail?.resultCode === "40") {
-        alert("해당 복지 혜택의 상세 정보가 없습니다.");
-        return;
-      }
-
-      setSelectedDetail(data.detail);
-    } catch (err) {
-      console.error("❌ 상세 정보 불러오기 실패:", err);
-    }
+    navigate(`/welfareDetail/${servId}`, {
+      state: { data: benefit }, // ✅ 상세 페이지에서 받는 location.state.data
+    });
   };
 
   if (loading) return <p>로딩 중...</p>;
@@ -48,22 +36,12 @@ const PopularBenefitCarousel = () => {
               📍 {regionCity} {regionDistrict || "지역 정보 없음"}
             </p>
             <p>🥇 찜 {b.likeCount}회</p>
-            <button
-              className="btn-primary"
-              onClick={() => fetchDetail(b.apiServiceId)}
-            >
+            <button className="btn-primary" onClick={() => handleClick(b)}>
               자세히 보기
             </button>
           </article>
         );
       })}
-
-      {selectedDetail && (
-        <WelfareDetailModal
-          detail={selectedDetail}
-          onClose={() => setSelectedDetail(null)}
-        />
-      )}
     </div>
   );
 };

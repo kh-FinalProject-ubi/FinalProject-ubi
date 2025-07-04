@@ -1,3 +1,5 @@
+import cityDistrictMap from "../constants/cityDistrictMap";
+
 export function extractRegionFromTaddress(taddress) {
   if (!taddress) return { city: null, district: null };
 
@@ -5,19 +7,19 @@ export function extractRegionFromTaddress(taddress) {
   const raw = parts[1] || "";
   const tokens = raw.trim().split(" ");
 
-  const city = tokens[0] || null;
-  const district = [
-    "서울특별시",
-    "부산광역시",
-    "대구광역시",
-    "인천광역시",
-    "광주광역시",
-    "대전광역시",
-    "울산광역시",
-    "세종특별자치시",
-  ].includes(tokens[0])
-    ? tokens[1] || null
-    : null;
+  for (const [city, districts] of Object.entries(cityDistrictMap)) {
+    for (const district of districts) {
+      const cityMatch = tokens.find(
+        (t) => city.startsWith(t) || t.startsWith(city)
+      );
+      const districtMatch = tokens.find(
+        (t) => district.startsWith(t) || t.startsWith(district)
+      );
+      if (cityMatch && districtMatch) {
+        return { city, district };
+      }
+    }
+  }
 
-  return { city, district };
+  return { city: null, district: null }; // 못 찾은 경우
 }
