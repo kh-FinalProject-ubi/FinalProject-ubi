@@ -105,6 +105,12 @@ const Withdraw = () => {
       alert('약관에 동의해야 다음 단계로 진행할 수 있습니다.');
       return;
     }
+
+    const confirmed = window.confirm("정말 탈퇴하시겠습니까?");
+      if (!confirmed) {
+        return; // 취소 누르면 함수 종료
+    }
+    
     setError("");
     setSuccess("");
 

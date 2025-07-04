@@ -322,39 +322,36 @@ public class MyPageController {
 	 * @throws Exception
 	 */
 	@PostMapping("profile")
-	public ResponseEntity<Object> profile(@RequestParam("profileImage") MultipartFile profileImage,
-										  @RequestHeader("Authorization") String authorizationHeader ) throws Exception {
+	public ResponseEntity<Object> profile(
+	        @RequestParam("profileImage") MultipartFile profileImage,
+	        @RequestHeader("Authorization") String authorizationHeader) {
 
-		try {
-			
-			if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-		        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
-		    }
+	    try {
+	        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
+	        }
 
-		    String token = authorizationHeader.substring(7);
+	        String token = authorizationHeader.substring(7);
 
-		    if (!jwtU.validateToken(token)) {
-		        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
-		    }
+	        if (!jwtU.validateToken(token)) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
+	        }
 
-		    Long memberNoLong = jwtU.extractMemberNo(token);
-		    int memberNo = memberNoLong.intValue();
+	        Long memberNoLong = jwtU.extractMemberNo(token);
+	        int memberNo = memberNoLong.intValue();
 
-		    String result = service.profile(memberNo, profileImage);
+	        String savedPath = service.profile(memberNo, profileImage);
 
-		    if (result != null) {
-		        return ResponseEntity.ok(result); // 🔹 새 경로 반환
-		    } else {
-		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("프로필 이미지 변경 실패");
-		    }
-			
-		} catch (Exception e) {
-			
-			log.error("비밀번호 확인 중 오류 발생", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-		}
+	        if (savedPath != null) {
+	            return ResponseEntity.ok().body(savedPath);
+	        } else {
+	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("프로필 이미지 변경 실패");
+	        }
 
-		
+	    } catch (Exception e) {
+	        log.error("프로필 변경 중 오류", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류");
+	    }
 	}
 
 	

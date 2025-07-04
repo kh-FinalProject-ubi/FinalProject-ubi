@@ -15,6 +15,8 @@ const Header = () => {
 
   const navigate = useNavigate();
 
+  console.log("헤더 memberImg:", memberImg);
+
   const LogoutButton = () => {
     const logout = useAuthStore((state) => state.logout);
 
@@ -68,7 +70,9 @@ const Header = () => {
               <Link to="/mypage/Profile">
                 <img
                   className="profile-img"
-                  src={memberImg || "/assets/profile.png"}
+                  src={ memberImg
+                        ? `http://localhost:8080${memberImg}`
+                        : "/default-profile.png"}
                   alt="프로필"
                 />
               </Link>
