@@ -26,6 +26,7 @@ const LoginModal = () => {
         memberName: data.memberName,
         memberStandard: data.memberStandard, // ✅ 이 줄 추가
         memberNo: data.memberNo,
+        memberImg: data.memberImg,
         authority: data.authority,
         role: data.authority === "2" ? "ADMIN" : "USER",
       });

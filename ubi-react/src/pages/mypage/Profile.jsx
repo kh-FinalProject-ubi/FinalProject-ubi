@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import "../../styles/mypage/Profile.css";
 import useAuthStore from '../../stores/useAuthStore';
@@ -7,6 +8,7 @@ import LoadingOverlay from '../../components/Loading';
 import ProfileImgUploader from "./ProfileImgUploader";
 import { div } from 'framer-motion/client';
 import DaumPostcode from "react-daum-postcode";
+import { stripHtml } from "./striptHtml";
 
 const parseMemberStandardCode = (code) => {
   switch (code) {
@@ -58,7 +60,7 @@ const Profile = () => {
   const [pregnant, setPregnant] = useState(false); // 체크박스
   const parsed = parseMemberStandardCode(member?.memberStandard || "0");
 
-
+  const navigate = useNavigate();
   
   const [editMode, setEditMode] = useState(false);
   const detailAddressRef = useRef(null);
@@ -352,6 +354,14 @@ const Profile = () => {
 
   }, [memberNo, category, contentType, commentContentType]);
 
+  const handleClick = (benefit) => {
+    const servId = benefit.apiServiceId.replace("bokjiro-", "");
+
+    navigate(`/welfareDetail/${servId}`, {
+      state: { data: benefit }, // ✅ 상세 페이지에서 받는 location.state.data
+    });
+  };
+  
   return (
     <div className="mypage-profile">
       <h2>내 정보</h2>
@@ -605,7 +615,7 @@ const Profile = () => {
                   switch (category) {
                     case '채용':
                       return (
-                        <div className="benefit-card" key={benefit.recruitNo}>
+                        <div className="benefit-card" key={benefit.recruitNo} onClick={() => navigate(`welfareService/detail/${benefit.serviceNo}`)}>
                           <div className="badge-row">채용 정보</div>
                           <div className="benefit-title">{benefit.jobTitle}</div>
                           <div className="benefit-agency">{benefit.jobFacilityName}</div>
@@ -653,7 +663,7 @@ const Profile = () => {
 
                     case '혜택':
                       return (
-                        <div className="benefit-card" key={benefit.serviceNo}>
+                        <div className="benefit-card" key={benefit.serviceNo} onClick={() => handleClick(benefit)}>
                           <div className="badge-row">
                             <span className={`badge ${
                               benefit.receptionStart && benefit.receptionEnd ? '신청혜택' : '기본혜택'
@@ -712,16 +722,20 @@ const Profile = () => {
                 </thead>
                 <tbody>
                   {board.map((b) => (
-                    <tr key={b.boardNo}>
+                    <tr key={b.boardNo} className="clickable-row" onClick={() => navigate(`/mytownBoard/${b.boardNo}`)}>
                       <td>{b.postType}</td>
                       <td>{b.hashtags}</td>
                       <td>{b.boardTitle}</td>
                       <td>
-                        {b.boardContent
-                          ? b.boardContent.length > 20
-                            ? `${b.boardContent.slice(0, 20)}...`
-                            : b.boardContent
-                          : "내용 없음"}
+                       {(() => {
+                          const plainContent = stripHtml(b.boardContent);
+
+                          if (!plainContent) return "내용 없음";
+
+                          return plainContent.length > 20
+                            ? `${plainContent.slice(0, 20)}...`
+                            : plainContent;
+                        })()}
                       </td>
                       <td>{b.boardDate}</td>
                       <td>{b.boardReadCount}</td>
@@ -747,7 +761,7 @@ const Profile = () => {
                 </thead>
                 <tbody>
                   {board.map((b) => (
-                    <tr key={b.commentNo}>
+                    <tr key={b.commentNo} onClick={() => navigate(`/mytownBoard/${b.boardNo}`)}>
                       <td>{b.postType}</td>
                       <td>{b.boardTitle}</td>
                       <td>{b.commentContent}</td>

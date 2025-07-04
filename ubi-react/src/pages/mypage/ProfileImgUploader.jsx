@@ -67,9 +67,15 @@ export default function ProfileImgUploader({ member, onSave }) {
       );
 
       if (res.status === 200) {
+        console.log(res.data);
         setSelectedFile(null);
         setPreviewUrl(null);
         onSave && onSave(); // 부모가 상태 업데이트 하도록 호출
+        const { setAuth, ...rest } = useAuthStore.getState();
+          setAuth({
+            ...rest,
+            memberImg: res.data
+          });
       }
     } catch (error) {
       console.error(error);
