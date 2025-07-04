@@ -44,5 +44,32 @@ public class BusanFacility {
     private String fee;              // 이용료
     private String note;             // 비고
     
-    private String additionalInfo;
+    private String additionalInfo;    
+    
+    private String programTitle;   // 강좌명
+    private String startTime;      // 교육시작시간
+    private String endTime;        // 교육종료시간
+    private String dayOfWeek;      // 요일
+    private String instructor;     // 강사명
+    private String programTarget;  // 이용대상
+    private String programFee;     // 교육비
+    private String programLocation; // 교육장소
+    private String inquiry;        // 문의 전화
+    private String programNote;    // 비고
+
+    private String programContent;   // 프로그램내용
+    private String programTime;      // 시간
+
+    private String foundingStandardCapacity;   // 설립기준 정원
+    private String capacityChange;             // 정원변경(정원(년도))
+    
+    private String status;             // 영업상태명
+    private String establishDate;      // 건립일자
+    private String buildingArea;       // 건물면적
+    
+    private String reservationMethod;    // 예약방법
+    private String completionDate;       // 준공(이관)
+    private String convenienceFacility;  // 부대편의시설
+    
+    private String facilityKind;
 }
