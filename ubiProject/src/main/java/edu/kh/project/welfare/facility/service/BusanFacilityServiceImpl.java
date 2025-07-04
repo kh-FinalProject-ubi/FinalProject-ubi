@@ -9,13 +9,14 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,17 +35,12 @@ public class BusanFacilityServiceImpl implements BusanFacilityService {
 
 	private final RestTemplate restTemplate = new RestTemplate();
 
+	@Lazy
+	@Autowired
+	private BusanFacilityService selfProxy;
+	
 	private static final Map<String, List<String>> apiUrlMap = Map.ofEntries(
-			entry("부산광역시|장애인복지",
-					List.of("https://apis.data.go.kr/6260000/BusanDisabledFacService/getDisabledFacilityInfo")),
-			entry("부산광역시|아동복지",
-					List.of("https://apis.data.go.kr/6260000/ChildWelfareService/ChildWelfareFacilityInfo")),
-			entry("부산광역시|노인복지",
-					List.of("https://api.odcloud.kr/api/15071152/v1/uddi:7b6bb047-1b65-4419-b152-b226cfd2ba7e")),
-			entry("부산광역시|정신보건시설",
-					List.of("https://api.odcloud.kr/api/15066738/v1/uddi:a814ee57-4911-4a0f-8f7f-b2da3f742c73")),
-			entry("부산광역시|장애인보호", List.of(
-					"https://api.odcloud.kr/api/15042650/v1/uddi:f542f98c-d366-44f0-bd66-d85e47b44ada_202001231745")),
+			
 			entry("중구|노인복지",
 					List.of("https://api.odcloud.kr/api/3072419/v1/uddi:8770624d-3241-4fe7-8797-f7e53e34334d")),
 			entry("중구|사회복지", List.of(
@@ -224,18 +220,19 @@ public class BusanFacilityServiceImpl implements BusanFacilityService {
 					"https://api.odcloud.kr/api/3082195/v1/uddi:d4710abc-e17d-469c-93ba-e709845cf9da_201906191319")),
 			entry("기장군|전체", List.of("https://api.odcloud.kr/api/15030106/v1/uddi:6ff6a15b-7b5e-4989-8533-dd5734e759ed",
 					"https://api.odcloud.kr/api/15004397/v1/uddi:0ceb8ea2-9ee0-47da-aa1f-c8859b5cd2c3",
-					"https://api.odcloud.kr/api/15047997/v1/uddi:c49c64ff-878c-4d26-a7d8-a4ad27365594_202002040926")),
-			entry("부산광역시|전체", List.of("https://apis.data.go.kr/6260000/BusanDisabledFacService/getDisabledFacilityInfo",
-					"https://apis.data.go.kr/6260000/ChildWelfareService/ChildWelfareFacilityInfo",
-					"https://api.odcloud.kr/api/15071152/v1/uddi:7b6bb047-1b65-4419-b152-b226cfd2ba7e",
-					"https://api.odcloud.kr/api/15066738/v1/uddi:a814ee57-4911-4a0f-8f7f-b2da3f742c73",
-					"https://api.odcloud.kr/api/15042650/v1/uddi:f542f98c-d366-44f0-bd66-d85e47b44ada_202001231745")));
+					"https://api.odcloud.kr/api/15047997/v1/uddi:c49c64ff-878c-4d26-a7d8-a4ad27365594_202002040926")));
 
 	// 병렬 호출 (오버로드 버전)
 	@Async
 	public CompletableFuture<List<BusanFacility>> fetchApi(String url, String districtFilter) {
+		log.info("🚀 비동기 호출 시작: {}", url);
+		log.info("✅ 응답 완료: {}", url);
+		
 	    try {
-	    	String fullUrl = url + "?serviceKey=" + serviceKey;
+	    	String fullUrl = url + "?serviceKey=" + serviceKey
+	                + "&page=1"
+	                + "&perPage=100";
+
 
 	        String response = restTemplate.getForObject(fullUrl, String.class);
 
@@ -266,17 +263,21 @@ public class BusanFacilityServiceImpl implements BusanFacilityService {
 	        category = "전체";
 	    }
 
-	    String key = district + "|" + category;
+	    log.info("📌 getFacilities() 호출됨 - district: {}, category: {}", district, category);
+
+	    // 🔑 Key를 항상 부산광역시 기준으로 구성
+	    String key = "부산광역시|" + category;
+
 	    List<String> urls = apiUrlMap.getOrDefault(key, Collections.emptyList());
 
-	    if (urls.isEmpty()) {
-	        key = "부산광역시|" + category;
-	        urls = apiUrlMap.getOrDefault(key, Collections.emptyList());
-	    }
+	    log.info("📦 호출 대상 URL 수: {}", urls.size());
+	    urls.forEach(url -> log.info("➡️ 호출 대상 URL: {}", url));
+
+	    if (urls.isEmpty()) return Collections.emptyList();
 
 	    List<CompletableFuture<List<BusanFacility>>> futures = new ArrayList<>();
 	    for (String url : urls) {
-	        futures.add(fetchApi(url, district));
+	        futures.add(selfProxy.fetchApi(url, district));
 	    }
 
 	    CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
@@ -299,9 +300,16 @@ public class BusanFacilityServiceImpl implements BusanFacilityService {
 
 	        dto.setFacilityName(getFirst(item, "시설명", "시설명(운영법인)", "기관명", "시설-기관명", "노인복지관명", "경로당명"));
 	        dto.setAddress(getFirst(item, "소재지도로명주소", "소재지지번주소", "주소", "소재지", "도로명주소"));
-	        dto.setPhone(getFirst(item, "전화번호", "연락처", "기관전화번호"));
+	        dto.setPhone(getFirst(item, "전화번호", "연락처", "기관전화번호","facilityName"));
 	        dto.setCategory(url);
 	        dto.setDistrict(districtFilter);
+	        
+	        dto.setFacilityName(getFirst(item, "facility_name", "시설명", "기관명")); // 영어 응답 필드 포함
+	        dto.setAddress(getFirst(item, "road_address", "소재지도로명주소", "주소"));
+	        dto.setPhone(getFirst(item, "tel", "전화번호", "연락처"));
+	        dto.setDistrict(getFirst(item, "gugun", "구군"));
+	        dto.setLatitude(parseDouble(item, "lat", "위도"));
+	        dto.setLongitude(parseDouble(item, "lon", "경도"));
 
 	        dto.setManagingAgency(getFirst(item, "운영기관명"));
 	        dto.setDataReferenceDate(getFirst(item, "데이터기준일자"));

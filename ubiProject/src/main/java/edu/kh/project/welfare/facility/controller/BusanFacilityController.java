@@ -1,6 +1,7 @@
 package edu.kh.project.welfare.facility.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -8,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.kh.project.welfare.facility.dto.BusanFacility;
-import edu.kh.project.welfare.facility.dto.GangwonFacility;
 import edu.kh.project.welfare.facility.service.BusanFacilityService;
 
 @RestController
@@ -24,15 +24,16 @@ public class BusanFacilityController {
    
     
     @GetMapping
-    public List<BusanFacility> getFacilities(
+    public Map<String, Object> getFacilities(
         @RequestParam("city") String city,
         @RequestParam("district") String district,
         @RequestParam(value = "category", required = false) String category
     ) {
-        // 시 + 구군을 합쳐서 지역 전체 문자열로 전달
         String fullDistrict = city + " " + district;
-        return facilityService.getFacilities(fullDistrict, category);
+        List<BusanFacility> list = facilityService.getFacilities(fullDistrict, category);
+        return Map.of("data", list);  // ✅ 감싸서 전달
     }
+
 }
 
 
