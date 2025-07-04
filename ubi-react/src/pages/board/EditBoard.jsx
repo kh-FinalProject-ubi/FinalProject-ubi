@@ -204,7 +204,7 @@ const EditBoard = () => {
     }
 
     try {
-      const res = await axios.post(
+      const res = await axios.put(
         `/api/editBoard/${boardCodeInt}/${boardNo}`,
         formData,
         {

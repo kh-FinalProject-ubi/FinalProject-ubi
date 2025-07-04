@@ -31,7 +31,11 @@ const LoginModal = () => {
       });
       closeLoginModal(); // 상태 통해 닫기
     } else {
-      alert(data.message || "로그인 실패");
+      if (res.status === 403 && data.message.includes("정지")) {
+        alert(data.message); // ✅ 신고 누적 안내
+      } else {
+        alert(data.message || "로그인 실패");
+      }
     }
   };
 

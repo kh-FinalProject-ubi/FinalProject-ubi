@@ -144,7 +144,7 @@ const BoardDetail = () => {
                     ([, code]) => code === board.boardType
                   )?.[0];
                   path
-                    ? navigate(`/${path}/edit/${board.boardNo}`)
+                    ? navigate(`/${path}/${board.boardNo}/edit`)
                     : alert("게시판 경로를 찾을 수 없습니다.");
                 }}
               >
@@ -156,11 +156,9 @@ const BoardDetail = () => {
                 onClick={() => {
                   if (window.confirm("정말 삭제하시겠습니까?")) {
                     axios
-                      .post(
-                        `/api/editBoard/${boardCode}/${boardNo}/delete`,
-                        {},
-                        { headers: { Authorization: `Bearer ${token}` } }
-                      )
+                      .delete(`/api/editBoard/${boardCode}/${boardNo}`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                      })
                       .then(() => {
                         alert("삭제되었습니다.");
                         navigate(`/${boardPath}`);

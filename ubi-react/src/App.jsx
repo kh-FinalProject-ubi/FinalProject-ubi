@@ -43,7 +43,7 @@ function App() {
           <Route path="noticeBoard" element={<NoticeBoard />} />
           <Route path="mytownBoard" element={<MyTownBoard />} />
           <Route path="/:boardCode/write" element={<InsertBoard />} />
-          <Route path="/:boardPath/edit/:boardNo" element={<EditBoard />} />
+          <Route path="/:boardPath/:boardNo/edit" element={<EditBoard />} />
           <Route path="/:boardPath/:boardNo" element={<BoardDetail />} />
           <Route path="mytownBoard/:boardNo" element={<MyTownBoardDetail />} />
           <Route path="/facility/search" element={<FacilitySearchPage />} />

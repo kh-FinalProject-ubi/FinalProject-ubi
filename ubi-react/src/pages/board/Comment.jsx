@@ -17,6 +17,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
     if (boardCode && boardNo) loadComments();
   }, [boardCode, boardNo]);
 
+  // 댓글 불러오기
   const loadComments = async () => {
     setCommentLoading(true);
     try {
@@ -31,12 +32,13 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
     }
   };
 
+  // 댓글 작성
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (!commentContent.trim()) return alert("댓글 내용을 입력해주세요.");
     try {
       await axios.post(
-        `/api/comments/${boardCode}/${boardNo}/insert`,
+        `/api/comments/${boardCode}/${boardNo}`,
         { commentContent },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -47,12 +49,13 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
     }
   };
 
+  // 답글 입력 (댓글 입력과 같은 post)
   const handleReplySubmit = async (e, parentNo) => {
     e.preventDefault();
     if (!replyContent.trim()) return alert("답글 내용을 입력해주세요.");
     try {
       await axios.post(
-        `/api/comments/${boardCode}/${boardNo}/insert`,
+        `/api/comments/${boardCode}/${boardNo}`,
         {
           commentContent: replyContent,
           commentParentNo: parentNo,
@@ -94,7 +97,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
     if (!editingContent.trim()) return alert("댓글 내용을 입력해주세요.");
     try {
       await axios.put(
-        `/api/comments`,
+        `/api/comments/${commentNo}`,
         { commentNo, commentContent: editingContent },
         { headers: { Authorization: `Bearer ${token}` } }
       );

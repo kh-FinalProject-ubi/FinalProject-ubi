@@ -60,7 +60,7 @@ public class CommentController {
 	/** 댓글/답글 등록
 	 * @return
 	 */
-	@PostMapping("/{boardCode}/{boardNo}/insert")
+	@PostMapping("/{boardCode}/{boardNo}")
 	public int insert(
 	    @PathVariable("boardCode") int boardCode,
 	    @PathVariable("boardNo") int boardNo,
@@ -91,8 +91,11 @@ public class CommentController {
 	 * @param comment
 	 * @return 
 	 */
-	@PutMapping("")
+	@PutMapping("/{commentNo}")
 	public int update(@RequestBody Comment comment) {
 	    return service.update(comment);
 	}
+	
+//	public int likeInsert()
+	
 }

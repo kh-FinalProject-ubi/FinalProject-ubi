@@ -128,7 +128,7 @@ const InsertBoard = () => {
       formData.append("images", file);
     });
 
-    fetch(`/api/editBoard/${numericBoardCode}/insert`, {
+    fetch(`/api/editBoard/${numericBoardCode}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -145,6 +145,7 @@ const InsertBoard = () => {
       .then((data) => {
         if (data && data.boardNo) {
           alert("작성 성공");
+          console.log("✅ 작성 결과:", data);
           const boardNo = data.boardNo;
           navigate(`/${boardCode}/${boardNo}`);
         } else {
