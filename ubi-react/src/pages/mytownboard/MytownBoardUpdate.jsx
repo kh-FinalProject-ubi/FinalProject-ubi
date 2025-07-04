@@ -154,10 +154,10 @@ const hashtagList = hashtags
     const updatedBoard = {
       boardTitle: boardTitle,
       boardContent: updatedContent,
-      starCount: board?.starCount ?? 0,
-      postType: board?.postType ?? '',
+      starCount: starRating, 
+      postType: postTypeCheck, 
       memberNo: board?.memberNo ?? loginMemberNo,
-      hashtagList: board?.hashtagList ?? [],
+     hashtagList, // ✅
           imageList // ✅ 추가!
 
     };
