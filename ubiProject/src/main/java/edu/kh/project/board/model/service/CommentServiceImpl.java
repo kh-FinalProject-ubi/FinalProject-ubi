@@ -41,4 +41,21 @@ public class CommentServiceImpl implements CommentService {
 	public int update(Comment comment) {
 		return mapper.update(comment);
 	}
+	
+	// 좋아요 토글 서비스
+	@Override
+	public boolean toggleCommentLike(int commentNo, int memberNo) {
+	    // 좋아요 여부 확인
+	    int count = mapper.checkCommentLike(commentNo, memberNo);
+
+	    if (count > 0) {
+	        // 이미 눌렀음 → 삭제
+	        mapper.deleteCommentLike(commentNo, memberNo);
+	        return false; // 좋아요 취소
+	    } else {
+	        // 없으면 추가
+	        mapper.insertCommentLike(commentNo, memberNo);
+	        return true; // 좋아요 추가
+	    }
+	}
 }

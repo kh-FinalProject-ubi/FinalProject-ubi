@@ -1,8 +1,11 @@
 package edu.kh.project.board.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,68 +37,92 @@ import edu.kh.project.common.util.JwtUtil;
 /**
  * 
  */
-@RestController  
+/**
+ * 
+ */
+@RestController
 @RequestMapping("/api/comments")
 //@RequiredArgsConstructor + 메서드 안에 final => @Autowired 기능 
 public class CommentController {
 
 	@Autowired
 	private CommentService service;
-	
+
 	@Autowired
 	private JwtUtil jwtUtil;
-	
-	/** 댓글 목록 조회
+
+	/**
+	 * 댓글 목록 조회
+	 * 
 	 * @param boardNo
-	 * @return 
+	 * @return
 	 */
 	@GetMapping("/{boardCode}/{boardNo}")
-	public List<Comment> select(
-	    @PathVariable("boardCode") int boardCode,
-	    @PathVariable("boardNo") int boardNo) {
+	public List<Comment> select(@PathVariable("boardCode") int boardCode, @PathVariable("boardNo") int boardNo) {
 
-	    return service.select(boardNo); 
+		return service.select(boardNo);
 	}
-	
-	/** 댓글/답글 등록
+
+	/**
+	 * 댓글/답글 등록
+	 * 
 	 * @return
 	 */
 	@PostMapping("/{boardCode}/{boardNo}")
-	public int insert(
-	    @PathVariable("boardCode") int boardCode,
-	    @PathVariable("boardNo") int boardNo,
-	    @RequestBody Comment comment,
-	    @RequestHeader("Authorization") String authHeader
-	    ) {
-	    
+	public int insert(@PathVariable("boardCode") int boardCode, @PathVariable("boardNo") int boardNo,
+			@RequestBody Comment comment, @RequestHeader("Authorization") String authHeader) {
+
 		String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
 
-	    Long memberNoLong = jwtUtil.extractMemberNo(token);
-	    int memberNo = memberNoLong.intValue();
-		
-	    comment.setBoardNo(boardNo); 
-	    comment.setMemberNo(memberNo);
-	    return service.insert(comment);
+		Long memberNoLong = jwtUtil.extractMemberNo(token);
+		int memberNo = memberNoLong.intValue();
+
+		comment.setBoardNo(boardNo);
+		comment.setMemberNo(memberNo);
+		return service.insert(comment);
 	}
-	
-	/** 댓글 삭제
+
+	/**
+	 * 댓글 삭제
+	 * 
 	 * @param commentNo
 	 * @return
 	 */
 	@DeleteMapping("/{commentNo}")
 	public int delete(@PathVariable("commentNo") int commentNo) {
-	    return service.delete(commentNo);
+		return service.delete(commentNo);
 	}
-	
-	/** 댓글 수정
+
+	/**
+	 * 댓글 수정
+	 * 
 	 * @param comment
-	 * @return 
+	 * @return
 	 */
 	@PutMapping("/{commentNo}")
 	public int update(@RequestBody Comment comment) {
-	    return service.update(comment);
+		return service.update(comment);
 	}
+
 	
-//	public int likeInsert()
-	
+	/** 댓글 좋아요
+	 * @param commentNo
+	 * @param authHeader
+	 * @return
+	 */
+	@PostMapping("/{commentNo}/like")
+	public ResponseEntity<Map<String, Object>> toggleCommentLike(
+	    @PathVariable("commentNo") int commentNo,
+	    @RequestHeader("Authorization") String authHeader) {
+
+	    String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+	    int memberNo = jwtUtil.extractMemberNo(token).intValue();
+
+	    boolean liked = service.toggleCommentLike(commentNo, memberNo);
+
+	    Map<String, Object> result = new HashMap<>();
+	    result.put("liked", liked); // true 또는 false
+
+	    return ResponseEntity.ok(result);
+	}
 }

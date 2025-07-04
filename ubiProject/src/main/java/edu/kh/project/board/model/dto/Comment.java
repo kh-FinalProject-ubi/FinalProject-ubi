@@ -25,4 +25,5 @@ public class Comment {
 	private String profileImg;
 	
 	private int commentLike;
+	private boolean commentLiked;
 }

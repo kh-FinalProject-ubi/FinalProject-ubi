@@ -45,7 +45,10 @@ const Header = () => {
     <header className="site-header">
       <div className="header-inner">
         <h1 className="logo">
-          <a href="/">UBI</a>
+          <a href="/">
+            <img id="logo" src="/ubi.svg" alt="로고" />
+            UBI
+          </a>
         </h1>
         <nav className="nav-menu">
           <Link to="/welfareService">공공서비스</Link>
@@ -70,9 +73,11 @@ const Header = () => {
               <Link to="/mypage/Profile">
                 <img
                   className="profile-img"
-                  src={ memberImg
-                        ? `http://localhost:8080${memberImg}`
-                        : "/default-profile.png"}
+                  src={
+                    memberImg
+                      ? `http://localhost:8080${memberImg}`
+                      : "/default-profile.png"
+                  }
                   alt="프로필"
                 />
               </Link>
