@@ -101,6 +101,24 @@ export default function FacilitySearchPage() {
       "고성군",
       "양양군",
     ],
+    부산광역시: [
+      "중구",
+      "서구",
+      "동구",
+      "영도구",
+      "부산진구",
+      "동래구",
+      "남구",
+      "북구",
+      "해운대구",
+      "사하구",
+      "금정구",
+      "강서구",
+      "연제구",
+      "수영구",
+      "사상구",
+      "기장군",
+    ],
   };
 
   useEffect(() => {
@@ -129,19 +147,31 @@ export default function FacilitySearchPage() {
     setCurrentPage(1);
   }, [selectedCity, selectedDistrict]);
 
+  // ✅ 주요 데이터 fetch
   const {
-    data: welfareData,
+    data: welfareData = [],
     loading: welfareLoading,
     error,
   } = useFacilities("old", category, selectedCity, selectedDistrict);
 
-  const { data: sportsData, loading: sportsLoading } = useSportsFacilities(
+  const { data: sportsData = [], loading: sportsLoading } = useSportsFacilities(
     selectedCity,
     selectedDistrict
   );
 
   const loading = welfareLoading || sportsLoading;
-  const combinedFacilities = [...welfareData, ...sportsData];
+
+  // ✅ 디버깅 로그
+  console.log("🔥 selectedCity:", selectedCity);
+  console.log("🔥 selectedDistrict:", selectedDistrict);
+  console.log("🔥 welfareData:", welfareData);
+  console.log("🔥 sportsData:", sportsData);
+
+  // ✅ 안전한 병합 처리
+  const combinedFacilities = [
+    ...(Array.isArray(welfareData) ? welfareData : []),
+    ...(Array.isArray(sportsData) ? sportsData : []),
+  ];
 
   const categoryMap = {
     체육시설: ["체육시설", "테니스장", "다목적경기장"],
@@ -218,6 +248,7 @@ export default function FacilitySearchPage() {
     <div className="facility-search-container">
       <h2 className="facility-title">지역 복지시설</h2>
 
+      {/* 필터 영역 */}
       <div className="filter-bar">
         <div className="filter-row">
           <div className="region-select-row">
@@ -289,6 +320,7 @@ export default function FacilitySearchPage() {
         </div>
       </div>
 
+      {/* 출력 영역 */}
       {loading && <p>불러오는 중...</p>}
       {error && (
         <p className="error-text">시설 정보를 가져오는 데 실패했습니다.</p>

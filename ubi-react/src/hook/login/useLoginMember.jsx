@@ -8,15 +8,16 @@ export default function useLoginMember() {
   const [loading, setLoading] = useState(true);
   const setAuth = useAuthStore((state) => state.setAuth);
 
-  const { city: tempRegionCity, district: tempRegionDistrict } =
-    extractRegionFromTaddress(res.data.taddress || "");
-
   useEffect(() => {
     const fetchMember = async () => {
       try {
         const res = await axios.get("/api/member/info");
 
         console.log("멤버 정보:", res.data);
+
+        // ✅ 여기에 위치해야 res.data 사용 가능
+        const { city: tempRegionCity, district: tempRegionDistrict } =
+          extractRegionFromTaddress(res.data.taddress || "");
 
         // Zustand에 로그인 상태 복구
         const saved = JSON.parse(localStorage.getItem("auth-storage") || "{}");
@@ -31,8 +32,8 @@ export default function useLoginMember() {
           role: res.data.authority === "2" ? "ADMIN" : "USER",
           regionCity: res.data.regionCity,
           regionDistrict: res.data.regionDistrict,
-          tempRegionCity, // ✅ 추가
-          tempRegionDistrict, // ✅ 추가
+          tempRegionCity,
+          tempRegionDistrict,
         });
 
         setMember(res.data);
