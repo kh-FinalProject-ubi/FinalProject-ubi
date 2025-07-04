@@ -70,6 +70,7 @@ public class SecurityConfig {
             	    // ✅ 인기 복지혜택만 예외적으로 허용
             	    .requestMatchers("/api/welfare/like/popular").permitAll()
             	    .requestMatchers("/api/welfare-curl/welfare-detail").permitAll()
+            	    .requestMatchers("/api/welfare-curl/**").permitAll()
 
             	    // ✅ 나머지 찜 API는 인증 필요
             	    .requestMatchers("/api/welfare/like/**", "/api/welfare/my-likes").authenticated()

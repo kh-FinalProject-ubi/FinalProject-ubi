@@ -3,6 +3,9 @@ package edu.kh.project.main.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +23,7 @@ import java.util.*;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/welfare-curl")
+@Slf4j
 public class WelfareProxyController {
 
     @Value("${welfare.api.service-key}")
@@ -171,6 +175,7 @@ public class WelfareProxyController {
     @GetMapping("/welfare-detail")
     public Map<String, Object> getWelfareDetail(@RequestParam("servId") String servId) {
         try {
+
             String urlStr = UriComponentsBuilder
                 .fromHttpUrl("https://apis.data.go.kr/B554287/LocalGovernmentWelfareInformations/LcgvWelfaredetailed")
                 .queryParam("serviceKey", serviceKey)
@@ -182,17 +187,22 @@ public class WelfareProxyController {
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Accept", "application/xml");
 
+            int responseCode = conn.getResponseCode();
+            
             BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
             StringBuilder responseStrBuilder = new StringBuilder();
             String line;
             while ((line = in.readLine()) != null) responseStrBuilder.append(line);
             in.close();
 
-            JsonNode root = xmlMapper.readTree(responseStrBuilder.toString());
+            String responseStr = responseStrBuilder.toString();
+            
+            JsonNode root = xmlMapper.readTree(responseStr);
 
-            return Map.of("detail", root);
+            return Map.of("detail", root); // ✅ 핵심 수정 포인트
 
         } catch (Exception e) {
+            System.err.println("❗ 복지 상세정보 조회 중 예외 발생:");
             e.printStackTrace();
             throw new RuntimeException("복지 상세정보 조회 실패", e);
         }

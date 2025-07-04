@@ -56,6 +56,7 @@ export default function useLocalBenefitData() {
                 regionDistrict,
                 imageUrl: item.IMGURL ?? null,
                 link: item.V_URL ?? null,
+                source: "seoul", // ✅ 추가
               };
             })
           : [];
@@ -75,6 +76,7 @@ export default function useLocalBenefitData() {
                 regionDistrict: "",
                 imageUrl: null,
                 link: item.pblancUrl ?? null,
+                source: "youth", // ✅ 추가
               }))
           : [];
 
@@ -97,6 +99,7 @@ export default function useLocalBenefitData() {
                 regionDistrict,
                 imageUrl: null,
                 link: item.apiSourceUrl ?? null,
+                source: "job", // ✅ 추가
               };
             })
           : [];
@@ -120,6 +123,8 @@ export default function useLocalBenefitData() {
                 regionDistrict,
                 imageUrl: null,
                 link: item.servDtlLink ?? null,
+                source: "bokjiro", // ✅ 추가
+                servId: item.servId || null, // ✅ 상세조회용
               };
             })
           : [];
@@ -134,13 +139,12 @@ export default function useLocalBenefitData() {
       }
     };
 
-    // ✅ 로그인 여부와 관계없이 항상 fetch 시도
     if (!benefitsData || isStale()) {
       fetchAll();
     } else {
       setLoading(false);
     }
-  }, [benefitsData, memberStandard]); // ✅ 상태 바뀔 때마다 다시 판단
+  }, [benefitsData, memberStandard]);
 
   return {
     data: Array.isArray(benefitsData) ? benefitsData : [],
