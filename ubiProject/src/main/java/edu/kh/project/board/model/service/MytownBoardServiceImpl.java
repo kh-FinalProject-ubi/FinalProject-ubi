@@ -176,10 +176,21 @@ public class MytownBoardServiceImpl implements MytownBoardService {
         	 // 1. 게시글 수정
             int result = mapper.updateBoard(dto);
 
-            // 2. 기존 이미지 삭제
+            
+         // 2. 해시태그 갱신: 기존 삭제 후 재삽입
+            mapper.deleteHashtags(dto.getBoardNo());
+
+            if (dto.getHashtagList() != null && !dto.getHashtagList().isEmpty()) {
+                for (String tag : dto.getHashtagList()) {
+                	mapper.insertHashtag(dto.getBoardNo(), tag.trim());
+                }
+            }
+            
+            
+            // 3. 이미지 
             mapper.deleteImagesByBoardNo(dto.getBoardNo());
 
-            // 3. 새 이미지 삽입
+            // 
             if (dto.getImageList() != null && !dto.getImageList().isEmpty()) {
                 for (int i = 0; i < dto.getImageList().size(); i++) {
                     BoardImage img = dto.getImageList().get(i);

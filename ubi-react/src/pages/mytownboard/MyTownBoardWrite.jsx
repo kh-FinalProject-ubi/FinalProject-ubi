@@ -13,7 +13,11 @@ const MyTownBoardWrite = () => {
   const [boardContent, setContent] = useState("");
   const navigate = useNavigate();
   const [hashtags, setHashtags] = useState("");
-  const [postTypeCheck, setPostTypeCheck] = useState(""); // 단일 선택
+
+const [postTypeCheck, setPostTypeCheck] = useState(""); 
+
+
+
   // ✅ HTML 태그 제거 (순수 텍스트 추출)
   const plainContent = boardContent.replace(/<[^>]+>/g, "").trim();
 const postTypeCheckOptions = ["자유", "자랑","복지시설후기","복지혜택후기"];
@@ -26,6 +30,11 @@ const [selectedFacilityName, setSelectedFacilityName] = useState("");
 const [selectedFacilityId, setSelectedFacilityId] = useState("");
 const uploadedImagesRef = useRef([]); // 이미지 경로 저장용
   const handleSubmit = () => {
+
+    const postType = postTypeCheck?.trim(); // 공백 제거 보정
+
+    console.log("🔥 postTypeCheck:", postTypeCheck);
+console.log("🔥 postType (전송값):", postType);
     //1. 입력하지 않는 경우 alert
     if (!boardTitle.trim()) {
       alert("제목을 입력해주세요.");
@@ -35,6 +44,10 @@ const uploadedImagesRef = useRef([]); // 이미지 경로 저장용
       alert("내용을 입력해주세요.");
       return;
     }
+    if (!postTypeCheck) {
+  alert("작성유형을 선택해주세요.");
+  return;
+}
     // ✅ 해시태그 유효성 검사
   if (hashtags.trim() !== "" && !hashtags.trim().startsWith("#")) {
     alert("해시태그는 반드시 #으로 시작해야 합니다.");
@@ -52,10 +65,11 @@ const uploadedImagesRef = useRef([]); // 이미지 경로 저장용
   
   // 2-2) 
   // 선택값에 따라 postType 값 가공
-let postType = "";
-if (postTypeCheck === "자랑") postType = "자랑";
-else if (postTypeCheck === "자유") postType = "자유";
-else if (postTypeCheck === "복지시설후기" || postTypeCheck === "복지혜택후기") postType = "후기"; 
+//  let postType = "";
+//  if (postTypeCheck === "자랑") postType = "자랑";
+//  else if (postTypeCheck === "자유") postType = "자유";
+//  else if (postTypeCheck === "복지시설후기" ) postType = "복지시설후기"; 
+//  else if (postTypeCheck === "복지혜택후기") postType = "복지혜택후기";
 
 // 2-3) 별점 alert
 if (
@@ -174,18 +188,18 @@ console.log("hashtags:", hashtags);
   <th>작성유형</th>
   <td style={{ whiteSpace: "nowrap" }}>
     <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
-      {postTypeCheckOptions.map((type) => (
-        <div key={type} style={{ display: "flex", alignItems: "center" }}>
-          <label style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-            <input
-              type="radio"
-              name="postTypeCheck"
-              value={type}
-              checked={postTypeCheck === type}
-              onChange={(e) => setPostTypeCheck(e.target.value)}
-            />
-            {type}
-          </label>
+{postTypeCheckOptions.map((type) => (
+  <div key={type}>
+    <label>
+      <input
+        type="radio"
+        name="postTypeCheck"
+        value={type}
+        checked={postTypeCheck === type}
+        onChange={(e) => setPostTypeCheck(e.target.value)}
+      />
+      {type}
+    </label>
 
           {/* 선택된 유형일 때 버튼 표시 */}
           {postTypeCheck === type && (
