@@ -117,10 +117,19 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
   // 신고하는 함수
   const handleReport = async (commentNo) => {
     try {
-      await axios.post(`/api/comments/${commentNo}/report`, 
-        {},
-       { headers: { Authorization: `Bearer ${token}`, },});
-       alert("신고성공");
+      const res = await axios.post(`/api/comments/${commentNo}/report`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      const reported = res.data.reported; // 서버에서 온 불리언 값
+      console.log(res.data);
+      if (reported === true) {
+        alert("신고 성공");
+      } else if (reported === false) {
+        alert("신고 취소 완료");
+      } else {
+        alert("알 수 없는 응답입니다");
+      }
     } catch (err) {
       alert("신고 실패");
     }
