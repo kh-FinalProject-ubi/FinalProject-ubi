@@ -62,24 +62,30 @@ public class CommentController {
 
 		return service.select(boardNo);
 	}
-
-	/**
-	 * 댓글/답글 등록
-	 * 
-	 * @return
-	 */
+	
 	@PostMapping("/{boardCode}/{boardNo}")
-	public int insert(@PathVariable("boardCode") int boardCode, @PathVariable("boardNo") int boardNo,
-			@RequestBody Comment comment, @RequestHeader("Authorization") String authHeader) {
+	public int insert(@PathVariable("boardCode") int boardCode,
+	                  @PathVariable("boardNo") int boardNo,
+	                  @RequestBody Comment comment,
+	                  @RequestHeader("Authorization") String authHeader) {
 
-		String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+	    String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+	    Long memberNoLong = jwtUtil.extractMemberNo(token);
+	    int memberNo = memberNoLong.intValue();
 
-		Long memberNoLong = jwtUtil.extractMemberNo(token);
-		int memberNo = memberNoLong.intValue();
+	    comment.setBoardNo(boardNo);
+	    comment.setMemberNo(memberNo);
 
-		comment.setBoardNo(boardNo);
-		comment.setMemberNo(memberNo);
-		return service.insert(comment);
+	    // 댓글 등록
+	    int result = service.insert(comment);
+
+	    // 관리자면 답변 상태 업데이트
+	    String authority = jwtUtil.extractRole(token); // "ADMIN" / "USER" 등
+	    if (boardCode == 2 && "ADMIN".equals(authority)) {
+	        service.updateBoardAnswer(boardNo, "Y");
+	    }
+
+	    return result;
 	}
 
 	/**

@@ -58,4 +58,9 @@ public class CommentServiceImpl implements CommentService {
 	        return true; // 좋아요 추가
 	    }
 	}
+	
+	@Override
+	public void updateBoardAnswer(int boardNo, String boardAnswer) {
+		 mapper.updateBoardAnswer(boardNo, boardAnswer);
+	}
 }

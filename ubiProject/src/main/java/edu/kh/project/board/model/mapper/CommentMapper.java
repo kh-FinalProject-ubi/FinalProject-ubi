@@ -40,4 +40,11 @@ public interface CommentMapper {
 
 	void deleteCommentLike(@Param("commentNo") int commentNo, @Param("memberNo") int memberNo);
 
+	/** 답변 여부
+	 * @param boardNo
+	 * @param boardAnswer
+	 */
+	void updateBoardAnswer(@Param("boardNo") int boardNo,
+            @Param("boardAnswer") String boardAnswer);
+
 }

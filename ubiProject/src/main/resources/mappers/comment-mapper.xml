@@ -11,7 +11,8 @@
 		SELECT
 		C.COMMENT_NO,
 		C.COMMENT_CONTENT,
-		TO_CHAR(C.COMMENT_DATE, 'YYYY"."MM"."DD HH24":"MI') AS COMMENT_DATE,
+		TO_CHAR(C.COMMENT_DATE, 'YYYY"."MM"."DD
+		HH24":"MI') AS COMMENT_DATE,
 		C.BOARD_NO,
 		C.MEMBER_NO,
 		M.MEMBER_NICKNAME,
@@ -20,15 +21,18 @@
 		C.COMMENT_DEL_FL,
 
 		-- 좋아요 수
-		(SELECT COUNT(*)
+		(SELECT
+		COUNT(*)
 		FROM COMMENT_LIKE CL
-		WHERE CL.COMMENT_NO = C.COMMENT_NO) AS COMMENT_LIKE,
+		WHERE CL.COMMENT_NO = C.COMMENT_NO) AS
+		COMMENT_LIKE,
 
 		-- 로그인한 회원의 좋아요 여부
 		(SELECT COUNT(*)
 		FROM COMMENT_LIKE CL
 		WHERE CL.COMMENT_NO = C.COMMENT_NO
-		AND CL.MEMBER_NO = #{memberNo}) AS COMMENT_LIKED
+		AND CL.MEMBER_NO = #{memberNo}) AS
+		COMMENT_LIKED
 
 		FROM COMMENTS C
 		JOIN
@@ -36,7 +40,8 @@
 		WHERE C.BOARD_NO = #{boardNo}
 		) C
 		WHERE C.COMMENT_DEL_FL = 'N'
-		OR EXISTS (
+		OR EXISTS
+		(
 		SELECT 1
 		FROM COMMENTS SUB
 		WHERE SUB.COMMENT_PARENT_NO = C.COMMENT_NO
@@ -44,7 +49,8 @@
 		)
 		START WITH C.COMMENT_PARENT_NO IS NULL
 		CONNECT BY PRIOR C.COMMENT_NO = C.COMMENT_PARENT_NO
-		ORDER SIBLINGS BY C.COMMENT_NO
+		ORDER SIBLINGS BY
+		C.COMMENT_NO
 	</select>
 
 	<!-- 동적 SQL : <if> 조건식을 작성할 수 있는 태그 - else 문 없음 - test 속성 : 조건식을 작성하는 속성 -->
@@ -132,6 +138,13 @@
 		END
 		WHERE
 		COMMENT_NO = #{commentNo}
+	</update>
+
+	<!-- 답변으로 답변여부 확인 -->
+	<update id="updateBoardAnswer">
+		UPDATE BOARD
+		SET BOARD_ANSWER = #{boardAnswer}
+		WHERE BOARD_NO = #{boardNo}
 	</update>
 
 
