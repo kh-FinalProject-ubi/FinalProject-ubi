@@ -131,4 +131,27 @@ public class CommentController {
 
 	    return ResponseEntity.ok(result);
 	}
+	
+	
+	/** 신고하기
+	 * @param commentNo
+	 * @param authHeader
+	 * @return
+	 */
+	@PostMapping("/{commentNo}/report")
+	public ResponseEntity<Map<String, Object>> reportComment(
+	    @PathVariable("commentNo") int commentNo,
+	    @RequestHeader("Authorization") String authHeader) {
+
+	    String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+	    int memberNo = jwtUtil.extractMemberNo(token).intValue();
+
+	    boolean reported = service.reportComment(commentNo, memberNo);
+
+	    Map<String, Object> result = new HashMap<>();
+	    result.put("reported", reported); // true 또는 false
+
+	    return ResponseEntity.ok(result);
+	}
+	
 }

@@ -43,4 +43,11 @@ public interface CommentService {
 	 */
 	void updateBoardAnswer(int boardNo, String boardAnswer);
 
+	/** 댓글 신고하는 기능
+	 * @param commentNo
+	 * @param memberNo
+	 * @return
+	 */
+	boolean reportComment(int commentNo, int memberNo);
+
 }

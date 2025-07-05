@@ -117,10 +117,10 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
   // 신고하는 함수
   const handleReport = async (commentNo) => {
     try {
-      await axios.get(`/api/comments`, {
-        params: { commentNo: commentNo }, // <- GET 요청에선 params로 보내야 함
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.post(`/api/comments/${commentNo}/report`, 
+        {},
+       { headers: { Authorization: `Bearer ${token}`, },});
+       alert("신고성공");
     } catch (err) {
       alert("신고 실패");
     }
@@ -202,7 +202,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
                   <span className="comment-date">{comment.commentDate}</span>
                   <button
                     className="report-btn"
-                    onClick={() => handleReport(comment.memberNo)}
+                    onClick={() => handleReport(comment.commentNo)}
                   >
                     <img src="/report.svg" alt="신고 아이콘" />
                   </button>
