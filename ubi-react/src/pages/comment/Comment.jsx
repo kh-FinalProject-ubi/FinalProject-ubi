@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "../../styles/Comment.css";
+import "../../styles/comment/Comment.css";
+import CommentModal from "./CommentModal";
 
 const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
   const [comments, setComments] = useState([]); 
@@ -12,6 +13,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
   const [commentLoading, setCommentLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 const [selectedMember, setSelectedMember] = useState(null);
+const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
 
   // 로그인한 회원이 관리자인지 구분
   const isAdmin = role === "ADMIN";
@@ -173,10 +175,6 @@ const [selectedMember, setSelectedMember] = useState(null);
     });
     return roots;
   };
-  
-  const handleOutsideClick = () => {
-    setModalVisible(false);
-  };
 
   const renderComment = (c, parentDeleted = false) => {
     const isDeleted = c.commentDelFl === "Y";
@@ -202,12 +200,13 @@ const [selectedMember, setSelectedMember] = useState(null);
   src={c.memberImg || "/default-profile.png"}
   alt="프로필 사진"
   className="profile-img"
-  onClick={() => {
+  onClick={(e) => {
     setSelectedMember({
       memberImg: c.memberImg,
       memberNickname: c.memberNickname,
       memberNo: c.memberNo,
     });
+    setModalPosition({ x: e.clientX + 50, y: e.clientY }); // 클릭한 좌표 저장
     setModalVisible(true);
   }}
 />
@@ -233,21 +232,6 @@ const [selectedMember, setSelectedMember] = useState(null);
   
             {parentDeleted && <div className="parent-deleted-notice">삭제된 댓글의 답글입니다.</div>}
   
-            {modalVisible && selectedMember && (
-  <div className="modal-overlay" onClick={handleOutsideClick}>
-    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-      <button className="modal-close" onClick={() => setModalVisible(false)}>×</button>
-      <img src={selectedMember.memberImg || "/default-profile.png"} alt="프로필" className="modal-profile-img" />
-      <h3>{selectedMember.memberNickname}</h3>
-      <div className="modal-buttons">
-        <button className="btn-chat">채팅하기</button>
-        <button className="btn-report">신고하기</button>
-      </div>
-    </div>
-  </div>
-)}
-
-
             {/* 댓글 내용 */}
             {editingCommentNo === c.commentNo ? (
               <>
@@ -334,8 +318,15 @@ const [selectedMember, setSelectedMember] = useState(null);
       ) : (
         <p style={{ textAlign: "center", padding: "20px", color: "#888" }}>작성된 댓글이 없습니다.</p>
       )}
+
+{modalVisible && selectedMember && (
+  <CommentModal
+    member={selectedMember}
+    position={modalPosition}
+    onClose={() => setModalVisible(false)}
+  />
+)}
     </section>
-    
   );
 };
 
