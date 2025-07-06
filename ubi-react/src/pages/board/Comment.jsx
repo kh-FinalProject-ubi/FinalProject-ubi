@@ -17,13 +17,13 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
     if (boardCode && boardNo) loadComments();
   }, [boardCode, boardNo]);
 
-  // 댓글 불러오기
   const loadComments = async () => {
     setCommentLoading(true);
     try {
       const res = await axios.get(`/api/comments/${boardCode}/${boardNo}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
+      console.log("서버에서 받은 댓글 데이터", res.data);
       setComments(res.data || []);
     } catch (err) {
       console.error("댓글 조회 실패", err);
@@ -32,7 +32,6 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
     }
   };
 
-  // 댓글 작성
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (!commentContent.trim()) return alert("댓글 내용을 입력해주세요.");
@@ -49,7 +48,6 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
     }
   };
 
-  // 답글 입력 (댓글 입력과 같은 post)
   const handleReplySubmit = async (e, parentNo) => {
     e.preventDefault();
     if (!replyContent.trim()) return alert("답글 내용을 입력해주세요.");
@@ -90,7 +88,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
   const startEditing = (commentNo, currentContent) => {
     setEditingCommentNo(commentNo);
     setEditingContent(currentContent);
-    setReplyTarget(null); // 답글 창 닫기
+    setReplyTarget(null);
   };
 
   const saveEdit = async (commentNo) => {
@@ -114,15 +112,12 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
     setEditingContent("");
   };
 
-  // 신고하는 함수
   const handleReport = async (commentNo) => {
     try {
       const res = await axios.post(`/api/comments/${commentNo}/report`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
-  
-      const reported = res.data.reported; // 서버에서 온 불리언 값
-      console.log(res.data);
+      const reported = res.data.reported;
       if (reported === true) {
         alert("신고 성공");
       } else if (reported === false) {
@@ -130,38 +125,30 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
       } else {
         alert("알 수 없는 응답입니다");
       }
+      await loadComments();
     } catch (err) {
+      console.error("신고 실패:", err.response?.data || err.message);
       alert("신고 실패");
     }
   };
 
-  // 좋아요 함수
   const handleCommentLike = async (commentNo) => {
     try {
       const res = await axios.post(
         `/api/comments/${commentNo}/like`,
         {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      const updatedLikeStatus = res.data.liked; // true: 좋아요 추가, false: 좋아요 취소
-
-      // 해당 댓글만 업데이트
+      const updatedLikeStatus = res.data.liked;
       setComments((prev) =>
-        prev.map((comment) =>
-          comment.commentNo === commentNo
+        prev.map((c) =>
+          c.commentNo === commentNo
             ? {
-                ...comment,
+                ...c,
                 commentLiked: updatedLikeStatus,
-                commentLike: updatedLikeStatus
-                  ? comment.commentLike + 1
-                  : comment.commentLike - 1,
+                commentLike: updatedLikeStatus ? c.commentLike + 1 : c.commentLike - 1,
               }
-            : comment
+            : c
         )
       );
     } catch (err) {
@@ -170,151 +157,124 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
     }
   };
 
-  // 트리 구조로 변환
   const buildCommentTree = (comments) => {
     const map = {};
     const roots = [];
-
-    comments.forEach((comment) => {
-      map[comment.commentNo] = { ...comment, children: [] };
+    comments.forEach((c) => (map[c.commentNo] = { ...c, children: [] }));
+    comments.forEach((c) => {
+      if (c.commentParentNo) {
+        const parent = map[c.commentParentNo];
+        if (parent) parent.children.push(map[c.commentNo]);
+        else roots.push(map[c.commentNo]);
+      } else roots.push(map[c.commentNo]);
     });
-
-    comments.forEach((comment) => {
-      if (comment.commentParentNo) {
-        const parent = map[comment.commentParentNo];
-        if (parent) parent.children.push(map[comment.commentNo]);
-        else roots.push(map[comment.commentNo]); // 부모가 삭제된 경우도 포함
-      } else {
-        roots.push(map[comment.commentNo]);
-      }
-    });
-
     return roots;
   };
 
-  // ✨ 댓글 렌더링
-  const renderComment = (comment, parentDeleted = false) => {
-    const isDeleted = comment.commentDelFl === "Y";
-
-    if (isDeleted && comment.children.length === 0) {
-      return null; // 삭제된 댓글이고 자식도 없으면 표시 안 함
-    }
-
+  const renderComment = (c, parentDeleted = false) => {
+    const isDeleted = c.commentDelFl === "Y";
+    const isMine = c.memberNo === loginMemberNo;
+    const reportedByMe = (c.reportedByMe || 0) > 0;
+  
+    console.log("report?", c.commentNo, c.reportedByMe);
+  
+    // 삭제된 댓글이고 자식도 없으면 표시하지 않음
+    if (isDeleted && c.children.length === 0) return null;
+  
     return (
-      <li key={comment.commentNo}>
-        {!isDeleted && (
-          <div className={`comment-item`}>
-            <div className="comment-content-area">
-              <div className="comment-header">
-                <div className="comment-author-info">
-                  <strong>{comment.memberNickname}</strong>
-                  <span className="comment-date">{comment.commentDate}</span>
-                  <button
-                    className="report-btn"
-                    onClick={() => handleReport(comment.commentNo)}
-                  >
-                    <img src="/report.svg" alt="신고 아이콘" />
-                  </button>
-                </div>
-                {(isAdmin || comment.memberNo === loginMemberNo) &&
-                  editingCommentNo !== comment.commentNo && (
-                    <div className="comment-actions-right">
-                      <button
-                        onClick={() =>
-                          startEditing(
-                            comment.commentNo,
-                            comment.commentContent
-                          )
-                        }
-                      >
-                        수정
+      <li key={c.commentNo}>
+        <div className={`comment-item ${reportedByMe ? "reported" : ""}`}>
+          <div className="comment-content-area">
+            <div className="comment-header">
+              <div className="comment-author-info">
+                <strong>{c.memberNickname}</strong>
+                <span className="comment-date">{c.commentDate}</span>
+  
+                {/* 신고/취소 버튼 */}
+                {!isMine && (
+                  <>
+                   
+                      <button className="report-btn" onClick={() => handleReport(c.commentNo)}>
+                        <img src="/report.svg" alt="신고 아이콘" />
                       </button>
-                      <button
-                        onClick={() => handleCommentDelete(comment.commentNo)}
-                      >
-                        삭제
-                      </button>
-                    </div>
-                  )}
+                  
+                    
+                  </>
+                )}
               </div>
-
-              {parentDeleted && (
-                <div className="parent-deleted-notice">
-                  삭제된 댓글의 답글입니다.
+  
+              {/* 수정/삭제 버튼 (본인 or 관리자) */}
+              {(isAdmin || isMine) && editingCommentNo !== c.commentNo && (
+                <div className="comment-actions-right">
+                  <button onClick={() => startEditing(c.commentNo, c.commentContent)}>수정</button>
+                  <button onClick={() => handleCommentDelete(c.commentNo)}>삭제</button>
                 </div>
-              )}
-
-              {editingCommentNo === comment.commentNo ? (
-                <>
-                  <textarea
-                    value={editingContent}
-                    onChange={(e) => setEditingContent(e.target.value)}
-                    rows={3}
-                    style={{ width: "100%", resize: "vertical" }}
-                  />
-                  <div>
-                    <button onClick={() => saveEdit(comment.commentNo)}>
-                      저장
-                    </button>
-                    <button onClick={cancelEdit}>취소</button>
-                  </div>
-                </>
-              ) : (
-                <p className="comment-text">{comment.commentContent}</p>
-              )}
-
-              {editingCommentNo !== comment.commentNo && (
-                <>
-                  <button
-                    className={`comment-like-btn ${
-                      comment.commentLiked ? "liked" : ""
-                    }`}
-                    onClick={() => handleCommentLike(comment.commentNo)}
-                  >
-                    <img src="/commentLike.svg" alt="좋아요 아이콘" />
-                  </button>
-                  <span>{comment.commentLike}</span>
-                  <button onClick={() => handleReplyClick(comment.commentNo)}>
-                    답글
-                  </button>
-                </>
-              )}
-              {replyTarget === comment.commentNo && (
-                <form
-                  onSubmit={(e) => handleReplySubmit(e, comment.commentNo)}
-                  style={{ marginTop: "10px" }}
-                >
-                  <textarea
-                    value={replyContent}
-                    onChange={(e) => setReplyContent(e.target.value)}
-                    rows={3}
-                    placeholder="답글을 입력하세요."
-                    style={{ width: "100%", resize: "vertical" }}
-                  />
-                  <button
-                    type="submit"
-                    className="btn-yellow"
-                    style={{ marginTop: "5px" }}
-                  >
-                    답글 작성
-                  </button>
-                </form>
               )}
             </div>
-          </div>
-        )}
-
-        {comment.children.length > 0 && (
-          <ul className="reply-list">
-            {comment.children.map((child) =>
-              renderComment(child, isDeleted ? true : false)
+  
+            {parentDeleted && <div className="parent-deleted-notice">삭제된 댓글의 답글입니다.</div>}
+  
+            {/* 댓글 내용 */}
+            {editingCommentNo === c.commentNo ? (
+              <>
+                <textarea
+                  value={editingContent}
+                  onChange={(e) => setEditingContent(e.target.value)}
+                  rows={3}
+                  style={{ width: "100%", resize: "vertical" }}
+                />
+                <div>
+                  <button onClick={() => saveEdit(c.commentNo)}>저장</button>
+                  <button onClick={cancelEdit}>취소</button>
+                </div>
+              </>
+            ) : reportedByMe ? (
+              <p className="comment-text reported-comment-text">
+                신고한 댓글입니다.
+              </p>
+            ) : (
+              <p className="comment-text">{c.commentContent}</p>
             )}
-          </ul>
+  
+            {/* 좋아요 / 답글 */}
+            {!editingCommentNo && !reportedByMe && (
+              <>
+                <button
+                  className={`comment-like-btn ${c.commentLiked ? "liked" : ""}`}
+                  onClick={() => handleCommentLike(c.commentNo)}
+                >
+                  <img src="/commentLike.svg" alt="좋아요 아이콘" />
+                </button>
+                <span>{c.commentLike}</span>
+                <button onClick={() => handleReplyClick(c.commentNo)}>답글</button>
+              </>
+            )}
+  
+            {/* 답글 작성 폼 */}
+            {replyTarget === c.commentNo && !reportedByMe && (
+              <form onSubmit={(e) => handleReplySubmit(e, c.commentNo)} style={{ marginTop: "10px" }}>
+                <textarea
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value)}
+                  rows={3}
+                  placeholder="답글을 입력하세요."
+                  style={{ width: "100%", resize: "vertical" }}
+                />
+                <button type="submit" className="btn-yellow" style={{ marginTop: "5px" }}>
+                  답글 작성
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+  
+        {/* 자식 댓글 렌더링 */}
+        {c.children.length > 0 && (
+          <ul className="reply-list">{c.children.map((child) => renderComment(child, isDeleted))}</ul>
         )}
       </li>
     );
   };
-
   const commentTree = buildCommentTree(comments);
 
   return (
@@ -329,24 +289,16 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
             rows={3}
             placeholder="댓글을 입력하세요."
           />
-          <button type="submit" className="btn-yellow">
-            댓글 작성
-          </button>
+          <button type="submit" className="btn-yellow">댓글 작성</button>
         </form>
       )}
 
       {commentLoading ? (
         <p>댓글을 불러오는 중...</p>
+      ) : commentTree.length > 0 ? (
+        <ul>{commentTree.map((c) => renderComment(c, false))}</ul>
       ) : (
-        <ul>
-          {commentTree.length > 0 ? (
-            commentTree.map((comment) => renderComment(comment, false))
-          ) : (
-            <p style={{ textAlign: "center", padding: "20px", color: "#888" }}>
-              작성된 댓글이 없습니다.
-            </p>
-          )}
-        </ul>
+        <p style={{ textAlign: "center", padding: "20px", color: "#888" }}>작성된 댓글이 없습니다.</p>
       )}
     </section>
   );

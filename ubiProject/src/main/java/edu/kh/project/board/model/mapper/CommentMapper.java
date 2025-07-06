@@ -17,7 +17,7 @@ public interface CommentMapper {
 	 * @param boardNo
 	 * @return
 	 */
-	List<Comment> select(int boardNo);
+	List<Comment> select(@Param("boardNo") int boardNo, @Param("memberNo") int memberNo);
 
 	/**
 	 * 댓글/답글 작성
@@ -75,8 +75,8 @@ public interface CommentMapper {
 	int countAdminComments(int boardNo);
 
 
-	// 해당 댓글 전체 신고 횟수 세기
-	int checkCommentReportCount(@Param("commentNo") int commentNo, @Param("memberNo") int memberNo);
+	// 해당 댓글 전체 상태 확인 (y,n)
+	String checkCommentReportCount(@Param("commentNo") int commentNo, @Param("memberNo") int memberNo);
 	
 	// Report 테이블에서 댓글신고 삭제 
 	void deleteCommentReport(@Param("commentNo") int commentNo, @Param("memberNo") int memberNo);
@@ -92,6 +92,9 @@ public interface CommentMapper {
 
 	// 신고 당해야 하는 댓글 작성자 번호 구해오는 메서드
 	Integer selectCommentWriterNo(int commentNo);
+
+	// 재신고 로직
+	void reactivateCommentReport(@Param("commentNo") int commentNo, @Param("memberNo") int memberNo);
 
 
 }

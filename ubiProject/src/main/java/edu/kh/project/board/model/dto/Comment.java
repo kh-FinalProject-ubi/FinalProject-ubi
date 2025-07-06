@@ -26,4 +26,7 @@ public class Comment {
 	
 	private int commentLike;
 	private boolean commentLiked;
+	
+	// 누가 신고했는지 확인
+	private boolean reportedByMe; 
 }

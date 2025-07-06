@@ -117,3 +117,16 @@
   margin-top: 8px;
   /* 버튼 스타일은 기존 btn-yellow 등을 따르도록 비워둠 */
 }
+
+.reported-comment-text {
+  color: #ff4444;
+  font-weight: bold;
+}
+
+.report-btn.reported {
+  background-color: transparent;
+  color: red;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+}

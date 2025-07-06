@@ -10,7 +10,7 @@ public interface CommentService {
 	 * @param boardNo
 	 * @return
 	 */
-	List<Comment> select(int boardNo);
+	List<Comment> select(int boardNo, int memberNo);
 
 	/** 댓글/답글 작성 서비스
 	 * @param comment
