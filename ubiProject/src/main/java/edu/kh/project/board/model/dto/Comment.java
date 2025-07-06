@@ -24,8 +24,13 @@ public class Comment {
 	private String memberNickname;
 	private String profileImg;
 	
+	// 댓글 좋아요
 	private int commentLike;
+	// 댓글 좋아요 유무 확인
 	private boolean commentLiked;
+
+	// 해당 댓글이 관리자 댓글인가.
+	private String memberRole;
 	
 	// 누가 신고했는지 확인
 	private boolean reportedByMe; 

@@ -3,7 +3,7 @@ import axios from "axios";
 import "../../styles/Comment.css";
 
 const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
-  const [comments, setComments] = useState([]);
+  const [comments, setComments] = useState([]); 
   const [commentContent, setCommentContent] = useState("");
   const [replyTarget, setReplyTarget] = useState(null);
   const [replyContent, setReplyContent] = useState("");
@@ -11,11 +11,12 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
   const [editingContent, setEditingContent] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
 
+  // 로그인한 회원이 관리자인지 구분
   const isAdmin = role === "ADMIN";
 
   useEffect(() => {
     if (boardCode && boardNo) loadComments();
-  }, [boardCode, boardNo]);
+  }, [boardCode, boardNo, token, loginMemberNo]);
 
   const loadComments = async () => {
     setCommentLoading(true);
@@ -175,6 +176,10 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
     const isDeleted = c.commentDelFl === "Y";
     const isMine = c.memberNo === loginMemberNo;
     const reportedByMe = (c.reportedByMe || 0) > 0;
+    const isUser = c.memberNo !== null;
+     // 댓글 작성자가 관리자인 경우
+     const memberRoleStr = c.memberRole === "2" ? "ADMIN" : c.memberRole === "1" ? "USER" : "GUEST";
+     const isWriterAdmin = memberRoleStr === "ADMIN";
   
     console.log("report?", c.commentNo, c.reportedByMe);
   
@@ -191,16 +196,11 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
                 <span className="comment-date">{c.commentDate}</span>
   
                 {/* 신고/취소 버튼 */}
-                {!isMine && (
-                  <>
-                   
-                      <button className="report-btn" onClick={() => handleReport(c.commentNo)}>
-                        <img src="/report.svg" alt="신고 아이콘" />
-                      </button>
-                  
-                    
-                  </>
-                )}
+                {token && !isMine && isUser && !isWriterAdmin && (
+  <button className="report-btn" onClick={() => handleReport(c.commentNo)}>
+    <img src="/report.svg" alt="신고 아이콘" />
+  </button>
+)}
               </div>
   
               {/* 수정/삭제 버튼 (본인 or 관리자) */}
@@ -237,7 +237,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
             )}
   
             {/* 좋아요 / 답글 */}
-            {!editingCommentNo && !reportedByMe && (
+            {token && !editingCommentNo && !reportedByMe && (
               <>
                 <button
                   className={`comment-like-btn ${c.commentLiked ? "liked" : ""}`}
@@ -251,7 +251,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
             )}
   
             {/* 답글 작성 폼 */}
-            {replyTarget === c.commentNo && !reportedByMe && (
+            {token && replyTarget === c.commentNo && !reportedByMe && (
               <form onSubmit={(e) => handleReplySubmit(e, c.commentNo)} style={{ marginTop: "10px" }}>
                 <textarea
                   value={replyContent}
