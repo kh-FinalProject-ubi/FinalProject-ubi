@@ -1,6 +1,7 @@
 package edu.kh.project.member.model.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 
 import edu.kh.project.member.model.dto.Member;
@@ -40,6 +41,9 @@ public interface MemberMapper {
 	Member selectByKakaoId(String kakaoId);
 
 	Member selectByNo(Long memberNo);
+
+	// 신고 3번 당하면 memberReportCount +-1 해주는 메서드
+	void updateMemberReportCount(@Param("memberNo") int memberNo, @Param("delta") int delta);
 
 
 	

@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import edu.kh.project.board.model.dto.Comment;
 import edu.kh.project.board.model.mapper.CommentMapper;
+import edu.kh.project.member.model.mapper.MemberMapper;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -19,6 +20,10 @@ public class CommentServiceImpl implements CommentService {
 
 	@Autowired
 	private CommentMapper mapper;
+
+	//맴버 메퍼
+	@Autowired
+	private MemberMapper memberMapper;
 
 	// 댓글 목록 조회 서비스
 	@Override
@@ -88,33 +93,58 @@ public class CommentServiceImpl implements CommentService {
 	// 신고하고 신고 취소하는 메서드
 	@Override
 	public boolean reportComment(int commentNo, int memberNo) {
-	    Integer targetMemberNo = mapper.selectCommentWriterNo(commentNo);
-	    if (targetMemberNo == null) return false;
+		// 이 댓글을 쓴 작성자를 찾는 코드
+		Integer targetMemberNo = mapper.selectCommentWriterNo(commentNo);
+		// 작성자가 없으면 없다고 출력
+		if (targetMemberNo == null)
+			return false;
 
-	    String reportStatus = mapper.checkCommentReportCount(commentNo, memberNo);
+		// 이 댓글은 신고당했어? 확인하기
+		String reportStatus = mapper.checkCommentReportCount(commentNo, memberNo);
+		int beforeReportCount = mapper.selectCommentReportTotalCount(commentNo); // 총 신고 수 (기존 상태)
 
-	    if (reportStatus == null) {
-	        // 1️⃣ 첫 번째 신고 → insert
-	        Map<String, Object> paramMap = new HashMap<>();
-	        paramMap.put("commentNo", commentNo);
-	        paramMap.put("memberNo", memberNo);
-	        paramMap.put("targetMemberNo", targetMemberNo);
-	        mapper.insertCommentReport(paramMap);
-	        mapper.updateCommentReportCount(commentNo);
-	        return true;
-	    } else if ("Y".equals(reportStatus)) {
-	        // 2️⃣ 신고 취소 → status = 'N'
-	        mapper.deleteCommentReport(commentNo, memberNo);
-	        mapper.decreaseCommentReportCount(commentNo);
-	        return false;
-	    } else if ("N".equals(reportStatus)) {
-	        // 3️⃣ 다시 신고 → status = 'Y'
-	        mapper.reactivateCommentReport(commentNo, memberNo);
-	        mapper.updateCommentReportCount(commentNo);
-	        return true;
-	    }
+		if (reportStatus == null) {
+			// 첫 번째 신고 → insert
+			Map<String, Object> paramMap = new HashMap<>();
+			paramMap.put("commentNo", commentNo);
+			paramMap.put("memberNo", memberNo);
+			paramMap.put("targetMemberNo", targetMemberNo);
+			mapper.insertCommentReport(paramMap);
+			mapper.updateCommentReportCount(commentNo);
 
-	    return false; // 예상 외의 값 처리
+			int afterReportCount = beforeReportCount + 1;
+			if (beforeReportCount == 2 && afterReportCount == 3) {
+				memberMapper.updateMemberReportCount(targetMemberNo, +1); // 신고 3건 달성 → +1
+			}
+
+			return true;
+
+		} else if ("Y".equals(reportStatus)) {
+			// 2️⃣ 신고 취소 → status = 'N'
+			mapper.deleteCommentReport(commentNo, memberNo);
+			mapper.decreaseCommentReportCount(commentNo);
+
+			int afterReportCount = beforeReportCount - 1;
+			if (beforeReportCount == 3 && afterReportCount == 2) {
+				memberMapper.updateMemberReportCount(targetMemberNo, -1); // 신고 3건 무산 → -1
+			}
+
+			return false;
+
+		} else if ("N".equals(reportStatus)) {
+			// 3️⃣ 다시 신고 → status = 'Y'
+			mapper.reactivateCommentReport(commentNo, memberNo);
+			mapper.updateCommentReportCount(commentNo);
+
+			int afterReportCount = beforeReportCount + 1;
+			if (beforeReportCount == 2 && afterReportCount == 3) {
+				memberMapper.updateMemberReportCount(targetMemberNo, +1); // 다시 신고로 3건 달성 → +1
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 }

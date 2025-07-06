@@ -39,7 +39,8 @@
 		WHERE TARGET_TYPE = 'COMMENT'
 		AND TARGET_ID = C.COMMENT_NO
 		AND REPORTER_NO = #{memberNo}
-		AND REPORT_STATUS = 'Y') AS "reportedByMe"
+		AND
+		REPORT_STATUS = 'Y') AS "reportedByMe"
 
 		FROM COMMENTS C
 		JOIN
@@ -132,7 +133,7 @@
 	</delete>
 
 
-	<!-- 신고 횟수 숫자 세기 -->
+	<!-- 내가 이 댓글을 신고했나? 확인하는 sql -->
 	<select id="checkReportCount" resultType="_int">
 		SELECT COUNT(*)
 		FROM
@@ -141,6 +142,15 @@
 		AND TARGET_ID = #{commentNo}
 		AND
 		REPORTER_NO = #{memberNo}
+		AND REPORT_STATUS = 'Y'
+	</select>
+
+	<!-- 해당 댓글은 몇 번이나 신고됐어? 확인하는 sql -->
+	<select id="selectCommentReportTotalCount" resultType="_int">
+		SELECT COUNT(*)
+		FROM REPORT
+		WHERE TARGET_TYPE = 'COMMENT'
+		AND TARGET_ID = #{commentNo}
 		AND REPORT_STATUS = 'Y'
 	</select>
 
@@ -238,10 +248,12 @@
 		COMMENT_NO = #{commentNo}
 	</update>
 
+	<!-- n+1번 신고해서 홀수인 경우 신고 재활성화 -->
 	<update id="reactivateCommentReport">
 		UPDATE REPORT
 		SET REPORT_STATUS = 'Y'
-		WHERE TARGET_TYPE = 'COMMENT'
+		WHERE TARGET_TYPE
+		= 'COMMENT'
 		AND TARGET_ID = #{commentNo}
 		AND REPORTER_NO = #{memberNo}
 	</update>

@@ -96,5 +96,8 @@ public interface CommentMapper {
 	// 재신고 로직
 	void reactivateCommentReport(@Param("commentNo") int commentNo, @Param("memberNo") int memberNo);
 
+	// 이 댓글은 몇 번 신고당한 거야?
+	int selectCommentReportTotalCount(int commentNo);
+
 
 }
