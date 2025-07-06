@@ -47,4 +47,6 @@ public class SeoulWelfareAPI {
 
     @JsonProperty("AREANM")
     private String regionDistrict;
+    
+
 }

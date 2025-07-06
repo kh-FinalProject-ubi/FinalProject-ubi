@@ -31,8 +31,8 @@ public class Welfare {
 	private String regionCity;		// 시도
 	private String jjTime;			// 찜시간
 	private String updatedAt;		// 알림 발송 시간
-	private char jjDelFl;			// 찜 취소 여부
-	private char alaramSentFl;		// 알림 발송 여부
+	private String jjDelFl;			// 찜 취소 여부
+	private String  alaramSentFl;		// 알림 발송 여부
 	private int likeCount; // 찜 갯수 조회
 
 	
