@@ -10,6 +10,8 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
   const [editingCommentNo, setEditingCommentNo] = useState(null);
   const [editingContent, setEditingContent] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+const [selectedMember, setSelectedMember] = useState(null);
 
   // 로그인한 회원이 관리자인지 구분
   const isAdmin = role === "ADMIN";
@@ -171,6 +173,10 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
     });
     return roots;
   };
+  
+  const handleOutsideClick = () => {
+    setModalVisible(false);
+  };
 
   const renderComment = (c, parentDeleted = false) => {
     const isDeleted = c.commentDelFl === "Y";
@@ -192,6 +198,19 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
           <div className="comment-content-area">
             <div className="comment-header">
               <div className="comment-author-info">
+              <img
+  src={c.memberImg || "/default-profile.png"}
+  alt="프로필 사진"
+  className="profile-img"
+  onClick={() => {
+    setSelectedMember({
+      memberImg: c.memberImg,
+      memberNickname: c.memberNickname,
+      memberNo: c.memberNo,
+    });
+    setModalVisible(true);
+  }}
+/>
                 <strong>{c.memberNickname}</strong>
                 <span className="comment-date">{c.commentDate}</span>
   
@@ -214,6 +233,21 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
   
             {parentDeleted && <div className="parent-deleted-notice">삭제된 댓글의 답글입니다.</div>}
   
+            {modalVisible && selectedMember && (
+  <div className="modal-overlay" onClick={handleOutsideClick}>
+    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <button className="modal-close" onClick={() => setModalVisible(false)}>×</button>
+      <img src={selectedMember.memberImg || "/default-profile.png"} alt="프로필" className="modal-profile-img" />
+      <h3>{selectedMember.memberNickname}</h3>
+      <div className="modal-buttons">
+        <button className="btn-chat">채팅하기</button>
+        <button className="btn-report">신고하기</button>
+      </div>
+    </div>
+  </div>
+)}
+
+
             {/* 댓글 내용 */}
             {editingCommentNo === c.commentNo ? (
               <>
@@ -301,6 +335,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
         <p style={{ textAlign: "center", padding: "20px", color: "#888" }}>작성된 댓글이 없습니다.</p>
       )}
     </section>
+    
   );
 };
 

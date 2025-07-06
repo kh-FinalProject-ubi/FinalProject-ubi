@@ -22,7 +22,7 @@ public class Comment {
 	
 	// 댓글 조회 시 회원 프로필, 닉네임
 	private String memberNickname;
-	private String profileImg;
+	private String memberImg;
 	
 	// 댓글 좋아요
 	private int commentLike;
