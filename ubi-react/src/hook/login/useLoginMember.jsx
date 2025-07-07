@@ -60,6 +60,7 @@ export default function useLoginMember() {
         const authData = {
           token,
           address: res.data.address,
+          memberImg: res.data.memberImg,
           memberName: res.data.memberName,
           memberStandard: res.data.memberStandard,
           memberNo: res.data.memberNo,
