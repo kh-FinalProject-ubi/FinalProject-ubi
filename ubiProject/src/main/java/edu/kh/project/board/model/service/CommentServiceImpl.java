@@ -126,58 +126,90 @@ public class CommentServiceImpl implements CommentService {
 	// 신고하고 신고 취소하는 메서드
 	@Override
 	public boolean reportComment(int commentNo, int memberNo) {
-		// 이 댓글을 쓴 작성자를 찾는 코드
-		Integer targetMemberNo = mapper.selectCommentWriterNo(commentNo);
-		// 작성자가 없으면 없다고 출력
-		if (targetMemberNo == null)
-			return false;
+	    // 1. 댓글 작성자 찾기
+	    Integer targetMemberNo = mapper.selectCommentWriterNo(commentNo);
+	    if (targetMemberNo == null) return false;
 
-		// 이 댓글은 신고당했어? 확인하기
-		String reportStatus = mapper.checkCommentReportCount(commentNo, memberNo);
-		int beforeReportCount = mapper.selectCommentReportTotalCount(commentNo); // 총 신고 수 (기존 상태)
+	    // 2. 신고 상태 조회
+	    String reportStatus = mapper.checkCommentReportCount(commentNo, memberNo);
+	    int beforeReportCount = mapper.selectCommentReportTotalCount(commentNo); // 총 신고 수 (기존 상태)
 
-		if (reportStatus == null) {
-			// 첫 번째 신고 → insert
-			Map<String, Object> paramMap = new HashMap<>();
-			paramMap.put("commentNo", commentNo);
-			paramMap.put("memberNo", memberNo);
-			paramMap.put("targetMemberNo", targetMemberNo);
-			mapper.insertCommentReport(paramMap);
-			mapper.updateCommentReportCount(commentNo);
+	    if (reportStatus == null) {
+	        // 3. 최초 신고
+	        Map<String, Object> paramMap = new HashMap<>();
+	        paramMap.put("commentNo", commentNo);
+	        paramMap.put("memberNo", memberNo);
+	        paramMap.put("targetMemberNo", targetMemberNo);
+	        mapper.insertCommentReport(paramMap);
+	        mapper.updateCommentReportCount(commentNo);
 
-			int afterReportCount = beforeReportCount + 1;
-			if (beforeReportCount == 2 && afterReportCount == 3) {
-				memberMapper.updateMemberReportCount(targetMemberNo, +1); // 신고 3건 달성 → +1
-			}
+	        int afterReportCount = beforeReportCount + 1;
 
-			return true;
+	        //  3의 배수 도달 시 REPORT_COUNT +1
+	        if (afterReportCount % 3 == 0) {
+	            int result = memberMapper.updateMemberReportCount(targetMemberNo, +1);
+	            System.out.println("report +1 result: " + result);
 
-		} else if ("Y".equals(reportStatus)) {
-			// 2️⃣ 신고 취소 → status = 'N'
-			mapper.deleteCommentReport(commentNo, memberNo);
-			mapper.decreaseCommentReportCount(commentNo);
+	            // REPORT_COUNT == 5 → 정지 5분
+	            int memberReportCount = memberMapper.selectReportCount(targetMemberNo);
+	            if (memberReportCount == 5) {
+	                LocalDateTime now = LocalDateTime.now();
+	                LocalDateTime end = now.plusMinutes(5);
+	                memberMapper.insertSuspensionTest(targetMemberNo, now, end);
+	                System.out.println("정지 5분 적용됨");
+	            }
+	        }
 
-			int afterReportCount = beforeReportCount - 1;
-			if (beforeReportCount == 3 && afterReportCount == 2) {
-				memberMapper.updateMemberReportCount(targetMemberNo, -1); // 신고 3건 무산 → -1
-			}
+	        return true;
 
-			return false;
+	    } else if ("Y".equals(reportStatus)) {
+	        // 4. 신고 취소
+	        mapper.deleteCommentReport(commentNo, memberNo);
+	        mapper.decreaseCommentReportCount(commentNo);
 
-		} else if ("N".equals(reportStatus)) {
-			// 3️⃣ 다시 신고 → status = 'Y'
-			mapper.reactivateCommentReport(commentNo, memberNo);
-			mapper.updateCommentReportCount(commentNo);
+	        int afterReportCount = beforeReportCount - 1;
 
-			int afterReportCount = beforeReportCount + 1;
-			if (beforeReportCount == 2 && afterReportCount == 3) {
-				memberMapper.updateMemberReportCount(targetMemberNo, +1); // 다시 신고로 3건 달성 → +1
-			}
+	        // 3의 배수였다가 1 빠지면 REPORT_COUNT -1
+	        if (beforeReportCount % 3 == 0 && afterReportCount % 3 == 2) {
+	            int result = memberMapper.updateMemberReportCount(targetMemberNo, -1);
+	            System.out.println("report -1 result: " + result);
 
-			return true;
-		}
+	            // REPORT_COUNT == 4 → 정지 해제
+	            int memberReportCount = memberMapper.selectReportCount(targetMemberNo);
+	            if (memberReportCount == 4) {
+	                memberMapper.deleteSuspension(targetMemberNo);
+	                System.out.println("정지 해제됨");
+	            }
+	        }
 
-		return false;
+	        return false;
+
+	    } else if ("N".equals(reportStatus)) {
+	        // 5. 다시 신고 활성화
+	        mapper.reactivateCommentReport(commentNo, memberNo);
+	        mapper.updateCommentReportCount(commentNo);
+
+	        int afterReportCount = beforeReportCount + 1;
+
+	        // 3의 배수 도달 시 REPORT_COUNT +1
+	        if (afterReportCount % 3 == 0) {
+	            int result = memberMapper.updateMemberReportCount(targetMemberNo, +1);
+	            System.out.println("report +1 result: " + result);
+
+	            // REPORT_COUNT == 5 → 정지
+	            int memberReportCount = memberMapper.selectReportCount(targetMemberNo);
+	            if (memberReportCount == 5) {
+	                LocalDateTime now = LocalDateTime.now();
+	                LocalDateTime end = now.plusMinutes(5);
+	                memberMapper.insertSuspensionTest(targetMemberNo, now, end);
+	                System.out.println("정지 5분 적용됨");
+	            }
+	        }
+
+	        return true;
+	    }
+
+	    return false;
 	}
 
 }

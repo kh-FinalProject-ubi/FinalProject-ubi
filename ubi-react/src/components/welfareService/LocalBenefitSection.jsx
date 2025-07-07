@@ -161,12 +161,20 @@ const LocalBenefitSection = () => {
                   onClick={(e) => e.stopPropagation()}
                 >
                   <LikeButton
-                    apiServiceId={item.id}
-                    serviceName={item.title}
+                    token={token}
+                    apiServiceId={item.apiServiceId}
+                    serviceName={item.title} // ✅ 여기서 전달
                     category={item.category}
                     regionCity={item.regionCity}
                     regionDistrict={item.regionDistrict}
-                    token={token}
+                    description={item.description}
+                    agency={item.agency}
+                    url={item.url}
+                    receptionStart={item.receptionStart}
+                    receptionEnd={item.receptionEnd}
+                    imageProfile={item.imageProfile}
+                    lat={item.lat}
+                    lng={item.lng}
                   />
                 </div>
               </div>

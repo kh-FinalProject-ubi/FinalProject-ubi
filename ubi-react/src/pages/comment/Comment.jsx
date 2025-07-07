@@ -222,6 +222,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
                     }
 
                     setSelectedMember({
+                      memberNo: c.memberNo,
                       memberImg: c.memberImg,
                       memberNickname: c.memberNickname,
                       memberNo: c.memberNo,
@@ -381,6 +382,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
           <CommentModal
             member={selectedMember}
             position={modalPosition}
+            token={token}
             onClose={() => setModalVisible(false)}
           />
         )}

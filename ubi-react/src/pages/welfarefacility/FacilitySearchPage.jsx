@@ -134,6 +134,7 @@ export default function FacilitySearchPage() {
       "사상구",
       "기장군",
     ],
+    제주특별자치도: ["제주시", "서귀포시"],
   };
 
   useEffect(() => {

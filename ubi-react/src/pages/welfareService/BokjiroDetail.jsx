@@ -46,12 +46,20 @@ const WelfareDetailPage = () => {
 
       {/* 찜하기 버튼 */}
       <LikeButton
+        token={token}
         apiServiceId={data?.id || servId}
         serviceName={detail.servNm}
         category={data?.category}
         regionCity={data?.regionCity}
         regionDistrict={data?.regionDistrict}
-        token={token}
+        description={detail.servDgst || detail.alwServCn || "설명 없음"}
+        agency={detail.bizChrDeptNm || "기관 정보 없음"}
+        url={data?.link}
+        receptionStart={null} // Bokjiro는 따로 없음
+        receptionEnd={null}
+        imageProfile={null}
+        lat={null}
+        lng={null}
       />
 
       <p>

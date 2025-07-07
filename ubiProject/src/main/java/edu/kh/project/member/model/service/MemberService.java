@@ -30,6 +30,9 @@ public interface MemberService {
 
 	Member findByNo(Long memberNo);
 
+	// 멤버 테이블 신고시
+	boolean reportMember(int targetMemberNo, int reporterMemberNo, String reason);
+
 
 
 

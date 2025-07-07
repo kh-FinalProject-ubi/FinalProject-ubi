@@ -1,5 +1,8 @@
 package edu.kh.project.member.model.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -158,6 +161,64 @@ public class MemberServiceImpl implements MemberService {
 	public Member findByNo(Long memberNo) {
 	    return mapper.selectByNo(memberNo);
 	
+	}
+	
+	// 신고하고 신고 취소하는 메서드
+	public boolean reportMember(int targetMemberNo, int reporterMemberNo, String reason) {
+	    // 1. 이미 신고했는지 여부 조회
+	    String status = mapper.checkReportStatus(targetMemberNo, reporterMemberNo);
+
+	    // 2. 기존 신고 수
+	    int beforeCount = mapper.selectReportCount(targetMemberNo);
+
+	    if (status == null) {
+	        // 신고한 적 x -> report 테이블에 인서트 -> 멤버 신고 횟수 +1
+	        mapper.insertReport(targetMemberNo, reporterMemberNo, reason);
+	        mapper.increaseReportCount(targetMemberNo);
+
+	        int afterCount = beforeCount + 1;
+
+	        LocalDateTime now = LocalDateTime.now();
+	        LocalDateTime plus5min = now.plusMinutes(5);
+
+	        
+	        // 정지 조건 판단
+	        if (beforeCount == 4 && afterCount == 5) {
+//	            mapper.insertSuspension(targetMemberNo, LocalDate.now(), LocalDate.now().plusDays(7));
+	        	mapper.insertSuspensionTest(targetMemberNo, now, plus5min);
+	        }
+
+	        return true;
+
+	    } else if ("Y".equals(status)) {
+	        // 👉 이미 신고한 상태 → 신고 취소
+	        mapper.updateReportStatus(targetMemberNo, reporterMemberNo, reason , "N");
+	        mapper.decreaseReportCount(targetMemberNo);
+
+	        int afterCount = beforeCount - 1;
+
+	        // 정지 해제 조건 판단
+	        if (beforeCount == 5 && afterCount == 4) {
+	            mapper.deleteSuspension(targetMemberNo);
+	        }
+
+	        return false;
+
+	    } else if ("N".equals(status)) {
+	        // 👉 다시 신고 활성화
+	        mapper.updateReportStatus(targetMemberNo, reporterMemberNo, reason , "Y");
+	        mapper.increaseReportCount(targetMemberNo);
+
+	        int afterCount = beforeCount + 1;
+
+	        if (beforeCount == 4 && afterCount == 5) {
+	            mapper.insertSuspension(targetMemberNo, LocalDate.now(), LocalDate.now().plusDays(7));
+	        }
+
+	        return true;
+	    }
+
+	    return false;
 	}
 
 }
