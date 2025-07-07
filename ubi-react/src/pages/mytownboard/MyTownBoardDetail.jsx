@@ -79,7 +79,9 @@ function MyTownBoardDetail() {
     <div>
       <h2>{board.boardTitle}</h2>
       <img
-        src={board.memberImg || "/default-profile.png"}
+        src={
+          `http://localhost:8080${board.memberImg}` || "/default-profile.png"
+        }
         alt="프로필 사진"
         className="profile-img"
         onClick={(e) => {

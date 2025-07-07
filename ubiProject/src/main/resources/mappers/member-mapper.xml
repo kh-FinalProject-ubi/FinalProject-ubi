@@ -130,21 +130,21 @@
 
 	<!-- 1. 신고 상태 확인 ('Y', 'N' 또는 null) -->
 	<select id="checkReportStatus" resultType="String">
-		SELECT REPORT_STATUS
-		FROM REPORT
-		WHERE TARGET_TYPE = 'MEMBER'
-		AND TARGET_MEMBER_NO = #{targetMemberNo}
-		AND REPORTER_NO = #{reporterMemberNo}
-	</select>
+	SELECT REPORT_STATUS
+	FROM REPORT
+	WHERE TARGET_TYPE = 'MEMBER'
+	AND TARGET_MEMBER_NO = #{targetMemberNo}
+	AND REPORTER_NO = #{reporterMemberNo}
+</select>
 
 	<!-- 2. 피신고자의 전체 유효 신고 수 -->
 	<select id="selectReportCount" resultType="int">
-		SELECT COUNT(*)
-		FROM
-		REPORT
-		WHERE TARGET_MEMBER_NO = #{targetMemberNo}
-		AND REPORT_STATUS =
-		'Y'
+	SELECT COUNT(*)
+	FROM
+	REPORT
+	WHERE TARGET_MEMBER_NO = #{targetMemberNo}
+	AND REPORT_STATUS =
+	'Y'
 	</select>
 
 	<!-- 3. 신고 등록 -->
@@ -201,8 +201,7 @@
 	</insert>
 
 	<insert id="insertSuspensionTest">
-		INSERT INTO MEMBER_SUSPENSION (MEMBER_NO, START_DATE,
-		END_DATE)
+		INSERT INTO MEMBER_SUSPENSION (MEMBER_NO, START_DATE, END_DATE)
 		VALUES (#{targetMemberNo}, #{start}, #{end})
 	</insert>
 

@@ -203,7 +203,10 @@ const CommentModal = ({ member, onClose, position, token, loadComments }) => {
         ) : (
           <>
             <img
-              src={member?.memberImg || "/default-profile.png"}
+              src={
+                `http://localhost:8080${member.memberImg}` ||
+                "/default-profile.png"
+              }
               alt="프로필"
               className="modal-profile-img"
             />
