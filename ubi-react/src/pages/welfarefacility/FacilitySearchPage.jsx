@@ -8,6 +8,7 @@ import useLoginMember from "../../hook/login/useLoginMember";
 import "../../styles/welfarefacility/FacilitySearchPage.css";
 import { useSportsFacilities } from "../../hook/welfarefacility/useSportsFacilities";
 import Pagination from "../../components/Pagination";
+import { extractRegionFromTaddress } from "../../utils/extractRegionFromTaddress";
 
 export default function FacilitySearchPage() {
   const { member, loading: memberLoading } = useLoginMember();
@@ -25,6 +26,7 @@ export default function FacilitySearchPage() {
   const [selectedCity, setSelectedCity] = useState("");
   const [availableDistricts, setAvailableDistricts] = useState([]);
   const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [regionSource, setRegionSource] = useState("default");
 
   const regionMap = {
     서울특별시: [
@@ -122,32 +124,54 @@ export default function FacilitySearchPage() {
   };
 
   useEffect(() => {
-    if (!memberLoading) {
-      const fallbackCity = "서울특별시";
-      const fallbackDistrict = "종로구";
-
-      const city =
-        member?.memberAddressCity || selectedCityFromStore || fallbackCity;
-      const district =
-        member?.memberAddressDistrict ||
-        selectedDistrictFromStore ||
-        fallbackDistrict;
-
-      setSelectedCity(city);
-      setAvailableDistricts(regionMap[city] || []);
-      setSelectedDistrict(
-        regionMap[city]?.includes(district)
-          ? district
-          : regionMap[city]?.[0] || fallbackDistrict
-      );
+    if (!memberLoading && regionSource === "default") {
+      if (member) {
+        handleRegionSourceChange("my");
+      } else {
+        setSelectedCity("서울특별시");
+        setAvailableDistricts(regionMap["서울특별시"]);
+        setSelectedDistrict("종로구");
+      }
+      setRegionSource("my");
     }
-  }, [member, memberLoading, selectedCityFromStore, selectedDistrictFromStore]);
+  }, [memberLoading]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedCity, selectedDistrict]);
 
-  // ✅ 주요 데이터 fetch
+  const handleRegionSourceChange = (source) => {
+    setRegionSource(source);
+
+    if (source === "my") {
+      const city = member?.regionCity || member?.tempRegionCity;
+      const district = member?.regionDistrict || member?.tempRegionDistrict;
+
+      if (city && district && regionMap[city]) {
+        setSelectedCity(city);
+        setAvailableDistricts(regionMap[city]);
+        setSelectedDistrict(
+          regionMap[city].includes(district) ? district : regionMap[city][0]
+        );
+      }
+    }
+
+    if (source === "bookmark") {
+      const taddress = member?.memberTaddress;
+      if (!taddress) return;
+
+      const { city, district } = extractRegionFromTaddress(taddress);
+
+      if (city && district && regionMap[city]) {
+        setSelectedCity(city);
+        setAvailableDistricts(regionMap[city]);
+        setSelectedDistrict(
+          regionMap[city].includes(district) ? district : regionMap[city][0]
+        );
+      }
+    }
+  };
+
   const {
     data: welfareData = [],
     loading: welfareLoading,
@@ -161,13 +185,6 @@ export default function FacilitySearchPage() {
 
   const loading = welfareLoading || sportsLoading;
 
-  // ✅ 디버깅 로그
-  console.log("🔥 selectedCity:", selectedCity);
-  console.log("🔥 selectedDistrict:", selectedDistrict);
-  console.log("🔥 welfareData:", welfareData);
-  console.log("🔥 sportsData:", sportsData);
-
-  // ✅ 안전한 병합 처리
   const combinedFacilities =
     category === "체육시설"
       ? [...(Array.isArray(sportsData) ? sportsData : [])]
@@ -198,7 +215,6 @@ export default function FacilitySearchPage() {
     };
 
     const keywords = matchTable[selectedType] || [];
-
     const typeFields = [
       facility["시설명"],
       facility["facilityName"],
@@ -224,17 +240,14 @@ export default function FacilitySearchPage() {
       f["FACLT_NM"] ||
       f["OPEN_FACLT_NM"] ||
       "";
-
     const type =
       f["상세유형"] || f["시설종류명"] || f["SVC_TYPE"] || f["category"] || "";
-
     const matchesKeyword = keyword === "" || name.includes(keyword);
     const matchesServiceType = isMatchServiceTarget(f, serviceType);
     const categoryKeywords = categoryMap[category] || [];
     const matchesCategory =
       category === "전체" ||
       categoryKeywords.some((target) => type?.includes(target));
-
     return matchesKeyword && matchesServiceType && matchesCategory;
   });
 
@@ -248,7 +261,21 @@ export default function FacilitySearchPage() {
     <div className="facility-search-container">
       <h2 className="facility-title">지역 복지시설</h2>
 
-      {/* 필터 영역 */}
+      <div className="region-source-buttons">
+        <button
+          onClick={() => handleRegionSourceChange("my")}
+          className={regionSource === "my" ? "selected" : ""}
+        >
+          내 주소
+        </button>
+        <button
+          onClick={() => handleRegionSourceChange("bookmark")}
+          className={regionSource === "bookmark" ? "selected" : ""}
+        >
+          즐겨찾기 주소
+        </button>
+      </div>
+
       <div className="filter-bar">
         <div className="filter-row">
           <div className="region-select-row">
@@ -320,7 +347,6 @@ export default function FacilitySearchPage() {
         </div>
       </div>
 
-      {/* 출력 영역 */}
       {loading && <p>불러오는 중...</p>}
       {error && (
         <p className="error-text">시설 정보를 가져오는 데 실패했습니다.</p>
