@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import usePopularBenefits from "../hook/welfareService/usePopularBenefits";
 import { normalizeRegion } from "../utils/regionUtils";
@@ -9,11 +9,24 @@ const PopularBenefitCarousel = () => {
   const navigate = useNavigate();
 
   const handleClick = (benefit) => {
-    const servId = benefit.apiServiceId.replace("bokjiro-", "");
+    const { apiServiceId } = benefit;
 
-    navigate(`/welfareDetail/${servId}`, {
-      state: { data: benefit }, // ✅ 상세 페이지에서 받는 location.state.data
-    });
+    if (apiServiceId.startsWith("bokjiro-")) {
+      const servId = apiServiceId.replace("bokjiro-", "");
+      navigate(`/welfareDetail/${servId}`, {
+        state: { data: benefit }, // ✅ Bokjiro용 상세 페이지로 이동
+      });
+    } else if (apiServiceId.startsWith("seoul-")) {
+      navigate("/seoulDetail", {
+        state: { data: benefit }, // ✅ 서울시 상세 페이지로 이동
+      });
+    } else if (apiServiceId.startsWith("job-API")) {
+      navigate("/facilityJobDetail", {
+        state: { data: benefit }, // ✅ 복지일자리 상세 페이지로 이동
+      });
+    } else {
+      alert("지원하지 않는 상세 데이터 유형입니다.");
+    }
   };
 
   if (loading) return <p>로딩 중...</p>;

@@ -25,6 +25,8 @@ import { useEffect } from "react";
 import { initAuthFromToken } from "./utils/initAuthFromToken";
 import MytownBoardUpdate from "./pages/mytownboard/MytownBoardUpdate";
 import WelfareDetailPage from "./pages/welfareService/WelfareDetailPage";
+import SeoulWelfareDetailPage from "./pages/welfareService/SeoulWelfareDetailPage";
+import FacilityJobDetailPage from "./pages/welfareService/FacilityJobDetailPage";
 
 function App() {
   useEffect(() => {
@@ -69,6 +71,11 @@ function App() {
           <Route
             path="/welfareDetail/:servId"
             element={<WelfareDetailPage />}
+          />
+          <Route path="/seoulDetail" element={<SeoulWelfareDetailPage />} />
+          <Route
+            path="/facilityJobDetail"
+            element={<FacilityJobDetailPage />}
           />
         </Route>
 

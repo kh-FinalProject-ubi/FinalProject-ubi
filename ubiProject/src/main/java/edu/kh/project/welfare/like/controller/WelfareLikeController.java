@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.kh.project.member.model.dto.CustomUser;
@@ -53,6 +54,7 @@ public class WelfareLikeController {
     }
     
     @GetMapping("/popular")
+    @ResponseBody
     public List<Welfare> getPopularWelfare() {
         return welfareService.selectPopularWelfare();
     }
