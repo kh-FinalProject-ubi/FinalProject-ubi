@@ -21,20 +21,14 @@ public class BusanFacilityController {
         this.facilityService = facilityService;
     }
 
-   
-    
     @GetMapping
-    public Map<String, Object> getFacilities(
+    public Map<String, List<BusanFacility>> getFacilities(
         @RequestParam("city") String city,
         @RequestParam("district") String district,
         @RequestParam(value = "category", required = false) String category
     ) {
         String fullDistrict = city + " " + district;
-        List<BusanFacility> list = facilityService.getFacilities(fullDistrict, category);
-        return Map.of("data", list);  // ✅ 감싸서 전달
+        List<BusanFacility> facilities = facilityService.getFacilities(fullDistrict, category);
+        return Map.of("data", facilities);
     }
-
 }
-
-
-
