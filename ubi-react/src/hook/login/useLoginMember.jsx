@@ -47,9 +47,15 @@ export default function useLoginMember() {
         const res = await axios.get("/api/member/info");
         console.log("🧩 서버 응답:", res.data);
 
-        // 임시 주소 → 시/군구 정보 추출
+        // 📌 임시 주소 → 시/군구 정보 추출
         const { city: tempRegionCity, district: tempRegionDistrict } =
           extractRegionFromTaddress(taddress || "");
+
+        // ✅ 정식 주소 (내 주소) → 시/군구 정보 추출
+        const { city: regionCity, district: regionDistrict } =
+          extractRegionFromTaddress(
+            `${res.data.memberAddressCity} ${res.data.memberAddressDistrict}`
+          );
 
         const authData = {
           token,
@@ -59,8 +65,8 @@ export default function useLoginMember() {
           memberNo: res.data.memberNo,
           authority: res.data.authority,
           role: res.data.authority === "2" ? "ADMIN" : "USER",
-          regionCity: res.data.regionCity,
-          regionDistrict: res.data.regionDistrict,
+          regionCity, // ✅ 추출된 시/도
+          regionDistrict, // ✅ 추출된 시/군/구
           tempRegionCity,
           tempRegionDistrict,
           memberTaddress: taddress, // JWT에서 추출

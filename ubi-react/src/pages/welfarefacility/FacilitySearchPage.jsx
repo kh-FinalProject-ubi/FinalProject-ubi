@@ -9,9 +9,22 @@ import "../../styles/welfarefacility/FacilitySearchPage.css";
 import { useSportsFacilities } from "../../hook/welfarefacility/useSportsFacilities";
 import Pagination from "../../components/Pagination";
 import { extractRegionFromTaddress } from "../../utils/extractRegionFromTaddress";
+import useAuthStore from "../../stores/useAuthStore";
 
 export default function FacilitySearchPage() {
   const { member, loading: memberLoading } = useLoginMember();
+
+  const setAuth = useAuthStore((state) => state.setAuth);
+  const auth = useAuthStore();
+
+  useEffect(() => {
+    console.log("🔍 member 전체:", member); // ✅ 여기 찍어봐야 함
+    if (member && !auth?.memberNo) {
+      setAuth(member);
+      console.log("✅ member 상태 전역 저장됨:", member.memberNo);
+    }
+  }, [member]);
+
   const {
     selectedCity: selectedCityFromStore,
     selectedDistrict: selectedDistrictFromStore,
@@ -126,16 +139,27 @@ export default function FacilitySearchPage() {
 
   useEffect(() => {
     if (!memberLoading && regionSource === "default") {
-      if (member) {
+      // 1️⃣ 지도에서 선택된 지역이 있으면 우선 적용
+      if (
+        selectedCityFromStore &&
+        selectedDistrictFromStore &&
+        regionMap[selectedCityFromStore]
+      ) {
+        handleRegionSourceChange("map");
+      }
+      // 2️⃣ 로그인한 회원 정보가 있으면 적용
+      else if (member) {
         handleRegionSourceChange("my");
-      } else {
+      }
+      // 3️⃣ 기본값 설정
+      else {
         setSelectedCity("서울특별시");
         setAvailableDistricts(regionMap["서울특별시"]);
         setSelectedDistrict("종로구");
       }
-      setRegionSource("my");
+      setRegionSource("initialized"); // ✅ 더 이상 실행되지 않도록 변경
     }
-  }, [memberLoading]);
+  }, [memberLoading, member, selectedCityFromStore, selectedDistrictFromStore]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -145,14 +169,30 @@ export default function FacilitySearchPage() {
     setRegionSource(source);
 
     if (source === "my") {
-      const city = member?.regionCity || member?.tempRegionCity;
-      const district = member?.regionDistrict || member?.tempRegionDistrict;
-
+      const city = member?.regionCity || member?.tempRegionCity || "서울특별시";
+      const district =
+        member?.regionDistrict || member?.tempRegionDistrict || "종로구";
       if (city && district && regionMap[city]) {
         setSelectedCity(city);
         setAvailableDistricts(regionMap[city]);
         setSelectedDistrict(
           regionMap[city].includes(district) ? district : regionMap[city][0]
+        );
+      }
+    }
+
+    if (source === "map") {
+      if (
+        selectedCityFromStore &&
+        selectedDistrictFromStore &&
+        regionMap[selectedCityFromStore]
+      ) {
+        setSelectedCity(selectedCityFromStore);
+        setAvailableDistricts(regionMap[selectedCityFromStore]);
+        setSelectedDistrict(
+          regionMap[selectedCityFromStore].includes(selectedDistrictFromStore)
+            ? selectedDistrictFromStore
+            : regionMap[selectedCityFromStore][0]
         );
       }
     }
