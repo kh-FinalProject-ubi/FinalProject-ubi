@@ -53,6 +53,7 @@ public class Board {
 	private int memberNo;
 	private String memberNickname;
     private String memberImg;
+    private String authority;
 
 	// 목록 조회 시 상관쿼리 결과
 	private int commentCount;  // 댓글 수
