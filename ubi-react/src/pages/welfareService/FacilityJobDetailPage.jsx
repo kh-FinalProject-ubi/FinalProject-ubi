@@ -31,12 +31,20 @@ const FacilityJobDetailPage = () => {
         <strong>📂 카테고리:</strong> {safe(data.category || "복지 일자리")}
       </p>
       <LikeButton
-        apiServiceId={apiServiceId}
-        serviceName={data.jobTitle}
-        category={data.category || "복지 일자리"}
-        regionCity={data.regionCity}
-        regionDistrict={data.regionDistrict}
         token={token}
+        apiServiceId={data?.id}
+        serviceName={data?.jobTitle}
+        category={data?.category}
+        regionCity={data?.regionCity}
+        regionDistrict={data?.regionDistrict}
+        description={data?.jobRequirement || "설명 없음"}
+        agency={data?.jobAgency || "기관 정보 없음"}
+        url={data?.link}
+        receptionStart={null}
+        receptionEnd={null}
+        imageProfile={null}
+        lat={null}
+        lng={null}
       />
       <p>
         <strong>설명:</strong> {safe(data.jobRequirement)}

@@ -43,9 +43,11 @@ export default function useLocalBenefitData() {
           ? seoulRes.data.map((item, index) => {
               const regionCity = "서울특별시";
               const regionDistrict = item.AREANM ?? "지역 정보 없음";
+              const apiServiceId = `seoul-${item.SVCID || index}`;
 
               return {
-                id: `seoul-${item.SVCID || index}`,
+                id: apiServiceId,
+                apiServiceId,
                 title: item.SVCNM ?? "제목 없음",
                 description: item.DTLCONT ?? "설명 없음",
                 category: "서울시 복지",
@@ -56,7 +58,7 @@ export default function useLocalBenefitData() {
                 regionDistrict,
                 imageUrl: item.IMGURL ?? null,
                 link: item.V_URL ?? null,
-                source: "seoul", // ✅ 추가
+                source: "seoul",
               };
             })
           : [];
@@ -64,20 +66,24 @@ export default function useLocalBenefitData() {
         const youth = Array.isArray(youthRes.data?.result?.youthPolicyList)
           ? youthRes.data.result.youthPolicyList
               .filter(() => memberStandard === "청년" || showAll)
-              .map((item, index) => ({
-                id: `youth-${item.plcyNo || index}`,
-                title: item.plcyNm ?? "제목 없음",
-                description: item.plcyExplnCn ?? "설명 없음",
-                category: "청년 정책",
-                startDate: item.rceptStartDate ?? "-",
-                endDate: item.rceptEndDate ?? "-",
-                region: item.pblancAdres ?? "지역 정보 없음",
-                regionCity: "",
-                regionDistrict: "",
-                imageUrl: null,
-                link: item.pblancUrl ?? null,
-                source: "youth", // ✅ 추가
-              }))
+              .map((item, index) => {
+                const apiServiceId = `youth-${item.plcyNo || index}`;
+                return {
+                  id: apiServiceId,
+                  apiServiceId,
+                  title: item.plcyNm ?? "제목 없음",
+                  description: item.plcyExplnCn ?? "설명 없음",
+                  category: "청년 정책",
+                  startDate: item.rceptStartDate ?? "-",
+                  endDate: item.rceptEndDate ?? "-",
+                  region: item.pblancAdres ?? "지역 정보 없음",
+                  regionCity: "",
+                  regionDistrict: "",
+                  imageUrl: null,
+                  link: item.pblancUrl ?? null,
+                  source: "youth",
+                };
+              })
           : [];
 
         const jobs = Array.isArray(jobRes.data)
@@ -86,20 +92,22 @@ export default function useLocalBenefitData() {
                 item.ctpvNm,
                 item.sggNm
               );
+              const apiServiceId = `job-${item.apiSource}-${i}`;
 
               return {
-                id: `job-${item.apiSource}-${i}`,
+                id: apiServiceId,
+                apiServiceId,
                 title: item.jobTitle ?? "구인 공고",
                 description: item.jobRequirement ?? "내용 없음",
                 category: "복지시설 구인",
                 startDate: item.jobStartDate ?? "-",
                 endDate: item.jobEndDate ?? "-",
-                region: `${regionCity} ${regionDistrict}`.trim(),
+                region,
                 regionCity,
                 regionDistrict,
                 imageUrl: null,
                 link: item.apiSourceUrl ?? null,
-                source: "job", // ✅ 추가
+                source: "job",
               };
             })
           : [];
@@ -110,9 +118,11 @@ export default function useLocalBenefitData() {
                 item.ctpvNm,
                 item.sggNm
               );
+              const apiServiceId = item.servId || `bokjiro-${idx}`;
 
               return {
-                id: `bokjiro-${item.servId || idx}`,
+                id: apiServiceId,
+                apiServiceId,
                 title: item.servNm ?? "복지 서비스",
                 description: item.servDgst ?? "설명 없음",
                 category: "지자체복지혜택",
@@ -123,8 +133,8 @@ export default function useLocalBenefitData() {
                 regionDistrict,
                 imageUrl: null,
                 link: item.servDtlLink ?? null,
-                source: "bokjiro", // ✅ 추가
-                servId: item.servId || null, // ✅ 상세조회용
+                source: "bokjiro",
+                servId: item.servId || null,
               };
             })
           : [];

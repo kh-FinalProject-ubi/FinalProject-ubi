@@ -51,23 +51,19 @@ const WelfareMap = () => {
   const { setRegion } = useSelectedRegionStore();
   const { data: allBenefits, loading, error } = useLocalBenefitData();
 
-  // 🔍 복지로(bokjiro) 데이터만 필터링
-  const bokjiroOnly = useMemo(() => {
-    return allBenefits.filter((item) => item.id?.startsWith("bokjiro-"));
-  }, [allBenefits]);
-
-  /* ✅ 복지로 데이터만 지역별로 그룹핑 */
   const groupedData = useMemo(() => {
     const result = {};
-    bokjiroOnly.forEach((item) => {
-      const clean = mapCleanFullName(
-        `${item.regionCity} ${item.regionDistrict}`
-      );
-      if (!result[clean]) result[clean] = [];
-      result[clean].push(item);
-    });
+    allBenefits
+      .filter((item) => item.category === "지자체복지혜택") // ⬅️ 복지로 데이터만
+      .forEach((item) => {
+        const clean = mapCleanFullName(
+          `${item.regionCity} ${item.regionDistrict}`
+        );
+        if (!result[clean]) result[clean] = [];
+        result[clean].push(item);
+      });
     return result;
-  }, [bokjiroOnly]);
+  }, [allBenefits]);
 
   /* ---------------- 지도 초기화 ---------------- */
   useEffect(() => {

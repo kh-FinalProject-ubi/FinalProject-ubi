@@ -109,8 +109,8 @@ export function applyAllFilters(data, options, authState) {
       return matchesStandard(item, memberStandard);
     })
     .filter((item) => {
-      if (!token || showAll) return true;
-      return matchesRegion(item, regionCity, regionDistrict);
+      if (showAll) return true; // '전체 보기' 켠 경우는 무조건 통과
+      return matchesRegion(item, regionCity, regionDistrict); // 로그인 여부와 무관하게 지역 필터 적용
     })
     .filter((item) => matchesServiceType(item, serviceType))
     .filter((item) => matchesCategory(item, category))

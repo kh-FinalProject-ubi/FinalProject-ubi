@@ -6,14 +6,12 @@
 <mapper namespace="edu.kh.project.welfare.like.model.mapper.WelfareMapper">
 
   <!-- 찜 여부 확인 -->
-  <select id="selectLike" resultType="Welfare">
-    SELECT *
-    FROM welfare
-    WHERE member_no = #{memberNo}
-      AND api_service_id = #{apiServiceId}
-  </select>
-
-  <!-- 찜 추가 -->
+<select id="selectLike" resultType="Welfare">
+  SELECT *
+  FROM welfare
+  WHERE member_no = #{memberNo}
+    AND api_service_id = #{apiServiceId}
+</select>
 <insert id="insertLike" parameterType="Welfare">
   INSERT INTO welfare (
     service_no,
@@ -21,8 +19,15 @@
     api_service_id,
     service_name,
     category,        
-        region_city,         
+    region_city,         
     region_district,     
+    description,
+    agency,
+    url,
+    reception_start,
+    reception_end,
+    lat,
+    lng,
     jj_time,
     jj_del_fl,
     alarm_sent_fl
@@ -33,7 +38,14 @@
     #{serviceName},
     #{category},      
     #{regionCity},        
-    #{regionDistrict},    
+    #{regionDistrict},
+    #{description},
+    #{agency},
+    #{url},
+    #{receptionStart},
+    #{receptionEnd},
+    #{lat},
+    #{lng},
     SYSDATE,
     'N',
     'N'
