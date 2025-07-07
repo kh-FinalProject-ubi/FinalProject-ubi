@@ -42,16 +42,19 @@ const CommentModal = ({ member, onClose, position }) => {
   return (
     <div className="floating-modal-wrapper">
       <div
-  className="floating-modal"
-  onMouseDown={startDrag}
-  ref={modalRef}
-  style={{
-    position: "absolute",
-    top: `${position.y}px`,
-    left: `${position.x}px`,
-  }}
->
-        <button className="modal-close" onClick={onClose}>×</button>
+        className="floating-modal"
+        onMouseDown={startDrag}
+        ref={modalRef}
+        style={{
+          position: "absolute",
+          top: `${position.y}px`,
+          left: `${position.x}px`,
+          position: "fixed",
+        }}
+      >
+        <button className="modal-close" onClick={onClose}>
+          ×
+        </button>
         <img
           src={member?.memberImg || "/default-profile.png"}
           alt="프로필"

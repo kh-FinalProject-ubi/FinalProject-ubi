@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import KakaoMapView from "../../components/welfarefacility/KakaoMapView"; // 카카오맵 컴포넌트
 import "../../styles/welfarefacility/FacilityDetailPage.css";
+import CommentSection from "./../comment/Comment";
 
 // 🧹 설명 문자열 전처리 함수
 function cleanDescription(desc) {
@@ -132,6 +133,13 @@ export default function FacilityDetailPage() {
         <h3>📍 시설 위치</h3>
         <KakaoMapView address={!lat ? address : null} lat={lat} lng={lng} />
       </section>
+
+      {/* <CommentSection
+        // 주소
+        token={token}
+        loginMemberNo={loginMemberNo}
+        role={role}
+      /> */}
     </div>
   );
 }

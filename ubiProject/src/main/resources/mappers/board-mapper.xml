@@ -9,6 +9,7 @@
 
 	<resultMap type="Board" id="board_rm">
 		<id property="boardNo" column="BOARD_NO" />
+		<result property="authority" column="AUTHORITY" />
 
 		<!-- collection 태그 : SELECT 로 조회된 결과를 컬렉션(List)에 담아 지정된 필드에 세팅 property 
 			: List 를 담을 DTO의 필드명 select : 실행할 select의 id column : 조회 결과 중 지정된 컬럼의 값을 
@@ -50,10 +51,12 @@
 		BOARD_ANSWER,
 		(SELECT COUNT(*)
 		FROM "COMMENTS" C
-		WHERE C.BOARD_NO = B.BOARD_NO) COMMENT_COUNT,
+		WHERE
+		C.BOARD_NO = B.BOARD_NO) COMMENT_COUNT,
 
 		(SELECT COUNT(*)
-		FROM "BOARD_LIKE" L
+		FROM
+		"BOARD_LIKE" L
 		WHERE L.BOARD_NO = B.BOARD_NO) LIKE_COUNT,
 	
 	<![CDATA[
@@ -73,37 +76,55 @@
 
 		FROM "BOARD" B
 		JOIN "MEMBER" M ON (B.MEMBER_NO = M.MEMBER_NO)
-		WHERE BOARD_DEL_FL = 'N'
+		WHERE
+		BOARD_DEL_FL = 'N'
 		AND BOARD_TYPE = #{boardCode}
 		ORDER BY BOARD_NO DESC
 	</select>
 
 	<!-- 게시글 상세 조회 -->
 	<select id="selectOne" resultMap="board_rm">
-		SELECT BOARD_NO, BOARD_TITLE, BOARD_CONTENT, BOARD_TYPE, BOARD_READ_COUNT,
-		MEMBER_NO, MEMBER_NICKNAME, MEMBER_IMG, POST_TYPE,
-		TO_CHAR(BOARD_DATE, 'YYYY"년" MM"월" DD"일" HH24:MI:SS') BOARD_DATE,
-		TO_CHAR(BOARD_UPDATE, 'YYYY"년" MM"월" DD"일" HH24:MI:SS') BOARD_UPDATE,
+		SELECT
+		B.BOARD_NO,
+		B.BOARD_TITLE,
+		B.BOARD_CONTENT,
+		B.BOARD_TYPE,
+		B.BOARD_READ_COUNT,
+		M.MEMBER_NO,
+		M.MEMBER_NICKNAME,
+		M.MEMBER_IMG,
+		B.POST_TYPE,
+		M.AUTHORITY,
+
+		TO_CHAR(B.BOARD_DATE, 'YYYY"년" MM"월" DD"일" HH24:MI:SS') AS BOARD_DATE,
+		TO_CHAR(B.BOARD_UPDATE, 'YYYY"년" MM"월" DD"일" HH24:MI:SS') AS
+		BOARD_UPDATE,
 
 		(SELECT COUNT(*)
-		FROM "BOARD_LIKE"
-		WHERE BOARD_NO = #{boardNo}) LIKE_COUNT,
+		FROM BOARD_LIKE
+		WHERE BOARD_NO =
+		#{boardNo}) AS LIKE_COUNT,
 
 		(SELECT IMAGE_PATH || IMAGE_NAME
-		FROM "BOARD_IMAGE"
+		FROM
+		BOARD_IMAGE
 		WHERE BOARD_NO = #{boardNo}
-		AND IMAGE_ORDER = 0) THUMBNAIL,
+		AND IMAGE_ORDER = 0) AS
+		THUMBNAIL,
 
 		(SELECT COUNT(*)
-		FROM "BOARD_LIKE"
+		FROM BOARD_LIKE
 		WHERE BOARD_NO = #{boardNo}
-		AND MEMBER_NO = #{memberNo}) LIKE_CHECK
+		AND MEMBER_NO = #{memberNo}) AS LIKE_CHECK
 
-		FROM "BOARD"
-		JOIN "MEMBER" USING(MEMBER_NO)
-		WHERE BOARD_DEL_FL = 'N'
-		AND BOARD_NO = #{boardNo}
-		AND BOARD_TYPE = #{boardCode}
+		FROM BOARD B
+		JOIN MEMBER M ON
+		B.MEMBER_NO = M.MEMBER_NO
+
+		WHERE B.BOARD_DEL_FL = 'N'
+		AND B.BOARD_NO =
+		#{boardNo}
+		AND B.BOARD_TYPE = #{boardCode}
 	</select>
 
 	<!-- 상세 조회한 게시글의 이미지 목록 조회 -->
@@ -121,7 +142,8 @@
 		FROM (
 		SELECT C.COMMENT_NO,
 		C.COMMENT_CONTENT,
-		TO_CHAR(C.COMMENT_DATE, 'YYYY"."MM"."DD HH24":"MI') AS COMMENT_DATE,
+		TO_CHAR(C.COMMENT_DATE,
+		'YYYY"."MM"."DD HH24":"MI') AS COMMENT_DATE,
 		C.BOARD_NO,
 		C.MEMBER_NO,
 		M.MEMBER_NICKNAME,
@@ -130,20 +152,25 @@
 		C.COMMENT_DEL_FL,
 		(SELECT COUNT(*)
 		FROM COMMENT_LIKE CL
-		WHERE CL.COMMENT_NO = C.COMMENT_NO) AS COMMENT_LIKE
+		WHERE CL.COMMENT_NO =
+		C.COMMENT_NO) AS COMMENT_LIKE
 		FROM COMMENTS C
-		JOIN MEMBER M ON C.MEMBER_NO = M.MEMBER_NO
+		JOIN MEMBER M ON
+		C.MEMBER_NO = M.MEMBER_NO
 		WHERE C.BOARD_NO = #{boardNo}
 		) C
-		WHERE C.COMMENT_DEL_FL = 'N'
+		WHERE
+		C.COMMENT_DEL_FL = 'N'
 		OR EXISTS (
 		SELECT 1
 		FROM COMMENTS SUB
-		WHERE SUB.COMMENT_PARENT_NO = C.COMMENT_NO
+		WHERE
+		SUB.COMMENT_PARENT_NO = C.COMMENT_NO
 		AND SUB.COMMENT_DEL_FL = 'N'
 		)
 		START WITH C.COMMENT_PARENT_NO IS NULL
-		CONNECT BY PRIOR C.COMMENT_NO = C.COMMENT_PARENT_NO
+		CONNECT BY PRIOR C.COMMENT_NO =
+		C.COMMENT_PARENT_NO
 		ORDER SIBLINGS BY C.COMMENT_NO
 	</select>
 
@@ -157,19 +184,22 @@
 	<!-- 좋아요 체크 -->
 	<insert id="insertBoardLike">
 		INSERT INTO "BOARD_LIKE"
-		VALUES(#{memberNo}, #{boardNo})
+		VALUES(#{memberNo},
+		#{boardNo})
 	</insert>
 
 	<!-- 게시글 돟아요 수 조회 -->
 	<select id="selectLikeCount">
 		SELECT COUNT (*) FROM "BOARD_LIKE"
-		WHERE BOARD_NO = #{boardNo}
+		WHERE BOARD_NO =
+		#{boardNo}
 	</select>
 
 	<!-- 조회 수 1 증가 -->
 	<update id="updateReadCount">
 		UPDATE "BOARD" SET
-		BOARD_READ_COUNT = BOARD_READ_COUNT + 1
+		BOARD_READ_COUNT = BOARD_READ_COUNT
+		+ 1
 		WHERE BOARD_NO = #{boardNo}
 	</update>
 
@@ -177,7 +207,8 @@
 	<select id="selectReadCount">
 		SELECT BOARD_READ_COUNT
 		FROM "BOARD"
-		WHERE BOARD_NO = #{boardNo}
+		WHERE BOARD_NO =
+		#{boardNo}
 	</select>
 
 	<!-- 동적 SQL : <choose> <when> <otherwise> <choose> : 조건문을 작성할 영역 지정 내부에 
@@ -227,13 +258,15 @@
 
 	<select id="selectSearchList">
 		SELECT BOARD_NO, BOARD_TITLE, READ_COUNT, MEMBER_NICKNAME,
-		(SELECT COUNT(*)
+		(SELECT
+		COUNT(*)
 		FROM "COMMENT" C
 		WHERE C.BOARD_NO = B.BOARD_NO) COMMENT_COUNT,
 
 		(SELECT COUNT(*)
 		FROM "BOARD_LIKE" L
-		WHERE L.BOARD_NO = B.BOARD_NO) LIKE_COUNT,
+		WHERE L.BOARD_NO = B.BOARD_NO)
+		LIKE_COUNT,
 	
 	<![CDATA[
    	 CASE 
@@ -252,7 +285,8 @@
 
 		FROM "BOARD" B
 		JOIN "MEMBER" M ON (B.MEMBER_NO = M.MEMBER_NO)
-		WHERE BOARD_DEL_FL = 'N'
+		WHERE
+		BOARD_DEL_FL = 'N'
 		AND BOARD_CODE = #{boardCode}
 		<choose>
 			<!-- 제목 검색 (key 값 "t"인 경우) -->
@@ -285,11 +319,13 @@
 
 	<select id="selectDBImageList">
 		SELECT SUBSTR(PROFILE_IMG,
-		INSTR(PROFILE_IMG, '/', -1) + 1) AS "rename"
+		INSTR(PROFILE_IMG, '/', -1)
+		+ 1) AS "rename"
 		FROM "MEMBER"
 		WHERE PROFILE_IMG IS NOT NULL
 		UNION
-		SELECT CAST(IMG_RENAME AS VARCHAR2(300)) "rename"
+		SELECT
+		CAST(IMG_RENAME AS VARCHAR2(300)) "rename"
 		FROM "BOARD_IMG"
 	</select>
 

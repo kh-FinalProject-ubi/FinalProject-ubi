@@ -4,7 +4,7 @@ import "../../styles/comment/Comment.css";
 import CommentModal from "./CommentModal";
 
 const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
-  const [comments, setComments] = useState([]); 
+  const [comments, setComments] = useState([]);
   const [commentContent, setCommentContent] = useState("");
   const [replyTarget, setReplyTarget] = useState(null);
   const [replyContent, setReplyContent] = useState("");
@@ -12,8 +12,8 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
   const [editingContent, setEditingContent] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-const [selectedMember, setSelectedMember] = useState(null);
-const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
 
   // 로그인한 회원이 관리자인지 구분
   const isAdmin = role === "ADMIN";
@@ -119,9 +119,13 @@ const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
 
   const handleReport = async (commentNo) => {
     try {
-      const res = await axios.post(`/api/comments/${commentNo}/report`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.post(
+        `/api/comments/${commentNo}/report`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       const reported = res.data.reported;
       if (reported === true) {
         alert("신고 성공");
@@ -151,7 +155,9 @@ const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
             ? {
                 ...c,
                 commentLiked: updatedLikeStatus,
-                commentLike: updatedLikeStatus ? c.commentLike + 1 : c.commentLike - 1,
+                commentLike: updatedLikeStatus
+                  ? c.commentLike + 1
+                  : c.commentLike - 1,
               }
             : c
         )
@@ -181,57 +187,89 @@ const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
     const isMine = c.memberNo === loginMemberNo;
     const reportedByMe = (c.reportedByMe || 0) > 0;
     const isUser = c.memberNo !== null;
-     // 댓글 작성자가 관리자인 경우
-     const memberRoleStr = c.memberRole === "2" ? "ADMIN" : c.memberRole === "1" ? "USER" : "GUEST";
-     const isWriterAdmin = memberRoleStr === "ADMIN";
-  
-    console.log("report?", c.commentNo, c.reportedByMe);
-  
+    // 댓글 작성자가 관리자인 경우
+    const memberRoleStr =
+      c.memberRole === "2" ? "ADMIN" : c.memberRole === "1" ? "USER" : "GUEST";
+    const isWriterAdmin = memberRoleStr === "ADMIN";
+
     // 삭제된 댓글이고 자식도 없으면 표시하지 않음
     if (isDeleted && c.children.length === 0) return null;
-  
+
     return (
       <li key={c.commentNo}>
         <div className={`comment-item ${reportedByMe ? "reported" : ""}`}>
           <div className="comment-content-area">
             <div className="comment-header">
               <div className="comment-author-info">
-              <img
-  src={c.memberImg || "/default-profile.png"}
-  alt="프로필 사진"
-  className="profile-img"
-  onClick={(e) => {
-    setSelectedMember({
-      memberImg: c.memberImg,
-      memberNickname: c.memberNickname,
-      memberNo: c.memberNo,
-    });
-    setModalPosition({ x: e.clientX + 50, y: e.clientY }); // 클릭한 좌표 저장
-    setModalVisible(true);
-  }}
-/>
+                <img
+                  src={c.memberImg || "/default-profile.png"}
+                  alt="프로필 사진"
+                  className="profile-img"
+                  onClick={(e) => {
+                    const modalWidth = 300;
+                    const modalHeight = 200;
+
+                    let x = e.clientX + 20;
+                    let y = e.clientY + 20;
+
+                    // 화면 넘지 않게 조정
+                    if (x + modalWidth > window.innerWidth) {
+                      x = window.innerWidth - modalWidth - 10;
+                    }
+
+                    if (y + modalHeight > window.innerHeight) {
+                      y = window.innerHeight - modalHeight - 50;
+                    }
+
+                    setSelectedMember({
+                      memberImg: c.memberImg,
+                      memberNickname: c.memberNickname,
+                      memberNo: c.memberNo,
+                      memberRole: c.memberRole,
+                    });
+                    setModalPosition({ x, y });
+                    setModalVisible(true);
+                  }}
+                />
                 <strong>{c.memberNickname}</strong>
                 <span className="comment-date">{c.commentDate}</span>
-  
+
                 {/* 신고/취소 버튼 */}
-                {token && !isMine && isUser && !isWriterAdmin && (
-  <button className="report-btn" onClick={() => handleReport(c.commentNo)}>
-    <img src="/report.svg" alt="신고 아이콘" />
-  </button>
-)}
+                {token &&
+                  !isMine &&
+                  isUser &&
+                  !isWriterAdmin &&
+                  boardCode !== 2 && (
+                    <button
+                      className="report-btn"
+                      onClick={() => handleReport(c.commentNo)}
+                    >
+                      <img src="/report.svg" alt="신고 아이콘" />
+                    </button>
+                  )}
               </div>
-  
+
               {/* 수정/삭제 버튼 (본인 or 관리자) */}
               {(isAdmin || isMine) && editingCommentNo !== c.commentNo && (
                 <div className="comment-actions-right">
-                  <button onClick={() => startEditing(c.commentNo, c.commentContent)}>수정</button>
-                  <button onClick={() => handleCommentDelete(c.commentNo)}>삭제</button>
+                  <button
+                    onClick={() => startEditing(c.commentNo, c.commentContent)}
+                  >
+                    수정
+                  </button>
+                  <button onClick={() => handleCommentDelete(c.commentNo)}>
+                    삭제
+                  </button>
                 </div>
               )}
             </div>
-  
-            {parentDeleted && <div className="parent-deleted-notice">삭제된 댓글의 답글입니다.</div>}
-  
+
+            {parentDeleted && (
+              <div className="parent-deleted-notice">
+                삭제된 댓글의 답글입니다.
+              </div>
+            )}
+
             {/* 댓글 내용 */}
             {editingCommentNo === c.commentNo ? (
               <>
@@ -253,24 +291,31 @@ const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
             ) : (
               <p className="comment-text">{c.commentContent}</p>
             )}
-  
+
             {/* 좋아요 / 답글 */}
             {token && !editingCommentNo && !reportedByMe && (
               <>
                 <button
-                  className={`comment-like-btn ${c.commentLiked ? "liked" : ""}`}
+                  className={`comment-like-btn ${
+                    c.commentLiked ? "liked" : ""
+                  }`}
                   onClick={() => handleCommentLike(c.commentNo)}
                 >
                   <img src="/commentLike.svg" alt="좋아요 아이콘" />
                 </button>
                 <span>{c.commentLike}</span>
-                <button onClick={() => handleReplyClick(c.commentNo)}>답글</button>
+                <button onClick={() => handleReplyClick(c.commentNo)}>
+                  답글
+                </button>
               </>
             )}
-  
+
             {/* 답글 작성 폼 */}
             {token && replyTarget === c.commentNo && !reportedByMe && (
-              <form onSubmit={(e) => handleReplySubmit(e, c.commentNo)} style={{ marginTop: "10px" }}>
+              <form
+                onSubmit={(e) => handleReplySubmit(e, c.commentNo)}
+                style={{ marginTop: "10px" }}
+              >
                 <textarea
                   value={replyContent}
                   onChange={(e) => setReplyContent(e.target.value)}
@@ -278,17 +323,23 @@ const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
                   placeholder="답글을 입력하세요."
                   style={{ width: "100%", resize: "vertical" }}
                 />
-                <button type="submit" className="btn-yellow" style={{ marginTop: "5px" }}>
+                <button
+                  type="submit"
+                  className="btn-yellow"
+                  style={{ marginTop: "5px" }}
+                >
                   답글 작성
                 </button>
               </form>
             )}
           </div>
         </div>
-  
+
         {/* 자식 댓글 렌더링 */}
         {c.children.length > 0 && (
-          <ul className="reply-list">{c.children.map((child) => renderComment(child, isDeleted))}</ul>
+          <ul className="reply-list">
+            {c.children.map((child) => renderComment(child, isDeleted))}
+          </ul>
         )}
       </li>
     );
@@ -307,7 +358,9 @@ const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
             rows={3}
             placeholder="댓글을 입력하세요."
           />
-          <button type="submit" className="btn-yellow">댓글 작성</button>
+          <button type="submit" className="btn-yellow">
+            댓글 작성
+          </button>
         </form>
       )}
 
@@ -316,16 +369,21 @@ const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
       ) : commentTree.length > 0 ? (
         <ul>{commentTree.map((c) => renderComment(c, false))}</ul>
       ) : (
-        <p style={{ textAlign: "center", padding: "20px", color: "#888" }}>작성된 댓글이 없습니다.</p>
+        <p style={{ textAlign: "center", padding: "20px", color: "#888" }}>
+          작성된 댓글이 없습니다.
+        </p>
       )}
 
-{modalVisible && selectedMember && (
-  <CommentModal
-    member={selectedMember}
-    position={modalPosition}
-    onClose={() => setModalVisible(false)}
-  />
-)}
+      {modalVisible &&
+        selectedMember &&
+        selectedMember.memberRole !== "2" &&
+        selectedMember.memberNo !== loginMemberNo && (
+          <CommentModal
+            member={selectedMember}
+            position={modalPosition}
+            onClose={() => setModalVisible(false)}
+          />
+        )}
     </section>
   );
 };
