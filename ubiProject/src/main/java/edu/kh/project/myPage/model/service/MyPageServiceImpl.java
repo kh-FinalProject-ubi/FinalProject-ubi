@@ -357,4 +357,10 @@ public class MyPageServiceImpl implements MyPageService {
 		    return null;
 		}
 	}
+	
+	// 프로필 이미지 초기화
+	@Override
+	public int deleteProfile(int memberNo) {
+		return mapper.deleteProfile(memberNo);
+	}
 }

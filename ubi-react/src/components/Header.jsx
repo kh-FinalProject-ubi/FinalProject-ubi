@@ -15,7 +15,7 @@ const Header = () => {
 
   const navigate = useNavigate();
 
-  // console.log("헤더 memberImg:", memberImg);
+  console.log("헤더 memberImg:", memberImg);
 
   const LogoutButton = () => {
     const logout = useAuthStore((state) => state.logout);

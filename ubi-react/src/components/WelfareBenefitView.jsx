@@ -89,6 +89,7 @@ const WelfareBenefitView = ({ district = "", benefits = [], isLoading }) => {
     );
   }
 
+  
   return (
     <div style={{ marginTop: "1rem" }}>
       <h3>
