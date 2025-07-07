@@ -84,6 +84,7 @@ function MyTownBoardDetail() {
         className="profile-img"
         onClick={(e) => {
           setSelectedMember({
+            memberNo: board.memberNo,
             memberImg: board.memberImg,
             memberNickname: board.memberNickname,
             memberNo: board.memberNo,
@@ -185,9 +186,11 @@ function MyTownBoardDetail() {
 
       {modalVisible &&
         selectedMember &&
-        selectedMember.role !== "ADMIN" && ( // 작성자가 관리자일 경우 모달 안 뜨게
+        selectedMember.role !== "ADMIN" &&
+        selectedMember.memberNo !== loginMemberNo && ( // 작성자가 관리자일 경우 모달 안 뜨게
           <CommentModal
             member={selectedMember}
+            token={token}
             position={modalPosition}
             onClose={() => setModalVisible(false)}
           />
