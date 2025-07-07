@@ -3,12 +3,22 @@ import axios from "axios";
 import useModalStore from "../../stores/useModalStore";
 
 const LikeButton = ({
+  token,
+  // ✅ 필수 props
   apiServiceId,
   serviceName,
   category,
   regionCity,
   regionDistrict,
-  token,
+  // ✅ 추가 props (상세 내용)
+  description,
+  agency,
+  url,
+  receptionStart,
+  receptionEnd,
+  imageProfile,
+  lat,
+  lng,
 }) => {
   const [liked, setLiked] = useState(false);
   const { openLoginModal } = useModalStore();
@@ -18,14 +28,9 @@ const LikeButton = ({
       const goLogin = window.confirm(
         "로그인이 필요한 기능입니다. 로그인하시겠습니까?"
       );
-      if (goLogin) {
-        {
-          openLoginModal();
-        }
-      }
+      if (goLogin) openLoginModal();
       return;
     }
-    console.log("🔥 보내는 token:", token);
 
     try {
       if (liked) {
@@ -41,7 +46,15 @@ const LikeButton = ({
             serviceName,
             category,
             regionCity,
-            regionDistrict: regionDistrict || "제한없음", // ✅ 기본값 처리
+            regionDistrict: regionDistrict || "제한없음",
+            description,
+            agency,
+            url,
+            receptionStart,
+            receptionEnd,
+            imageProfile,
+            lat,
+            lng,
           },
           {
             headers: { Authorization: `Bearer ${token}` },

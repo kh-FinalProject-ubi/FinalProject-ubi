@@ -17,8 +17,8 @@ const PopularBenefitCarousel = () => {
         state: { data: benefit }, // ✅ Bokjiro용 상세 페이지로 이동
       });
     } else if (apiServiceId.startsWith("seoul-")) {
-      navigate("/seoulDetail", {
-        state: { data: benefit }, // ✅ 서울시 상세 페이지로 이동
+      navigate(`/seoulDetail?apiServiceId=${benefit.apiServiceId}`, {
+        state: { data: benefit }, // ← 있을 때는 활용하고
       });
     } else if (apiServiceId.startsWith("job-API")) {
       navigate("/facilityJobDetail", {
