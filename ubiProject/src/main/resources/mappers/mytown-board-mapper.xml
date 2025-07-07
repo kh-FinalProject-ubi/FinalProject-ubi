@@ -120,7 +120,7 @@
 		BOARD_NO, BOARD_TYPE, BOARD_TITLE, BOARD_CONTENT, MEMBER_NO,
 		BOARD_DATE,BOARD_READ_COUNT,STAR_COUNT,POST_TYPE
 		) VALUES (
-		BOARD_SEQ.NEXTVAL, 3, #{boardTitle}, #{boardContent}, #{memberNo}, SYSDATE, 0,
+		SEQ_BOARD_NO.NEXTVAL, 3, #{boardTitle}, #{boardContent}, #{memberNo}, SYSDATE, 0,
 		#{starCount} ,#{postType}
 		)
 	</insert>
@@ -153,7 +153,7 @@
 	</select>
 
 	<select id="getLastInsertedId" resultType="int">
-		SELECT BOARD_SEQ.CURRVAL FROM DUAL
+		SELECT SEQ_BOARD_NO.CURRVAL FROM DUAL
 	</select>
 
 
