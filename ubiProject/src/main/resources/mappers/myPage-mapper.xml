@@ -5,7 +5,7 @@
 	<!-- 내 기본 정보 조회 -->
 	<select id="info">
 		SELECT MEMBER_ID, MEMBER_NICKNAME, MEMBER_EMAIL, MEMBER_TEL, MEMBER_ADDRESS,
-			   ENROLL_DATE, MEMBER_TADDRESS, MEMBER_IMG, MEMBER_STANDARD
+			   ENROLL_DATE, MEMBER_TADDRESS, MEMBER_IMG, MEMBER_STANDARD, MEMBER_NO
 			   FROM MEMBER
 			   WHERE MEMBER_NO = #{memberNo}
 	</select>
@@ -177,6 +177,13 @@
 	<update id="profile">
 	UPDATE "MEMBER" SET
 	MEMBER_IMG = #{memberImg}
+	WHERE MEMBER_NO = #{memberNo}
+	</update>
+	
+	<!-- 프로필 이미지 초기화 -->
+	<update id="deleteProfile">
+	UPDATE "MEMBER" SET
+	MEMBER_IMG = NULL
 	WHERE MEMBER_NO = #{memberNo}
 	</update>
 	

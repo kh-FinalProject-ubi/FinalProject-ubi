@@ -17,6 +17,8 @@ const Header = () => {
 
   const navigate = useNavigate();
 
+  console.log("헤더 memberImg:", memberImg);
+
   //  알림 상태
   const [alerts, setAlerts] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -28,6 +30,7 @@ const Header = () => {
   });
 
   // console.log("헤더 memberImg:", memberImg);
+
 
   const LogoutButton = () => {
     const logout = useAuthStore((state) => state.logout);

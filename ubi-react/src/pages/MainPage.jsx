@@ -3,10 +3,15 @@ import WelfareMap from "../components/WelfareMap";
 import PopularBenefitCarousel from "../components/PopularBenefitCarousel";
 import PopularPostCarousel from "../components/PopularPostCarousel";
 import "../styles/MainPage.css";
+import MemberSyncProvider from './../components/MemberSyncProvider';
+import useAuthStore from "../stores/useAuthStore";
+
 
 const MainPage = () => {
   return (
     <main className="main-wrapper">
+      <MemberSyncProvider />
+
       {/* ① 지도 + 비교 패널 */}
       <section className="map-section">
         <WelfareMap />

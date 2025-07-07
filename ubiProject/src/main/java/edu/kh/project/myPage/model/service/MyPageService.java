@@ -135,6 +135,12 @@ public interface MyPageService {
 	 */
 	int withdraw(int memberNo);
 
+	/** 프로필 이미지 초기화
+	 * @param memberNo
+	 * @return
+	 */
+	int deleteProfile(int memberNo);
+
 
 
 }

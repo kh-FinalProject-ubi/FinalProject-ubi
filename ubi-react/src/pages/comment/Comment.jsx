@@ -202,7 +202,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
             <div className="comment-header">
               <div className="comment-author-info">
                 <img
-                  src={c.memberImg || "/default-profile.png"}
+                  src={`http://localhost:8080${c.memberImg}` || "/default-profile.png"}
                   alt="프로필 사진"
                   className="profile-img"
                   onClick={(e) => {

@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -61,8 +62,24 @@ public class MyPageController {
 	
 	// 내 기본 정보 조회
 	@GetMapping("info")
-    public ResponseEntity<Object> info(@RequestParam("memberNo") int memberNo) {
+    public ResponseEntity<Object> info(@RequestHeader("Authorization") String authorizationHeader) {
         try {
+        	
+        	if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
+	        }
+		  
+		  String token = authorizationHeader.substring(7);
+			
+		  if (!jwtU.validateToken(token)) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
+	        }
+
+	        // 3️⃣ 토큰에서 회원 번호 추출
+	        Long memberNoLong = jwtU.extractMemberNo(token);
+	        int memberNo = memberNoLong.intValue();
+        	
+        	
             if (memberNo == 0) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
             }
@@ -350,10 +367,51 @@ public class MyPageController {
 			
 		} catch (Exception e) {
 			
-			log.error("비밀번호 확인 중 오류 발생", e);
+			log.error("프로필 이미지 변경 중 에러 발생", e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
 
+		
+	}
+	
+	/** 프로필 이미지 삭제
+	 * @param profileImage
+	 * @param memberNo
+	 * @return
+	 * @throws Exception
+	 */
+	@DeleteMapping("profile")
+	public ResponseEntity<Object> profile(@RequestHeader("Authorization") String authorizationHeader ) throws Exception {
+		
+		try {
+			
+			if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
+			}
+			
+			String token = authorizationHeader.substring(7);
+			
+			if (!jwtU.validateToken(token)) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
+			}
+			
+			Long memberNoLong = jwtU.extractMemberNo(token);
+			int memberNo = memberNoLong.intValue();
+			
+			int result = service.deleteProfile(memberNo);
+			
+			if (result > 0) {
+				return ResponseEntity.ok(result);
+			} else {
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("프로필 이미지 초기화 실패");
+			}
+			
+		} catch (Exception e) {
+			
+			log.error("프로필 이미지 초기화 중 에러 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+		
 		
 	}
 

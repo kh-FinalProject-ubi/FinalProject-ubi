@@ -104,9 +104,9 @@ const Profile = () => {
   const getMemberData = async () => {
     try {
       // console.log("기본정보 axios 요청 시작");
-      const res = await axios.get("/api/myPage/info", {
-        params: { memberNo: memberNo },
-      });
+
+      const res = await axios.get('/api/myPage/info', { headers: {Authorization: `Bearer ${token}`, }});
+
       console.log("기본정보 응답 받음:", res);
       console.log("기본정보 응답 값:", res.data);
 
