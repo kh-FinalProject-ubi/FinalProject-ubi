@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import edu.kh.project.welfare.benefits.model.dto.Welfare;
-import edu.kh.project.welfare.like.model.mapper.WelfareMapper;
+import edu.kh.project.welfare.like.model.mapper.WelfareDetailMapper;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WelfareServiceImpl implements WelfareService {
 
-    private final WelfareMapper welfareMapper;
+    private final WelfareDetailMapper welfareMapper;
 
     @Override
     public void addLike(Welfare dto) {
