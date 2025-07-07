@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import useAuthStore from "../../stores/useAuthStore";
-import CommentSection from "./Comment";
+import CommentSection from "../comment/Comment";
 
 const BoardDetail = () => {
   const navigate = useNavigate();

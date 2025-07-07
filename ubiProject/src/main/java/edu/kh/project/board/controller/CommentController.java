@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -58,28 +59,42 @@ public class CommentController {
 	 * @return
 	 */
 	@GetMapping("/{boardCode}/{boardNo}")
-	public List<Comment> select(@PathVariable("boardCode") int boardCode, @PathVariable("boardNo") int boardNo) {
+	public List<Comment> select(
+	    @PathVariable("boardCode") int boardCode,
+	    @PathVariable("boardNo") int boardNo,
+	    @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
-		return service.select(boardNo);
+	    int memberNo = 0; // 비로그인 사용자 기본값
+
+	    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+	        String token = authHeader.substring(7);
+	        memberNo = jwtUtil.extractMemberNo(token).intValue();
+	    }
+
+	    return service.select(boardNo, memberNo);
 	}
 
-	/**
-	 * 댓글/답글 등록
-	 * 
-	 * @return
-	 */
 	@PostMapping("/{boardCode}/{boardNo}")
 	public int insert(@PathVariable("boardCode") int boardCode, @PathVariable("boardNo") int boardNo,
 			@RequestBody Comment comment, @RequestHeader("Authorization") String authHeader) {
 
 		String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
-
 		Long memberNoLong = jwtUtil.extractMemberNo(token);
 		int memberNo = memberNoLong.intValue();
 
 		comment.setBoardNo(boardNo);
 		comment.setMemberNo(memberNo);
-		return service.insert(comment);
+
+		// 댓글 등록
+		int result = service.insert(comment);
+
+		// 관리자면 답변 상태 업데이트
+		String authority = jwtUtil.extractRole(token); // "ADMIN" / "USER" 등
+		if (boardCode == 2 && "ADMIN".equals(authority)) {
+			service.updateBoardAnswer(boardNo, "Y");
+		}
+
+		return result;
 	}
 
 	/**
@@ -104,25 +119,53 @@ public class CommentController {
 		return service.update(comment);
 	}
 
-	
-	/** 댓글 좋아요
+	/**
+	 * 댓글 좋아요
+	 * 
 	 * @param commentNo
 	 * @param authHeader
 	 * @return
 	 */
 	@PostMapping("/{commentNo}/like")
-	public ResponseEntity<Map<String, Object>> toggleCommentLike(
-	    @PathVariable("commentNo") int commentNo,
-	    @RequestHeader("Authorization") String authHeader) {
+	public ResponseEntity<Map<String, Object>> toggleCommentLike(@PathVariable("commentNo") int commentNo,
+			@RequestHeader("Authorization") String authHeader) {
 
-	    String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
-	    int memberNo = jwtUtil.extractMemberNo(token).intValue();
+		String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+		int memberNo = jwtUtil.extractMemberNo(token).intValue();
 
-	    boolean liked = service.toggleCommentLike(commentNo, memberNo);
+		boolean liked = service.toggleCommentLike(commentNo, memberNo);
 
-	    Map<String, Object> result = new HashMap<>();
-	    result.put("liked", liked); // true 또는 false
+		Map<String, Object> result = new HashMap<>();
+		result.put("liked", liked); // true 또는 false
 
-	    return ResponseEntity.ok(result);
+		return ResponseEntity.ok(result);
+	}
+
+	/**
+	 * 신고하기
+	 * 
+	 * @param commentNo
+	 * @param authHeader
+	 * @return
+	 */
+	@PostMapping("/{commentNo}/report")
+	public ResponseEntity<Map<String, Object>> reportComment(@PathVariable("commentNo") int commentNo,
+			@RequestHeader("Authorization") String authHeader) {
+
+		Map<String, Object> result = new HashMap<>();
+
+		try {
+			String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+			int memberNo = jwtUtil.extractMemberNo(token).intValue();
+
+			boolean reported = service.reportComment(commentNo, memberNo);
+			result.put("reported", reported);
+			
+			return ResponseEntity.ok(result);
+
+		} catch (Exception e) {
+			result.put("error", "신고 처리 중 오류 발생");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+		}
 	}
 }

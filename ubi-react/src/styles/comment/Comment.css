@@ -117,3 +117,80 @@
   margin-top: 8px;
   /* 버튼 스타일은 기존 btn-yellow 등을 따르도록 비워둠 */
 }
+
+.reported-comment-text {
+  color: #ff4444;
+  font-weight: bold;
+}
+
+.report-btn.reported {
+  background-color: transparent;
+  color: red;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+}
+
+.profile-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* 모달창 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 10px;
+  position: relative;
+  max-width: 300px;
+  text-align: center;
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.modal-profile-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.modal-buttons button {
+  margin: 10px 5px;
+  padding: 8px 15px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-chat {
+  background-color: #ffd600;
+}
+
+.btn-report {
+  background-color: #ff4d4f;
+  color: white;
+}

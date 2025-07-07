@@ -11,40 +11,59 @@
 		SELECT
 		C.COMMENT_NO,
 		C.COMMENT_CONTENT,
-		TO_CHAR(C.COMMENT_DATE, 'YYYY"."MM"."DD HH24":"MI') AS COMMENT_DATE,
+		TO_CHAR(C.COMMENT_DATE, 'YYYY"."MM"."DD
+		HH24":"MI') AS COMMENT_DATE,
 		C.BOARD_NO,
 		C.MEMBER_NO,
 		M.MEMBER_NICKNAME,
 		M.MEMBER_IMG,
+		M.AUTHORITY AS MEMBER_ROLE,
 		C.COMMENT_PARENT_NO,
 		C.COMMENT_DEL_FL,
 
 		-- 좋아요 수
-		(SELECT COUNT(*)
+		(SELECT
+		COUNT(*)
 		FROM COMMENT_LIKE CL
-		WHERE CL.COMMENT_NO = C.COMMENT_NO) AS COMMENT_LIKE,
+		WHERE CL.COMMENT_NO = C.COMMENT_NO) AS
+		COMMENT_LIKE,
 
 		-- 로그인한 회원의 좋아요 여부
 		(SELECT COUNT(*)
 		FROM COMMENT_LIKE CL
 		WHERE CL.COMMENT_NO = C.COMMENT_NO
-		AND CL.MEMBER_NO = #{memberNo}) AS COMMENT_LIKED
+		AND CL.MEMBER_NO = #{memberNo}) AS
+		COMMENT_LIKED,
+
+		(SELECT COUNT(*)
+		FROM REPORT
+		WHERE TARGET_TYPE = 'COMMENT'
+		AND TARGET_ID = C.COMMENT_NO
+		AND REPORTER_NO = #{memberNo}
+		AND
+		REPORT_STATUS = 'Y') AS "reportedByMe"
 
 		FROM COMMENTS C
 		JOIN
-		MEMBER M ON C.MEMBER_NO = M.MEMBER_NO
+		MEMBER M ON
+		C.MEMBER_NO = M.MEMBER_NO
 		WHERE C.BOARD_NO = #{boardNo}
 		) C
-		WHERE C.COMMENT_DEL_FL = 'N'
-		OR EXISTS (
+		WHERE
+		C.COMMENT_DEL_FL = 'N'
+		OR EXISTS
+		(
 		SELECT 1
 		FROM COMMENTS SUB
-		WHERE SUB.COMMENT_PARENT_NO = C.COMMENT_NO
+		WHERE
+		SUB.COMMENT_PARENT_NO = C.COMMENT_NO
 		AND SUB.COMMENT_DEL_FL = 'N'
 		)
 		START WITH C.COMMENT_PARENT_NO IS NULL
-		CONNECT BY PRIOR C.COMMENT_NO = C.COMMENT_PARENT_NO
-		ORDER SIBLINGS BY C.COMMENT_NO
+		CONNECT BY PRIOR C.COMMENT_NO =
+		C.COMMENT_PARENT_NO
+		ORDER SIBLINGS BY
+		C.COMMENT_NO
 	</select>
 
 	<!-- 동적 SQL : <if> 조건식을 작성할 수 있는 태그 - else 문 없음 - test 속성 : 조건식을 작성하는 속성 -->
@@ -91,7 +110,7 @@
 		#{commentNo}
 	</update>
 
-	<!-- 좋아요 체크 -->
+	<!-- 좋아요 갯수 체크 -->
 	<select id="checkCommentLike" resultType="_int">
 		SELECT COUNT(*)
 		FROM
@@ -100,6 +119,13 @@
 		AND MEMBER_NO = #{memberNo}
 	</select>
 
+	<!-- 좋아요 추가 -->
+	<insert id="insertCommentLike">
+		INSERT INTO COMMENT_LIKE (COMMENT_NO, MEMBER_NO)
+		VALUES (#{commentNo}, #{memberNo})
+	</insert>
+
+	<!-- 좋아요 삭제 -->
 	<delete id="deleteCommentLike">
 		DELETE FROM COMMENT_LIKE
 		WHERE COMMENT_NO =
@@ -107,24 +133,113 @@
 		AND MEMBER_NO = #{memberNo}
 	</delete>
 
-	<insert id="insertCommentLike">
-		INSERT INTO COMMENT_LIKE (COMMENT_NO, MEMBER_NO)
-		VALUES (#{commentNo}, #{memberNo})
-	</insert>
 
-	<!-- 신고 체크 -->
-	<update id="insertReport">
-		UPDATE "COMMENTS" SET
-		COMMENT_REPORT_COUNT =
-		COMMENT_REPORT_COUNT +1
-		WHERE COMMENT_NO =
-		#{commentNo}
+	<!-- 내가 이 댓글을 신고했나? 확인하는 sql -->
+	<select id="checkReportCount" resultType="_int">
+		SELECT COUNT(*)
+		FROM
+		REPORT
+		WHERE TARGET_TYPE = 'COMMENT'
+		AND TARGET_ID = #{commentNo}
+		AND
+		REPORTER_NO = #{memberNo}
+		AND REPORT_STATUS = 'Y'
+	</select>
 
+	<!-- 해당 댓글은 몇 번이나 신고됐어? 확인하는 sql -->
+	<select id="selectCommentReportTotalCount" resultType="_int">
+		SELECT COUNT(*)
+		FROM REPORT
+		WHERE TARGET_TYPE = 'COMMENT'
+		AND TARGET_ID = #{commentNo}
+		AND REPORT_STATUS = 'Y'
+	</select>
+
+
+	<!-- 답변 했다고 수정하는 메서드 -->
+	<update id="updateBoardAnswer">
+		UPDATE BOARD
+		SET BOARD_ANSWER = #{boardAnswer}
+		WHERE
+		BOARD_NO = #{boardNo}
 	</update>
 
-	<!-- 신고 취소 -->
-	<update id="deleteReport">
-		UPDATE "COMMENTS"
+	<!-- 모든 댓글 조회 메서드 -->
+	<select id="selectCommentNo"
+		resultType="edu.kh.project.board.model.dto.Comment">
+		SELECT *
+		FROM "COMMENTS"
+		WHERE COMMENT_NO = #{commentNo}
+	</select>
+
+	<!-- 관리자가 단 댓글 확인 메서드 -->
+	<select id="countAdminComments" resultType="int">
+		SELECT COUNT(*)
+		FROM
+		COMMENTS C
+		JOIN MEMBER M ON C.MEMBER_NO = M.MEMBER_NO
+		WHERE C.BOARD_NO =
+		#{boardNo}
+		AND C.COMMENT_DEL_FL = 'N'
+		AND M.AUTHORITY = '2'
+	</select>
+
+	<!-- REPORT 테이블에서 신고 내역 조회 -->
+	<select id="checkCommentReportCount" resultType="string">
+		SELECT
+		REPORT_STATUS
+		FROM REPORT
+		WHERE TARGET_TYPE = 'COMMENT'
+		AND TARGET_ID =
+		#{commentNo}
+		AND REPORTER_NO = #{memberNo}
+	</select>
+
+	<!-- 신고당할 댓글 작성자 번호 가져오기 -->
+	<select id="selectCommentWriterNo" resultType="int">
+		SELECT MEMBER_NO
+		FROM COMMENTS WHERE COMMENT_NO = #{commentNo}
+	</select>
+
+	<!-- 2. REPORT 테이블에서 신고 추가 -->
+	<insert id="insertCommentReport">
+		INSERT INTO REPORT (
+		TARGET_TYPE,
+		TARGET_ID,
+		REPORTER_NO,
+		REPORT_STATUS,
+		TARGET_MEMBER_NO
+		)
+		VALUES (
+		'COMMENT',
+		#{commentNo},
+		#{memberNo},
+		'Y',
+		#{targetMemberNo}
+		)
+	</insert>
+
+	<!-- 3. COMMENTS 테이블의 신고 수 +1 -->
+	<update id="updateCommentReportCount">
+		UPDATE COMMENTS
+		SET COMMENT_REPORT_COUNT =
+		COMMENT_REPORT_COUNT + 1
+		WHERE COMMENT_NO = #{commentNo}
+	</update>
+
+	<!-- 4. REPORT 테이블에서 신고 취소 (soft delete) -->
+	<update id="deleteCommentReport">
+		UPDATE REPORT
+		SET REPORT_STATUS = 'N'
+		WHERE TARGET_TYPE
+		= 'COMMENT'
+		AND TARGET_ID = #{commentNo}
+		AND REPORTER_NO = #{memberNo}
+	</update>
+
+	<!-- 5. COMMENTS 테이블의 신고 수 -1 -->
+	<update id="decreaseCommentReportCount">
+		UPDATE COMMENTS
 		SET COMMENT_REPORT_COUNT = CASE
 		WHEN
 		COMMENT_REPORT_COUNT > 0 THEN COMMENT_REPORT_COUNT - 1
@@ -132,6 +247,16 @@
 		END
 		WHERE
 		COMMENT_NO = #{commentNo}
+	</update>
+
+	<!-- n+1번 신고해서 홀수인 경우 신고 재활성화 -->
+	<update id="reactivateCommentReport">
+		UPDATE REPORT
+		SET REPORT_STATUS = 'Y'
+		WHERE TARGET_TYPE
+		= 'COMMENT'
+		AND TARGET_ID = #{commentNo}
+		AND REPORTER_NO = #{memberNo}
 	</update>
 
 

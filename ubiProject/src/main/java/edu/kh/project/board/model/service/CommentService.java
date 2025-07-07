@@ -10,7 +10,7 @@ public interface CommentService {
 	 * @param boardNo
 	 * @return
 	 */
-	List<Comment> select(int boardNo);
+	List<Comment> select(int boardNo, int memberNo);
 
 	/** 댓글/답글 작성 서비스
 	 * @param comment
@@ -36,5 +36,18 @@ public interface CommentService {
 	 * @return
 	 */
 	boolean toggleCommentLike(int commentNo, int memberNo);
+
+	/** 만약 보드에 관리자 답이 달렸으면 답변 변경 메서드 
+	 * @param boardNo
+	 * @param string
+	 */
+	void updateBoardAnswer(int boardNo, String boardAnswer);
+
+	/** 댓글 신고하는 기능
+	 * @param commentNo
+	 * @param memberNo
+	 * @return
+	 */
+	boolean reportComment(int commentNo, int memberNo);
 
 }

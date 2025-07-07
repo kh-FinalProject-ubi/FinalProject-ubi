@@ -105,4 +105,11 @@
   WHERE MEMBER_NO = #{memberNo}
     AND MEMBER_DEL_FL = 'N'
 </select>
+
+<!-- 신고가 3번 들어갔을 때 member 테이블에 숫자 +1 -1 해주는 메서드 -->
+<update id="updateMemberReportCount">
+	UPDATE MEMBER
+	SET REPORT_COUNT = REPORT_COUNT + #{delta}
+	WHERE MEMBER_NO = #{memberNo}
+</update>
 </mapper>

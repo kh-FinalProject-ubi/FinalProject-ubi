@@ -55,8 +55,6 @@ const AskBoard = () => {
   if (!boardCode) return <p>존재하지 않는 게시판입니다.</p>;
   if (loading) return <p>로딩 중...</p>;
 
-  console.log("✅ 현재 role:", role);
-  console.log("✅ isAdmin?", isAdmin);
 
   return (
     <div>
@@ -85,7 +83,9 @@ const AskBoard = () => {
               </td>
               <td>{board.memberNickname}</td>
               <td>{board.boardDate}</td>
-              <td>{board.boardAnswer}</td>
+              <td style={{ color: board.boardAnswer === "Y" ? "green" : "gray" }}>
+              {board.boardAnswer === "Y" ? "답변완료" : "답변대기"}
+</td>
               <td>{board.boardReadCount}</td>
             </tr>
           ))}
