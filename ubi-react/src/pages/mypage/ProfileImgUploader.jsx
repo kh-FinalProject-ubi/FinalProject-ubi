@@ -34,25 +34,40 @@ export default function ProfileImgUploader({ member, onSave }) {
   }, [previewUrl]);
 
   const handleRemoveImage = () => {
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
+    if (selectedFile) {
+      // 프리뷰만 제거 (3번 상태)
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      setSelectedFile(null);
+      setPreviewUrl(null);
+    } else {
+      const confirmed = window.confirm("기본 프로필로 변경하시겠습니까?");
+        if (!confirmed) {
+          return; // 취소 누르면 함수 종료
+      }
+      // 저장된 이미지 제거 (2번 상태)
+      setCurrentImage(null);
+      const { setAuth, ...rest } = useAuthStore.getState();
+        setAuth({
+          ...rest,
+          memberImg: null,
+        });
+      onSave && onSave(); // 혹시 부모에서 상태 동기화 필요하면 호출
     }
-    setSelectedFile(null);
-    setPreviewUrl(null);
   };
 
   const imageSrc = previewUrl
     ? previewUrl
-    : member?.memberImg
-      ? `http://localhost:8080${member.memberImg}`
+    : currentImage
+      ? `http://localhost:8080${currentImage}`
       : defaultImg;
-  console.log("이미지 경로 : " + imageSrc);
+  // console.log("이미지 경로 : " + imageSrc);
 
   const handleSave = async () => {
     if (!selectedFile) return;
 
-    try{
-      
+    try {
       const formData = new FormData();
       formData.append("profileImage", selectedFile);
 
@@ -68,14 +83,20 @@ export default function ProfileImgUploader({ member, onSave }) {
 
       if (res.status === 200) {
         console.log(res.data);
+
+        // 서버에서 변경된 경로 res.data로 내려준다고 가정
+        setCurrentImage(res.data);
+
         setSelectedFile(null);
         setPreviewUrl(null);
-        onSave && onSave(); // 부모가 상태 업데이트 하도록 호출
+
+        onSave && onSave();
+
         const { setAuth, ...rest } = useAuthStore.getState();
-          setAuth({
-            ...rest,
-            memberImg: res.data
-          });
+        setAuth({
+          ...rest,
+          memberImg: res.data,
+        });
       }
     } catch (error) {
       console.error(error);

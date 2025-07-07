@@ -4,11 +4,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -18,6 +22,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 import edu.kh.project.chatting.model.dto.ChattingRoom;
 import edu.kh.project.chatting.model.dto.Message;
 import edu.kh.project.chatting.model.service.ChattingService;
+import edu.kh.project.common.util.JwtUtil;
 import edu.kh.project.member.model.dto.Member;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,11 +31,12 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("chatting")
+@RequestMapping("api/chatting")
 public class ChattigController {
     
     private final ChattingService service;
     
+	private final JwtUtil jwtU;    
   
     /** 채팅 목록 조회 및 페이지 전환
      * @param loginMember : 현재 로그인한 회원 번호 수집
@@ -39,13 +45,41 @@ public class ChattigController {
      */
     @GetMapping("list")
     @ResponseBody
-    public String chatting(@RequestParam("memberNo") int memberNo) {
+    public ResponseEntity<Object> chatting(@RequestHeader("Authorization") String authorizationHeader) {
     	
-        List<ChattingRoom> roomList = service.selectRoomList(memberNo);
-        
-        return "chatting/chatting";
-    }
-    
+
+		try {
+			
+			if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+		        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
+		    }
+
+		    String token = authorizationHeader.substring(7);
+
+		    if (!jwtU.validateToken(token)) {
+		        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
+		    }
+
+		    Long memberNoLong = jwtU.extractMemberNo(token);
+		    int memberNo = memberNoLong.intValue();
+		    
+		    List<ChattingRoom> roomList = service.selectRoomList(memberNo);
+
+		    if (roomList != null) {
+		        return ResponseEntity.ok(roomList); // 🔹 새 경로 반환
+		    } else {
+		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("채팅목록 조회 실패");
+		    }
+			
+		} catch (Exception e) {
+			
+			log.error("채팅목록 조회 중 오류 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+
+		
+	}
+    	
     
     // 채팅 상대 검색 - 비동기
     @GetMapping("selectTarget") 

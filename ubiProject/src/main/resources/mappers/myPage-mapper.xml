@@ -12,14 +12,14 @@
 	
 	<!-- 회원 정보 수정 -->
 	<update id="updateInfo">
-	UPDATE "MEMBER" SET
-	MEMBER_NICKNAME = #{memberNickname},
-	MEMBER_TEL = #{memberTel},
-	MEMBER_ADDRESS = #{memberAddress},
-	MEMBER_TADDRESS = #{memberTaddress},
-	MEMBER_STANDARD = #{memberStandard},
-	MEMBER_EMAIL = #{memberEmail}
-	WHERE MEMBER_NO = #{memberNo}
+		UPDATE "MEMBER" SET
+		MEMBER_NICKNAME = #{memberNickname},
+		MEMBER_TEL = #{memberTel},
+		MEMBER_ADDRESS = #{memberAddress},
+		MEMBER_TADDRESS = #{memberTaddress},
+		MEMBER_STANDARD = #{memberStandard},
+		MEMBER_EMAIL = #{memberEmail}
+		WHERE MEMBER_NO = #{memberNo}
 	</update>
 	
 	<!-- 내가 찜한 혜택 조회 -->

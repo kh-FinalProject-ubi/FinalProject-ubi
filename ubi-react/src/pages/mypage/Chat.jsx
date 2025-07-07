@@ -9,10 +9,9 @@ import ProfileImgUploader from "./ProfileImgUploader";
 import { div } from 'framer-motion/client';
 import { stripHtml } from "./striptHtml";
 
-function ChatPage() {
+const Chat = () => {
   // Zustand에서 로그인 유저 정보 가져오기
-  const { memberNo } = useAuthStore(); // Zustand에서 회원 정보 가져옴
-  const { memberName } = useAuthStore(); // Zustand에서 회원 정보 가져옴
+  const { memberNo, memberName, token } = useAuthStore();
 
   const [rooms, setRooms] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState(null);
@@ -20,9 +19,41 @@ function ChatPage() {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
 
+  
+  const showChat = async () => {
+    try {
+      const res = await axios.get(`/api/chatting/list`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.status === 200) {
+        const data = res.data; // ✅ 여기서 data 선언
+
+        if (Array.isArray(data)) {
+          setRooms(data);
+        } else if (Array.isArray(data.rooms)) {
+          setRooms(data.rooms);
+        } else {
+          setRooms([]);
+        }
+      }
+    } catch (error) {
+      console.error("채팅 목록 조회 중 예외 발생:", error);
+      setRooms([]);
+    }
+  };
+  
+  useEffect(() => {
+    if (!memberNo) return;
+    console.log("useEffect 실행");
+    showChat();
+    
+  }, [memberNo]);
+  
   // 임시 채팅방 목록 데이터
   useEffect(() => {
     // 실제 API 호출 시 memberNo 활용 가능
+
     const dummyRooms = [
       {
         roomId: 1,
@@ -91,7 +122,7 @@ function ChatPage() {
     <div className="chat-wrapper">
       <div className="chat-room-list">
         <h3>채팅 목록</h3>
-        {rooms.map((room) => (
+        {Array.isArray(rooms) && rooms.map((room) => (
           <div
             key={room.roomId}
             className={`chat-room-item ${
@@ -162,4 +193,4 @@ function ChatPage() {
   );
 }
 
-export default ChatPage;
+export default Chat;
