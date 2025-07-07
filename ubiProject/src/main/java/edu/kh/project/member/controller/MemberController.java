@@ -282,6 +282,7 @@ public String normalizeSigungu(String rawSigungu) {
 		body.put("memberName", loginMember.getMemberNickname());
 		body.put("memberAddressCity", district.split(" ")[0]); // 서울특별시
 		body.put("memberAddressDistrict", district.split(" ")[1]); // 종로구
+		body.put("memberNo", loginMember.getMemberNo());
 		body.put("memberStandard", readableStandard);
 		body.put("memberImg", loginMember.getMemberImg());
 		 body.put("authority", loginMember.getAuthority());
