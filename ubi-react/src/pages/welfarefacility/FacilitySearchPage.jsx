@@ -168,10 +168,10 @@ export default function FacilitySearchPage() {
   console.log("🔥 sportsData:", sportsData);
 
   // ✅ 안전한 병합 처리
-  const combinedFacilities = [
-    ...(Array.isArray(welfareData) ? welfareData : []),
-    ...(Array.isArray(sportsData) ? sportsData : []),
-  ];
+  const combinedFacilities =
+    category === "체육시설"
+      ? [...(Array.isArray(sportsData) ? sportsData : [])]
+      : [...(Array.isArray(welfareData) ? welfareData : [])];
 
   const categoryMap = {
     체육시설: ["체육시설", "테니스장", "다목적경기장"],

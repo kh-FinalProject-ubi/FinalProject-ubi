@@ -16,6 +16,12 @@ export function useFacilities(
   useEffect(() => {
     if (!city || !district) return;
 
+    // ✅ 체육시설은 서울특별시에서만 허용 (경기, 부산, 강원 등 차단)
+    if (category === "체육시설" && city !== "서울특별시") {
+      setData([]);
+      return;
+    }
+
     const fetchFacilities = async () => {
       setLoading(true);
       setError(null);
@@ -24,20 +30,16 @@ export function useFacilities(
         let url = "/api/facility";
         let params = { city, district };
 
-        //  서울용 category 파라미터 추가
         if (category && category !== "전체") {
           params.category = category;
         }
 
-        //  경기도 API는 apiType 필요
         if (city.includes("경기")) {
           url = "/api/gyeonggi-facility";
           params.apiType = apiType;
         } else if (city.includes("강원")) {
           url = "/api/gangwon-facility";
-        }
-        //  부산광역시 추가
-        else if (city === "부산광역시") {
+        } else if (city === "부산광역시") {
           url = "/api/busan-facility";
           if (category && category !== "전체") {
             params.category = category;

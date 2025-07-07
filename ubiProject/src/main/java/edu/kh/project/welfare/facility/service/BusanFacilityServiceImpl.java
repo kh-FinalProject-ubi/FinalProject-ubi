@@ -266,7 +266,7 @@ public class BusanFacilityServiceImpl implements BusanFacilityService {
 	    log.info("📌 getFacilities() 호출됨 - district: {}, category: {}", district, category);
 
 	    // 🔑 Key를 항상 부산광역시 기준으로 구성
-	    String key = "부산광역시|" + category;
+	    String key = district.replace("부산광역시 ", "") + "|" + category;
 
 	    List<String> urls = apiUrlMap.getOrDefault(key, Collections.emptyList());
 
@@ -288,8 +288,8 @@ public class BusanFacilityServiceImpl implements BusanFacilityService {
 	private List<BusanFacility> parseFacilityData(JsonNode root, String districtFilter, String url) {
 	    List<BusanFacility> result = new ArrayList<>();
 
-	    JsonNode itemsNode = root.findPath("items");
-	    if (itemsNode.isMissingNode()) return result;
+	    JsonNode itemsNode = root.path("data");
+	    if (itemsNode.isMissingNode() || !itemsNode.isArray()) return result;
 
 	    for (JsonNode item : itemsNode) {
 	    	String address = getFirst(item, "소재지도로명주소", "소재지지번주소", "주소", "소재지", "도로명주소");
