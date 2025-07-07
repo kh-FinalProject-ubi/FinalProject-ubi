@@ -173,6 +173,14 @@
 		C.COMMENT_PARENT_NO
 		ORDER SIBLINGS BY C.COMMENT_NO
 	</select>
+	
+	<!-- 게시글 번호로 작성자 회원 번호 조회 -->
+    <select id="selectWriterNo" resultType="int">
+        SELECT MEMBER_NO
+        FROM BOARD
+        WHERE BOARD_NO = #{boardNo}
+    </select>
+
 
 	<!-- 좋아요 해제 -->
 	<delete id="deleteBoardLike">
