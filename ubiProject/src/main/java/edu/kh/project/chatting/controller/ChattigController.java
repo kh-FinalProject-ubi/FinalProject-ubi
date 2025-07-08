@@ -85,7 +85,7 @@ public class ChattigController {
     @GetMapping("searchMember")
     @ResponseBody
     public ResponseEntity<Object> selectTarget(@RequestParam("memberNickname") String memberNickname, 
-    								 @RequestHeader("Authorization") String authorizationHeader){
+    										   @RequestHeader("Authorization") String authorizationHeader){
     	
     	try {
     		
@@ -114,10 +114,13 @@ public class ChattigController {
 		    if (results != null) {
 		        return ResponseEntity.ok(results); // 🔹 새 경로 반환
 		    } else {
+		    	
 		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("채팅 상대 조회 실패");
 		    }
     		
     	}catch (Exception e) {
+    		e.printStackTrace(); // 콘솔에 출력
+    	    log.error("회원 검색 중 오류 발생", e); // 슬프지만 대부분은 이게 빠져 있음
     		
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 			
@@ -125,27 +128,52 @@ public class ChattigController {
     	
     }
     
-    
     // 채팅방 입장(없으면 생성) - 비동기
-    @GetMapping("enter")
+    @GetMapping("create")
     @ResponseBody
-    public int chattingEnter(@RequestParam("targetNo") int targetNo, 
-    						@SessionAttribute("loginMember") Member loginMember) {
+    public ResponseEntity<Object> chattingEnter(@RequestParam("targetMemberNo") int targetNo, 
+    						 @RequestHeader("Authorization") String authorizationHeader) {
      
-        Map<String, Integer> map = new HashMap<String, Integer>();
-        
-        map.put("targetNo", targetNo);
-        map.put("loginMemberNo", loginMember.getMemberNo());
-        
-        // 채팅방번호 체크 서비스 호출 및 반환(기존 생성된 방이 있는지)
-        int chattingNo = service.checkChattingRoomNo(map);
-        
-        // 반환받은 채팅방번호가 0(없다)이라면 생성하기
-        if(chattingNo == 0) {
-            chattingNo = service.createChattingRoom(map);
-        }
-        
-        return chattingNo;
+    	try {
+    		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+    			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
+    		}
+    		
+    		String token = authorizationHeader.substring(7);
+    		
+    		if (!jwtU.validateToken(token)) {
+    			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
+    		}
+    		
+    		Long memberNoLong = jwtU.extractMemberNo(token);
+    		int memberNo = memberNoLong.intValue();
+    		
+    		Map<String, Integer> map = new HashMap<String, Integer>();
+    		
+    		map.put("targetNo", targetNo);
+    		
+    		// 채팅방번호 체크 서비스 호출 및 반환(기존 생성된 방이 있는지)
+    		int chattingNo = service.checkChattingRoomNo(map);
+    		
+    		// 반환받은 채팅방번호가 0(없다)이라면 생성하기
+    		if(chattingNo == 0) {
+    			chattingNo = service.createChattingRoom(map);
+    		}
+    		
+    		if (results != null) {
+ 		        return ResponseEntity.ok(results); // 🔹 새 경로 반환
+ 		    } else {
+ 		    	
+ 		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("채팅 상대 조회 실패");
+ 		    }
+    		
+    		
+    	}catch (Exception e) {
+    		e.printStackTrace(); // 콘솔에 출력
+    	    log.error("회원 검색 중 오류 발생", e); // 슬프지만 대부분은 이게 빠져 있음
+    		
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);    		
+		}
     }
  
     // 채팅방 목록 조회 - 비동기

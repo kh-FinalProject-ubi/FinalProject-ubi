@@ -175,7 +175,7 @@ const Chat = () => {
                   className="search-result-item"
                   onClick={() => handleCreateRoom(user.memberNo)}
                 >
-                  <img src={user.profileImg || "/default-profile.png"} alt="프로필" className="room-profile" />
+                  <img src={user.memberImg || "/default-profile.png"} alt="프로필" className="room-profile" />
                   <span>{user.memberNickname}</span>
                 </div>
               ))}
