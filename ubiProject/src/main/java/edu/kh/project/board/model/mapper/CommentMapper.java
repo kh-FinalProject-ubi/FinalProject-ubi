@@ -99,5 +99,11 @@ public interface CommentMapper {
 	// 이 댓글은 몇 번 신고당한 거야?
 	int selectCommentReportTotalCount(int commentNo);
 
+	// 삭제된 댓글 복구할게
+	void recover(int commentNo);
+
+	// 신고당한 모든 댓글
+	List<Integer> selectAllReportComments(Integer targetMemberNo);
+
 
 }

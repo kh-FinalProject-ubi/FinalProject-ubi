@@ -57,3 +57,30 @@ body {
   margin-bottom: var(--gap-tight);
   color: var(--gray-800);
 }
+
+/* 로그인 정지 알람 메세지 */
+.alert-modal {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff0f0;
+  border: 2px solid #ff8888;
+  padding: 20px;
+  border-radius: 10px;
+  z-index: 999;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+}
+
+.alert-content p {
+  margin: 0 0 10px;
+}
+
+.alert-content button {
+  padding: 5px 10px;
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}

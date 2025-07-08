@@ -22,6 +22,9 @@ const LoginModal = () => {
     const data = await res.json();
     console.log("로그인 응답 데이터:", data);
     if (res.ok) {
+      if (data.suspensionNotice) {
+        useModalStore.getState().setAlertMessage(data.suspensionNotice);
+      }
       setAuth({
         token: data.token,
         address: data.address,
@@ -34,7 +37,7 @@ const LoginModal = () => {
         role: data.authority === "2" ? "ADMIN" : "USER",
       });
       closeLoginModal(); // 상태 통해 닫기
-      console.log("어스스토어", useAuthStore.getState())
+      console.log("어스스토어", useAuthStore.getState());
     } else {
       if (res.status === 403 && data.message.includes("정지")) {
         alert(data.message); // ✅ 신고 누적 안내

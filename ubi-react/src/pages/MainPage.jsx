@@ -4,12 +4,31 @@ import PopularBenefitCarousel from "../components/PopularBenefitCarousel";
 import PopularPostCarousel from "../components/PopularPostCarousel";
 import "../styles/MainPage.css";
 import MemberSyncProvider from "./../components/MemberSyncProvider";
-import useAuthStore from "../stores/useAuthStore";
+import useModalStore from "../stores/useModalStore";
+
+const AlertModal = () => {
+  const alertMessage = useModalStore((state) => state.alertMessage);
+  const clearAlertMessage = useModalStore((state) => state.clearAlertMessage);
+
+  if (!alertMessage) return null;
+
+  return (
+    <div className="alert-modal">
+      <div className="alert-content">
+        <p>{alertMessage}</p>
+        <button onClick={clearAlertMessage}>닫기</button>
+      </div>
+    </div>
+  );
+};
 
 const MainPage = () => {
   return (
     <main className="main-wrapper">
       <MemberSyncProvider />
+
+      {/* 로그인 정지 메세지 */}
+      <AlertModal />
 
       {/* ① 지도 + 비교 패널 */}
       <section className="map-section">
