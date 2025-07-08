@@ -2,15 +2,30 @@ import React, { useState } from "react";
 import axios from "axios";
 import useModalStore from "../../stores/useModalStore";
 
+// 🔧 apiServiceId 정규화 유틸 함수
+const getNormalizedApiServiceId = (id) => {
+  if (!id) return null;
+  if (
+    id.startsWith("bokjiro-") ||
+    id.startsWith("seoul-") ||
+    id.startsWith("job-API1-") ||
+    id.startsWith("job-API2-")
+  ) {
+    return id;
+  }
+  if (id.startsWith("WLF")) return `bokjiro-${id}`;
+  if (id.startsWith("S")) return `seoul-${id}`;
+  if (!isNaN(id)) return `job-API2-${id}`;
+  return id;
+};
+
 const LikeButton = ({
   token,
-  // ✅ 필수 props
   apiServiceId,
   serviceName,
   category,
   regionCity,
   regionDistrict,
-  // ✅ 추가 props (상세 내용)
   description,
   agency,
   url,
@@ -32,17 +47,19 @@ const LikeButton = ({
       return;
     }
 
+    const normalizedId = getNormalizedApiServiceId(apiServiceId);
+
     try {
       if (liked) {
         await axios.delete("/api/welfare/like", {
           headers: { Authorization: `Bearer ${token}` },
-          data: { apiServiceId },
+          data: { apiServiceId: normalizedId },
         });
       } else {
         await axios.post(
           "/api/welfare/like",
           {
-            apiServiceId,
+            apiServiceId: normalizedId,
             serviceName,
             category,
             regionCity,

@@ -53,6 +53,10 @@ public class CommentServiceImpl implements CommentService {
 			// 게시글 작성자 번호 조회 (예: boardMapper에서)
 			Integer writerNo = boardMapper.selectWriterNo(comment.getBoardNo());
 
+			log.info("💬 댓글 작성자: {}", comment.getMemberNo()); // 댓글 작성자
+			log.info("📝 게시글 작성자: {}", writerNo); // 게시글 작성자
+			log.info("⚖️ 동일인 여부: {}", writerNo != null && writerNo.equals(comment.getMemberNo())); // 비교
+
 			if (writerNo != null && !writerNo.equals(comment.getMemberNo())) {
 				AlertDto alert = AlertDto.builder().alertId(null) // 보통 null로 생성 (DB 저장 시 자동 생성)
 						.memberNo(writerNo != null ? writerNo.longValue() : null) // Integer → Long 변환
@@ -60,6 +64,9 @@ public class CommentServiceImpl implements CommentService {
 						.targetUrl("/free/detail/" + comment.getBoardNo())
 						.createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
 						.isRead(false).build();
+
+				log.info("📤 알림 전송 → /topic/alert/{}", writerNo); // ★ 여기가 핵심
+
 
 				messagingTemplate.convertAndSend("/topic/alert/" + writerNo, alert);
 			}
@@ -124,6 +131,7 @@ public class CommentServiceImpl implements CommentService {
 	// 신고하고 신고 취소하는 메서드
 	@Override
 	public boolean reportComment(int commentNo, int memberNo) {
+
 	    Integer targetMemberNo = mapper.selectCommentWriterNo(commentNo);
 	    if (targetMemberNo == null) return false;
 

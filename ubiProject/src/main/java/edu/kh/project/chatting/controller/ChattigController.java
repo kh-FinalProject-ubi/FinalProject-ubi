@@ -82,17 +82,47 @@ public class ChattigController {
     	
     
     // 채팅 상대 검색 - 비동기
-    @GetMapping("selectTarget") 
+    @GetMapping("searchMember")
     @ResponseBody
-    public List<Member> selectTarget(@RequestParam("query") String query, 
-				    		@SessionAttribute("loginMember") Member loginMember){
+    public ResponseEntity<Object> selectTarget(@RequestParam("memberNickname") String memberNickname, 
+    								 @RequestHeader("Authorization") String authorizationHeader){
     	
-    	Map<String, Object> map = new HashMap<>();
+    	try {
+    		
+    		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+		        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
+		    }
+
+		    String token = authorizationHeader.substring(7);
+
+		    if (!jwtU.validateToken(token)) {
+		        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
+		    }
+		    
+		    Long memberNoLong = jwtU.extractMemberNo(token);
+		    int memberNo = memberNoLong.intValue();
+		    
+		    log.info("searchMember 호출됨, memberNickname: {}", memberNickname);
+		    
+		    Map<String, Object> map = new HashMap<>();
+		    
+		    map.put("memberNickname", memberNickname);
+		    map.put("memberNo", memberNo);
+
+		    List<Member> results = service.selectTarget(map);
+
+		    if (results != null) {
+		        return ResponseEntity.ok(results); // 🔹 새 경로 반환
+		    } else {
+		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("채팅 상대 조회 실패");
+		    }
+    		
+    	}catch (Exception e) {
+    		
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+			
+		}
     	
-    	map.put("memberNo", loginMember.getMemberNo());
-    	map.put("query", query);
-    	
-    	return service.selectTarget(map);
     }
     
     
