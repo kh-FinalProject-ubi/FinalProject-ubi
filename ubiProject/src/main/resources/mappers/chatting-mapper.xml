@@ -44,11 +44,10 @@
 	
 	<!-- 채팅 상대 검색 -->
 	<select id="selectTarget">
-	  SELECT MEMBER_NO, MEMBER_EMAIL, MEMBER_NICKNAME, PROFILE_IMG  
+	  SELECT MEMBER_NO, MEMBER_EMAIL, MEMBER_NICKNAME, MEMBER_IMG  
 	  FROM MEMBER
-	  WHERE 
-	    (MEMBER_EMAIL LIKE CONCAT('%', #{memberNickname}, '%') 
-	     OR MEMBER_NICKNAME LIKE CONCAT('%', #{memberNickname}, '%'))
+	  WHERE (MEMBER_EMAIL LIKE '%' || #{memberNickname} || '%' 
+       			OR MEMBER_NICKNAME LIKE '%' || #{memberNickname} || '%')
 	    AND MEMBER_DEL_FL = 'N'
 	    AND MEMBER_NO != #{memberNo}
 	</select>
