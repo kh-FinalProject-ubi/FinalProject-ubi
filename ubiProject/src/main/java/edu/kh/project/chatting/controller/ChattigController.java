@@ -155,13 +155,14 @@ public class ChattigController {
     		// 채팅방번호 체크 서비스 호출 및 반환(기존 생성된 방이 있는지)
     		int chattingNo = service.checkChattingRoomNo(map);
     		
+    		
     		// 반환받은 채팅방번호가 0(없다)이라면 생성하기
     		if(chattingNo == 0) {
     			chattingNo = service.createChattingRoom(map);
     		}
     		
-    		if (results != null) {
- 		        return ResponseEntity.ok(results); // 🔹 새 경로 반환
+    		if (chattingNo > 0) {
+ 		        return ResponseEntity.ok(chattingNo); // 🔹 새 경로 반환
  		    } else {
  		    	
  		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("채팅 상대 조회 실패");
