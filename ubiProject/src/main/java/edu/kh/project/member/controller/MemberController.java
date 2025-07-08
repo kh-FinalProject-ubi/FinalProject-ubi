@@ -112,6 +112,7 @@ public class MemberController {
 		return ResponseEntity.ok(body);
 	}
 
+
 	private String extractDistrict(String fullAddress) {
 		if (fullAddress == null || fullAddress.isBlank())
 			return "";
