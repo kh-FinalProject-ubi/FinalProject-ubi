@@ -72,6 +72,7 @@ public class SecurityConfig {
             	    .requestMatchers("/api/welfare-curl/welfare-detail").permitAll()
             	    .requestMatchers("/api/welfare-curl/**").permitAll()
 
+            	    .requestMatchers("/ws-alert", "/ws-alert/**").permitAll()
             	    // ✅ 나머지 찜 API는 인증 필요
             	    .requestMatchers("/api/welfare/like/**", "/api/welfare/my-likes").authenticated()
 

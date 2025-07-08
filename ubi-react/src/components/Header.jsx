@@ -11,36 +11,42 @@ const Header = () => {
   const isLogin = !!token;
 
   const { selectedCity, selectedDistrict } = useSelectedRegionStore();
-
   const { openLoginModal } = useModalStore();
-
   const navigate = useNavigate();
+
 
   console.log("헤더:", memberNickname);
 
   //  알림 상태
+
   const [alerts, setAlerts] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
-  //  WebSocket 알림 수신 연결
+  // ✅ WebSocket 알림 수신 연결 (항상 호출)
   useAlertSocket(memberNo, (newAlert) => {
     setAlerts((prev) => [newAlert, ...prev]);
   });
 
-  // console.log("헤더 memberImg:", memberImg);
-
+  // 외부 클릭 시 드롭다운 닫기
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const LogoutButton = () => {
     const logout = useAuthStore((state) => state.logout);
-
     const handleLogout = () => {
-      logout(); // Zustand 상태 초기화
-      localStorage.removeItem("kakaoId"); // 만약 남아있다면
+      logout();
+      localStorage.removeItem("kakaoId");
       alert("로그아웃되었습니다.");
-      window.location.href = "/"; // or navigate("/");
+      window.location.href = "/";
     };
-
     return <button onClick={handleLogout}>로그아웃</button>;
   };
 
@@ -55,17 +61,6 @@ const Header = () => {
     );
   };
 
-  //  외부 클릭 시 드롭다운 닫기
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setShowDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   return (
     <header className="site-header">
       <div className="header-inner">
@@ -75,6 +70,7 @@ const Header = () => {
             UBI
           </a>
         </h1>
+
         <nav className="nav-menu">
           <Link to="/welfareService">공공서비스</Link>
           <span onClick={handleFacilityClick} style={{ cursor: "pointer" }}>
@@ -83,7 +79,7 @@ const Header = () => {
           <Link to="/mytownBoard">우리 동네 좋아요</Link>
           <Link to="/askBoard">문의게시판</Link>
           <Link to="/noticeBoard">공지사항</Link>
-          <Link to="/localBenefits">지역 복지 혜택</Link> {/* 추가 */}
+          <Link to="/localBenefits">지역 복지 혜택</Link>
         </nav>
 
         <div className="header-right">
@@ -119,9 +115,11 @@ const Header = () => {
                   )}
                 </div>
               )}
+
               <button className="chatting-btn">
                 <img src="/chatting.svg" alt="채팅 아이콘" />
               </button>
+
               <Link to="/mypage/Profile">
                 <img
                   className="profile-img"
@@ -133,7 +131,9 @@ const Header = () => {
                   alt="프로필"
                 />
               </Link>
+
               <span className="nickname">{memberNickname}님</span>
+
               <button className="logout-btn" onClick={clearAuth}>
                 로그아웃
               </button>
