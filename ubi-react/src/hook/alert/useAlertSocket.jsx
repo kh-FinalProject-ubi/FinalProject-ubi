@@ -1,74 +1,87 @@
 import { useEffect, useRef } from "react";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
+import useAuthStore from "../../stores/useAuthStore"; // ✅ 상태 저장소에서 토큰 꺼냄
 
-/**
- * WebSocket 알림 수신 후크
- * @param {number} memberNo - 현재 로그인한 회원 번호
- * @param {function} onAlertReceive - 알림 수신 시 실행할 코백 함수
- */
 export default function useAlertSocket(memberNo, onAlertReceive) {
   const stompClientRef = useRef(null);
+  const prevMemberNoRef = useRef(null);
+
+  const token = useAuthStore.getState().token; // ✅ 토큰 가져오기
 
   useEffect(() => {
-    console.log("\uD83D\uDD0D useAlertSocket 실행됨. memberNo =", memberNo);
+    console.log("🔍 useAlertSocket 실행됨. memberNo =", memberNo);
 
-    if (!memberNo) {
-      console.warn(
-        "\uD83D\uDEAB memberNo 없음 \u2192 WebSocket 건설 시도 안 함"
-      );
+    if (!Number.isInteger(memberNo) || memberNo <= 0) {
+      console.warn("🚫 유효하지 않은 memberNo → WebSocket 연결 생략");
       return;
     }
 
-    // 이미 건설된 클라이언트가 있으면 먼저 종료
+    if (prevMemberNoRef.current === memberNo && stompClientRef.current) {
+      console.log("🔁 동일한 memberNo → WebSocket 재연결 생략");
+      return;
+    }
+
+    prevMemberNoRef.current = memberNo;
+
     if (stompClientRef.current) {
-      console.log("\uD83D\uDD04 기존 stompClient 종료");
+      console.log("🔄 기존 stompClient 종료");
       stompClientRef.current.deactivate();
     }
 
     const socket = new SockJS("/ws-alert");
-    console.log("\u2728 SockJS 건설 시도");
+    console.log("✨ SockJS 인스턴스 생성");
 
     const client = new Client({
       webSocketFactory: () => socket,
       reconnectDelay: 5000,
+
+      connectHeaders: {
+        Authorization: `Bearer ${token}`, // ✅ 헤더에 토큰 추가
+      },
+
       onConnect: () => {
-        console.log("\uD83D\uDFE2 WebSocket \uac74설됨");
+        console.log("🟢 WebSocket 연결 성공");
 
         const topic = `/topic/alert/${memberNo}`;
-        console.log("\uD83D\uDCCC 구독 경로:", topic);
+        console.log("📍 구독 경로:", topic);
 
         client.subscribe(topic, (message) => {
-          console.log("\uD83D\uDD14 구독 목록 message: ", message);
-          const alert = JSON.parse(message.body);
-          console.log("\uD83D\uDD14 알림 수신:", alert);
-
-          if (typeof onAlertReceive === "function") {
-            onAlertReceive(alert);
+          console.log("📩 수신된 메시지:", message);
+          try {
+            const alert = JSON.parse(message.body);
+            if (typeof onAlertReceive === "function") {
+              onAlertReceive(alert);
+            }
+          } catch (error) {
+            console.error("🚨 메시지 파싱 오류:", error);
           }
         });
       },
+
       onStompError: (frame) => {
-        console.error("\u274C STOMP 오류:", frame.headers["message"]);
+        console.error("❌ STOMP 오류:", frame.headers["message"]);
       },
+
       onWebSocketClose: (evt) => {
-        console.warn("\u26A0 WebSocket 건설 종료됨", evt);
+        console.warn("⚠️ WebSocket 닫힘", evt);
       },
+
       onDisconnect: () => {
-        console.warn("\u26A0 STOMP 건설 해제됨");
+        console.log("🛑 WebSocket 연결 해제됨");
       },
     });
 
     client.activate();
     stompClientRef.current = client;
 
-    // 어린 커튼 종료 시 건설 해제
     return () => {
       if (stompClientRef.current) {
-        console.log("\uD83E\uDDF9 WebSocket 정리 \u2192 stompClient 종료");
+        console.log("🧹 컴포넌트 언마운트 → stompClient 종료");
         stompClientRef.current.deactivate();
         stompClientRef.current = null;
+        prevMemberNoRef.current = null;
       }
     };
-  }, [memberNo, onAlertReceive]);
+  }, [memberNo, onAlertReceive, token]); // ✅ token 의존성 추가
 }

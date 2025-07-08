@@ -249,4 +249,10 @@
 		WHERE MEMBER_NO = #{memberNo}
 	</update>
 
+	<select id="selectMemberByNo" parameterType="long" resultType="edu.kh.project.member.model.dto.Member">
+		SELECT *
+		FROM MEMBER
+		WHERE MEMBER_NO = #{memberNo}
+	</select>
+
 </mapper>
