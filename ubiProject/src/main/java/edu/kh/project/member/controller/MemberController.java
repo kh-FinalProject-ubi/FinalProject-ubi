@@ -2,6 +2,7 @@ package edu.kh.project.member.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -79,39 +80,77 @@ public class MemberController {
 	/** ✅ 로그인 (Zustand용 JSON 응답) */
 	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody Member input, HttpSession session) {
-		Member loginMember = service.login(input.getMemberId(), input.getMemberPw());
+	    Member loginMember = service.login(input.getMemberId(), input.getMemberPw());
 
-		if (loginMember == null) {
-			return ResponseEntity.badRequest().body(Map.of("message", "아이디 또는 비밀번호가 일치하지 않습니다."));
-		}
+	    if (loginMember == null) {
+	        return ResponseEntity.badRequest().body(Map.of("message", "아이디 또는 비밀번호가 일치하지 않습니다."));
+	    }
 
-		session.setAttribute("loginMember", loginMember);
-		log.info("🔍 loginMember = {}", loginMember); // regionCity, regionDistrict 포함되는지 확인용
+	    // 1) 회원 정지 정보 조회
+	    Map<String, String> suspension = mapper.selectSuspension(loginMember.getMemberNo());
 
-		String readableStandard = parseMemberStandard(loginMember.getMemberStandard());
-		String district = extractDistrict(loginMember.getMemberAddress());
-		String token = jwtUtil.generateToken(loginMember);
+	    LocalDateTime now = LocalDateTime.now();
 
-		Map<String, Object> body = new HashMap<>();
-		body.put("token", token);
-		body.put("memberName", loginMember.getMemberName());
-		body.put("memberNickname", loginMember.getMemberNickname());
-		body.put("address", district);
-		body.put("memberStandard", readableStandard);
-		body.put("memberImg", loginMember.getMemberImg());
-		body.put("memberNo", loginMember.getMemberNo());
-		body.put("authority", loginMember.getAuthority());
-		body.put("regionCity", loginMember.getRegionCity());
-		body.put("regionDistrict", loginMember.getRegionDistrict());
-		body.put("taddress", loginMember.getMemberTaddress());
+	    if (suspension != null) {
+	        LocalDateTime suspendEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
+	        String suspendStart = suspension.get("START_DATE");
+	        String suspendEndStr = suspension.get("END_DATE");
+	        String notified = suspension.get("NOTIFIED");
 
+	        if (now.isBefore(suspendEnd)) {
+	            // 2) 정지 기간 내 로그인 시도 -> 로그인 차단 및 알림
+	            String period = suspendStart + " ~ " + suspendEndStr;
+	            return ResponseEntity
+	                    .status(HttpStatus.FORBIDDEN)
+	                    .body(Map.of("message", "회원님의 계정은 정지 중입니다.\n정지 기간: " + period));
+	        } else {
+	            // 3) 정지 기간 종료 후
 
-		log.info("🧾 loginMember.getMemberStandard(): {}", loginMember.getMemberStandard());
-		log.info("🔍 로그인 결과: {}", loginMember);
+	        	if ("N".equals(notified)) {
+	        	    // 알림 안 띄운 상태면 알림 띄우고 notified 업데이트
+	        	    mapper.updateSuspensionNotified(loginMember.getMemberNo());
 
-		return ResponseEntity.ok(body);
+	        	    // 🔄 신고 횟수 초기화
+	        	    mapper.resetReportCount(loginMember.getMemberNo());
+	        	    mapper.updateReportStatusSuspension(loginMember.getMemberNo());
+
+	        	    session.setAttribute("loginMember", loginMember);
+
+	        	    Map<String, Object> body = createLoginResponseBody(loginMember);
+	        	    body.put("suspensionNotice", "회원님의 정지 기간이 종료되었습니다.");
+
+	        	    return ResponseEntity.ok(body);
+	        	}
+	        }
+	    }
+
+	    // 4) 정상 로그인 처리
+	    session.setAttribute("loginMember", loginMember);
+	    Map<String, Object> body = createLoginResponseBody(loginMember);
+
+	    return ResponseEntity.ok(body);
 	}
 
+	// 공통 응답 Body 생성 메서드 (코드 중복 방지용)
+	private Map<String, Object> createLoginResponseBody(Member loginMember) {
+	    String readableStandard = parseMemberStandard(loginMember.getMemberStandard());
+	    String district = extractDistrict(loginMember.getMemberAddress());
+	    String token = jwtUtil.generateToken(loginMember);
+
+	    Map<String, Object> body = new HashMap<>();
+	    body.put("token", token);
+	    body.put("memberName", loginMember.getMemberName());
+	    body.put("memberNickname", loginMember.getMemberNickname());
+	    body.put("address", district);
+	    body.put("memberStandard", readableStandard);
+	    body.put("memberImg", loginMember.getMemberImg());
+	    body.put("memberNo", loginMember.getMemberNo());
+	    body.put("authority", loginMember.getAuthority());
+	    body.put("regionCity", loginMember.getRegionCity());
+	    body.put("regionDistrict", loginMember.getRegionDistrict());
+	    body.put("taddress", loginMember.getMemberTaddress());
+	    return body;
+	}
 
 	private String extractDistrict(String fullAddress) {
 		if (fullAddress == null || fullAddress.isBlank())

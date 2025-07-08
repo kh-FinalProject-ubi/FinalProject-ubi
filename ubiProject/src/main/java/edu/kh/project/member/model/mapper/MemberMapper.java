@@ -81,11 +81,15 @@ public interface MemberMapper {
 	void insertSuspension(@Param("targetMemberNo") int targetMemberNo, @Param("start") LocalDate now,
 			@Param("end") LocalDate plusDays);
 
+	void insertSuspension(@Param("targetMemberNo") int targetMemberNo, @Param("start") LocalDateTime start,
+			@Param("end") LocalDateTime end);
+
 	// 로그인 정지 기능 없애는 메서드
 	int deleteSuspension(@Param("targetMemberNo") int targetMemberNo);
+
 	// 로그인 정지 기능 연습 확인
 	void insertSuspensionTest(@Param("targetMemberNo") int targetMemberNo, @Param("start") LocalDateTime now,
-			@Param("end") LocalDateTime plus5min);
+			@Param("end") LocalDateTime end);
 
 	// 정지 기능을 위해 멤버 테이블의 카운트만 체크하는 메서드
 	int selectMemberReportCount(int targetMemberNo);
@@ -98,5 +102,12 @@ public interface MemberMapper {
 
 	// 멤버 테이블에 report 카운트 리셋
 	void resetReportCount(int memberNo);
+
+	// 정지 연장 메서드
+	void extendSuspensionEnd(@Param("targetMemberNo") int targetMemberNo,
+            @Param("end") LocalDateTime end);
+
+	// 신고 상태 변경
+	void updateReportStatusSuspension(int memberNo);
 
 }
