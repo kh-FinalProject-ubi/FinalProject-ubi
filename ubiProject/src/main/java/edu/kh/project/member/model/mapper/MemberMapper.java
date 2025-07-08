@@ -2,6 +2,7 @@ package edu.kh.project.member.model.mapper;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -67,23 +68,35 @@ public interface MemberMapper {
 			@Param("reason") String reason);
 
 	// 멤버 테이블에 report_count +1
-	void increaseReportCount(int targetMemberNo);
+	void increaseMemberReportCount(int targetMemberNo);
 
 	// 신고 상태 변경 N
 	int updateReportStatus(@Param("targetMemberNo") int targetMemberNo, @Param("reporterMemberNo") int reporterMemberNo,
 			@Param("reason") String reason, @Param("status") String string);
 
 	// 멤버 테으블의 report_count -1
-	int decreaseReportCount(int targetMemberNo);
+	int decreaseMemberReportCount(int targetMemberNo);
 
 	// 로그인 정지 기능 넣는 메서드
 	void insertSuspension(@Param("targetMemberNo") int targetMemberNo, @Param("start") LocalDate now,
 			@Param("end") LocalDate plusDays);
 
 	// 로그인 정지 기능 없애는 메서드
-	int deleteSuspension(int targetMemberNo);
-
+	int deleteSuspension(@Param("targetMemberNo") int targetMemberNo);
 	// 로그인 정지 기능 연습 확인
-	void insertSuspensionTest(int targetMemberNo, LocalDateTime now, LocalDateTime plus5min);
+	void insertSuspensionTest(@Param("targetMemberNo") int targetMemberNo, @Param("start") LocalDateTime now,
+			@Param("end") LocalDateTime plus5min);
+
+	// 정지 기능을 위해 멤버 테이블의 카운트만 체크하는 메서드
+	int selectMemberReportCount(int targetMemberNo);
+
+	// 로그인 할 때 정지 되었는지 확인
+	Map<String, String> selectSuspension(int memberNo);
+
+	// 로그인 정지 알람이 떴었다~
+	void updateSuspensionNotified(int memberNo);
+
+	// 멤버 테이블에 report 카운트 리셋
+	void resetReportCount(int memberNo);
 
 }

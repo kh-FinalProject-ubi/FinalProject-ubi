@@ -3,9 +3,8 @@ import WelfareMap from "../components/WelfareMap";
 import PopularBenefitCarousel from "../components/PopularBenefitCarousel";
 import PopularPostCarousel from "../components/PopularPostCarousel";
 import "../styles/MainPage.css";
-import MemberSyncProvider from './../components/MemberSyncProvider';
+import MemberSyncProvider from "./../components/MemberSyncProvider";
 import useAuthStore from "../stores/useAuthStore";
-
 
 const MainPage = () => {
   return (

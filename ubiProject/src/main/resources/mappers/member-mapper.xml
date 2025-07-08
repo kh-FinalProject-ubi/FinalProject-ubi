@@ -130,22 +130,33 @@
 
 	<!-- 1. 신고 상태 확인 ('Y', 'N' 또는 null) -->
 	<select id="checkReportStatus" resultType="String">
-	SELECT REPORT_STATUS
-	FROM REPORT
-	WHERE TARGET_TYPE = 'MEMBER'
-	AND TARGET_MEMBER_NO = #{targetMemberNo}
-	AND REPORTER_NO = #{reporterMemberNo}
-</select>
+		SELECT REPORT_STATUS
+		FROM REPORT
+		WHERE TARGET_TYPE = 'MEMBER'
+		AND TARGET_MEMBER_NO =
+		#{targetMemberNo}
+		AND REPORTER_NO = #{reporterMemberNo}
+	</select>
 
 	<!-- 2. 피신고자의 전체 유효 신고 수 -->
 	<select id="selectReportCount" resultType="int">
-	SELECT COUNT(*)
-	FROM
-	REPORT
-	WHERE TARGET_MEMBER_NO = #{targetMemberNo}
-	AND REPORT_STATUS =
-	'Y'
+		SELECT COUNT(*)
+		FROM
+		REPORT
+		WHERE TARGET_MEMBER_NO = #{targetMemberNo}
+		AND REPORT_STATUS =
+		'Y'
 	</select>
+
+	<!-- 2-1 정지를 위한 신고횟수 세기 테이블 -->
+	<select id="selectMemberReportCount" resultType="int">
+		SELECT
+		REPORT_COUNT
+		FROM
+		MEMBER
+		WHERE MEMBER_NO = #{targetMemberNo}
+	</select>
+
 
 	<!-- 3. 신고 등록 -->
 	<insert id="insertReport">
@@ -173,14 +184,14 @@
 	</update>
 
 	<!-- 5. MEMBER 테이블 신고 횟수 증가 -->
-	<update id="increaseReportCount">
+	<update id="increaseMemberReportCount">
 		UPDATE MEMBER
 		SET REPORT_COUNT = REPORT_COUNT + 1
 		WHERE MEMBER_NO = #{targetMemberNo}
 	</update>
 
 	<!-- 6. 신고 횟수 감소 -->
-	<update id="decreaseReportCount">
+	<update id="decreaseMemberReportCount">
 		UPDATE MEMBER
 		SET REPORT_COUNT = REPORT_COUNT - 1
 		WHERE MEMBER_NO = #{targetMemberNo}
@@ -201,7 +212,9 @@
 	</insert>
 
 	<insert id="insertSuspensionTest">
-		INSERT INTO MEMBER_SUSPENSION (MEMBER_NO, START_DATE, END_DATE)
+		INSERT INTO MEMBER_SUSPENSION (MEMBER_NO,
+		SUSPEND_START,
+		SUSPEND_END)
 		VALUES (#{targetMemberNo}, #{start}, #{end})
 	</insert>
 
@@ -212,5 +225,28 @@
 		#{targetMemberNo}
 	</delete>
 
+	<!-- 9. 로그인 기능 정지 -->
+<!-- 	<select id="selectSuspension" resultType="map">
+		SELECT
+		TO_CHAR(START_DATE, 'YYYY-MM-DD HH24:MI:SS') AS SUSPEND_START,
+		TO_CHAR(END_DATE, 'YYYY-MM-DD HH24:MI:SS') AS SUSPEND_END,
+		NVL(NOTIFIED, 'N') AS NOTIFIED
+		FROM MEMBER_SUSPENSION
+		WHERE MEMBER_NO = #{memberNo}
+	</select> -->
+
+	<!-- NOTIFIED = 'Y'로 업데이트 -->
+	<update id="updateSuspensionNotified">
+		UPDATE MEMBER_SUSPENSION
+		SET NOTIFIED = 'Y'
+		WHERE MEMBER_NO = #{memberNo}
+	</update>
+
+	<!-- 신고 횟수 0으로 초기화 -->
+	<update id="resetReportCount">
+		UPDATE MEMBER
+		SET REPORT_COUNT = 0
+		WHERE MEMBER_NO = #{memberNo}
+	</update>
 
 </mapper>
