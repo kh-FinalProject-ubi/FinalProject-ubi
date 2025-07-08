@@ -66,7 +66,7 @@ public class ChattingWebsocketHandler extends TextWebSocketHandler {
 		if(result > 0) {
 			
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd hh:mm");
-			msg.setSendTime(sdf.format(new Date()));
+			msg.setChatSendDate(sdf.format(new Date()));
 			
 			// 필드에 있는 sessions 에는 접속중인 모든 회원의 세션 정보가 담겨있음
 			for(WebSocketSession s : sessions) {

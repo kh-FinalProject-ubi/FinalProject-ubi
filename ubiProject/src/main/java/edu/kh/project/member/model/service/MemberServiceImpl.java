@@ -164,70 +164,87 @@ public class MemberServiceImpl implements MemberService {
 	}
 	
 	// 신고하고 신고 취소하는 메서드
+	@Override
 	public boolean reportMember(int targetMemberNo, int reporterMemberNo, String reason) {
-	    // 1. 이미 신고했는지 여부 조회
+
+	    // 1. 기존 신고 상태 조회 (Y, N, null)
 	    String status = mapper.checkReportStatus(targetMemberNo, reporterMemberNo);
 
-	    // 2. 기존 신고 수
+	    // 2. 기존 멤버 신고 횟수 조회
 	    int beforeCount = mapper.selectMemberReportCount(targetMemberNo);
 
-	    if (status == null) {
-	        // 신고한 적 x -> report 테이블에 인서트 -> 멤버 신고 횟수 +1
-	        mapper.insertReport(targetMemberNo, reporterMemberNo, reason);
-	        mapper.increaseMemberReportCount(targetMemberNo);
+	    try {
+	        if (status == null) {
+	            // 신규 신고 등록
+	            mapper.insertReport(targetMemberNo, reporterMemberNo, reason);
+	            mapper.increaseMemberReportCount(targetMemberNo);
 
-	        int afterCount = beforeCount + 1;
+	            int afterCount = beforeCount + 1;
 
-	        LocalDateTime now = LocalDateTime.now();
-	        LocalDateTime plus5min = now.plusMinutes(5);
+	            Map<String, String> suspension = mapper.selectSuspension(targetMemberNo);
+	            LocalDateTime now = LocalDateTime.now();
 
-	        
-	        // 정지 조건 판단
-	        if (beforeCount == 4 && afterCount == 5) {
-//	            mapper.insertSuspension(targetMemberNo, LocalDate.now(), LocalDate.now().plusDays(7));
-	        	mapper.insertSuspensionTest(targetMemberNo, now, plus5min);
-	        	System.out.println("신고 5회 달성, 정지 처리 실행 >>");
-	        	System.out.println("targetMemberNo: " + targetMemberNo);
-	        	System.out.println("start: " + LocalDate.now());
-	        	System.out.println("end: " + LocalDate.now().plusDays(7));
+	            // 신고 5의 배수면 정지 신규 등록 또는 연장
+	            if (afterCount % 5 == 0) {
+	                LocalDateTime newEnd = now.plusMinutes(5); // 정지 기간 (임시 5분)
+	                if (suspension == null) {
+	                    // 신규 정지 등록
+	                    mapper.insertSuspensionTest(targetMemberNo, now, newEnd);
+	                } else {
+	                    // 정지 기간 연장
+	                    LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
+	                    LocalDateTime extendedEnd = originEnd.isAfter(now) ? originEnd.plusMinutes(5) : newEnd;
+	                    mapper.extendSuspensionEnd(targetMemberNo, extendedEnd);
+	                }
+	            }
+
+	            return true;
+
+	        } else if ("Y".equals(status)) {
+	            // 신고 취소
+	            mapper.updateReportStatus(targetMemberNo, reporterMemberNo, reason, "N");
+	            mapper.decreaseMemberReportCount(targetMemberNo);
+
+	            int afterCount = beforeCount - 1;
+
+	            Map<String, String> suspension = mapper.selectSuspension(targetMemberNo);
+
+	            // 신고 5의 배수 아래로 떨어졌으면 정지 해제
+	            if (beforeCount % 5 == 0 && suspension != null && afterCount < beforeCount) {
+	                mapper.deleteSuspension(targetMemberNo);
+	            }
+
+	            return false;
+
+	        } else if ("N".equals(status)) {
+	            // 신고 재활성화
+	            mapper.updateReportStatus(targetMemberNo, reporterMemberNo, reason, "Y");
+	            mapper.increaseMemberReportCount(targetMemberNo);
+
+	            int afterCount = beforeCount + 1;
+
+	            Map<String, String> suspension = mapper.selectSuspension(targetMemberNo);
+	            LocalDateTime now = LocalDateTime.now();
+
+	            // 신고 5의 배수면 정지 신규 등록 또는 연장
+	            if (afterCount % 5 == 0) {
+	                LocalDateTime end = now.plusMinutes(5);
+	                if (suspension == null) {
+	                    mapper.insertSuspensionTest(targetMemberNo, now, end);
+	                } else {
+	                    LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
+	                    LocalDateTime extendedEnd = originEnd.isAfter(now) ? originEnd.plusMinutes(5) : end;
+	                    mapper.extendSuspensionEnd(targetMemberNo, extendedEnd);
+	                }
+	            }
+	            return true;
 	        }
-
-	        return true;
-
-	    } else if ("Y".equals(status)) {
-	        // 👉 이미 신고한 상태 → 신고 취소
-	        mapper.updateReportStatus(targetMemberNo, reporterMemberNo, reason , "N");
-	        mapper.decreaseMemberReportCount(targetMemberNo);
-
-	        int afterCount = beforeCount - 1;
-
-	        // 정지 해제 조건 판단
-	        if (beforeCount == 5 && afterCount == 4) {
-	            mapper.deleteSuspension(targetMemberNo);
-	        }
-
-	        return false;
-
-	    } else if ("N".equals(status)) {
-	        // 👉 다시 신고 활성화
-	        mapper.updateReportStatus(targetMemberNo, reporterMemberNo, reason , "Y");
-	        mapper.increaseMemberReportCount(targetMemberNo);
-
-	        int afterCount = beforeCount + 1;
-
-	        if (beforeCount == 4 && afterCount == 5) {
-//	            mapper.insertSuspension(targetMemberNo, LocalDate.now(), LocalDate.now().plusDays(7));
-	        	LocalDateTime now = LocalDateTime.now();
-		        LocalDateTime plus5min = now.plusMinutes(5);
-		        
-	        	mapper.insertSuspensionTest(targetMemberNo, now, plus5min);
-	        }
-
-	        return true;
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        throw e;
 	    }
 
 	    return false;
 	}
-
 }
 

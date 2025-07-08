@@ -25,7 +25,8 @@
 		(SELECT
 		COUNT(*)
 		FROM COMMENT_LIKE CL
-		WHERE CL.COMMENT_NO = C.COMMENT_NO) AS
+		WHERE
+		CL.COMMENT_NO = C.COMMENT_NO) AS
 		COMMENT_LIKE,
 
 		-- 로그인한 회원의 좋아요 여부
@@ -36,10 +37,12 @@
 		COMMENT_LIKED,
 
 		(SELECT COUNT(*)
-		FROM REPORT
+		FROM
+		REPORT
 		WHERE TARGET_TYPE = 'COMMENT'
 		AND TARGET_ID = C.COMMENT_NO
-		AND REPORTER_NO = #{memberNo}
+		AND
+		REPORTER_NO = #{memberNo}
 		AND
 		REPORT_STATUS = 'Y') AS "reportedByMe"
 
@@ -47,17 +50,20 @@
 		JOIN
 		MEMBER M ON
 		C.MEMBER_NO = M.MEMBER_NO
-		WHERE C.BOARD_NO = #{boardNo}
+		WHERE
+		C.BOARD_NO = #{boardNo}
 		) C
 		WHERE
 		C.COMMENT_DEL_FL = 'N'
 		OR EXISTS
 		(
-		SELECT 1
+		SELECT
+		1
 		FROM COMMENTS SUB
 		WHERE
 		SUB.COMMENT_PARENT_NO = C.COMMENT_NO
-		AND SUB.COMMENT_DEL_FL = 'N'
+		AND
+		SUB.COMMENT_DEL_FL = 'N'
 		)
 		START WITH C.COMMENT_PARENT_NO IS NULL
 		CONNECT BY PRIOR C.COMMENT_NO =
@@ -100,6 +106,14 @@
 		COMMENT_NO = #{commentNo}
 	</update>
 
+	<!-- 댓글 복구 서비스 -->
+	<update id="recover">
+		UPDATE "COMMENTS" SET
+		COMMENT_DEL_FL = 'N'
+		WHERE
+		COMMENT_NO = #{commentNo}
+	</update>
+
 	<!-- 댓글 수정 서비스 -->
 	<update id="update">
 		UPDATE "COMMENTS" SET
@@ -134,6 +148,7 @@
 	</delete>
 
 
+
 	<!-- 내가 이 댓글을 신고했나? 확인하는 sql -->
 	<select id="checkReportCount" resultType="_int">
 		SELECT COUNT(*)
@@ -148,10 +163,12 @@
 
 	<!-- 해당 댓글은 몇 번이나 신고됐어? 확인하는 sql -->
 	<select id="selectCommentReportTotalCount" resultType="_int">
-		SELECT COUNT(*)
+		SELECT
+		COUNT(*)
 		FROM REPORT
 		WHERE TARGET_TYPE = 'COMMENT'
-		AND TARGET_ID = #{commentNo}
+		AND TARGET_ID =
+		#{commentNo}
 		AND REPORT_STATUS = 'Y'
 	</select>
 
@@ -258,6 +275,13 @@
 		AND TARGET_ID = #{commentNo}
 		AND REPORTER_NO = #{memberNo}
 	</update>
+
+	<select id="selectAllReportComments" resultType="int">
+		SELECT COMMENT_NO
+		FROM COMMENT
+		WHERE MEMBER_NO = #{memberNo}
+		AND COMMENT_REPORT_COUNT >= 3
+	</select>
 
 
 </mapper>

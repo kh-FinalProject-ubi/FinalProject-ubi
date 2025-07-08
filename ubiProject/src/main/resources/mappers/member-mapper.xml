@@ -226,18 +226,22 @@
 	</delete>
 
 	<!-- 9. 로그인 기능 정지 -->
-<!-- 	<select id="selectSuspension" resultType="map">
+	<select id="selectSuspension" resultType="map"
+		parameterType="int">
 		SELECT
-		TO_CHAR(START_DATE, 'YYYY-MM-DD HH24:MI:SS') AS SUSPEND_START,
-		TO_CHAR(END_DATE, 'YYYY-MM-DD HH24:MI:SS') AS SUSPEND_END,
+		TO_CHAR(SUSPEND_START, 'YYYY-MM-DD HH24:MI:SS') AS
+		START_DATE,
+		TO_CHAR(SUSPEND_END, 'YYYY-MM-DD HH24:MI:SS') AS END_DATE,
 		NVL(NOTIFIED, 'N') AS NOTIFIED
 		FROM MEMBER_SUSPENSION
-		WHERE MEMBER_NO = #{memberNo}
-	</select> -->
+		WHERE MEMBER_NO =
+		#{memberNo}
+	</select>
 
-	<!-- NOTIFIED = 'Y'로 업데이트 -->
-	<update id="updateSuspensionNotified">
-		UPDATE MEMBER_SUSPENSION
+	<!-- 알람 보냈으면 문자 -->
+	<update id="updateSuspensionNotified" parameterType="int">
+		UPDATE
+		MEMBER_SUSPENSION
 		SET NOTIFIED = 'Y'
 		WHERE MEMBER_NO = #{memberNo}
 	</update>
@@ -246,13 +250,33 @@
 	<update id="resetReportCount">
 		UPDATE MEMBER
 		SET REPORT_COUNT = 0
-		WHERE MEMBER_NO = #{memberNo}
+		WHERE MEMBER_NO =
+		#{memberNo}
 	</update>
+
 
 	<select id="selectMemberByNo" parameterType="long" resultType="edu.kh.project.member.model.dto.Member">
 		SELECT *
 		FROM MEMBER
 		WHERE MEMBER_NO = #{memberNo}
 	</select>
+
+	<!-- 정지 기간 연장 -->
+	<update id="extendSuspensionEnd" parameterType="map">
+		UPDATE
+		MEMBER_SUSPENSION
+		SET SUSPEND_END = #{end}
+		WHERE MEMBER_NO = #{targetMemberNo}
+	</update>
+
+	<!-- 정지 종료 후 해당 회원을 대상으로 한 멤버 신고들을 N으로 바꾸기 -->
+	<update id="updateReportStatusSuspension"
+		parameterType="int">
+		UPDATE REPORT
+		SET REPORT_STATUS = 'N'
+		WHERE TARGET_TYPE = 'MEMBER'
+		AND TARGET_MEMBER_NO = #{memberNo}
+		AND REPORT_STATUS = 'Y'
+	</update>
 
 </mapper>
