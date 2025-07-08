@@ -37,12 +37,20 @@ const SeoulWelfareDetailPage = () => {
       </p>
 
       <LikeButton
+        token={token}
         apiServiceId={data.apiServiceId}
         serviceName={data.serviceName}
-        category={data.category}
+        category={data.category || "기타"}
         regionCity="서울특별시"
         regionDistrict={data.regionDistrict}
-        token={token}
+        description={data.description || "설명 없음"}
+        agency={"서울시 복지"} // 서울 복지일 경우 고정 가능
+        url={data.url || null}
+        receptionStart={null}
+        receptionEnd={null}
+        imageProfile={data.imageProfile || null}
+        lat={null}
+        lng={null}
       />
 
       <p>
