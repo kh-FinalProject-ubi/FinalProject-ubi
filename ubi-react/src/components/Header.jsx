@@ -7,8 +7,7 @@ import useModalStore from "../stores/useModalStore";
 import useAlertSocket from "../hook/alert/useAlertSocket";
 
 const Header = () => {
-  const { token, memberName, memberImg, address, clearAuth, memberNo } =
-    useAuthStore();
+  const { token, memberName, memberImg, address, clearAuth, memberNo, memberNickname } = useAuthStore();
   const isLogin = !!token;
 
   const { selectedCity, selectedDistrict } = useSelectedRegionStore();
@@ -17,7 +16,7 @@ const Header = () => {
 
   const navigate = useNavigate();
 
-  console.log("헤더 memberImg:", memberImg);
+  console.log("헤더:", memberNickname);
 
   //  알림 상태
   const [alerts, setAlerts] = useState([]);
@@ -134,7 +133,7 @@ const Header = () => {
                   alt="프로필"
                 />
               </Link>
-              <span className="nickname">{memberName}님</span>
+              <span className="nickname">{memberNickname}님</span>
               <button className="logout-btn" onClick={clearAuth}>
                 로그아웃
               </button>

@@ -1,32 +1,33 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import useAuthStore from "../../stores/useAuthStore";
 import "../../styles/mypage/ProfileImgUploader.css";
 
 export default function ProfileImgUploader({ onSave }) {
   const [isHovered, setIsHovered] = useState(false);
-  const { token, memberImg, setAuth } = useAuthStore();
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
-
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // 🔹 업로드 중 UX 개선용
   const defaultImg = "/default-profile.png";
 
-  const [isLoaded, setIsLoaded] = useState(false);
+  const { token, memberImg, setAuth } = useAuthStore();
 
+  // 🔹 persist 복원 후 렌더링
   useEffect(() => {
-    // hydration 될 때 렌더링 시작
     setIsLoaded(true);
   }, []);
 
-  const handleImageChange = (e) => {
+  const handleImageChange = useCallback((e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     e.target.value = null;
     setSelectedFile(file);
     setPreviewUrl(URL.createObjectURL(file));
-  };
+  }, []);
 
+  // 🔹 메모리 누수 방지
   useEffect(() => {
     return () => {
       if (previewUrl) {
@@ -35,7 +36,7 @@ export default function ProfileImgUploader({ onSave }) {
     };
   }, [previewUrl]);
 
-  const handleRemoveImage = async () => {
+  const handleRemoveImage = useCallback(async () => {
     if (selectedFile) {
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
@@ -47,6 +48,7 @@ export default function ProfileImgUploader({ onSave }) {
       if (!confirmed) return;
 
       try {
+        setIsLoading(true);
         const res = await axios.delete("/api/myPage/profile", {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -54,24 +56,27 @@ export default function ProfileImgUploader({ onSave }) {
         });
 
         if (res.status === 200) {
-          setAuth({
-            ...useAuthStore.getState(),
+          setAuth((prev) => ({
+            ...prev,
             memberImg: null,
-          });
+          }));
 
-          onSave && onSave();
+          onSave?.();
         }
       } catch (err) {
         console.error("프로필 이미지 삭제 실패", err);
         alert("프로필 이미지 삭제에 실패했습니다.");
+      } finally {
+        setIsLoading(false);
       }
     }
-  };
+  }, [selectedFile, previewUrl, token, onSave, setAuth]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!selectedFile) return;
 
     try {
+      setIsLoading(true);
       const formData = new FormData();
       formData.append("profileImage", selectedFile);
 
@@ -85,26 +90,29 @@ export default function ProfileImgUploader({ onSave }) {
         setSelectedFile(null);
         setPreviewUrl(null);
 
-        setAuth({
-          ...useAuthStore.getState(),
+        setAuth((prev) => ({
+          ...prev,
           memberImg: res.data,
-        });
+        }));
 
-        onSave && onSave();
+        onSave?.();
       }
     } catch (error) {
       console.error(error);
       alert("프로필 이미지 저장에 실패했습니다.");
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [selectedFile, token, onSave, setAuth]);
 
-  const imageSrc = previewUrl
-    ? previewUrl
-    : memberImg
-    ? `http://localhost:8080${memberImg}`
-    : defaultImg;
+  // 🔹 렌더링 최적화
+  const imageSrc = useMemo(() => {
+    if (previewUrl) return previewUrl;
+    if (memberImg) return `http://localhost:8080${memberImg}`;
+    return defaultImg;
+  }, [previewUrl, memberImg]);
 
-  // 🚩 persist 복원이 되기 전에는 렌더링하지 않음
+  // 🔹 persist 복원 전 렌더링 방지
   if (!isLoaded) return null;
 
   return (
@@ -114,11 +122,7 @@ export default function ProfileImgUploader({ onSave }) {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <img
-          src={imageSrc}
-          alt="프로필"
-          className="profile-image-border"
-        />
+        <img src={imageSrc} alt="프로필" className="profile-image-border" />
         <img
           src={imageSrc}
           alt="프로필 흐림"
@@ -132,6 +136,7 @@ export default function ProfileImgUploader({ onSave }) {
             type="button"
             className="remove-button"
             onClick={handleRemoveImage}
+            disabled={isLoading}
           >
             ×
           </button>
@@ -139,8 +144,12 @@ export default function ProfileImgUploader({ onSave }) {
       </div>
 
       {selectedFile && (
-        <button className="save-button" onClick={handleSave}>
-          저장하기
+        <button
+          className="save-button"
+          onClick={handleSave}
+          disabled={isLoading}
+        >
+          {isLoading ? "저장 중..." : "저장하기"}
         </button>
       )}
 

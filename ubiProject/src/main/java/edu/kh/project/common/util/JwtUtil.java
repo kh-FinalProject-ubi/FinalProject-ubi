@@ -54,7 +54,9 @@ public class JwtUtil {
 	        .claim("memberStandard", parseMemberStandard(member.getMemberStandard())) // ✅ 여기
 	        .claim("regionCity", member.getRegionCity())         // ✅ 추가
 	        .claim("regionDistrict", member.getRegionDistrict()) // ✅ 추가
-	        .claim("memberName", member.getMemberNickname())     // ✅ 선택 사항
+	        .claim("memberName", member.getMemberName())     // ✅ 선택 사항
+	        .claim("memberNickname", member.getMemberNickname())     // ✅ 선택 사항
+	        .claim("memberImg", member.getMemberImg())     // ✅ 선택 사항
 	        .claim("address", member.getMemberAddress())         // ✅ 선택 사항
 	        .claim("taddress", member.getMemberTaddress()) // ✅ taddress 포함
 	        .setIssuedAt(new Date())
