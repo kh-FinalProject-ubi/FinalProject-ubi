@@ -7,13 +7,20 @@ import useModalStore from "../stores/useModalStore";
 import useAlertSocket from "../hook/alert/useAlertSocket";
 
 const Header = () => {
-  const { token, memberName, memberImg, address, clearAuth, memberNo, memberNickname } = useAuthStore();
+  const {
+    token,
+    memberName,
+    memberImg,
+    address,
+    clearAuth,
+    memberNo,
+    memberNickname,
+  } = useAuthStore();
   const isLogin = !!token;
 
   const { selectedCity, selectedDistrict } = useSelectedRegionStore();
   const { openLoginModal } = useModalStore();
   const navigate = useNavigate();
-
 
   console.log("헤더:", memberNickname);
 

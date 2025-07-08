@@ -254,6 +254,13 @@
 		#{memberNo}
 	</update>
 
+
+	<select id="selectMemberByNo" parameterType="long" resultType="edu.kh.project.member.model.dto.Member">
+		SELECT *
+		FROM MEMBER
+		WHERE MEMBER_NO = #{memberNo}
+	</select>
+
 	<!-- 정지 기간 연장 -->
 	<update id="extendSuspensionEnd" parameterType="map">
 		UPDATE
@@ -271,4 +278,5 @@
 		AND TARGET_MEMBER_NO = #{memberNo}
 		AND REPORT_STATUS = 'Y'
 	</update>
+
 </mapper>

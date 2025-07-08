@@ -102,6 +102,8 @@ public interface MemberMapper {
 
 	// 멤버 테이블에 report 카운트 리셋
 	void resetReportCount(int memberNo);
+	
+	Member selectMemberByNo(long memberNo);
 
 	// 정지 연장 메서드
 	void extendSuspensionEnd(@Param("targetMemberNo") int targetMemberNo,
