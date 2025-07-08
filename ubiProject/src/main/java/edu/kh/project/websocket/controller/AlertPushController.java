@@ -1,12 +1,17 @@
 package edu.kh.project.websocket.controller;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.kh.project.websocket.dto.AlertDto;
+import edu.kh.project.websocket.type.AlertType;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -34,5 +39,21 @@ public class AlertPushController {
 
         // WebSocket을 통해 알림 DTO 전송
         messagingTemplate.convertAndSend(destination, alertDto);
+    }
+    
+    @GetMapping("/test")
+    public void testAlert() {
+        AlertDto alert = AlertDto.builder()
+            .memberNo(16L) // ✅ 여기 memberNo는 user03의 번호로 설정
+            .type(AlertType.COMMENT)
+            .content("테스트 알림입니다")
+            .targetUrl("/free/detail/99")
+            .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+            .isRead(false)
+            .build();
+
+        System.out.println("📤 알림 전송 → /topic/alert/16");
+        
+        messagingTemplate.convertAndSend("/topic/alert/16", alert);
     }
 }
