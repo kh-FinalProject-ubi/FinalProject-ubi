@@ -15,6 +15,7 @@ export default function MemberSyncProvider() {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.status === 200) {
+          console.log(res);
           const { setAuth, ...rest } = useAuthStore.getState();
           setAuth({
             ...rest,

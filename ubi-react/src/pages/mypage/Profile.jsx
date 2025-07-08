@@ -103,18 +103,21 @@ const Profile = () => {
   // 내 기본 정보
   const getMemberData = async () => {
     try {
-      // console.log("기본정보 axios 요청 시작");
-
-      const res = await axios.get('/api/myPage/info', { headers: {Authorization: `Bearer ${token}`, }});
-
-      console.log("기본정보 응답 받음:", res);
-      console.log("기본정보 응답 값:", res.data);
+      const res = await axios.get('/api/myPage/info', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (res.status === 200) {
-        console.log("프로필 이미지:", res.data.memberImg);
+        console.log("기본정보 응답 값:", res.data);
         setMember(res.data);
 
-        // 여기서 res.data.memberStandard를 사용해야 함
+        // 상태 갱신 (memberImg 기존 값 유지)
+        const store = useAuthStore.getState();
+        useAuthStore.getState().setAuth({
+          ...store,
+          memberImg: res.data.memberImg ?? store.memberImg,
+        });
+
         const { main, isDisabled, isPregnant } = parseMemberStandardCode(
           res.data.memberStandard
         );
@@ -128,6 +131,7 @@ const Profile = () => {
       console.error("기본정보 조회 중 예외 발생 : ", err);
     }
   };
+
 
   // 내 정보 수정
   const saveMemberData = async () => {

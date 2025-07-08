@@ -50,6 +50,7 @@ const Login = () => {
           address: baseAddress,
           memberName: data.memberName,
           memberStandard: data.memberStandard,
+          memberNickname: data.memberNickName,
           memberImg: data.memberImg || "",
           memberNo: data.memberNo,
           authority: data.authority,
