@@ -44,10 +44,13 @@
 	
 	<!-- 채팅 상대 검색 -->
 	<select id="selectTarget">
-		SELECT MEMBER_NO, MEMBER_EMAIL, MEMBER_NICKNAME, PROFILE_IMG  FROM "MEMBER"
-		WHERE (MEMBER_EMAIL LIKE '%${query}%' OR MEMBER_NICKNAME LIKE '%${query}%')
-		AND MEMBER_DEL_FL = 'N'
-		AND MEMBER_NO != ${memberNo}
+	  SELECT MEMBER_NO, MEMBER_EMAIL, MEMBER_NICKNAME, PROFILE_IMG  
+	  FROM MEMBER
+	  WHERE 
+	    (MEMBER_EMAIL LIKE CONCAT('%', #{memberNickname}, '%') 
+	     OR MEMBER_NICKNAME LIKE CONCAT('%', #{memberNickname}, '%'))
+	    AND MEMBER_DEL_FL = 'N'
+	    AND MEMBER_NO != #{memberNo}
 	</select>
 	
 	<!-- 채팅방번호 체크(기존에 있는지) -->

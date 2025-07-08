@@ -14,15 +14,16 @@ const PopularBenefitCarousel = () => {
     if (apiServiceId.startsWith("bokjiro-")) {
       const servId = apiServiceId.replace("bokjiro-", "");
       navigate(`/welfareDetail/${servId}`, {
-        state: { data: benefit }, // ✅ Bokjiro용 상세 페이지로 이동
+        state: { data: benefit },
       });
     } else if (apiServiceId.startsWith("seoul-")) {
-      navigate(`/seoulDetail?apiServiceId=${benefit.apiServiceId}`, {
-        state: { data: benefit }, // ← 있을 때는 활용하고
+      navigate(`/seoulDetail?apiServiceId=${apiServiceId}`, {
+        state: { data: benefit },
       });
     } else if (apiServiceId.startsWith("job-API")) {
-      navigate("/facilityJobDetail", {
-        state: { data: benefit }, // ✅ 복지일자리 상세 페이지로 이동
+      const servId = apiServiceId.replace(/^job-API[12]-/, "");
+      navigate(`/facilityJobDetail?servId=${servId}`, {
+        state: { data: benefit },
       });
     } else {
       alert("지원하지 않는 상세 데이터 유형입니다.");

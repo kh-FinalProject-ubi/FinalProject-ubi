@@ -47,15 +47,17 @@ const WelfareDetailPage = () => {
       {/* 찜하기 버튼 */}
       <LikeButton
         token={token}
-        apiServiceId={data?.id || servId}
+        apiServiceId={data?.id || `bokjiro-${servId}`}
         serviceName={detail.servNm}
         category={data?.category}
         regionCity={data?.regionCity}
         regionDistrict={data?.regionDistrict}
-        description={detail.servDgst || detail.alwServCn || "설명 없음"}
+        description={
+          detail.servDgst || detail.alwServCn || detail.aplyMtdCn || "설명 없음"
+        }
         agency={detail.bizChrDeptNm || "기관 정보 없음"}
-        url={data?.link}
-        receptionStart={null} // Bokjiro는 따로 없음
+        url={detail.servDtlLink || data?.link}
+        receptionStart={null}
         receptionEnd={null}
         imageProfile={null}
         lat={null}
@@ -91,8 +93,12 @@ const WelfareDetailPage = () => {
 
       <p>
         <strong>제공 링크:</strong>{" "}
-        <a href={data?.link} target="_blank" rel="noopener noreferrer">
-          {data?.link}
+        <a
+          href={detail.servDtlLink || data?.link}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {detail.servDtlLink || data?.link || "링크 없음"}
         </a>
       </p>
     </div>

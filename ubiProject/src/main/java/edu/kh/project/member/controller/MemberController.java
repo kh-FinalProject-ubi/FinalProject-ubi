@@ -94,7 +94,8 @@ public class MemberController {
 
 		Map<String, Object> body = new HashMap<>();
 		body.put("token", token);
-		body.put("memberName", loginMember.getMemberNickname());
+		body.put("memberName", loginMember.getMemberName());
+		body.put("memberNickname", loginMember.getMemberNickname());
 		body.put("address", district);
 		body.put("memberStandard", readableStandard);
 		body.put("memberImg", loginMember.getMemberImg());
@@ -102,6 +103,8 @@ public class MemberController {
 		body.put("authority", loginMember.getAuthority());
 		body.put("regionCity", loginMember.getRegionCity());
 		body.put("regionDistrict", loginMember.getRegionDistrict());
+		body.put("taddress", loginMember.getMemberTaddress());
+
 
 		log.info("🧾 loginMember.getMemberStandard(): {}", loginMember.getMemberStandard());
 		log.info("🔍 로그인 결과: {}", loginMember);
