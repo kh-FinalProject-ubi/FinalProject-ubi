@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import useAuthStore from "../../stores/useAuthStore";
 import LikeButton from "../../components/welfareLike/LikeButton";
@@ -8,13 +8,30 @@ const safe = (val) => val || "정보 없음";
 
 const WelfareDetailPage = () => {
   const location = useLocation();
-  const data = location.state?.data;
+  const [searchParams] = useSearchParams();
+  const queryServId = searchParams.get("servId");
+
   const token = useAuthStore((state) => state.token);
+
+  // 🧩 state 데이터 우선, 없으면 fallback
+  const stateData = location.state?.data;
+  const rawId = stateData?.id || stateData?.servId || queryServId;
+  const servId = rawId?.startsWith("bokjiro-")
+    ? rawId.replace("bokjiro-", "")
+    : rawId;
+
+  // fallback data 객체 (state 없이 접근한 경우)
+  const fallbackData = {
+    id: `bokjiro-${servId}`,
+    category: "기타",
+    regionCity: "알 수 없음",
+    regionDistrict: "알 수 없음",
+    link: "",
+  };
+  const data = stateData || fallbackData;
 
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  const servId = data?.servId || data?.id?.replace("bokjiro-", "");
 
   useEffect(() => {
     if (!servId) return;
@@ -23,7 +40,7 @@ const WelfareDetailPage = () => {
     axios
       .get(`/api/welfare-curl/welfare-detail?servId=${servId}`)
       .then((res) => {
-        const item = res.data.detail || null; // ✅ 수정
+        const item = res.data.detail || null;
         setDetail(item);
         console.log("📦 복지 상세 데이터:", item);
       })
@@ -41,22 +58,21 @@ const WelfareDetailPage = () => {
       <h2>{safe(detail.servNm)}</h2>
 
       <p>
-        <strong>📂 카테고리:</strong> {safe(data?.category)}
+        <strong>카테고리:</strong> {safe(data.category)}
       </p>
 
-      {/* 찜하기 버튼 */}
       <LikeButton
         token={token}
-        apiServiceId={data?.id || `bokjiro-${servId}`}
+        apiServiceId={data.id}
         serviceName={detail.servNm}
-        category={data?.category}
-        regionCity={data?.regionCity}
-        regionDistrict={data?.regionDistrict}
+        category={data.category}
+        regionCity={data.regionCity}
+        regionDistrict={data.regionDistrict}
         description={
           detail.servDgst || detail.alwServCn || detail.aplyMtdCn || "설명 없음"
         }
         agency={detail.bizChrDeptNm || "기관 정보 없음"}
-        url={detail.servDtlLink || data?.link}
+        url={detail.servDtlLink || data.link}
         receptionStart={null}
         receptionEnd={null}
         imageProfile={null}
@@ -94,11 +110,11 @@ const WelfareDetailPage = () => {
       <p>
         <strong>제공 링크:</strong>{" "}
         <a
-          href={detail.servDtlLink || data?.link}
+          href={detail.servDtlLink || data.link}
           target="_blank"
           rel="noopener noreferrer"
         >
-          {detail.servDtlLink || data?.link || "링크 없음"}
+          {detail.servDtlLink || data.link || "링크 없음"}
         </a>
       </p>
     </div>
