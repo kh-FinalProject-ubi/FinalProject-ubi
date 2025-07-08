@@ -65,7 +65,7 @@ const LikeButton = ({
             regionCity,
             regionDistrict: regionDistrict || "제한없음",
             description,
-            agency,
+            agency: agency ?? "정보 없음",
             url,
             receptionStart,
             receptionEnd,
