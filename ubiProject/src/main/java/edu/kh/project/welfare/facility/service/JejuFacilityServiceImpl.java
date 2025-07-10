@@ -56,21 +56,7 @@ public class JejuFacilityServiceImpl implements JejuFacilityService {
     }
 
     
-    private String categorizeFacility(String name) {
-        if (name.matches(".*(체육|경기장|수영장|운동장|야영장|스포츠|헬스).*")) {
-            return "체육시설";
-        }
-        if (name.matches(".*(요양|재가노인|노인요양|장기요양|치매|실버).*")) {
-            return "요양시설";
-        }
-        if (name.matches(".*(의료|재활|정신건강|치료센터|건강|병원|보건).*")) {
-            return "의료시설";
-        }
-        if (name.matches(".*(지원센터|센터|사회복지관|다문화|가정|자활|복지관|행정).*")) {
-            return "행정시설";
-        }
-        return "전체";
-    }
+
 
     private JejuFacility convertToDto(JejuFacilityResponse res) {
         List<String> targets = new ArrayList<>();
@@ -84,16 +70,36 @@ public class JejuFacilityServiceImpl implements JejuFacilityService {
         String[] addrParts = res.getAddr().split(" ");
         String district = addrParts.length > 0 ? addrParts[0] : "";
         String city = "제주특별자치도";
-
-        // 카테고리 분류 예시 (원하면 더 많은 규칙 추가 가능)
-        String category = "";
+        
+        // ✅ 띄어쓰기 제거하여 비교용 이름 생성
         String name = res.getName();
-        if (name.contains("체육") || name.contains("야영장")) category = "체육시설";
-        else if (name.contains("요양") || name.contains("복지")) category = "요양시설";
-        else if (name.contains("의료") || name.contains("재활")) category = "의료시설";
-        else if (name.contains("센터") || name.contains("지원")) category = "행정시설";
-        else category = "기타";
+        String nameNoSpace = name.replaceAll("\\s+", ""); // 모든 공백 제거
 
+        // ✅ 카테고리 자동 분류 로직
+        String category;
+
+        if (nameNoSpace.contains("요양원") || nameNoSpace.contains("노인") || nameNoSpace.contains("실버")) {
+            category = "요양시설";
+        } else if (nameNoSpace.contains("의료") || nameNoSpace.contains("재활") || nameNoSpace.contains("정신")) {
+            category = "의료시설";
+        } else if (    nameNoSpace.contains("지원센터") ||
+        	    nameNoSpace.contains("복지관") ||
+        	    nameNoSpace.contains("다문화가족지원센터") ||
+        	    nameNoSpace.contains("건강가정지원센터") ||
+        	    nameNoSpace.contains("자활센터") ||
+        	    nameNoSpace.contains("복지센터") ||
+        	    nameNoSpace.contains("복지협회") ||
+        	    nameNoSpace.contains("행정복지") ||
+        	    nameNoSpace.contains("지역아동센터")||
+        	    nameNoSpace.contains("센터")) {
+            category = "행정시설";
+        } else if (nameNoSpace.contains("체육") || nameNoSpace.contains("운동") || nameNoSpace.contains("경기장") )//||nameNoSpace.contains("야영장"))
+        {
+            category = "체육시설";
+        } else {
+            category = "기타";
+        }
+        
         return JejuFacility.builder()
                 .facilityId(res.getSeq() + "jejuFacility")
                 .facilityName(res.getName())
@@ -101,7 +107,7 @@ public class JejuFacilityServiceImpl implements JejuFacilityService {
                 .address(res.getAddr())
                 .phone(res.getPhone())
                 .city(city)
-                .district(district)
+                .district(district) // ✅ 프론트 필터링용 필드 추가
                 .latitude(Double.parseDouble(res.getLatitude()))
                 .longitude(Double.parseDouble(res.getLongitude()))
                 .category(category)

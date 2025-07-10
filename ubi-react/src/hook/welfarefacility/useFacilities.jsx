@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
+
+
+
 export function useFacilities(
   apiType = "old",
   category = "전체",
@@ -41,12 +44,12 @@ export function useFacilities(
           url = "/api/gangwon-facility";
         } else if (city === "부산광역시") {
           url = "/api/busan-facility";
-        
+        } else if (city === "제주특별자치도") {
+      url = "/api/jeju-facility";
           if (category && category !== "전체") {
             params.category = category;
           }
-        } else if (city === "제주특별자치도") {
-      url = "/api/jeju-facility";
+        
     }
 
         const res = await axios.get(url, { params });
