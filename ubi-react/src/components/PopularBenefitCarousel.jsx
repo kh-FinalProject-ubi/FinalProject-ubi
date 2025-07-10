@@ -13,9 +13,7 @@ const PopularBenefitCarousel = () => {
 
     if (apiServiceId.startsWith("bokjiro-")) {
       const servId = apiServiceId.replace("bokjiro-", "");
-      navigate(`/welfareDetail/${servId}`, {
-        state: { data: benefit },
-      });
+      navigate(`/welfareDetail?servId=${servId}`);
     } else if (apiServiceId.startsWith("seoul-")) {
       navigate(`/seoulDetail?apiServiceId=${apiServiceId}`, {
         state: { data: benefit },

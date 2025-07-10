@@ -4,6 +4,6 @@ import edu.kh.project.welfare.benefits.model.dto.Welfare;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-public interface WelfareDetailMapper2 {
+public interface WelfareDetailMapper {
     Welfare selectByApiServiceId(String apiServiceId);
 }
