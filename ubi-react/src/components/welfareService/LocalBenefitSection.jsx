@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import useLocalBenefitData from "../../hook/welfareService/useLocalBenefitData";
 import useAuthStore from "../../stores/useAuthStore";
 import useSelectedRegionStore from "../../hook/welfarefacility/useSelectedRegionStore";
@@ -13,12 +13,23 @@ const LocalBenefitSection = () => {
   const { data: benefits, loading, error } = useLocalBenefitData();
   const navigate = useNavigate();
 
-  // ✅ 로그인 상태 및 주소
-  const token = useAuthStore((state) => state.token);
-  const memberStandard = useAuthStore((state) => state.memberStandard);
-  const tokenCity = useAuthStore((state) => state.regionCity);
-  const tokenDistrict = useAuthStore((state) => state.regionDistrict);
-  const taddress = useAuthStore((state) => state.taddress);
+  // ✅ 상태 가져오기
+  const {
+    token,
+    memberStandard,
+    regionCity,
+    regionDistrict,
+    tempRegionCity,
+    tempRegionDistrict,
+    taddress,
+  } = useAuthStore((state) => state);
+
+  // ✅ 최초 토큰/지역정보 세팅 이후 fetch를 실행하도록 의존성 배열에 넣기
+  useEffect(() => {
+    if (!tempRegionCity || !tempRegionDistrict) return;
+
+    // 여기에 필터링 fetch 트리거 혹은 상태 업데이트 등 넣기
+  }, [tempRegionCity, tempRegionDistrict]);
 
   // ✅ 선택된 주소 (지도 클릭 등)
   const selectedCity = useSelectedRegionStore((state) => state.selectedCity);
@@ -32,8 +43,12 @@ const LocalBenefitSection = () => {
     return extractRegionFromTaddress(taddress);
   }, [taddress]);
 
-  const tempRegionCity = parsedTempRegion.city;
-  const tempRegionDistrict = parsedTempRegion.district;
+  useEffect(() => {}, [
+    parsedTempRegion,
+    tempRegionCity,
+    tempRegionDistrict,
+    taddress,
+  ]);
 
   // ✅ 주소 소스 탭 상태 (기본: 'token')
   const [addressSource, setAddressSource] = useState("token"); // "token" | "selected" | "temp"
@@ -45,8 +60,8 @@ const LocalBenefitSection = () => {
     switch (addressSource) {
       case "selected":
         return {
-          city: selectedCity ?? tokenCity,
-          district: selectedDistrict ?? tokenDistrict,
+          city: selectedCity ?? regionCity,
+          district: selectedDistrict ?? regionDistrict,
         };
       case "temp":
         return {
@@ -55,13 +70,13 @@ const LocalBenefitSection = () => {
         };
       case "token":
       default:
-        return { city: tokenCity, district: tokenDistrict };
+        return { city: regionCity, district: regionDistrict };
     }
   }, [
     addressSource,
     token,
-    tokenCity,
-    tokenDistrict,
+    regionCity,
+    regionDistrict,
     selectedCity,
     selectedDistrict,
     tempRegionCity,
@@ -163,7 +178,7 @@ const LocalBenefitSection = () => {
                   <LikeButton
                     token={token}
                     apiServiceId={item.apiServiceId}
-                    serviceName={item.title} // ✅ 여기서 전달
+                    serviceName={item.title}
                     category={item.category}
                     regionCity={item.regionCity}
                     regionDistrict={item.regionDistrict}

@@ -21,17 +21,14 @@ import EditBoard from "./pages/board/EditBoard";
 import MyTownBoardWrite from "./pages/mytownboard/MyTownBoardWrite";
 import LocalBenefitSection from "./components/welfareService/LocalBenefitSection";
 import InsertBoard from "./pages/board/InsertBoard";
-import { useEffect } from "react";
 import { initAuthFromToken } from "./utils/initAuthFromToken";
 import MytownBoardUpdate from "./pages/mytownboard/MytownBoardUpdate";
 import WelfareDetailPage from "./pages/welfareService/WelfareDetailPage";
 import SeoulWelfareDetailPage from "./pages/welfareService/SeoulWelfareDetailPage";
 import FacilityJobDetailPage from "./pages/welfareService/FacilityJobDetailPage";
 
+initAuthFromToken(); // ✅ 렌더 이전에 동기적으로 실행!
 function App() {
-  useEffect(() => {
-    initAuthFromToken(); // 앱 진입 시 토큰 → 상태 복원
-  }, []);
   return (
     <Router>
       <Routes>

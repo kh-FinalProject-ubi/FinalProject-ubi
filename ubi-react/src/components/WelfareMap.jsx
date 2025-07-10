@@ -54,7 +54,7 @@ const WelfareMap = () => {
   const groupedData = useMemo(() => {
     const result = {};
     allBenefits
-      .filter((item) => item.category === "지자체복지혜택") // ⬅️ 복지로 데이터만
+      .filter((item) => item.category === "지자체복지혜택")
       .forEach((item) => {
         const clean = mapCleanFullName(
           `${item.regionCity} ${item.regionDistrict}`
