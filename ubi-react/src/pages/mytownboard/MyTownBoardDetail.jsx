@@ -6,6 +6,7 @@ import useAuthStore from "../../stores/useAuthStore";
 import "../../styles/comment/Comment.css";
 import CommentModal from "./../comment/CommentModal";
 import CommentSection from "../comment/Comment";
+import { Navigate } from "react-router-dom";
 
 function MyTownBoardDetail() {
   const { boardNo } = useParams();
@@ -16,6 +17,7 @@ function MyTownBoardDetail() {
   const [modalVisible, setModalVisible] = useState(false); // 모달 보이게 할지 말지
   const [selectedMember, setSelectedMember] = useState(null); // 신고할 대상 선택하기
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 }); // 모달창이 어디가 뜨게 할지 기본값
+  const [reportedByMe, setReportedByMe] = useState(false); // 게시글이 신고됐을 때 신고상태 보여주기
 
   // const {regionCity, regionDistrict } = useAuthStore();
   const writerNo = board?.memberNo; // 게시글 작성자 번호
@@ -52,20 +54,64 @@ function MyTownBoardDetail() {
     }
   };
 
+  // 게시글 신고
+  const handleReport = async (boardNo) => {
+    try {
+      const res = await axios.post(
+        `/api/board/mytownBoard/${boardNo}/report`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const reported = res.data.reported;
+      if (reported === true) {
+        alert("신고 성공");
+        setReportedByMe(true);
+      } else if (reported === false) {
+        alert("신고 취소 완료");
+        setReportedByMe(false);
+      } else {
+        alert("알 수 없는 응답입니다");
+      }
+    } catch (err) {
+      console.error("신고 실패:", err.response?.data || err.message);
+      alert("신고 실패");
+    }
+  };
   useEffect(() => {
+    if (!token) {
+      alert("로그인이 필요한 페이지입니다.");
+      navigate("/mytownBoard", { replace: true });
+      return;
+    }
+
     const memberParam = loginMemberNo ? `?memberNo=${loginMemberNo}` : "";
 
+    console.log("요청 전 loginMemberNo:", loginMemberNo, "token:", token);
     fetch(`/api/board/mytownBoard/${boardNo}${memberParam}`)
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`API error: ${res.status} - ${text}`);
+        }
+        return res.json();
+      })
       .then((data) => {
         setBoard(data);
         setLikeCount(data.likeCount);
-        setLiked(data.likeCheck === 1); // ✅ 서버에서 내려온 likeCheck 사용
+        setLiked(data.likeCheck === 1);
+        setReportedByMe(data.reportedByMe === "Y");
+        console.log(" 서버 응답:", data);
       })
-      .catch((err) => console.error("Error:", err));
-  }, [boardNo, loginMemberNo]);
+      .catch((err) => {
+        console.error("Error:", err);
+        alert("게시글을 불러오는 중 오류가 발생했습니다.");
+        navigate("/mytownBoard");
+      });
+  }, [boardNo, loginMemberNo, navigate, token]);
 
-  if (!board) return <p>로딩 중...</p>; // ✅ null 방지
+  if (!board) return <p>게시글을 불러오는 중입니다...</p>;
 
   // 이미지 경로가 상대경로인 경우 절대경로로 교체
   const contentWithImages = board.boardContent.replaceAll(
@@ -120,6 +166,19 @@ function MyTownBoardDetail() {
       >
         {liked ? "❤️" : "🤍"} {likeCount}
       </button>
+
+      {/* 신고 버튼 */}
+      {token && loginMemberNo !== writerNo && (
+        <button
+          className="report-btn"
+          onClick={() => handleReport(board.boardNo)}
+        >
+          <img
+            src={reportedByMe ? "/boardCancleReport.svg" : "/boardReport.svg"}
+            alt="신고 아이콘"
+          />
+        </button>
+      )}
       <div>
         {!(board.postType === "자랑" || board.postType === "자유") && (
           <span>⭐ {board.starCount ?? 0}</span>

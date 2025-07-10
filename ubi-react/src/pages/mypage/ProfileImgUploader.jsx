@@ -13,6 +13,7 @@ export default function ProfileImgUploader({ onSave }) {
   const currentAuth = useAuthStore.getState();
 
   const { token, memberImg, setAuth } = useAuthStore();
+  console.log("토큰 상태:", token);
 
   // persist 복원 후 렌더링
   useEffect(() => {

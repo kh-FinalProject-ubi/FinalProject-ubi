@@ -12,7 +12,8 @@
 		B.BOARD_NO,
 		B.BOARD_TITLE,
 		B.POST_TYPE,
-		SUBSTR(B.BOARD_CONTENT, 1, 100) AS BOARD_CONTENT,
+		SUBSTR(B.BOARD_CONTENT, 1,
+		100) AS BOARD_CONTENT,
   <![CDATA[
   CASE 
     WHEN SYSDATE - B.BOARD_DATE < 1/24/60 THEN FLOOR((SYSDATE - B.BOARD_DATE)*24*60*60) || '초 전'
@@ -33,13 +34,15 @@
 		M.REGION_DISTRICT,
 
 
-		(SELECT COUNT(*) FROM BOARD_LIKE L WHERE L.BOARD_NO = B.BOARD_NO) AS
+		(SELECT COUNT(*) FROM BOARD_LIKE L WHERE L.BOARD_NO
+		= B.BOARD_NO) AS
 		LIKE_COUNT,
 
 
 		(SELECT I.IMAGE_PATH || '/' || I.IMAGE_NAME
 		FROM BOARD_IMAGE I
-		WHERE I.BOARD_NO = B.BOARD_NO AND I.IMAGE_ORDER = 0 AND ROWNUM = 1) AS
+		WHERE I.BOARD_NO = B.BOARD_NO AND I.IMAGE_ORDER = 0
+		AND ROWNUM = 1) AS
 		THUMBNAIL,
 
 
@@ -47,17 +50,22 @@
 		(SELECT LISTAGG(H.HASHTAG_NAME, ',')
 		WITHIN GROUP (ORDER BY H.HASHTAG_NAME)
 		FROM BOARD_HASHTAG H
-		WHERE H.BOARD_NO = B.BOARD_NO) AS HASHTAGS,
+		WHERE
+		H.BOARD_NO = B.BOARD_NO) AS HASHTAGS,
 
 		LS.BOARD_TYPE,
 		LS.POST_TYPE
 
-		FROM BOARD B
+		FROM
+		BOARD B
 		JOIN MEMBER M ON B.MEMBER_NO = M.MEMBER_NO
-		JOIN BOARD_TYPE BT ON B.BOARD_TYPE = BT.BOARD_CODE
-		LEFT JOIN LOCAL_SUBCATEGORY LS ON B.BOARD_TYPE = LS.BOARD_TYPE
+		JOIN BOARD_TYPE BT ON
+		B.BOARD_TYPE = BT.BOARD_CODE
+		LEFT JOIN LOCAL_SUBCATEGORY LS ON
+		B.BOARD_TYPE = LS.BOARD_TYPE
 		AND B.POST_TYPE = LS.POST_TYPE
-		WHERE B.BOARD_TYPE = 3
+		WHERE
+		B.BOARD_TYPE = 3
 		AND B.BOARD_DEL_FL = 'N'
 
 		ORDER BY B.BOARD_DATE DESC
@@ -66,12 +74,13 @@
 	</select>
 
 	<select id="getBoardLocalListCount" resultType="_int">
-		SELECT COUNT(*) FROM BOARD WHERE BOARD_TYPE = 3 AND BOARD_DEL_FL = 'N'
+		SELECT COUNT(*)
+		FROM BOARD WHERE BOARD_TYPE = 3 AND BOARD_DEL_FL = 'N'
 	</select>
 
 
 	<!-- 상세조회 -->
-	<select id="selectLocalBoardDetail" parameterType="int"
+	<select id="selectLocalBoardDetail"
 		resultType="edu.kh.project.board.model.dto.Board">
 		SELECT
 		B.BOARD_NO,
@@ -81,21 +90,41 @@
 		B.BOARD_READ_COUNT,
 		B.POST_TYPE,
 		NVL(B.STAR_COUNT, 0) AS STAR_COUNT,
-		NVL((SELECT COUNT(*) FROM BOARD_LIKE WHERE BOARD_NO = B.BOARD_NO), 0) AS
-		LIKE_COUNT,
+
+		NVL((
+		SELECT COUNT(*)
+		FROM BOARD_LIKE
+		WHERE BOARD_NO = B.BOARD_NO
+		), 0) AS LIKE_COUNT,
+
 		M.MEMBER_NICKNAME,
 		M.AUTHORITY,
-		(SELECT LISTAGG(H.HASHTAG_NAME, ',')
+
+		-- 해시태그 목록
+		(
+		SELECT LISTAGG(H.HASHTAG_NAME, ',')
 		FROM BOARD_HASHTAG H
-		WHERE H.BOARD_NO = B.BOARD_NO) AS HASHTAGS,
+		WHERE H.BOARD_NO = B.BOARD_NO
+		) AS HASHTAGS,
+
 		BT.BOARD_NAME,
 		M.MEMBER_NO,
 		M.REGION_CITY,
 		M.REGION_DISTRICT,
 		B.API_SERVICE_ID,
-		B.FACILITY_API_SERVICE_ID ,
+		B.FACILITY_API_SERVICE_ID,
 		LS.BOARD_TYPE,
-		LS.POST_TYPE
+		LS.POST_TYPE,
+
+		-- ✅ 신고 여부 (Y/N/null)
+		(
+		SELECT R.REPORT_STATUS
+		FROM REPORT R
+		WHERE R.TARGET_TYPE = 'BOARD'
+		AND R.TARGET_ID = B.BOARD_NO
+		AND R.REPORTER_NO = #{reporterNo}
+		FETCH FIRST 1 ROWS ONLY
+		) AS REPORTED_BY_ME
 
 		FROM BOARD B
 		JOIN MEMBER M ON B.MEMBER_NO = M.MEMBER_NO
@@ -109,7 +138,8 @@
 	<!-- 조회수 증가 -->
 	<update id="increaseReadCount">
 		UPDATE BOARD
-		SET BOARD_READ_COUNT = BOARD_READ_COUNT + 1
+		SET BOARD_READ_COUNT = BOARD_READ_COUNT +
+		1
 		WHERE BOARD_NO = #{boardNo}
 	</update>
 
@@ -117,10 +147,12 @@
 	<insert id="insertBoard"
 		parameterType="edu.kh.project.board.model.dto.Board">
 		INSERT INTO BOARD (
-		BOARD_NO, BOARD_TYPE, BOARD_TITLE, BOARD_CONTENT, MEMBER_NO,
+		BOARD_NO, BOARD_TYPE, BOARD_TITLE,
+		BOARD_CONTENT, MEMBER_NO,
 		BOARD_DATE,BOARD_READ_COUNT,STAR_COUNT,POST_TYPE
 		) VALUES (
-		SEQ_BOARD_NO.NEXTVAL, 3, #{boardTitle}, #{boardContent}, #{memberNo}, SYSDATE, 0,
+		SEQ_BOARD_NO.NEXTVAL, 3, #{boardTitle}, #{boardContent}, #{memberNo},
+		SYSDATE, 0,
 		#{starCount} ,#{postType}
 		)
 	</insert>
@@ -133,7 +165,8 @@
 
 	<!-- 해시태그 확인 -->
 	<select id="checkHashtagExists" resultType="int">
-		SELECT COUNT(*) FROM BOARD_HASHTAG
+		SELECT COUNT(*) FROM
+		BOARD_HASHTAG
 		WHERE BOARD_NO = #{boardNo} AND HASHTAG_NAME = #{tag}
 	</select>
 
@@ -146,24 +179,29 @@
 
 	<select id="selectBoard"
 		resultType="edu.kh.project.board.model.dto.Board">
-		SELECT BOARD_NO, BOARD_TITLE, BOARD_CONTENT, MEMBER_NO, TO_CHAR(BOARD_DATE,
+		SELECT BOARD_NO, BOARD_TITLE, BOARD_CONTENT, MEMBER_NO,
+		TO_CHAR(BOARD_DATE,
 		'YYYY-MM-DD') AS BOARD_DATE
 		FROM BOARD
-		WHERE BOARD_NO = #{boardNo}
+		WHERE BOARD_NO
+		= #{boardNo}
 	</select>
 
 	<select id="getLastInsertedId" resultType="int">
-		SELECT SEQ_BOARD_NO.CURRVAL FROM DUAL
+		SELECT
+		SEQ_BOARD_NO.CURRVAL FROM DUAL
 	</select>
 
 
 	<insert id="insertBoardImage"
 		parameterType="edu.kh.project.board.model.dto.BoardImage">
 		INSERT INTO BOARD_IMAGE (
-		IMAGE_NO, IMAGE_PATH, IMAGE_ORDER, IMAGE_NAME, BOARD_NO
+		IMAGE_NO, IMAGE_PATH,
+		IMAGE_ORDER, IMAGE_NAME, BOARD_NO
 		)
 		VALUES (
-		IMAGE_SEQ.NEXTVAL, #{imagePath}, #{imageOrder}, #{imageName}, #{boardNo}
+		IMAGE_SEQ.NEXTVAL,
+		#{imagePath}, #{imageOrder}, #{imageName}, #{boardNo}
 		)
 	</insert>
 
@@ -173,24 +211,28 @@
 		SELECT *
 		FROM BOARD_IMAGE
 		WHERE BOARD_NO = #{boardNo}
-		ORDER BY IMAGE_ORDER
+		ORDER BY
+		IMAGE_ORDER
 	</select>
 
 
 
 	<select id="checkBoardLike" resultType="int">
-		SELECT COUNT(*) FROM BOARD_LIKE
+		SELECT COUNT(*) FROM
+		BOARD_LIKE
 		WHERE BOARD_NO = #{boardNo} AND MEMBER_NO = #{memberNo}
 	</select>
 
 	<insert id="insertBoardLike">
 		INSERT INTO BOARD_LIKE (BOARD_NO, MEMBER_NO)
-		VALUES (#{boardNo}, #{memberNo})
+		VALUES
+		(#{boardNo}, #{memberNo})
 	</insert>
 
 	<delete id="deleteBoardLike">
 		DELETE FROM BOARD_LIKE
-		WHERE BOARD_NO = #{boardNo} AND MEMBER_NO = #{memberNo}
+		WHERE BOARD_NO = #{boardNo} AND
+		MEMBER_NO = #{memberNo}
 	</delete>
 
 
@@ -198,7 +240,8 @@
 	<update id="deleteBoard">
 		UPDATE BOARD
 		SET BOARD_DEL_FL = 'Y'
-		WHERE BOARD_NO = #{boardNo} AND MEMBER_NO = #{memberNo}
+		WHERE BOARD_NO =
+		#{boardNo} AND MEMBER_NO = #{memberNo}
 	</update>
 
 
@@ -209,7 +252,8 @@
 		SET BOARD_TITLE = #{boardTitle},
 		BOARD_CONTENT = #{boardContent},
 		STAR_COUNT = #{starCount},
-		POST_TYPE = #{postType}
+		POST_TYPE =
+		#{postType}
 		WHERE BOARD_NO = #{boardNo} AND MEMBER_NO = #{memberNo}
 	</update>
 
@@ -223,5 +267,122 @@
 	<!-- 새 이미지 삽입 <insert id="insertBoardImage" parameterType="BoardImage"> 
 		INSERT INTO BOARD_IMAGE (IMAGE_NO, BOARD_NO, IMAGE_PATH, IMAGE_ORDER) VALUES 
 		(SEQ_BOARD_IMAGE_NO.NEXTVAL, #{boardNo}, #{imagePath}, #{imageOrder}) </insert> -->
+
+
+
+	<!-- 보드 신고를 위한 xml -->
+
+	<!-- 게시글 작성자 번호 가져오기 -->
+	<select id="selectBoardWriterNo" resultType="int">
+		SELECT MEMBER_NO
+		FROM BOARD
+		WHERE BOARD_NO = #{boardNo}
+	</select>
+
+	<!-- 내가 이 게시글을 신고했는가? -->
+	<select id="checkBoardReportCount" resultType="string">
+		SELECT
+		REPORT_STATUS
+		FROM REPORT
+		WHERE TARGET_TYPE = 'BOARD'
+		AND TARGET_ID =
+		#{boardNo}
+		AND REPORTER_NO = #{memberNo}
+	</select>
+
+	<!-- 해당 게시글 총 신고 수 -->
+	<select id="selectBoardReportTotalCount" resultType="int">
+		SELECT
+		COUNT(*)
+		FROM REPORT
+		WHERE TARGET_TYPE = 'BOARD'
+		AND TARGET_ID =
+		#{boardNo}
+		AND REPORT_STATUS = 'Y'
+	</select>
+
+	<!-- 게시글 신고 등록 -->
+	<insert id="insertBoardReport">
+		INSERT INTO REPORT (
+		TARGET_TYPE,
+		TARGET_ID,
+		REPORTER_NO,
+		REPORT_STATUS,
+		TARGET_MEMBER_NO,
+		REPORT_REASON
+		) VALUES (
+		'BOARD',
+		#{boardNo},
+		#{memberNo},
+		'Y',
+		#{targetMemberNo},
+		'게시글 신고'
+		)
+	</insert>
+
+	<!-- BOARD 테이블의 신고 수 +1 -->
+	<update id="updateBoardReportCount">
+		UPDATE BOARD
+		SET BOARD_REPORT_COUNT =
+		BOARD_REPORT_COUNT + 1
+		WHERE BOARD_NO = #{boardNo}
+	</update>
+
+	<!-- BOARD 테이블의 신고 수 -1 -->
+	<update id="decreaseBoardReportCount">
+		UPDATE BOARD
+		SET BOARD_REPORT_COUNT = CASE
+		WHEN
+		BOARD_REPORT_COUNT > 0 THEN BOARD_REPORT_COUNT - 1
+		ELSE 0
+		END
+		WHERE
+		BOARD_NO = #{boardNo}
+	</update>
+
+	<!-- 신고 취소 (soft delete) -->
+	<update id="deleteBoardReport">
+		UPDATE REPORT
+		SET REPORT_STATUS = 'N'
+		WHERE TARGET_TYPE
+		= 'BOARD'
+		AND TARGET_ID = #{boardNo}
+		AND REPORTER_NO = #{memberNo}
+	</update>
+
+	<!-- 신고 재활성화 -->
+	<update id="reactivateBoardReport">
+		UPDATE REPORT
+		SET REPORT_STATUS = 'Y'
+		WHERE TARGET_TYPE
+		= 'BOARD'
+		AND TARGET_ID = #{boardNo}
+		AND REPORTER_NO = #{memberNo}
+	</update>
+
+	<!-- 신고 누적으로 삭제된 게시글 전체 조회 -->
+	<select id="selectAllReportBoards" resultType="int">
+		SELECT BOARD_NO
+		FROM BOARD
+		WHERE MEMBER_NO = #{memberNo}
+		AND BOARD_REPORT_COUNT >= 3
+	</select>
+
+	<!-- 게시글 복구 -->
+	<update id="recoverBoard">
+		UPDATE BOARD
+		SET BOARD_DEL_FL = 'N'
+		WHERE BOARD_NO =
+		#{boardNo}
+	</update>
+
+<select id="selectReportStatus" resultType="String">
+  SELECT R.REPORT_STATUS
+  FROM REPORT R
+  WHERE R.TARGET_TYPE = 'BOARD'
+  AND R.TARGET_ID = #{boardNo}
+  AND R.REPORTER_NO = #{memberNo}
+  FETCH FIRST 1 ROWS ONLY
+</select>
 
 </mapper>

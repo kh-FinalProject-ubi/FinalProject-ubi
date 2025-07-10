@@ -2,7 +2,10 @@ package edu.kh.project.board.model.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.ibatis.session.RowBounds;
@@ -15,200 +18,303 @@ import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.board.model.dto.BoardImage;
 import edu.kh.project.board.model.dto.Pagination;
 import edu.kh.project.board.model.mapper.MytownBoardMapper;
+import edu.kh.project.member.model.mapper.MemberMapper;
 
 @Service
 public class MytownBoardServiceImpl implements MytownBoardService {
-	
-    @Value("${my.board.folder-path}")
-    private String folderPath;
 
-    @Value("${my.board.web-path}")
-    private String webPath;
+	@Value("${my.board.folder-path}")
+	private String folderPath;
+
+	@Value("${my.board.web-path}")
+	private String webPath;
 
 	@Autowired
 	private MytownBoardMapper mapper;
 
-	/** 게시글 목록조회 시군구 조건 제외 
+	// 멤버 테이블 매퍼
+	@Autowired
+	private MemberMapper memberMapper;
+
+	/**
+	 * 게시글 목록조회 시군구 조건 제외
+	 * 
 	 * @param regionDistrict
 	 * @param regionCity
 	 * @return
 	 */
 	@Override
 	public List<Board> getLocalBoardList(int page) {
-	    int listCount = mapper.getBoardLocalListCount(); // 전체 게시글 수 조회
-	    Pagination pagination = new Pagination(page, listCount);
+		int listCount = mapper.getBoardLocalListCount(); // 전체 게시글 수 조회
+		Pagination pagination = new Pagination(page, listCount);
 
-	    int offset = (page - 1) * pagination.getLimit(); // 시작 위치
-	    int limit = pagination.getLimit();               // 가져올 개수
+		int offset = (page - 1) * pagination.getLimit(); // 시작 위치
+		int limit = pagination.getLimit(); // 가져올 개수
 
+		RowBounds rowBounds = new RowBounds(offset, limit);
 
-	    RowBounds rowBounds = new RowBounds(offset, limit);
-	    
-	    return mapper.selectLocalBoardList(rowBounds);
+		return mapper.selectLocalBoardList(rowBounds);
 	}
 
 	@Override
 	public Pagination getPagination(int page) {
 		int listCount = mapper.getBoardLocalListCount();
-	    return new Pagination(page, listCount);
+		return new Pagination(page, listCount);
 	}
-    /** 상세조회
-     * 
-     */
-        @Override
-        public Board selectLocalBoardDetail(int boardNo) {
-            Board board = mapper.selectLocalBoardDetail(boardNo);
 
-            
-            int result = mapper.increaseReadCount(boardNo);
-            
+	/**
+	 * 상세조회
+	 * 
+	 */
+	@Override
+	public Board selectLocalBoardDetail(int boardNo, int memberNo) {
+		Board board = mapper.selectLocalBoardDetail(boardNo, memberNo);
 
-                    if (board != null) {
-                        List<BoardImage> imageList = mapper.selectBoardImageList(boardNo);
-                        board.setImageList(imageList);
-                    }
-                
+		int result = mapper.increaseReadCount(boardNo);
 
-                return board;
-            } 
-           
-        
-     /**
-      *  
-      * @param dto
-      * @return
-      */
-        @Override
-        public int writeBoard(Board dto) {
-        	 // 게시글 등록
-            mapper.insertBoard(dto);
-            
-            
-            int boardNo = mapper.getLastInsertedId();
+		if (board != null) {
+			List<BoardImage> imageList = mapper.selectBoardImageList(boardNo);
+			board.setImageList(imageList);
+		}
 
-            
-            
-            // 해시태그 중복 없이 삽입
-            if (dto.getHashtagList() != null) {
-                for (String tag : dto.getHashtagList()) {
-                    // 중복 체크 후 없을 경우에만 삽입
-                    int exists = mapper.checkHashtagExists(boardNo, tag);
-                    if (exists == 0) {
-                        mapper.insertHashtag(boardNo, tag);
-                    }
-                }  
-                
-                
-                
-            }
-            
+		return board;
+	}
 
-            // ✅ 이미지 리스트 저장
-            List<BoardImage> imageList = dto.getImageList();
-            if (imageList != null && !imageList.isEmpty()) {
-                for (BoardImage img : imageList) {
-                    img.setBoardNo(boardNo);
-                    mapper.insertBoardImage(img);
-                }
-            }
-                return boardNo;
-        }
-        
-        
-        
-        
+	/**
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	@Override
+	public int writeBoard(Board dto) {
+		// 게시글 등록
+		mapper.insertBoard(dto);
 
-        /**  해시태그
-         * 
-         */
-        @Override
-        public void insertHashtag(int boardNo, String tag) {
-            mapper.insertHashtag(boardNo, tag);
-        }
+		int boardNo = mapper.getLastInsertedId();
 
-     
-		
-            
-            
-        @Override
-        public String saveBoardImage(MultipartFile uploadFile) throws IOException {
-            String fileName = UUID.randomUUID().toString() + "_" + uploadFile.getOriginalFilename();
-            File file = new File(folderPath + fileName);
-            uploadFile.transferTo(file);
-            return (webPath + "/" + fileName).replaceAll("/+", "/"); // 슬래시 2번 이상 → 1번
-        }
-        
-        
-        
-/** 게시글 좋아요 
- * 
- */
-        @Override
-        public int checkBoardLike(int boardNo, int memberNo) {
-            return mapper.checkBoardLike(boardNo, memberNo);
-        }
+		// 해시태그 중복 없이 삽입
+		if (dto.getHashtagList() != null) {
+			for (String tag : dto.getHashtagList()) {
+				// 중복 체크 후 없을 경우에만 삽입
+				int exists = mapper.checkHashtagExists(boardNo, tag);
+				if (exists == 0) {
+					mapper.insertHashtag(boardNo, tag);
+				}
+			}
 
-        @Override
-        public int insertBoardLike(int boardNo, int memberNo) {
-            return mapper.insertBoardLike(boardNo, memberNo);
-        }
+		}
 
-        @Override
-        public int deleteBoardLike(int boardNo, int memberNo) {
-            return mapper.deleteBoardLike(boardNo, memberNo);
-        }
-        
-        
-        /**
-         * 삭제하기
-         */
-        @Override
-        public int deleteBoard(int boardNo, int memberNo) {
-            return mapper.deleteBoard(boardNo, memberNo);
-        }
-        
-        
-        /** 수정 하기 
-         * 
-         */
-        @Override
-        public int updateBoard(Board dto) {
-        	 // 1. 게시글 수정
-            int result = mapper.updateBoard(dto);
+		// ✅ 이미지 리스트 저장
+		List<BoardImage> imageList = dto.getImageList();
+		if (imageList != null && !imageList.isEmpty()) {
+			for (BoardImage img : imageList) {
+				img.setBoardNo(boardNo);
+				mapper.insertBoardImage(img);
+			}
+		}
+		return boardNo;
+	}
 
-            
-         // 2. 해시태그 갱신: 기존 삭제 후 재삽입
-            mapper.deleteHashtags(dto.getBoardNo());
+	/**
+	 * 해시태그
+	 * 
+	 */
+	@Override
+	public void insertHashtag(int boardNo, String tag) {
+		mapper.insertHashtag(boardNo, tag);
+	}
 
-            if (dto.getHashtagList() != null && !dto.getHashtagList().isEmpty()) {
-                for (String tag : dto.getHashtagList()) {
-                	mapper.insertHashtag(dto.getBoardNo(), tag.trim());
-                }
-            }
-            
-            
-            // 3. 이미지 
-            mapper.deleteImagesByBoardNo(dto.getBoardNo());
+	@Override
+	public String saveBoardImage(MultipartFile uploadFile) throws IOException {
+		String fileName = UUID.randomUUID().toString() + "_" + uploadFile.getOriginalFilename();
+		File file = new File(folderPath + fileName);
+		uploadFile.transferTo(file);
+		return (webPath + "/" + fileName).replaceAll("/+", "/"); // 슬래시 2번 이상 → 1번
+	}
 
-            // 
-            if (dto.getImageList() != null && !dto.getImageList().isEmpty()) {
-                for (int i = 0; i < dto.getImageList().size(); i++) {
-                    BoardImage img = dto.getImageList().get(i);
-                    img.setBoardNo(dto.getBoardNo());
-                    img.setImageOrder(i); // 0번이 썸네일
+	/**
+	 * 게시글 좋아요
+	 * 
+	 */
+	@Override
+	public int checkBoardLike(int boardNo, int memberNo) {
+		return mapper.checkBoardLike(boardNo, memberNo);
+	}
 
-                    mapper.insertBoardImage(img);
-                }
-            }
+	@Override
+	public int insertBoardLike(int boardNo, int memberNo) {
+		return mapper.insertBoardLike(boardNo, memberNo);
+	}
 
-            return result;
-        }
+	@Override
+	public int deleteBoardLike(int boardNo, int memberNo) {
+		return mapper.deleteBoardLike(boardNo, memberNo);
+	}
 
+	/**
+	 * 삭제하기
+	 */
+	@Override
+	public int deleteBoard(int boardNo, int memberNo) {
+		return mapper.deleteBoard(boardNo, memberNo);
+	}
 
-		
+	/**
+	 * 수정 하기
+	 * 
+	 */
+	@Override
+	public int updateBoard(Board dto) {
+		// 1. 게시글 수정
+		int result = mapper.updateBoard(dto);
 
-        
-        }
-        
+		// 2. 해시태그 갱신: 기존 삭제 후 재삽입
+		mapper.deleteHashtags(dto.getBoardNo());
 
+		if (dto.getHashtagList() != null && !dto.getHashtagList().isEmpty()) {
+			for (String tag : dto.getHashtagList()) {
+				mapper.insertHashtag(dto.getBoardNo(), tag.trim());
+			}
+		}
 
+		// 3. 이미지
+		mapper.deleteImagesByBoardNo(dto.getBoardNo());
+
+		//
+		if (dto.getImageList() != null && !dto.getImageList().isEmpty()) {
+			for (int i = 0; i < dto.getImageList().size(); i++) {
+				BoardImage img = dto.getImageList().get(i);
+				img.setBoardNo(dto.getBoardNo());
+				img.setImageOrder(i); // 0번이 썸네일
+
+				mapper.insertBoardImage(img);
+			}
+		}
+
+		return result;
+	}
+
+	@Override
+	public boolean reportBoard(int boardNo, int memberNo) {
+
+		Integer targetMemberNo = mapper.selectBoardWriterNo(boardNo);
+		if (targetMemberNo == null)
+			return false;
+
+		String reportStatus = mapper.checkBoardReportCount(boardNo, memberNo);
+
+		int beforeReportCount = mapper.selectBoardReportTotalCount(boardNo);
+
+		try {
+			if (reportStatus == null) {
+				// 최초 신고
+				Map<String, Object> paramMap = new HashMap<>();
+				paramMap.put("boardNo", boardNo);
+				paramMap.put("memberNo", memberNo);
+				paramMap.put("targetMemberNo", targetMemberNo);
+				int result = mapper.insertBoardReport(paramMap);
+				System.out.println("insertBoardReport result: " + result);
+				mapper.updateBoardReportCount(boardNo);
+
+				int afterReportCount = mapper.selectBoardReportTotalCount(boardNo);
+
+				if (afterReportCount % 3 == 0) {
+					memberMapper.updateMemberReportCount(targetMemberNo, +1);
+
+					int memberReportCount = memberMapper.selectMemberReportCount(targetMemberNo);
+
+					Map<String, String> suspension = memberMapper.selectSuspension(targetMemberNo);
+
+					if (memberReportCount % 5 == 0) {
+						LocalDateTime now = LocalDateTime.now();
+						if (suspension == null) {
+							// 신규 정지 등록 (5의 배수일 때)
+							LocalDateTime end = now.plusMinutes(5);
+							memberMapper.insertSuspensionTest(targetMemberNo, now, end);
+						} else {
+							// 정지 중이면 정지 기간 연장
+							LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
+							LocalDateTime end = originEnd.plusMinutes(5); // 연장 기간 설정
+							memberMapper.extendSuspensionEnd(targetMemberNo, end);
+						}
+
+						// 게시글 숨기기 (삭제 처리)
+						mapper.deleteBoard(boardNo, memberNo);
+					}
+				}
+				return true;
+
+			} else if ("Y".equals(reportStatus)) {
+				// 신고 취소
+				mapper.deleteBoardReport(boardNo, memberNo);
+				mapper.decreaseBoardReportCount(boardNo);
+
+				int afterReportCount = mapper.selectBoardReportTotalCount(boardNo);
+
+				if (beforeReportCount % 3 == 0 && afterReportCount % 3 == 2) {
+					memberMapper.updateMemberReportCount(targetMemberNo, -1);
+
+					int memberReportCount = memberMapper.selectMemberReportCount(targetMemberNo);
+
+					// 정지 상태 조회
+					Map<String, String> suspension = memberMapper.selectSuspension(targetMemberNo);
+
+					// 신고 카운트가 5 미만이고 정지 상태면 해제
+					if (memberReportCount < 5 && suspension != null) {
+						memberMapper.deleteSuspension(targetMemberNo);
+						// 게시글 복구
+						mapper.recoverBoard(boardNo);
+					}
+				}
+				return false;
+
+			} else if ("N".equals(reportStatus)) {
+				// 신고 재활성화
+				mapper.reactivateBoardReport(boardNo, memberNo);
+				mapper.updateBoardReportCount(boardNo);
+
+				int afterReportCount = mapper.selectBoardReportTotalCount(boardNo);
+
+				if (afterReportCount % 3 == 0) {
+					memberMapper.updateMemberReportCount(targetMemberNo, +1);
+
+					int memberReportCount = memberMapper.selectMemberReportCount(targetMemberNo);
+					Map<String, String> suspension = memberMapper.selectSuspension(targetMemberNo);
+
+					if (memberReportCount % 5 == 0) {
+						LocalDateTime now = LocalDateTime.now();
+
+						if (suspension == null) {
+							LocalDateTime end = now.plusMinutes(5);
+							memberMapper.insertSuspensionTest(targetMemberNo, now, end);
+						} else {
+							LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
+							LocalDateTime end = originEnd.plusMinutes(5);
+							memberMapper.extendSuspensionEnd(targetMemberNo, end);
+						}
+
+						// 신고 누적에 따른 게시글 숨김 처리
+						List<Integer> reportedBoardNos = mapper.selectAllReportBoards(targetMemberNo);
+						for (int bno : reportedBoardNos) {
+							mapper.deleteBoard(bno, memberNo);
+						}
+					}
+				}
+				return true;
+			}
+
+		} catch (Exception e) {
+			System.out.println("⛔ reportBoard 트랜잭션 처리 중 예외 발생!");
+			e.printStackTrace();
+			throw e;
+		}
+
+		return false;
+	}
+
+	// 신고 확인 메서드
+	@Override
+	public String checkBoardReportStatus(int boardNo, int memberNo) {
+		 return mapper.selectReportStatus(boardNo, memberNo);
+	}
+}
