@@ -225,14 +225,16 @@
 		TARGET_ID,
 		REPORTER_NO,
 		REPORT_STATUS,
-		TARGET_MEMBER_NO
+		TARGET_MEMBER_NO,
+		REPORT_REASON
 		)
 		VALUES (
 		'COMMENT',
 		#{commentNo},
 		#{memberNo},
 		'Y',
-		#{targetMemberNo}
+		#{targetMemberNo},
+		'댓글 신고'
 		)
 	</insert>
 

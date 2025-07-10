@@ -4,6 +4,7 @@ import { persist } from "zustand/middleware";
 const useAuthStore = create(
   persist(
     (set) => ({
+      // 초기 상태 정의
       token: null,
       address: null,
       memberName: null,
@@ -11,11 +12,12 @@ const useAuthStore = create(
       memberImg: null,
       memberNickname: null,
       authority: null,
-      role: null, // ✅ 추가
-      regionCity: null, // ✅ 여기도 초기화 필요
+      role: null,
+      regionCity: null,
       regionDistrict: null,
-      tempRegionCity: null, // ✅ 추가
-      tempRegionDistrict: null, // ✅ 추가
+      tempRegionCity: null,
+      tempRegionDistrict: null,
+      memberNo: null, // ✅ 빠졌던 필드 추가
 
       setAuth: ({
         token,
@@ -54,15 +56,15 @@ const useAuthStore = create(
           address: null,
           memberName: null,
           memberStandard: null,
-          memberNickname: null,
-          memberNo: null,
           memberImg: null,
+          memberNickname: null,
           authority: null,
           role: null,
-          regionCity: null, // ✅ 추가
+          regionCity: null,
           regionDistrict: null,
-          tempRegionCity: null, // ✅ 추가
-          tempRegionDistrict: null, // ✅ 추가
+          tempRegionCity: null,
+          tempRegionDistrict: null,
+          memberNo: null,
         }),
     }),
     {
