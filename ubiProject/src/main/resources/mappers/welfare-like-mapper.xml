@@ -12,6 +12,8 @@
   WHERE member_no = #{memberNo}
     AND api_service_id = #{apiServiceId}
 </select>
+
+<!--  찜 하기 -->
 <insert id="insertLike" parameterType="Welfare">
   INSERT INTO welfare (
     service_no,
