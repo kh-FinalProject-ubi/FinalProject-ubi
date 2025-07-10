@@ -3,6 +3,7 @@ package edu.kh.project.member.model.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import edu.kh.project.board.model.mapper.CommentMapper;
+import edu.kh.project.board.model.mapper.MytownBoardMapper;
 import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.member.model.mapper.MemberMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -26,225 +29,264 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class MemberServiceImpl implements MemberService {
-    @Autowired
-    private MemberMapper mapper;
-    @Autowired
-    private BCryptPasswordEncoder bcrypt;
 
-    @Override
-    public Member login(String memberId, String memberPw) {
-        Member m = mapper.login(memberId);
-        if (m == null) return null;
+	@Autowired
+	private MemberMapper mapper;
 
-        boolean isMatch = bcrypt.matches(memberPw, m.getMemberPw());
+	@Autowired
+	private CommentMapper commentMapper;
 
+	@Autowired
+	private MytownBoardMapper boardMapper;
 
-        if (!isMatch) return null;
+	@Autowired
+	private BCryptPasswordEncoder bcrypt;
 
-        m.setMemberPw(null);
-        return m;
-    }
+	@Override
+	public Member login(String memberId, String memberPw) {
+		Member m = mapper.login(memberId);
+		if (m == null)
+			return null;
 
-    @Override
-    public int signup(Member inputMember) {
-        // 비밀번호 암호화
-        String encryptedPw = bcrypt.encode(inputMember.getMemberPw());
-        inputMember.setMemberPw(encryptedPw);
+		boolean isMatch = bcrypt.matches(memberPw, m.getMemberPw());
 
-        // 회원가입 처리
-        return mapper.signup(inputMember);
-    }
+		if (!isMatch)
+			return null;
 
-    @Override
-    public int checkEmail(String memberEmail) {
-        return mapper.checkEmail(memberEmail);
-    }
+		m.setMemberPw(null);
+		return m;
+	}
 
-    @Override
-    public int checkNickname(String memberNickname) {
-        return mapper.checkNickname(memberNickname);
-    }
+	@Override
+	public int signup(Member inputMember) {
+		// 비밀번호 암호화
+		String encryptedPw = bcrypt.encode(inputMember.getMemberPw());
+		inputMember.setMemberPw(encryptedPw);
 
-    @Override
-    public String createRandomCode() {
-        int code = (int)(Math.random() * 900000) + 100000;
-        return String.valueOf(code);
-    }
+		// 회원가입 처리
+		return mapper.signup(inputMember);
+	}
 
-    @Override
-    public boolean sendAuthCodeToEmail(String email, String authCode) {
-        try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(email);
-            message.setSubject("[UBI] 회원가입 인증번호 안내");
-            message.setText("인증번호: " + authCode + "\n입력창에 인증번호를 입력해주세요.");
-            message.setFrom("noreply@ubi.com");
-            mailSender.send(message);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
+	@Override
+	public int checkEmail(String memberEmail) {
+		return mapper.checkEmail(memberEmail);
+	}
 
-    @Override
-    public Member kakaoLogin(String code) {
-        try {
-            RestTemplate restTemplate = new RestTemplate();
+	@Override
+	public int checkNickname(String memberNickname) {
+		return mapper.checkNickname(memberNickname);
+	}
 
-            // 1. 인가 코드로 액세스 토큰 요청
-            String tokenUrl = "https://kauth.kakao.com/oauth/token";
-            String clientId = "b62bbea46498a09baf12fedc0a9bc832"; // 카카오 앱 REST API 키
-            String redirectUri = "http://localhost:5174/oauth/kakao/callback";
+	@Override
+	public String createRandomCode() {
+		int code = (int) (Math.random() * 900000) + 100000;
+		return String.valueOf(code);
+	}
 
-            String tokenResponse = restTemplate.postForObject(
-                tokenUrl +
-                "?grant_type=authorization_code" +
-                "&client_id=" + clientId +
-                "&redirect_uri=" + redirectUri +
-                "&code=" + code,
-                null,
-                String.class
-            );
+	@Override
+	public boolean sendAuthCodeToEmail(String email, String authCode) {
+		try {
+			SimpleMailMessage message = new SimpleMailMessage();
+			message.setTo(email);
+			message.setSubject("[UBI] 회원가입 인증번호 안내");
+			message.setText("인증번호: " + authCode + "\n입력창에 인증번호를 입력해주세요.");
+			message.setFrom("noreply@ubi.com");
+			mailSender.send(message);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 
-            // 2. 토큰 파싱
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, Object> tokenMap = objectMapper.readValue(tokenResponse, Map.class);
-            String accessToken = (String) tokenMap.get("access_token");
+	@Override
+	public Member kakaoLogin(String code) {
+		try {
+			RestTemplate restTemplate = new RestTemplate();
 
-            // 3. 액세스 토큰으로 사용자 정보 요청
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Authorization", "Bearer " + accessToken);
-            HttpEntity<String> entity = new HttpEntity<>(headers);
+			// 1. 인가 코드로 액세스 토큰 요청
+			String tokenUrl = "https://kauth.kakao.com/oauth/token";
+			String clientId = "b62bbea46498a09baf12fedc0a9bc832"; // 카카오 앱 REST API 키
+			String redirectUri = "http://localhost:5174/oauth/kakao/callback";
 
-            ResponseEntity<String> response = restTemplate.postForEntity(
-                "https://kapi.kakao.com/v2/user/me", entity, String.class
-            );
+			String tokenResponse = restTemplate.postForObject(tokenUrl + "?grant_type=authorization_code"
+					+ "&client_id=" + clientId + "&redirect_uri=" + redirectUri + "&code=" + code, null, String.class);
 
-            // 4. 사용자 정보 파싱
-            Map<String, Object> userMap = objectMapper.readValue(response.getBody(), Map.class);
-            String kakaoId = String.valueOf(userMap.get("id")); // 카카오 고유 ID
+			// 2. 토큰 파싱
+			ObjectMapper objectMapper = new ObjectMapper();
+			Map<String, Object> tokenMap = objectMapper.readValue(tokenResponse, Map.class);
+			String accessToken = (String) tokenMap.get("access_token");
 
-            // 5. DB에서 카카오 ID로 사용자 조회
-            Member member = mapper.selectByKakaoId(kakaoId);
-            if (member == null) {
-                // 신규 사용자는 프론트에서 회원가입 유도
-                throw new RuntimeException("신규 사용자입니다. 회원가입이 필요합니다.");
-            }
+			// 3. 액세스 토큰으로 사용자 정보 요청
+			HttpHeaders headers = new HttpHeaders();
+			headers.add("Authorization", "Bearer " + accessToken);
+			HttpEntity<String> entity = new HttpEntity<>(headers);
 
-            return member;
+			ResponseEntity<String> response = restTemplate.postForEntity("https://kapi.kakao.com/v2/user/me", entity,
+					String.class);
 
-        } catch (Exception e) {
-            throw new RuntimeException("카카오 로그인 처리 중 오류 발생", e);
-        }
-    }
+			// 4. 사용자 정보 파싱
+			Map<String, Object> userMap = objectMapper.readValue(response.getBody(), Map.class);
+			String kakaoId = String.valueOf(userMap.get("id")); // 카카오 고유 ID
 
-    private final JavaMailSender mailSender;
+			// 5. DB에서 카카오 ID로 사용자 조회
+			Member member = mapper.selectByKakaoId(kakaoId);
+			if (member == null) {
+				// 신규 사용자는 프론트에서 회원가입 유도
+				throw new RuntimeException("신규 사용자입니다. 회원가입이 필요합니다.");
+			}
 
-    public MemberServiceImpl(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-    }
+			return member;
 
-    // 아이디 중복 검사
-    @Override
-    public boolean checkIdAvailable(String memberId) {
-        return mapper.checkMemberId(memberId) == 0;
-    }
+		} catch (Exception e) {
+			throw new RuntimeException("카카오 로그인 처리 중 오류 발생", e);
+		}
+	}
 
-    // 닉네임 중복 검사
-    @Override
-    public boolean checkNicknameAvailable(String memberNickname) {
-        return mapper.checkNickname(memberNickname) == 0;
-    }
+	private final JavaMailSender mailSender;
+
+	public MemberServiceImpl(JavaMailSender mailSender) {
+		this.mailSender = mailSender;
+	}
+
+	// 아이디 중복 검사
+	@Override
+	public boolean checkIdAvailable(String memberId) {
+		return mapper.checkMemberId(memberId) == 0;
+	}
+
+	// 닉네임 중복 검사
+	@Override
+	public boolean checkNicknameAvailable(String memberNickname) {
+		return mapper.checkNickname(memberNickname) == 0;
+	}
 
 	@Override
 	public Member findByNo(Long memberNo) {
-	    return mapper.selectByNo(memberNo);
-	
+		return mapper.selectByNo(memberNo);
+
 	}
-	
+
 	// 신고하고 신고 취소하는 메서드
 	@Override
 	public boolean reportMember(int targetMemberNo, int reporterMemberNo, String reason) {
 
-	    // 1. 기존 신고 상태 조회 (Y, N, null)
-	    String status = mapper.checkReportStatus(targetMemberNo, reporterMemberNo);
+		// 1. 기존 신고 상태 조회 (Y, N, null)
+		String status = mapper.checkReportStatus(targetMemberNo, reporterMemberNo);
 
-	    // 2. 기존 멤버 신고 횟수 조회
-	    int beforeCount = mapper.selectMemberReportCount(targetMemberNo);
+		// 2. 기존 멤버 신고 횟수 조회
+		int beforeCount = mapper.selectMemberReportCount(targetMemberNo);
 
-	    try {
-	        if (status == null) {
-	            // 신규 신고 등록
-	            mapper.insertReport(targetMemberNo, reporterMemberNo, reason);
-	            mapper.increaseMemberReportCount(targetMemberNo);
+		try {
+			if (status == null) {
+				// 신규 신고 등록
+				mapper.insertReport(targetMemberNo, reporterMemberNo, reason);
+				mapper.increaseMemberReportCount(targetMemberNo);
 
-	            int afterCount = beforeCount + 1;
+				int afterCount = beforeCount + 1;
 
-	            Map<String, String> suspension = mapper.selectSuspension(targetMemberNo);
-	            LocalDateTime now = LocalDateTime.now();
+				Map<String, String> suspension = mapper.selectSuspension(targetMemberNo);
+				LocalDateTime now = LocalDateTime.now();
 
-	            // 신고 5의 배수면 정지 신규 등록 또는 연장
-	            if (afterCount % 5 == 0) {
-	                LocalDateTime newEnd = now.plusMinutes(5); // 정지 기간 (임시 5분)
-	                if (suspension == null) {
-	                    // 신규 정지 등록
-	                    mapper.insertSuspensionTest(targetMemberNo, now, newEnd);
-	                } else {
-	                    // 정지 기간 연장
-	                    LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
-	                    LocalDateTime extendedEnd = originEnd.isAfter(now) ? originEnd.plusMinutes(5) : newEnd;
-	                    mapper.extendSuspensionEnd(targetMemberNo, extendedEnd);
-	                }
-	            }
+				// 신고 5의 배수면 정지 신규 등록 또는 연장
+				if (afterCount % 5 == 0) {
+					LocalDateTime newEnd = now.plusMinutes(5); // 정지 기간 (임시 5분)
+					if (suspension == null) {
+						// 신규 정지 등록
+						mapper.insertSuspensionTest(targetMemberNo, now, newEnd);
 
-	            return true;
+						// ▶ 정지 발생 시 신고당한 댓글, 게시글 숨김 처리(삭제)
+						List<Integer> reportedComments = commentMapper.selectAllReportComments(targetMemberNo);
+						for (int commentNo : reportedComments) {
+							commentMapper.delete(commentNo);
+						}
 
-	        } else if ("Y".equals(status)) {
-	            // 신고 취소
-	            mapper.updateReportStatus(targetMemberNo, reporterMemberNo, reason, "N");
-	            mapper.decreaseMemberReportCount(targetMemberNo);
+						List<Integer> reportedBoards = boardMapper.selectAllReportBoards(targetMemberNo);
+						for (int boardNo : reportedBoards) {
+							// 게시글 작성자 번호 조회 필요
+							int boardWriterNo = boardMapper.selectBoardWriterNo(boardNo);
+							boardMapper.deleteBoard(boardNo, boardWriterNo);
+						}
 
-	            int afterCount = beforeCount - 1;
+					} else {
+						// 정지 기간 연장
+						LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
+						LocalDateTime extendedEnd = originEnd.isAfter(now) ? originEnd.plusMinutes(5) : newEnd;
+						mapper.extendSuspensionEnd(targetMemberNo, extendedEnd);
+					}
+				}
 
-	            Map<String, String> suspension = mapper.selectSuspension(targetMemberNo);
+				return true;
 
-	            // 신고 5의 배수 아래로 떨어졌으면 정지 해제
-	            if (beforeCount % 5 == 0 && suspension != null && afterCount < beforeCount) {
-	                mapper.deleteSuspension(targetMemberNo);
-	            }
+			} else if ("Y".equals(status)) {
+				// 신고 취소
+				mapper.updateReportStatus(targetMemberNo, reporterMemberNo, reason, "N");
+				mapper.decreaseMemberReportCount(targetMemberNo);
 
-	            return false;
+				int afterCount = beforeCount - 1;
 
-	        } else if ("N".equals(status)) {
-	            // 신고 재활성화
-	            mapper.updateReportStatus(targetMemberNo, reporterMemberNo, reason, "Y");
-	            mapper.increaseMemberReportCount(targetMemberNo);
+				Map<String, String> suspension = mapper.selectSuspension(targetMemberNo);
 
-	            int afterCount = beforeCount + 1;
+				// 신고 5의 배수 아래로 떨어졌으면 정지 해제
+				if (beforeCount % 5 == 0 && suspension != null && afterCount < beforeCount) {
+					mapper.deleteSuspension(targetMemberNo);
 
-	            Map<String, String> suspension = mapper.selectSuspension(targetMemberNo);
-	            LocalDateTime now = LocalDateTime.now();
+					// ▶ 정지 해제 시 신고 취소로 복구 처리
+					List<Integer> reportedComments = commentMapper.selectAllReportComments(targetMemberNo);
+					for (int commentNo : reportedComments) {
+						commentMapper.recover(commentNo);
+					}
 
-	            // 신고 5의 배수면 정지 신규 등록 또는 연장
-	            if (afterCount % 5 == 0) {
-	                LocalDateTime end = now.plusMinutes(5);
-	                if (suspension == null) {
-	                    mapper.insertSuspensionTest(targetMemberNo, now, end);
-	                } else {
-	                    LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
-	                    LocalDateTime extendedEnd = originEnd.isAfter(now) ? originEnd.plusMinutes(5) : end;
-	                    mapper.extendSuspensionEnd(targetMemberNo, extendedEnd);
-	                }
-	            }
-	            return true;
-	        }
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        throw e;
-	    }
+					List<Integer> reportedBoards = boardMapper.selectAllReportBoards(targetMemberNo);
+					for (int boardNo : reportedBoards) {
+						boardMapper.recoverBoard(boardNo);
+					}
+				}
 
-	    return false;
+				return false;
+
+			} else if ("N".equals(status)) {
+				// 신고 재활성화
+				mapper.updateReportStatus(targetMemberNo, reporterMemberNo, reason, "Y");
+				mapper.increaseMemberReportCount(targetMemberNo);
+
+				int afterCount = beforeCount + 1;
+
+				Map<String, String> suspension = mapper.selectSuspension(targetMemberNo);
+				LocalDateTime now = LocalDateTime.now();
+
+				// 신고 5의 배수면 정지 신규 등록 또는 연장
+				if (afterCount % 5 == 0) {
+					LocalDateTime end = now.plusMinutes(5);
+					if (suspension == null) {
+						mapper.insertSuspensionTest(targetMemberNo, now, end);
+
+						// ▶ 정지 발생 시 신고당한 댓글, 게시글 숨김 처리(삭제)
+						List<Integer> reportedComments = commentMapper.selectAllReportComments(targetMemberNo);
+						for (int commentNo : reportedComments) {
+							commentMapper.delete(commentNo);
+						}
+
+						List<Integer> reportedBoards = boardMapper.selectAllReportBoards(targetMemberNo);
+						for (int boardNo : reportedBoards) {
+							int boardWriterNo = boardMapper.selectBoardWriterNo(boardNo);
+							boardMapper.deleteBoard(boardNo, boardWriterNo);
+						}
+
+					} else {
+						LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
+						LocalDateTime extendedEnd = originEnd.isAfter(now) ? originEnd.plusMinutes(5) : end;
+						mapper.extendSuspensionEnd(targetMemberNo, extendedEnd);
+					}
+				}
+				return true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
+
+		return false;
 	}
-}
 
+}
