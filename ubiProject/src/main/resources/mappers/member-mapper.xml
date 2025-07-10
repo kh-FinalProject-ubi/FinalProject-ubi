@@ -247,15 +247,15 @@
 	</update>
 
 	<!-- 신고 횟수 0으로 초기화 -->
-	<update id="resetReportCount">
+	<update id="resetReportCountRemainder" parameterType="int">
 		UPDATE MEMBER
-		SET REPORT_COUNT = 0
-		WHERE MEMBER_NO =
-		#{memberNo}
+		SET REPORT_COUNT = REPORT_COUNT % 5
+		WHERE MEMBER_NO = #{memberNo}
 	</update>
 
 
-	<select id="selectMemberByNo" parameterType="long" resultType="edu.kh.project.member.model.dto.Member">
+	<select id="selectMemberByNo" parameterType="long"
+		resultType="edu.kh.project.member.model.dto.Member">
 		SELECT *
 		FROM MEMBER
 		WHERE MEMBER_NO = #{memberNo}
@@ -266,16 +266,18 @@
 		UPDATE
 		MEMBER_SUSPENSION
 		SET SUSPEND_END = #{end}
-		WHERE MEMBER_NO = #{targetMemberNo}
+		WHERE MEMBER_NO =
+		#{targetMemberNo}
 	</update>
 
 	<!-- 정지 종료 후 해당 회원을 대상으로 한 멤버 신고들을 N으로 바꾸기 -->
-	<update id="updateReportStatusSuspension"
-		parameterType="int">
-		UPDATE REPORT
+	<update id="updateReportStatusSuspension" parameterType="int">
+		UPDATE
+		REPORT
 		SET REPORT_STATUS = 'N'
 		WHERE TARGET_TYPE = 'MEMBER'
-		AND TARGET_MEMBER_NO = #{memberNo}
+		AND
+		TARGET_MEMBER_NO = #{memberNo}
 		AND REPORT_STATUS = 'Y'
 	</update>
 
