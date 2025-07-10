@@ -54,8 +54,26 @@ export default function FacilityDetailPage() {
     facility.tel || facility["전화번호"] || facility["DETAIL_TELNO"] || "없음";
 
   const imageUrl = facility.imageUrl || null;
-  const lat = facility.lat || facility["Y"];
-  const lng = facility.lng || facility["X"];
+
+
+  const lat =
+ facility.lat ||
+ facility.latitude || // ✅ 추가
+facility["Y"] ||
+  null;
+
+  const lng =
+ facility.lng ||
+ facility.longitude || // ✅ 추가
+facility["X"] ||
+  null;
+
+
+   console.log("lat check", {
+  rawLat: facility.latitude,
+  parsedLat: parseFloat(facility.latitude),
+  type: typeof facility.latitude,
+});
   const reservationUrl =
     facility.reservationUrl || facility["SVCURL"] || facility["HMPG_ADDR"];
   const phone =
@@ -65,6 +83,20 @@ export default function FacilityDetailPage() {
     facility["TEL"];
   const rawDescription = facility.description || facility["DTLCONT"] || "";
   const description = cleanDescription(rawDescription);
+ 
+// const lat =
+//   facility.lat ||
+//   facility.latitude || // ✅ 추가
+//   facility["Y"] ||
+//   parseFloat(facility["위도"]) ||
+//   null;
+
+// const lng =
+//   facility.lng ||
+//   facility.longitude || // ✅ 추가
+//   facility["X"] ||
+//   parseFloat(facility["경도"]) ||
+//   null;
 
   // ✅ 표시할 항목만 골라서 매핑
   const displayFields = {

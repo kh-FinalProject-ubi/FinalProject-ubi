@@ -33,8 +33,6 @@ const uploadedImagesRef = useRef([]); // 이미지 경로 저장용
 
     const postType = postTypeCheck?.trim(); // 공백 제거 보정
 
-    console.log("🔥 postTypeCheck:", postTypeCheck);
-console.log("🔥 postType (전송값):", postType);
     //1. 입력하지 않는 경우 alert
     if (!boardTitle.trim()) {
       alert("제목을 입력해주세요.");
@@ -280,6 +278,21 @@ console.log("hashtags:", hashtags);
 
       <div id="summernote" />
       <button onClick={handleSubmit}>글쓰기 완료</button>
+          {/* ✅ 여기 아래에 모달 조건부 렌더링 추가! */}
+    {showFacilityModal && (
+      <Modal onClose={() => setShowFacilityModal(false)}>
+        <WelfareFacilityModal
+          city={regionCity}
+          district={regionDistrict}
+          onSelect={({ name, id }) => {
+            setSelectedFacilityName(name);
+            setSelectedFacilityId(id);
+            setShowFacilityModal(false);
+          }}
+           onClose={() => setShowFacilityModal(false)}  // ✅ 직접 닫을 수 있도록 전달
+        />
+      </Modal>
+    )}
     </div>
 
 

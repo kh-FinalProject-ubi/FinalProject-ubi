@@ -7,6 +7,7 @@ import React, { useEffect, useState } from "react";
  * @param {number} lat - 위도 (체육시설용)
  * @param {number} lng - 경도 (체육시설용)
  */
+
 const KakaoMapView = ({ address, lat, lng }) => {
   const [loaded, setLoaded] = useState(false);
 
@@ -18,6 +19,7 @@ const KakaoMapView = ({ address, lat, lng }) => {
       }
     }, 300);
   }, []);
+
 
   useEffect(() => {
     if (!loaded) return;
@@ -37,6 +39,8 @@ const KakaoMapView = ({ address, lat, lng }) => {
       map.setCenter(coords);
       return;
     }
+
+
 
     // 📍 2) 주소 기반 표시 (복지시설)
     if (address) {

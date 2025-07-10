@@ -308,7 +308,7 @@ const matchesDistrict =
       categoryKeywords.some((target) => type?.includes(target));
 
       
-    return matchesKeyword && matchesServiceType && matchesCategory&& matchesDistrict;
+    return matchesKeyword && matchesServiceType && matchesCategory && matchesDistrict;
   });
 
 
