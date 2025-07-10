@@ -50,29 +50,27 @@ public class CommentServiceImpl implements CommentService {
 		int result = mapper.insert(comment);
 
 		if (result > 0) {
-			// 게시글 작성자 번호 조회 (예: boardMapper에서)
 			Integer writerNo = boardMapper.selectWriterNo(comment.getBoardNo());
 
-			log.info("💬 댓글 작성자: {}", comment.getMemberNo()); // 댓글 작성자
-			log.info("📝 게시글 작성자: {}", writerNo); // 게시글 작성자
-			log.info("⚖️ 동일인 여부: {}", writerNo != null && writerNo.equals(comment.getMemberNo())); // 비교
-
 			if (writerNo != null && !writerNo.equals(comment.getMemberNo())) {
-				AlertDto alert = AlertDto.builder().alertId(null) // 보통 null로 생성 (DB 저장 시 자동 생성)
-						.memberNo(writerNo != null ? writerNo.longValue() : null) // Integer → Long 변환
-						.type(AlertType.COMMENT).content("회원님의 게시글에 댓글이 달렸습니다.")
-						.targetUrl("/free/detail/" + comment.getBoardNo())
-						.createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-						.isRead(false).build();
-
-				log.info("📤 알림 전송 → /topic/alert/{}", writerNo); // ★ 여기가 핵심
-
-				messagingTemplate.convertAndSend("/topic/alert/" + writerNo, alert);
+				sendCommentAlert(writerNo.longValue(), "/free/detail/" + comment.getBoardNo());
 			}
 		}
 
 		return result;
 	}
+
+	// ✅ 댓글 알림 전송 전용 메서드
+	private void sendCommentAlert(Long writerNo, String targetUrl) {
+		AlertDto alert = AlertDto.builder().type(AlertType.COMMENT).content("회원님의 게시글에 댓글이 달렸습니다.").memberNo(writerNo)
+				.targetUrl(targetUrl)
+				.createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).isRead(false)
+				.build();
+
+		log.info("📤 알림 전송 → /topic/alert/{}", writerNo);
+		messagingTemplate.convertAndSend("/topic/alert/" + writerNo, alert);
+	
+}
 
 	// 댓글 삭제 기능 + 관리자 댓글 확인 후에 0인 경우 boardAnswer N을 바꾸는 메서드
 	@Override
@@ -226,10 +224,10 @@ public class CommentServiceImpl implements CommentService {
 							LocalDateTime end = originEnd.plusMinutes(5);
 							memberMapper.extendSuspensionEnd(targetMemberNo, end);
 						}
-						 List<Integer> reportedCommentNos = mapper.selectAllReportComments(targetMemberNo);
-						    for (int cno : reportedCommentNos) {
-						        mapper.delete(cno);
-						    }
+						List<Integer> reportedCommentNos = mapper.selectAllReportComments(targetMemberNo);
+						for (int cno : reportedCommentNos) {
+							mapper.delete(cno);
+						}
 					}
 				}
 				return true;

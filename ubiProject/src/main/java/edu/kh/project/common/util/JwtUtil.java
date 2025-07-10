@@ -15,10 +15,12 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
 @PropertySource("classpath:/config.properties")
+@Slf4j
 public class JwtUtil {
 
 	@Value("${jwt.secret}")
@@ -77,6 +79,7 @@ public class JwtUtil {
 	}
 
 	public boolean validateToken(String token) {
+		log.info("✅ Loaded secretKey: {}", secretKey);
 		try {
 			Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token); // 🔍 여기서 오류날 수도 있음
 			return true;

@@ -18,7 +18,7 @@ export default function FacilitySearchPage() {
   const auth = useAuthStore();
 
   useEffect(() => {
-    console.log("🔍 member 전체:", member); // ✅ 여기 찍어봐야 함
+    console.log("🔍 member 전체:", member); // 여기 찍어봐야 함
     if (member && !auth?.memberNo) {
       setAuth(member);
       console.log("✅ member 상태 전역 저장됨:", member.memberNo);
@@ -165,14 +165,6 @@ export default function FacilitySearchPage() {
     setCurrentPage(1);
   }, [selectedCity, selectedDistrict]);
 
-  // ⬇️ 임시 이 아래에 추가!
-useEffect(() => {
-  if (selectedCity) {
-    setAvailableDistricts(regionMap[selectedCity] || []);
-    setSelectedDistrict(regionMap[selectedCity]?.[0] || "");
-  }
-}, [selectedCity]);
-
   const handleRegionSourceChange = (source) => {
     setRegionSource(source);
 
@@ -183,9 +175,9 @@ useEffect(() => {
       if (city && district && regionMap[city]) {
         setSelectedCity(city);
         setAvailableDistricts(regionMap[city]);
-        // setSelectedDistrict(
-        //   regionMap[city].includes(district) ? district : regionMap[city][0]
-        // );
+        setSelectedDistrict(
+          regionMap[city].includes(district) ? district : regionMap[city][0]
+        );
       }
     }
 
@@ -240,19 +232,16 @@ useEffect(() => {
       : [...(Array.isArray(welfareData) ? welfareData : [])];
 
   const categoryMap = {
-    체육시설: ["테니스장", "다목적경기장","체육","체육시설"],
-    요양시설: ["재가노인복지시설", "노인요양시설", "장기요양기관","요양시설"],
-    의료시설: ["장애인재활치료시설", "정신건강복지 지역센터","건강센터","재활센터","의료시설"],
+    체육시설: ["체육시설", "테니스장", "다목적경기장"],
+    요양시설: ["재가노인복지시설", "노인요양시설", "장기요양기관"],
+    의료시설: ["장애인재활치료시설", "정신건강복지 지역센터"],
     행정시설: [
       "건강가정지원센터",
       "다문화가족지원센터",
       "사회복지관",
       "자활시설",
-      "행정시설"
     ],
   };
-
-  
 
   const isMatchServiceTarget = (facility, selectedType) => {
     if (selectedType === "전체") return true;
@@ -260,7 +249,7 @@ useEffect(() => {
       return true;
 
     const matchTable = {
-      노인: ["노인"], //요양제외 : 장애인 필터에걸림 
+      노인: ["노인", "요양"],
       청소년: ["청소년", "청년", "쉼터"],
       아동: ["아동", "유아", "보육"],
       장애인: ["장애인", "발달장애", "지체장애"],
@@ -292,12 +281,6 @@ useEffect(() => {
       f["FACLT_NM"] ||
       f["OPEN_FACLT_NM"] ||
       "";
-
-const matchesDistrict =
-  selectedCity === "제주특별자치도"
-    ? selectedDistrict === "" || f["district"]?.trim() === selectedDistrict
-    : true;
-
     const type =
       f["상세유형"] || f["시설종류명"] || f["SVC_TYPE"] || f["category"] || "";
     const matchesKeyword = keyword === "" || name.includes(keyword);
@@ -306,11 +289,8 @@ const matchesDistrict =
     const matchesCategory =
       category === "전체" ||
       categoryKeywords.some((target) => type?.includes(target));
-
-      
-    return matchesKeyword && matchesServiceType && matchesCategory&& matchesDistrict;
+    return matchesKeyword && matchesServiceType && matchesCategory;
   });
-
 
   const totalPages = Math.ceil(filteredFacilities.length / itemsPerPage);
   const currentItems = filteredFacilities.slice(

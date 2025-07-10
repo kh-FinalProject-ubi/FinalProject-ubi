@@ -238,7 +238,7 @@ public class BusanFacilityServiceImpl implements BusanFacilityService {
 
 	        JsonNode root;
 
-	        // 🔍 JSON인지 XML인지 판별
+	        // JSON인지 XML인지 판별
 	        if (response.trim().startsWith("{")) {
 	            ObjectMapper jsonMapper = new ObjectMapper(); // JSON 파싱
 	            root = jsonMapper.readTree(response);
