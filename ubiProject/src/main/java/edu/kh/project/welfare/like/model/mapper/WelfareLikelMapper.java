@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import edu.kh.project.welfare.benefits.model.dto.Welfare;
 
 @Mapper
-public interface WelfareDetailMapper {
+public interface WelfareLikelMapper {
 
     Welfare selectLike(Welfare dto);
 

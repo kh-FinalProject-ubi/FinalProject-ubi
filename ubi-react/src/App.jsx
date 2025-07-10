@@ -68,10 +68,12 @@ function App() {
             path="/welfareService/detail"
             element={<WelfareDetailPage />}
           />
+          <Route path="/welfareDetail" element={<WelfareDetailPage />} />
           <Route
             path="/welfareDetail/:servId"
             element={<WelfareDetailPage />}
           />
+
           <Route path="/seoulDetail" element={<SeoulWelfareDetailPage />} />
           <Route
             path="/facilityJobDetail"
