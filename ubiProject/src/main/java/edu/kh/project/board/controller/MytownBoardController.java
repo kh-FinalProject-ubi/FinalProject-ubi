@@ -53,6 +53,7 @@ public class MytownBoardController {
 			board.setLikeCheck(likeCheck);
 			String reportStatus = service.checkBoardReportStatus(boardNo, memberNo); // "Y" or "N" or null
 			board.setReportedByMe(reportStatus);
+			
 		} else if (board != null) {
 			board.setLikeCheck(0); // 비회원 등
 		}
