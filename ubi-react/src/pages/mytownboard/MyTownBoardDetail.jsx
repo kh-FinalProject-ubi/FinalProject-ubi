@@ -79,6 +79,7 @@ function MyTownBoardDetail() {
       alert("신고 실패");
     }
   };
+
   useEffect(() => {
     if (!token) {
       alert("로그인이 필요한 페이지입니다.");
@@ -88,7 +89,6 @@ function MyTownBoardDetail() {
 
     const memberParam = loginMemberNo ? `?memberNo=${loginMemberNo}` : "";
 
-    console.log("요청 전 loginMemberNo:", loginMemberNo, "token:", token);
     fetch(`/api/board/mytownBoard/${boardNo}${memberParam}`)
       .then(async (res) => {
         if (!res.ok) {
