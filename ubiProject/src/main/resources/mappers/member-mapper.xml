@@ -247,7 +247,7 @@
 	</update>
 
 	<!-- 신고 횟수 0으로 초기화 -->
-	<update id="resetReportCountRemainder" parameterType="int">
+	<update id="resetReportCount" parameterType="int">
 		UPDATE MEMBER
 		SET REPORT_COUNT = REPORT_COUNT % 5
 		WHERE MEMBER_NO = #{memberNo}
