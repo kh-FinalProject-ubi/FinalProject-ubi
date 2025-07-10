@@ -112,10 +112,11 @@ const Profile = () => {
         setMember(res.data);
 
         // 상태 갱신 (memberImg 기존 값 유지)
-        const store = useAuthStore.getState();
+        const { setAuth, ...stateOnly } = useAuthStore.getState();
+
         useAuthStore.getState().setAuth({
-          ...store,
-          memberImg: res.data.memberImg ?? store.memberImg,
+          ...stateOnly,
+          memberImg: res.data.memberImg ?? stateOnly.memberImg,
         });
 
         const { main, isDisabled, isPregnant } = parseMemberStandardCode(
@@ -351,27 +352,27 @@ const Profile = () => {
     }
   }, [member]);
 
-  const getMemberStandardLabel = (code) => {
-    const { main, isDisabled, isPregnant } = parseMemberStandardCode(code);
+  // const getMemberStandardLabel = (code) => {
+  //   const { main, isDisabled, isPregnant } = parseMemberStandardCode(code);
 
-    let labels = [];
+  //   let labels = [];
 
-    if (main) {
-      labels.push(main);
-    } else {
-      labels.push("일반");
-    }
+  //   if (main) {
+  //     labels.push(main);
+  //   } else {
+  //     labels.push("일반");
+  //   }
 
-    if (isDisabled) {
-      labels.push("장애인");
-    }
+  //   if (isDisabled) {
+  //     labels.push("장애인");
+  //   }
 
-    if (isPregnant) {
-      labels.push("임산부");
-    }
+  //   if (isPregnant) {
+  //     labels.push("임산부");
+  //   }
 
-    return labels.join(", ");
-  };
+  //   return labels.join(", ");
+  // };
 
   const location = useLocation();
 

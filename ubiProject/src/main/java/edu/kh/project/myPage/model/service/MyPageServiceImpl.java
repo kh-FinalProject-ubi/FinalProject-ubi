@@ -315,7 +315,7 @@ public class MyPageServiceImpl implements MyPageService {
 
 	// 프로필 이미지 변경 서비스
 	@Override
-	public String profile(int memberNo, MultipartFile profileImg) throws Exception {
+	public String profile(int memberNo, MultipartFile profileImg){
 
 		// 프로필 이미지 경로
 		String updatePath = null;
@@ -337,7 +337,15 @@ public class MyPageServiceImpl implements MyPageService {
 		    // 파일명 변경 및 저장
 		    rename = Utility.fileRename(profileImg.getOriginalFilename());
 		    File targetFile = new File(folderPath + rename);
-		    profileImg.transferTo(targetFile);
+		    
+		    try {
+		    	
+				profileImg.transferTo(targetFile);
+				
+			} catch (IllegalStateException | IOException e) {
+				
+				e.printStackTrace();
+			}
 
 		    // 클라이언트가 접근할 수 있는 경로 설정 (예: /myPage/profile/파일명)
 		    updatePath = profileWebPath + rename;
