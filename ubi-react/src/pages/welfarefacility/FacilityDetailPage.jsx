@@ -47,7 +47,8 @@ export default function FacilityDetailPage() {
     facility.facilityAddr ||
     facility["주소"] ||
     facility["REFINE_ROADNM_ADDR"] ||
-    facility["ADDR"];
+    facility["ADDR"] ||
+  facility["address"];
 
   const tel =
     facility.tel || facility["전화번호"] || facility["DETAIL_TELNO"] || "없음";
