@@ -12,16 +12,16 @@ import lombok.Data;
 @Builder
 public class JejuFacility {
 	
-
-    private String facilityId; // 예: "181jejuFacility"
+	// @JacksonXmlProperty(localName = "seq")
+    private String ServiceId; // 예: "jejuFacility181"
 
     @JacksonXmlProperty(localName = "FACLT_NM")
     private String facilityName;
 
-    @JacksonXmlProperty(localName = "LAT")
+    @JacksonXmlProperty(localName = "latitude")
     private double latitude;
 
-    @JacksonXmlProperty(localName = "LNG")
+    @JacksonXmlProperty(localName = "longitude")
     private double longitude;
 
     @JacksonXmlProperty(localName = "TELNO")
