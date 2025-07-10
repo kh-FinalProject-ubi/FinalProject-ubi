@@ -49,13 +49,6 @@ public interface MyPageService {
 
 	
 	//==========================================================================================
-	/** 프로필 이미지 수정 서비스
-	 * @param memberNo
-	 * @param memberImg
-	 * @return
-	 * @throws Exception
-	 */
-	String profile(int memberNo, MultipartFile memberImg) throws Exception;
 
 	/** 내 기본 정보 조회
 	 * @param memberNo
@@ -134,6 +127,13 @@ public interface MyPageService {
 	 * @return
 	 */
 	int withdraw(int memberNo);
+	
+	/** 프로필 이미지 수정 서비스
+	 * @param memberNo
+	 * @param memberImg
+	 * @return
+	 */
+	String profile(int memberNo, MultipartFile memberImg);
 
 	/** 프로필 이미지 초기화
 	 * @param memberNo

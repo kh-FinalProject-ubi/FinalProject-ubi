@@ -8,12 +8,13 @@ export default function ProfileImgUploader({ onSave }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // 🔹 업로드 중 UX 개선용
+  const [isLoading, setIsLoading] = useState(false);
   const defaultImg = "/default-profile.png";
+  const currentAuth = useAuthStore.getState();
 
   const { token, memberImg, setAuth } = useAuthStore();
 
-  // 🔹 persist 복원 후 렌더링
+  // persist 복원 후 렌더링
   useEffect(() => {
     setIsLoaded(true);
   }, []);
@@ -27,7 +28,7 @@ export default function ProfileImgUploader({ onSave }) {
     setPreviewUrl(URL.createObjectURL(file));
   }, []);
 
-  // 🔹 메모리 누수 방지
+  // 메모리 누수 방지
   useEffect(() => {
     return () => {
       if (previewUrl) {
@@ -47,6 +48,8 @@ export default function ProfileImgUploader({ onSave }) {
       const confirmed = window.confirm("기본 프로필로 변경하시겠습니까?");
       if (!confirmed) return;
 
+      console.log("handleRemoveImage 진입");
+
       try {
         setIsLoading(true);
         const res = await axios.delete("/api/myPage/profile", {
@@ -56,13 +59,12 @@ export default function ProfileImgUploader({ onSave }) {
         });
 
         if (res.status === 200) {
-          setAuth((prev) => ({
-            ...prev,
+          setAuth({
+            ...currentAuth,
             memberImg: null,
-          }));
-
-          onSave?.();
+          });
         }
+
       } catch (err) {
         console.error("프로필 이미지 삭제 실패", err);
         alert("프로필 이미지 삭제에 실패했습니다.");
@@ -90,10 +92,10 @@ export default function ProfileImgUploader({ onSave }) {
         setSelectedFile(null);
         setPreviewUrl(null);
 
-        setAuth((prev) => ({
-          ...prev,
-          memberImg: res.data,
-        }));
+        setAuth({
+          ...currentAuth,
+          memberImg: null,
+        });
 
         onSave?.();
       }
@@ -105,14 +107,14 @@ export default function ProfileImgUploader({ onSave }) {
     }
   }, [selectedFile, token, onSave, setAuth]);
 
-  // 🔹 렌더링 최적화
+  // 렌더링 최적화
   const imageSrc = useMemo(() => {
     if (previewUrl) return previewUrl;
     if (memberImg) return `http://localhost:8080${memberImg}`;
     return defaultImg;
   }, [previewUrl, memberImg]);
 
-  // 🔹 persist 복원 전 렌더링 방지
+  // persist 복원 전 렌더링 방지
   if (!isLoaded) return null;
 
   return (
