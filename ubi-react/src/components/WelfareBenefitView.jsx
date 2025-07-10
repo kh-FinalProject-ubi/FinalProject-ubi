@@ -23,20 +23,11 @@ const WelfareBenefitView = ({ district = "", benefits = [], isLoading }) => {
   const [selectedDetail, setSelectedDetail] = useState(null);
 
   // 1️⃣ 지역 필터링
-  console.log(
-    "🧾 benefits 지역 필드 예시:",
-    benefits.map((b) => ({
-      regionCity: b.regionCity,
-      regionDistrict: b.regionDistrict,
-      full: `${b.regionCity} ${b.regionDistrict}`.trim(),
-    }))
-  );
   const regionFilteredList = useMemo(() => {
     const result = benefits.filter((item) => {
       const normalized = `${item.regionCity} ${item.regionDistrict}`.trim();
       return normalized === cleanDistrict;
     });
-    console.log("🔍 regionFilteredList.length:", result.length);
     return result;
   }, [benefits, cleanDistrict]);
 
@@ -48,15 +39,13 @@ const WelfareBenefitView = ({ district = "", benefits = [], isLoading }) => {
       token,
       showAll
     );
-    console.log("🎯 filteredList.length:", result.length);
     return result;
   }, [regionFilteredList, memberStandard, token, showAll]);
 
   const fetchDetail = async (servId) => {
     if (!servId) return;
-    const pureId = servId.replace("bokjiro-", ""); // ← 여기 핵심
+    const pureId = servId.replace("bokjiro-", "");
     try {
-      console.log("📡 상세 조회 요청:", pureId);
       const res = await fetch(
         `/api/welfare-curl/welfare-detail?servId=${pureId}`
       );
@@ -68,20 +57,16 @@ const WelfareBenefitView = ({ district = "", benefits = [], isLoading }) => {
       }
 
       setSelectedDetail(data.detail);
-    } catch (err) {
-      console.error("❌ 상세 정보 불러오기 실패:", err);
-    }
+    } catch (err) {}
   };
 
   // ✅ 로딩
   if (isLoading) {
-    console.log("⌛ 로딩 중...");
     return <p>⏳ 복지 정보를 불러오는 중입니다...</p>;
   }
 
   // ✅ 데이터 없음
   if (!filteredList || filteredList.length === 0) {
-    console.log("📭 조건에 맞는 복지 혜택 없음");
     return (
       <p>
         📭 <strong>{cleanDistrict}</strong>의 복지 혜택 정보가 없습니다.
@@ -89,7 +74,6 @@ const WelfareBenefitView = ({ district = "", benefits = [], isLoading }) => {
     );
   }
 
-  
   return (
     <div style={{ marginTop: "1rem" }}>
       <h3>

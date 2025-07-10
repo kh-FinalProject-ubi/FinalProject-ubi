@@ -101,7 +101,7 @@ public class JejuFacilityServiceImpl implements JejuFacilityService {
         }
         
         return JejuFacility.builder()
-                .facilityId(res.getSeq() + "jejuFacility")
+                .ServiceId("jejuFacility" + res.getSeq()  )
                 .facilityName(res.getName())
                 .welfareTargets(targets)
                 .address(res.getAddr())

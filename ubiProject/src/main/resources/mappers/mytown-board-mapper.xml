@@ -157,11 +157,13 @@
 		INSERT INTO BOARD (
 		BOARD_NO, BOARD_TYPE, BOARD_TITLE,
 		BOARD_CONTENT, MEMBER_NO,
-		BOARD_DATE,BOARD_READ_COUNT,STAR_COUNT,POST_TYPE
+		BOARD_DATE,BOARD_READ_COUNT,STAR_COUNT,POST_TYPE,
+		API_SERVICE_ID,
+		    FACILITY_API_SERVICE_ID
 		) VALUES (
 		SEQ_BOARD_NO.NEXTVAL, 3, #{boardTitle}, #{boardContent}, #{memberNo},
 		SYSDATE, 0,
-		#{starCount} ,#{postType}
+		#{starCount} ,#{postType}, #{ApiServiceId},#{facilityApiServiceId},
 		)
 	</insert>
 

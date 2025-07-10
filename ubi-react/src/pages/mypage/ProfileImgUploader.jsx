@@ -49,7 +49,7 @@ export default function ProfileImgUploader({ onSave }) {
       const confirmed = window.confirm("기본 프로필로 변경하시겠습니까?");
       if (!confirmed) return;
 
-      console.log("handleRemoveImage 진입");
+      // console.log("handleRemoveImage 진입");
 
       try {
         setIsLoading(true);

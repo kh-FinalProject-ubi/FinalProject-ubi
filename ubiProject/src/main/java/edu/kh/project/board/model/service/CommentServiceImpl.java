@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import edu.kh.project.board.model.dto.Comment;
 import edu.kh.project.board.model.mapper.BoardMapper;
 import edu.kh.project.board.model.mapper.CommentMapper;
+import edu.kh.project.board.model.mapper.MytownBoardMapper;
 import edu.kh.project.member.model.mapper.MemberMapper;
 import edu.kh.project.websocket.dto.AlertDto;
 import edu.kh.project.websocket.type.AlertType;
@@ -30,6 +31,9 @@ public class CommentServiceImpl implements CommentService {
 
 	@Autowired
 	private BoardMapper boardMapper; // 게시글 작성자 번호 조회용 (필요 시 생성)
+	
+	@Autowired
+	private MytownBoardMapper myTownBoardMapper;
 
 	@Autowired
 	private CommentMapper mapper;
@@ -128,118 +132,150 @@ public class CommentServiceImpl implements CommentService {
 	// 신고하고 신고 취소하는 메서드
 	@Override
 	public boolean reportComment(int commentNo, int memberNo) {
+	    Integer targetMemberNo = mapper.selectCommentWriterNo(commentNo);
+	    if (targetMemberNo == null)
+	        return false;
 
-		Integer targetMemberNo = mapper.selectCommentWriterNo(commentNo);
-		if (targetMemberNo == null)
-			return false;
+	    String reportStatus = mapper.checkCommentReportCount(commentNo, memberNo);
 
-		String reportStatus = mapper.checkCommentReportCount(commentNo, memberNo);
+	    int beforeReportCount = mapper.selectCommentReportTotalCount(commentNo);
 
-		int beforeReportCount = mapper.selectCommentReportTotalCount(commentNo);
+	    try {
+	        if (reportStatus == null) {
+	            // 최초 신고
+	            Map<String, Object> paramMap = new HashMap<>();
+	            paramMap.put("commentNo", commentNo);
+	            paramMap.put("memberNo", memberNo);
+	            paramMap.put("targetMemberNo", targetMemberNo);
+	            int result = mapper.insertCommentReport(paramMap);
+	            System.out.println("insertCommentReport result: " + result);
+	            mapper.updateCommentReportCount(commentNo);
 
-		try {
-			if (reportStatus == null) {
-				// 최초 신고
-				Map<String, Object> paramMap = new HashMap<>();
-				paramMap.put("commentNo", commentNo);
-				paramMap.put("memberNo", memberNo);
-				paramMap.put("targetMemberNo", targetMemberNo);
-				int result = mapper.insertCommentReport(paramMap);
-				System.out.println("insertCommentReport result: " + result);
-				mapper.updateCommentReportCount(commentNo);
+	            int afterReportCount = mapper.selectCommentReportTotalCount(commentNo);
 
-				int afterReportCount = mapper.selectCommentReportTotalCount(commentNo);
+	            if (afterReportCount % 3 == 0) {
+	                memberMapper.updateMemberReportCount(targetMemberNo, +1);
 
-				if (afterReportCount % 3 == 0) {
-					memberMapper.updateMemberReportCount(targetMemberNo, +1);
+	                int memberReportCount = memberMapper.selectMemberReportCount(targetMemberNo);
 
-					int memberReportCount = memberMapper.selectMemberReportCount(targetMemberNo);
+	                Map<String, String> suspension = memberMapper.selectSuspension(targetMemberNo);
 
-					Map<String, String> suspension = memberMapper.selectSuspension(targetMemberNo);
+	                if (memberReportCount % 5 == 0) {
+	                    LocalDateTime now = LocalDateTime.now();
+	                    if (suspension == null) {
+	                        // 신규 정지 등록 (5의 배수일 때)
+	                        LocalDateTime end = now.plusMinutes(5);
+	                        memberMapper.insertSuspensionTest(targetMemberNo, now, end);
+	                    } else {
+	                        // 정지 중이면 정지 기간 연장
+	                        LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
+	                        LocalDateTime end = originEnd.plusMinutes(5); // 연장 기간 설정
+	                        memberMapper.extendSuspensionEnd(targetMemberNo, end);
+	                    }
 
-					if (memberReportCount % 5 == 0) {
-						LocalDateTime now = LocalDateTime.now();
-						if (suspension == null) {
-							// 신규 정지 등록 (5의 배수일 때)
-							LocalDateTime end = now.plusMinutes(5);
-							memberMapper.insertSuspensionTest(targetMemberNo, now, end);
-						} else {
-							// 정지 중이면 정지 기간 연장
-							LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
-							LocalDateTime end = originEnd.plusMinutes(5); // 연장 기간 설정
-							memberMapper.extendSuspensionEnd(targetMemberNo, end);
-						}
+	                    // ▶ 회원 정지 발생 시 신고당한 댓글 삭제 처리
+	                    List<Integer> reportedCommentNos = mapper.selectAllReportComments(targetMemberNo);
+	                    for (int cno : reportedCommentNos) {
+	                        mapper.delete(cno);
+	                    }
 
-						// 댓글 숨기기 (삭제 처리)
-						mapper.delete(commentNo);
-					}
-				}
-				return true;
+	                    // ▶ 신고당한 게시글도 같이 삭제 처리
+	                    List<Integer> reportedBoardNos = myTownBoardMapper.selectAllReportBoards(targetMemberNo);
+	                    for (int bno : reportedBoardNos) {
+	                        Integer boardWriterNo = myTownBoardMapper.selectBoardWriterNo(bno);
+	                        if (boardWriterNo != null) {
+	                        	myTownBoardMapper.deleteBoard(bno, boardWriterNo);
+	                        }
+	                    }
+	                }
+	            }
+	            return true;
 
-			} else if ("Y".equals(reportStatus)) {
-				// 신고 취소
-				mapper.deleteCommentReport(commentNo, memberNo);
-				mapper.decreaseCommentReportCount(commentNo);
+	        } else if ("Y".equals(reportStatus)) {
+	            // 신고 취소
+	            mapper.deleteCommentReport(commentNo, memberNo);
+	            mapper.decreaseCommentReportCount(commentNo);
 
-				int afterReportCount = mapper.selectCommentReportTotalCount(commentNo);
+	            int afterReportCount = mapper.selectCommentReportTotalCount(commentNo);
 
-				if (beforeReportCount % 3 == 0 && afterReportCount % 3 == 2) {
-					memberMapper.updateMemberReportCount(targetMemberNo, -1);
+	            if (beforeReportCount % 3 == 0 && afterReportCount % 3 == 2) {
+	                memberMapper.updateMemberReportCount(targetMemberNo, -1);
 
-					int memberReportCount = memberMapper.selectMemberReportCount(targetMemberNo);
+	                int memberReportCount = memberMapper.selectMemberReportCount(targetMemberNo);
 
-					// 정지 상태 조회
-					Map<String, String> suspension = memberMapper.selectSuspension(targetMemberNo);
+	                // 정지 상태 조회
+	                Map<String, String> suspension = memberMapper.selectSuspension(targetMemberNo);
 
-					// 신고 카운트가 5 미만이고 정지 상태면 해제
-					if (memberReportCount < 5 && suspension != null) {
-						memberMapper.deleteSuspension(targetMemberNo);
-						// 댓글 복구
-						mapper.recover(commentNo);
-					}
-				}
-				return false;
+	                // 신고 카운트가 5 미만이고 정지 상태면 해제
+	                if (memberReportCount < 5 && suspension != null) {
+	                    memberMapper.deleteSuspension(targetMemberNo);
 
-			} else if ("N".equals(reportStatus)) {
-				// 신고 재활성화
-				mapper.reactivateCommentReport(commentNo, memberNo);
-				mapper.updateCommentReportCount(commentNo);
+	                    // ▶ 신고 취소 및 정지 해제 시 댓글 복구 (단, 정지 기록이 존재할 때만)
+	                    List<Integer> reportedCommentNos = mapper.selectAllReportComments(targetMemberNo);
+	                    for (int cno : reportedCommentNos) {
+	                        mapper.recover(cno);
+	                    }
 
-				int afterReportCount = mapper.selectCommentReportTotalCount(commentNo);
+	                    // ▶ 게시글도 같이 복구 처리
+	                    List<Integer> reportedBoards = myTownBoardMapper.selectAllReportBoards(targetMemberNo);
+	                    for (int bno : reportedBoards) {
+	                    	myTownBoardMapper.recoverBoard(bno);
+	                    }
+	                }
+	            }
+	            return false;
 
-				if (afterReportCount % 3 == 0) {
-					memberMapper.updateMemberReportCount(targetMemberNo, +1);
+	        } else if ("N".equals(reportStatus)) {
+	            // 신고 재활성화
+	            mapper.reactivateCommentReport(commentNo, memberNo);
+	            mapper.updateCommentReportCount(commentNo);
 
-					int memberReportCount = memberMapper.selectMemberReportCount(targetMemberNo);
-					Map<String, String> suspension = memberMapper.selectSuspension(targetMemberNo);
+	            int afterReportCount = mapper.selectCommentReportTotalCount(commentNo);
 
-					if (memberReportCount % 5 == 0) {
-						LocalDateTime now = LocalDateTime.now();
+	            if (afterReportCount % 3 == 0) {
+	                memberMapper.updateMemberReportCount(targetMemberNo, +1);
 
-						if (suspension == null) {
-							LocalDateTime end = now.plusMinutes(5);
-							memberMapper.insertSuspensionTest(targetMemberNo, now, end);
-						} else {
-							LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
-							LocalDateTime end = originEnd.plusMinutes(5);
-							memberMapper.extendSuspensionEnd(targetMemberNo, end);
-						}
-						List<Integer> reportedCommentNos = mapper.selectAllReportComments(targetMemberNo);
-						for (int cno : reportedCommentNos) {
-							mapper.delete(cno);
-						}
-					}
-				}
-				return true;
-			}
+	                int memberReportCount = memberMapper.selectMemberReportCount(targetMemberNo);
+	                Map<String, String> suspension = memberMapper.selectSuspension(targetMemberNo);
 
-		} catch (Exception e) {
-			System.out.println("⛔ reportComment 트랜잭션 처리 중 예외 발생!");
-			e.printStackTrace();
-			throw e; // 또는 return false; (실패 처리를 프론트에 알려주고 싶으면)
-		}
+	                if (memberReportCount % 5 == 0) {
+	                    LocalDateTime now = LocalDateTime.now();
 
-		return false;
+	                    if (suspension == null) {
+	                        LocalDateTime end = now.plusMinutes(5);
+	                        memberMapper.insertSuspensionTest(targetMemberNo, now, end);
+	                    } else {
+	                        LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
+	                        LocalDateTime end = originEnd.plusMinutes(5);
+	                        memberMapper.extendSuspensionEnd(targetMemberNo, end);
+	                    }
+
+	                    // ▶ 신고 누적으로 인한 정지 시 댓글 및 게시글 삭제 처리
+	                    List<Integer> reportedCommentNos = mapper.selectAllReportComments(targetMemberNo);
+	                    for (int cno : reportedCommentNos) {
+	                        mapper.delete(cno);
+	                    }
+
+	                    List<Integer> reportedBoardNos = myTownBoardMapper.selectAllReportBoards(targetMemberNo);
+	                    for (int bno : reportedBoardNos) {
+	                        Integer boardWriterNo = myTownBoardMapper.selectBoardWriterNo(bno);
+	                        if (boardWriterNo != null) {
+	                        	myTownBoardMapper.deleteBoard(bno, boardWriterNo);
+	                        }
+	                    }
+	                }
+	            }
+	            return true;
+	        }
+
+	    } catch (Exception e) {
+	        System.out.println("⛔ reportComment 트랜잭션 처리 중 예외 발생!");
+	        e.printStackTrace();
+	        throw e;
+	    }
+
+	    return false;
+
 	}
 
 }

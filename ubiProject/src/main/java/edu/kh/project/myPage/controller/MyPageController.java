@@ -336,11 +336,10 @@ public class MyPageController {
 	 * @param profileImage
 	 * @param memberNo
 	 * @return
-	 * @throws Exception
 	 */
 	@PostMapping("profile")
 	public ResponseEntity<Object> profile(@RequestParam("profileImage") MultipartFile profileImage,
-										  @RequestHeader("Authorization") String authorizationHeader ) throws Exception {
+										  @RequestHeader("Authorization") String authorizationHeader) {
 
 		try {
 			
@@ -381,7 +380,7 @@ public class MyPageController {
 	 * @throws Exception
 	 */
 	@DeleteMapping("profile")
-	public ResponseEntity<Object> profile(@RequestHeader("Authorization") String authorizationHeader ) throws Exception {
+	public ResponseEntity<Object> profile(@RequestHeader("Authorization") String authorizationHeader ){
 		
 		try {
 			

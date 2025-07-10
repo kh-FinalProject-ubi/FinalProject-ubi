@@ -49,6 +49,7 @@ export function initAuthFromToken() {
     });
 
     console.log("✅ useAuthStore 재설정 완료");
+    console.log("📦 decoded.taddress:", decoded.taddress);
   } catch (e) {
     console.error("❌ 토큰 디코딩 실패:", e);
   }
