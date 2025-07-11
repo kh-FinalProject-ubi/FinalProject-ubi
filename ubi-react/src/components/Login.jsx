@@ -38,6 +38,7 @@ const Login = () => {
 
       const data = await res.json();
       if (res.ok) {
+        console.log("🔥 로그인 응답 데이터:", data); // ← 이거 추가!
         const parts = data.address?.split("^^^");
         const baseAddress = parts.length >= 2 ? parts[1] : data.address;
         const tokens = baseAddress.trim().split(" ");

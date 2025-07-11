@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Client } from "@stomp/stompjs";
 import useAuthStore from "../../stores/useAuthStore";
+import SockJS from "sockjs-client";
 
 export default function useAlertSocket(memberNo, onAlertReceive) {
   const stompClientRef = useRef(null);
@@ -18,17 +19,19 @@ export default function useAlertSocket(memberNo, onAlertReceive) {
       console.log("🔑 전달된 token:", token); // ✅ 인코딩 없이 출력
 
       const client = new Client({
-        brokerURL: "ws://localhost:8080/ws-alert", // ✅ WebSocket 직접 연결
+        brokerURL: "ws://localhost:8080/ws-alert",
         connectHeaders: {
-          Authorization: `Bearer ${token}`, // ✅ 원본 그대로 전달
+          Authorization: `Bearer ${token}`,
         },
         reconnectDelay: 5000,
-
+        debug: function (str) {
+          console.log("[WebSocket Debug]", str);
+        },
         onConnect: () => {
           console.log("🟢 WebSocket 연결 성공");
 
           const topic = `/topic/alert/${memberNo}`;
-          console.log("📍 구독 경로:", topic);
+          console.log("📍 구독 경로:", `/topic/alert/${memberNo}`);
 
           client.subscribe(topic, (message) => {
             console.log("📩 수신된 메시지:", message);
@@ -42,7 +45,6 @@ export default function useAlertSocket(memberNo, onAlertReceive) {
             }
           });
         },
-
         onWebSocketClose: (evt) => {
           console.warn("⚠️ WebSocket 닫힘", evt);
           if (!reconnectTimeoutRef.current) {
@@ -53,11 +55,9 @@ export default function useAlertSocket(memberNo, onAlertReceive) {
             }, 5000);
           }
         },
-
         onStompError: (frame) => {
           console.error("❌ STOMP 오류:", frame.headers["message"]);
         },
-
         onDisconnect: () => {
           console.log("🛑 WebSocket 연결 해제됨");
         },

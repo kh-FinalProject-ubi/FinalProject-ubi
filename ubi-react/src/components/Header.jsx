@@ -30,7 +30,7 @@ const Header = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
-  // ✅ WebSocket 알림 수신 연결 (항상 호출)
+  //  WebSocket 알림 수신 연결 (항상 호출)
   useAlertSocket(memberNo, (newAlert) => {
     setAlerts((prev) => [newAlert, ...prev]);
   });
