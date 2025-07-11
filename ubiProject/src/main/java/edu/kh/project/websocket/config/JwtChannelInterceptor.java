@@ -37,6 +37,8 @@ public class JwtChannelInterceptor implements ChannelInterceptor{
 	@Override
 	public Message<?> preSend(Message<?> message, MessageChannel channel) {
 	    StompHeaderAccessor acc = StompHeaderAccessor.wrap(message);
+	    System.out.println("STOMP 커맨드: " + acc.getCommand());
+	    System.out.println("헤더 전체: " + acc.toNativeHeaderMap());
 	    if (StompCommand.CONNECT.equals(acc.getCommand())) {
 	        // 항상 통과
 	    }
