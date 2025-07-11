@@ -114,15 +114,19 @@ const displayedBoards = filteredBoards.slice(
     <option value="해시태그">해시태그</option>
   </select>
   <input
-    type="text"
-    placeholder="검색어를 입력하세요"
-    value={searchKeyword}
-    onChange={(e) => {
-      setSearchKeyword(e.target.value);
-      setCurrentPage(1);
-    }}
-    style={{ flex: 1 }}
-  />
+  type="text"
+  placeholder={
+    searchType === "해시태그"
+      ? "#해시태그를 입력해보세요 (예: #여행)"
+      : "검색어를 입력하세요"
+  }
+  value={searchKeyword}
+  onChange={(e) => {
+    setSearchKeyword(e.target.value);
+    setCurrentPage(1);
+  }}
+  style={{ flex: 1 }}
+/>
 </div>
 
 
@@ -196,70 +200,90 @@ const displayedBoards = filteredBoards.slice(
         </tbody>
       </table>
 
-     <ul>
-      {displayedBoards.map((board) => (
-        <li key={board.boardNo} style={{ borderBottom: "1px solid #ccc", padding: "10px" }}>
-          <h3><Link to={`/mytownBoard/${board.boardNo}`}>{board.boardTitle}</Link></h3>
+    <ul>
+  {displayedBoards.length === 0 ? (
+    <p style={{ margin: "30px 0", textAlign: "center", fontSize: "18px", color: "#888" }}>
+      😥 해당하는 게시물이 없습니다.
+    </p>
+  ) : (
+    displayedBoards.map((board) => (
+      <li key={board.boardNo} style={{ borderBottom: "1px solid #ccc", padding: "10px" }}>
+        <h3><Link to={`/mytownBoard/${board.boardNo}`}>{board.boardTitle}</Link></h3>
+        <img
+          src={board.thumbnail ? board.thumbnail.replace(/\/{2,}/g, "/") : "/default-thumbnail.png"}
+          alt="썸네일"
+        />
+        <p>
           <img
-            src={board.thumbnail ? board.thumbnail.replace(/\/{2,}/g, "/") : "/default-thumbnail.png"}
-            alt="썸네일"
+            src={board.memberImg || "/default-profile.png"}
+            alt="프로필"
+            width="40"
+            height="40"
+            style={{ borderRadius: "50%", marginRight: "10px" }}
           />
-          <p>
-            <img src={board.memberImg || "/default-profile.png"} alt="프로필" width="40" height="40" style={{ borderRadius: "50%", marginRight: "10px" }} />
-            {board.memberNickname}
-          </p>
-          <p>{stripHtml(board.boardContent)}</p>
-          <p><strong>작성일:</strong> {board.boardDate}</p>
-          <p><strong>지역:</strong> {board.regionCity} {board.regionDistrict}</p>
-          <div>
-            <span>조회수 {board.boardReadCount}</span>
-            {!(board.postType === "자랑" || board.postType === "자유") && <span>⭐ {board.starCount ?? 0}</span>}
-            <span style={{ marginLeft: "10px" }}>❤️ {board.likeCount}</span>
-          </div>
+          {board.memberNickname}
+        </p>
+        <p>{stripHtml(board.boardContent)}</p>
+        <p><strong>작성일:</strong> {board.boardDate}</p>
+        <p><strong>지역:</strong> {board.regionCity} {board.regionDistrict}</p>
+        <div>
+          <span>조회수 {board.boardReadCount}</span>
+          {!(board.postType === "자랑" || board.postType === "자유") && (
+            <span>⭐ {board.starCount ?? 0}</span>
+          )}
+          <span style={{ marginLeft: "10px" }}>❤️ {board.likeCount}</span>
+        </div>
 
-           {/* 🔗 해시태그 클릭 */}
-            <div style={{ marginTop: "5px", color: "#3b5998" }}>
-              {generateTagList(board).map((tag, idx) => (
-                <span
-                  key={idx}
-                  style={{ cursor: "pointer", marginRight: "5px" }}
-                  onClick={() => {
-                    setSearchType("해시태그");
-                    setSearchKeyword(tag);
-                    setCurrentPage(1);
-                  }}
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
-        </li>
-      ))}
-    </ul>
+        {/* 🔗 해시태그 클릭 */}
+        <div style={{ marginTop: "5px", color: "#3b5998" }}>
+          {generateTagList(board).map((tag, idx) => (
+            <span
+              key={idx}
+              style={{ cursor: "pointer", marginRight: "5px" }}
+              onClick={() => {
+                setSearchType("해시태그");
+                setSearchKeyword(tag);
+                setCurrentPage(1);
+              }}
+            >
+              #{tag}
+            </span>
+          ))}
+        </div>
+      </li>
+    ))
+  )}
+</ul>
+
 
  
     {/* 페이지네이션 */}
-    <div style={{ marginTop: "20px" }}>
-      <button onClick={() => setCurrentPage(1)} disabled={currentPage <= 1}>&laquo;</button>
-      <button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage <= 1}>&lt;</button>
-      {Array.from({ length: maxPage }, (_, i) => i + 1).map((pageNum) => (
-        <button
-          key={pageNum}
-          onClick={() => setCurrentPage(pageNum)}
-          disabled={pageNum === currentPage}
-          style={{ fontWeight: pageNum === currentPage ? "bold" : "normal", margin: "0 5px" }}
-        >
-          {pageNum}
-        </button>
-      ))}
-      <button onClick={() => setCurrentPage(prev => Math.min(maxPage, prev + 1))} disabled={currentPage >= maxPage}>&gt;</button>
-      <button onClick={() => setCurrentPage(maxPage)} disabled={currentPage >= maxPage}>&raquo;</button>
-    </div>
+    
+{maxPage > 1 && displayedBoards.length > 0 && (
+  <div style={{ marginTop: "20px" }}>
+    <button onClick={() => setCurrentPage(1)} disabled={currentPage <= 1}>&laquo;</button>
+    <button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage <= 1}>&lt;</button>
+    {Array.from({ length: maxPage }, (_, i) => i + 1).map((pageNum) => (
+      <button
+        key={pageNum}
+        onClick={() => setCurrentPage(pageNum)}
+        disabled={pageNum === currentPage}
+        style={{ fontWeight: pageNum === currentPage ? "bold" : "normal", margin: "0 5px" }}
+      >
+        {pageNum}
+      </button>
+    ))}
+    <button onClick={() => setCurrentPage(prev => Math.min(maxPage, prev + 1))} disabled={currentPage >= maxPage}>&gt;</button>
+    <button onClick={() => setCurrentPage(maxPage)} disabled={currentPage >= maxPage}>&raquo;</button>
+  </div>
+)}
 
       <button onClick={() => navigate("/mytownBoard/write")} className="write-btn">
         글쓰기
       </button>
     </div>
+
+    
   );
 }
 

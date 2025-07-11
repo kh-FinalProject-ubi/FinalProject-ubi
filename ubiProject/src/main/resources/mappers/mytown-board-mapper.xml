@@ -109,7 +109,7 @@
     #{memberNo},
     #{facilityName},
     #{facilityKindCd},  <!-- 여기 수정됨 -->
-    #{facilityAddress},
+    #{facilityName},<!-- 여기 수정됨 -->
     #{regionCity},
     #{regionDistrict},
     SYSDATE,

@@ -1,4 +1,6 @@
-const cityDistrictMap = {
+import { normalizeRegion } from "../utils/regionUtils";
+
+const rawcityDistrictMap = {
   서울특별시: [
     "강남구",
     "강동구",
@@ -239,6 +241,19 @@ const cityDistrictMap = {
     "합천군",
   ],
   제주특별자치도: ["서귀포시", "제주시"],
+
+  
 };
+const cityDistrictMap = {};
+
+Object.entries(rawcityDistrictMap).forEach(([rawCity, districts]) => {
+  // 시도 정규화
+  const { regionCity } = normalizeRegion(rawCity, "");
+
+  cityDistrictMap[regionCity] = districts.map((district) => {
+    const { regionDistrict } = normalizeRegion(regionCity, district);
+    return regionDistrict;
+  });
+});
 
 export default cityDistrictMap;

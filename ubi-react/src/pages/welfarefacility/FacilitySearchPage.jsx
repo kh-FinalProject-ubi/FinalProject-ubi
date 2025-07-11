@@ -10,18 +10,21 @@ import { useSportsFacilities } from "../../hook/welfarefacility/useSportsFacilit
 import Pagination from "../../components/Pagination";
 import { extractRegionFromTaddress } from "../../utils/extractRegionFromTaddress";
 import useAuthStore from "../../stores/useAuthStore";
+import cityDistrictMap from "../../constants/cityDistrictMap";
+import { normalizeRegion } from "../../utils/regionUtils";
+import {
+  getFilteredFacilities,
+  getCombinedFacilities,
+} from "../../utils/welfarefacilityMap"; // ✅ 공용 유틸 import
 
 export default function FacilitySearchPage() {
   const { member, loading: memberLoading } = useLoginMember();
-
   const setAuth = useAuthStore((state) => state.setAuth);
   const auth = useAuthStore();
 
   useEffect(() => {
-    console.log("🔍 member 전체:", member); // 여기 찍어봐야 함
     if (member && !auth?.memberNo) {
       setAuth(member);
-      console.log("✅ member 상태 전역 저장됨:", member.memberNo);
     }
   }, [member]);
 
@@ -41,123 +44,36 @@ export default function FacilitySearchPage() {
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [regionSource, setRegionSource] = useState("default");
 
-  const regionMap = {
-    서울특별시: [
-      "종로구",
-      "중구",
-      "용산구",
-      "성동구",
-      "광진구",
-      "동대문구",
-      "중랑구",
-      "성북구",
-      "강북구",
-      "도봉구",
-      "노원구",
-      "은평구",
-      "서대문구",
-      "마포구",
-      "양천구",
-      "강서구",
-      "구로구",
-      "금천구",
-      "영등포구",
-      "동작구",
-      "관악구",
-      "서초구",
-      "강남구",
-      "송파구",
-      "강동구",
-    ],
-    경기도: [
-      "수원시",
-      "성남시",
-      "고양시",
-      "용인시",
-      "부천시",
-      "화성시",
-      "남양주시",
-      "안산시",
-      "안양시",
-      "평택시",
-      "의정부시",
-      "시흥시",
-      "파주시",
-      "김포시",
-      "광명시",
-      "군포시",
-      "하남시",
-      "오산시",
-      "이천시",
-      "안성시",
-      "구리시",
-      "포천시",
-      "의왕시",
-      "여주시",
-      "양평군",
-    ],
-    강원특별자치도: [
-      "춘천시",
-      "원주시",
-      "강릉시",
-      "동해시",
-      "태백시",
-      "속초시",
-      "삼척시",
-      "홍천군",
-      "횡성군",
-      "영월군",
-      "평창군",
-      "정선군",
-      "철원군",
-      "화천군",
-      "양구군",
-      "인제군",
-      "고성군",
-      "양양군",
-    ],
-    부산광역시: [
-      "중구",
-      "서구",
-      "동구",
-      "영도구",
-      "부산진구",
-      "동래구",
-      "남구",
-      "북구",
-      "해운대구",
-      "사하구",
-      "금정구",
-      "강서구",
-      "연제구",
-      "수영구",
-      "사상구",
-      "기장군",
-    ],
-    제주특별자치도: ["제주시", "서귀포시"],
-  };
+  // ✅ 시도/시군구 정규화 반영 regionMap 생성
+  const regionMap = {};
+  Object.entries(cityDistrictMap).forEach(([rawCity, districts]) => {
+    const { regionCity } = normalizeRegion(rawCity, "");
+    if (!regionMap[regionCity]) regionMap[regionCity] = new Set();
+    districts.forEach((district) => {
+      const { regionDistrict } = normalizeRegion(regionCity, district);
+      regionMap[regionCity].add(regionDistrict);
+    });
+  });
+  Object.keys(regionMap).forEach((city) => {
+    regionMap[city] = Array.from(regionMap[city]);
+  });
 
   useEffect(() => {
     if (!memberLoading && regionSource === "default") {
-      // 1️⃣ 지도에서 선택된 지역이 있으면 우선 적용
       if (
         selectedCityFromStore &&
         selectedDistrictFromStore &&
         regionMap[selectedCityFromStore]
       ) {
         handleRegionSourceChange("map");
-      }
-      // 2️⃣ 로그인한 회원 정보가 있으면 적용
-      else if (member) {
+      } else if (member) {
         handleRegionSourceChange("my");
-      }
-      // 3️⃣ 기본값 설정
-      else {
+      } else {
         setSelectedCity("서울특별시");
         setAvailableDistricts(regionMap["서울특별시"]);
         setSelectedDistrict("종로구");
       }
-      setRegionSource("initialized"); // ✅ 더 이상 실행되지 않도록 변경
+      setRegionSource("initialized");
     }
   }, [memberLoading, member, selectedCityFromStore, selectedDistrictFromStore]);
 
@@ -167,50 +83,37 @@ export default function FacilitySearchPage() {
 
   const handleRegionSourceChange = (source) => {
     setRegionSource(source);
+    let city = "서울특별시";
+    let district = "종로구";
 
     if (source === "my") {
-      const city = member?.regionCity || member?.tempRegionCity || "서울특별시";
-      const district =
-        member?.regionDistrict || member?.tempRegionDistrict || "종로구";
-      if (city && district && regionMap[city]) {
-        setSelectedCity(city);
-        setAvailableDistricts(regionMap[city]);
-        setSelectedDistrict(
-          regionMap[city].includes(district) ? district : regionMap[city][0]
-        );
-      }
+      city = member?.regionCity || member?.tempRegionCity || city;
+      district = member?.regionDistrict || member?.tempRegionDistrict || district;
     }
 
     if (source === "map") {
-      if (
-        selectedCityFromStore &&
-        selectedDistrictFromStore &&
-        regionMap[selectedCityFromStore]
-      ) {
-        setSelectedCity(selectedCityFromStore);
-        setAvailableDistricts(regionMap[selectedCityFromStore]);
-        setSelectedDistrict(
-          regionMap[selectedCityFromStore].includes(selectedDistrictFromStore)
-            ? selectedDistrictFromStore
-            : regionMap[selectedCityFromStore][0]
-        );
-      }
+      city = selectedCityFromStore;
+      district = selectedDistrictFromStore;
     }
 
     if (source === "bookmark") {
       const taddress = member?.memberTaddress;
       if (!taddress) return;
-
-      const { city, district } = extractRegionFromTaddress(taddress);
-
-      if (city && district && regionMap[city]) {
-        setSelectedCity(city);
-        setAvailableDistricts(regionMap[city]);
-        setSelectedDistrict(
-          regionMap[city].includes(district) ? district : regionMap[city][0]
-        );
-      }
+      const result = extractRegionFromTaddress(taddress);
+      city = result.city;
+      district = result.district;
     }
+
+    if (city && district && regionMap[city]) {
+  const { regionDistrict } = normalizeRegion(city, district); // ✅ 추가
+  setSelectedCity(city);
+  setAvailableDistricts(regionMap[city]);
+  setSelectedDistrict(
+    regionMap[city].includes(regionDistrict)
+      ? regionDistrict
+      : regionMap[city][0]
+  );
+}
   };
 
   const {
@@ -226,71 +129,21 @@ export default function FacilitySearchPage() {
 
   const loading = welfareLoading || sportsLoading;
 
-  const combinedFacilities =
-    category === "체육시설"
-      ? [...(Array.isArray(sportsData) ? sportsData : [])]
-      : [...(Array.isArray(welfareData) ? welfareData : [])];
+  // ✅ 공용 유틸로 병합
+  const combinedFacilities = getCombinedFacilities(
+    category,
+    welfareData,
+    sportsData
+  );
 
-  const categoryMap = {
-    체육시설: ["체육시설", "테니스장", "다목적경기장"],
-    요양시설: ["재가노인복지시설", "노인요양시설", "장기요양기관"],
-    의료시설: ["장애인재활치료시설", "정신건강복지 지역센터"],
-    행정시설: [
-      "건강가정지원센터",
-      "다문화가족지원센터",
-      "사회복지관",
-      "자활시설",
-    ],
-  };
-
-  const isMatchServiceTarget = (facility, selectedType) => {
-    if (selectedType === "전체") return true;
-    if (facility["type"] === "체육" || facility["category"] === "체육시설")
-      return true;
-
-    const matchTable = {
-      노인: ["노인", "요양"],
-      청소년: ["청소년", "청년", "쉼터"],
-      아동: ["아동", "유아", "보육"],
-      장애인: ["장애인", "발달장애", "지체장애"],
-    };
-
-    const keywords = matchTable[selectedType] || [];
-    const typeFields = [
-      facility["시설명"],
-      facility["facilityName"],
-      facility["FACLT_NM"],
-      facility["OPEN_FACLT_NM"],
-      facility["시설종류명"],
-      facility["시설종류상세명"],
-      facility["상세유형"],
-      facility["SVC_TYPE"],
-      facility["category"],
-      facility["type"],
-    ];
-
-    return keywords.some((keyword) =>
-      typeFields.some((field) => field?.includes?.(keyword))
-    );
-  };
-
-  const filteredFacilities = combinedFacilities.filter((f) => {
-    const name =
-      f["facilityName"] ||
-      f["시설명"] ||
-      f["FACLT_NM"] ||
-      f["OPEN_FACLT_NM"] ||
-      "";
-    const type =
-      f["상세유형"] || f["시설종류명"] || f["SVC_TYPE"] || f["category"] || "";
-    const matchesKeyword = keyword === "" || name.includes(keyword);
-    const matchesServiceType = isMatchServiceTarget(f, serviceType);
-    const categoryKeywords = categoryMap[category] || [];
-    const matchesCategory =
-      category === "전체" ||
-      categoryKeywords.some((target) => type?.includes(target));
-    
-    return matchesKeyword && matchesServiceType && matchesCategory;
+  // ✅ 공용 유틸로 필터링
+  const filteredFacilities = getFilteredFacilities({
+    facilities: combinedFacilities,
+    keyword,
+    serviceType,
+    category,
+    selectedCity,
+    selectedDistrict,
   });
 
   const totalPages = Math.ceil(filteredFacilities.length / itemsPerPage);
@@ -420,6 +273,8 @@ export default function FacilitySearchPage() {
           }}
         />
       )}
+      
     </div>
+    
   );
 }
