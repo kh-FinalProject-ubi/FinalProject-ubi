@@ -1,3 +1,4 @@
+// Signup.jsx
 import React, { useState, useRef } from "react";
 import DaumPostcode from "react-daum-postcode";
 import { useNavigate } from "react-router-dom";
@@ -31,17 +32,31 @@ const Signup = () => {
   const timerRef = useRef(null);
   const detailAddressRef = useRef(null);
   const navigate = useNavigate();
-
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [viewingPolicy, setViewingPolicy] = useState(null);
-
   const [idError, setIdError] = useState("");
   const [nicknameError, setNicknameError] = useState("");
-
   const [emailError, setEmailError] = useState("");
+  const [idValid, setIdValid] = useState(null);
+  const [pwValid, setPwValid] = useState(null);
+
   const openLogin = useModalStore((state) => state.openLoginModal);
   const setAuth = useAuthStore((state) => state.setAuth);
+
+  const handleIdChange = (e) => {
+    const val = e.target.value;
+    setMemberId(val);
+    const idRegex = /^[a-zA-Z]{4,15}$/;
+    setIdValid(idRegex.test(val));
+  };
+
+  const handlePwChange = (e) => {
+    const val = e.target.value;
+    setMemberPw(val);
+    const pwRegex = /^[a-zA-Z0-9]+$/;
+    setPwValid(pwRegex.test(val));
+  };
 
   const handleComplete = (data) => {
     const fullAddr = data.roadAddress || data.jibunAddress;
@@ -70,9 +85,7 @@ const Signup = () => {
       setEmailError("이메일을 입력해주세요.");
       return;
     }
-
-    setEmailError(""); // 에러 초기화
-
+    setEmailError("");
     try {
       const res = await fetch(`/api/member/sendAuthCode?email=${memberEmail}`, {
         method: "POST",
@@ -131,41 +144,35 @@ const Signup = () => {
     if (isPregnant && main === "아동") return "D";
     if (isPregnant && main === "노인") return "E";
     if (isPregnant && isDisabled && main === "노인") return "F";
-
     if (main === "노인" && isDisabled) return "4";
     if (main === "청년" && isDisabled) return "5";
     if (main === "아동" && isDisabled) return "6";
-
     if (main === "노인") return "1";
     if (main === "청년") return "2";
     if (main === "아동") return "3";
     if (isDisabled) return "7";
-
-    return "0"; // 일반
+    return "0";
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIdError("");
     setNicknameError("");
-
     if (isSubmitting) return;
     if (memberPw !== memberPwCh) return alert("비밀번호 불일치");
     if (!memberTaddress.trim()) return alert("상세주소 입력 필요");
     if (!agreeTerms || !agreePrivacy) return alert("약관에 모두 동의해주세요.");
+    if (!idValid || !pwValid)
+      return alert("아이디 또는 비밀번호 형식을 확인해주세요.");
 
     const isIdOk = await checkIdDuplicate(memberId);
     const isNicknameOk = await checkNicknameDuplicate(memberNickname);
-
     if (!isIdOk) setIdError("이미 사용 중인 아이디입니다.");
     if (!isNicknameOk) setNicknameError("이미 사용 중인 닉네임입니다.");
     if (!isIdOk || !isNicknameOk) return;
 
     setIsSubmitting(true);
-
-    // ✅ 조합 코드 계산
     const code = getMemberStandardCode(memberStandard, isDisabled, isPregnant);
-
     const formData = new FormData();
     formData.append("memberId", memberId);
     formData.append("memberPw", memberPw);
@@ -180,11 +187,8 @@ const Signup = () => {
     formData.append("regionCity", regionCity);
     formData.append("regionDistrict", regionDistrict);
     formData.append("memberStandard", code);
-
     const kakaoId = localStorage.getItem("kakaoId");
-    if (kakaoId) {
-      formData.append("kakaoId", kakaoId);
-    }
+    if (kakaoId) formData.append("kakaoId", kakaoId);
 
     try {
       const res = await fetch("/api/member/signup", {
@@ -192,7 +196,6 @@ const Signup = () => {
         body: formData,
       });
       const data = await res.json();
-
       if (res.ok) {
         alert(data.message || "회원가입 완료");
         localStorage.removeItem("kakaoId");
@@ -212,26 +215,53 @@ const Signup = () => {
       setIsSubmitting(false);
     }
   };
+
   return (
     <div className="signup-container">
       <h2>회원가입</h2>
       <form className="signup-form" onSubmit={handleSubmit}>
+        {/* ✅ 아이디 입력 */}
         <input
           type="text"
           value={memberId}
-          onChange={(e) => setMemberId(e.target.value)}
+          onChange={handleIdChange}
           placeholder="아이디"
           required
         />
+        {idValid === false && (
+          <div style={{ color: "red", fontSize: "13px" }}>
+            입력이 정확하지 않습니다. 아이디는 영문자 4자 이상 15자 미만이어야
+            합니다.
+          </div>
+        )}
+        {idValid === true && (
+          <div style={{ color: "green", fontSize: "13px" }}>
+            적합한 아이디입니다.
+          </div>
+        )}
         {idError && <span style={{ color: "red" }}>{idError}</span>}
 
+        {/* ✅ 비밀번호 입력 */}
         <input
           type="password"
           value={memberPw}
-          onChange={(e) => setMemberPw(e.target.value)}
+          onChange={handlePwChange}
           placeholder="비밀번호"
           required
         />
+        {pwValid === false && (
+          <div style={{ color: "red", fontSize: "13px" }}>
+            입력이 정확하지 않습니다. 비밀번호는 영문자와 숫자만 사용할 수
+            있습니다.
+          </div>
+        )}
+        {pwValid === true && (
+          <div style={{ color: "green", fontSize: "13px" }}>
+            적합한 비밀번호입니다.
+          </div>
+        )}
+
+        {/* 비밀번호 확인 */}
         <input
           type="password"
           value={memberPwCh}

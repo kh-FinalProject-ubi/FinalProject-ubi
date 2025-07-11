@@ -8,22 +8,20 @@ const WelfareDetailPage = () => {
   const [searchParams] = useSearchParams();
 
   const queryServId = searchParams.get("servId");
-  const data = location.state?.data;
+  const stateData = location.state?.data;
 
-  // ✅ 최종 servId: param → query 순으로 fallback
-  const finalServId = pathServId || queryServId;
+  const rawId = stateData?.id || stateData?.servId || pathServId || queryServId;
+  const finalServId = rawId?.replace(/^bokjiro-/, ""); // bokjiro- prefix 제거
 
-  // ✅ 분기 조건: data가 있으면 복지로 여부 우선 판단
+  // ✅ 판별 로직: bokjiro인지 여부
   const isBokjiro =
-    !!data ||
-    !!finalServId ||
-    data?.source === "bokjiro" ||
-    data?.id?.startsWith("bokjiro-");
+    stateData?.id?.startsWith("bokjiro-") ||
+    (!!rawId && !rawId.startsWith("seoul-") && !rawId.startsWith("job-"));
 
   return isBokjiro ? (
-    <BokjiroDetail servId={finalServId} data={data} />
+    <BokjiroDetail servId={finalServId} data={stateData} />
   ) : (
-    <GenericDetail data={data} />
+    <GenericDetail data={stateData} />
   );
 };
 
