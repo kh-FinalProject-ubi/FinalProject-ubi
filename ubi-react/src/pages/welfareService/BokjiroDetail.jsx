@@ -4,7 +4,7 @@ import axios from "axios";
 import useAuthStore from "../../stores/useAuthStore";
 import LikeButton from "../../components/welfareLike/LikeButton";
 
-// 단일 노드 안전하게 값 추출
+// 안전하게 값 추출하는 함수
 const getValue = (node) => {
   if (!node) return "정보 없음";
   if (typeof node === "string") return node;
@@ -16,16 +16,19 @@ const WelfareDetailPage = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const queryServId = searchParams.get("servId");
-
   const token = useAuthStore((state) => state.token);
 
-  // ✅ state 우선, fallback
   const stateData = location.state?.data;
-  const rawId = stateData?.id || stateData?.servId || queryServId;
-  const servId = rawId?.startsWith("bokjiro-")
-    ? rawId.replace("bokjiro-", "")
-    : rawId;
 
+  const rawId = stateData?.id || stateData?.servId || queryServId;
+  const servId = rawId?.replace(/^bokjiro-/, ""); // bokjiro- 제거
+  const source = stateData?.source;
+
+  // 외부 API 호출 조건
+  const isBokjiro =
+    rawId?.startsWith("bokjiro-") || source === "bokjiro" || !!queryServId;
+
+  // fallbackData
   const fallbackData = {
     id: `bokjiro-${servId}`,
     category: "기타",
@@ -33,6 +36,7 @@ const WelfareDetailPage = () => {
     regionDistrict: "알 수 없음",
     link: "",
   };
+
   const data = stateData || fallbackData;
 
   const [detail, setDetail] = useState(null);
@@ -40,9 +44,10 @@ const WelfareDetailPage = () => {
 
   useEffect(() => {
     console.log("🛠 useEffect 시작");
+    console.log("📦 data:", data);
     console.log("🧪 rawId:", rawId);
     console.log("🧪 parsed servId:", servId);
-
+    console.log("🔍 isBokjiro:", isBokjiro);
     if (!servId) {
       console.warn("❗ servId 없음 - 요청 중단");
       return;
@@ -50,21 +55,8 @@ const WelfareDetailPage = () => {
 
     setLoading(true);
 
-    // state가 있을 경우 → DB에서 조회
-    if (stateData) {
-      console.log("📡 stateData 기반 DB 조회");
-      axios
-        .get(`/api/welfare/detail?apiServiceId=${stateData.id}`)
-        .then((res) => {
-          console.log("✅ DB 응답:", res.data);
-          setDetail(res.data.detail || null);
-        })
-        .catch((err) => {
-          console.error("❌ DB 상세 조회 실패:", err);
-        })
-        .finally(() => setLoading(false));
-    } else {
-      console.log("🌐 쿼리 기반 외부 API 호출");
+    if (isBokjiro) {
+      // bokjiro 외부 API 호출
       axios
         .get(`/api/welfare-curl/welfare-detail?servId=${servId}`)
         .then((res) => {
@@ -73,6 +65,18 @@ const WelfareDetailPage = () => {
         })
         .catch((err) => {
           console.error("❌ 외부 API 상세 조회 실패:", err);
+        })
+        .finally(() => setLoading(false));
+    } else {
+      // DB 조회
+      axios
+        .get(`/api/welfare/detail?apiServiceId=${rawId}`)
+        .then((res) => {
+          console.log("✅ DB 응답:", res.data);
+          setDetail(res.data.detail || null);
+        })
+        .catch((err) => {
+          console.error("❌ DB 상세 조회 실패:", err);
         })
         .finally(() => setLoading(false));
     }
@@ -160,7 +164,7 @@ const WelfareDetailPage = () => {
             )}
       </p>
 
-      {/* 법령 */}
+      {/* 관련 법령 */}
       {detail.baslawList && (
         <p>
           <strong>관련 법령:</strong>
