@@ -88,7 +88,8 @@ export default function FacilitySearchPage() {
 
     if (source === "my") {
       city = member?.regionCity || member?.tempRegionCity || city;
-      district = member?.regionDistrict || member?.tempRegionDistrict || district;
+      district =
+        member?.regionDistrict || member?.tempRegionDistrict || district;
     }
 
     if (source === "map") {
@@ -105,15 +106,15 @@ export default function FacilitySearchPage() {
     }
 
     if (city && district && regionMap[city]) {
-  const { regionDistrict } = normalizeRegion(city, district); // ✅ 추가
-  setSelectedCity(city);
-  setAvailableDistricts(regionMap[city]);
-  setSelectedDistrict(
-    regionMap[city].includes(regionDistrict)
-      ? regionDistrict
-      : regionMap[city][0]
-  );
-}
+      const { regionDistrict } = normalizeRegion(city, district); // ✅ 추가
+      setSelectedCity(city);
+      setAvailableDistricts(regionMap[city]);
+      setSelectedDistrict(
+        regionMap[city].includes(regionDistrict)
+          ? regionDistrict
+          : regionMap[city][0]
+      );
+    }
   };
 
   const {
@@ -273,8 +274,6 @@ export default function FacilitySearchPage() {
           }}
         />
       )}
-      
     </div>
-    
   );
 }
