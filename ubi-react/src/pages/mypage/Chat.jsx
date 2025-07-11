@@ -77,10 +77,11 @@ const Chat = () => {
       return;
     }
     const payload = {
-      chatRoomNo: selectedRoom.roomId,
+      chatRoomNo: selectedRoom.chatRoomNo,
       senderNo: memberNo,
-      messageContent: input,
-      timestamp: new Date().toISOString(),
+      targetNo: selectedRoom.participant,
+      chatContent: input,
+      sendTime: new Date().toISOString(),
     };
 
     // 🔹 ① 서버로 실시간 전송
@@ -90,7 +91,12 @@ const Chat = () => {
     });
 
     // 🔹 ② 낙관적 UI 반영
-    setMessages((prev) => [...prev, { ...payload }]);
+    setMessages((prev) => [...prev, {
+      senderNo: memberNo,
+      content: input,
+      sendTime: payload.timestamp,
+    }]);
+
     setInput("");
     scrollToBottom();
   };
@@ -149,7 +155,7 @@ const Chat = () => {
       console.error("채팅방 생성 실패:", error);
     }
   };
-
+  
   useEffect(() => {
       if (!searchNickname.trim()) {
         setSearchResults([]);
@@ -165,35 +171,50 @@ const Chat = () => {
 
     if (!memberNo) return <div>로그인 정보가 없습니다.</div>;
 
-    useEffect(() => {
-    if (!memberNo || !token) return; // 로그인 후 실행
+  useEffect(() => {
+    if (!memberNo || !token) return;
+    console.log("⚡ Chat.jsx useEffect 실행");
 
-    // SockJS → STOMP client
-    const socket = new SockJS("/ws");       // 백엔드 WebSocket 엔드포인트
+    const socket = new SockJS("http://localhost:8080/ws-chat");  // 백엔드 WebSocket 엔드포인트
     const client = new Client({
       webSocketFactory: () => socket,
-      connectHeaders: {                      // JWT 전송 (옵션)
-        Authorization: `Bearer ${token}`,
+      connectHeaders: {
+        Authorization: `Bearer ${token}`,  // JWT 헤더 전송
       },
-      debug: (str) => console.log("[STOMP]", str),
+      debug: (str) => console.log('[STOMP]', str),
+      
       onConnect: () => {
-          console.log("📡 WebSocket 연결 완료");
-          setIsConnected(true);
+        console.log('📡 WebSocket 연결 완료');
+        setIsConnected(true);
 
-          client.subscribe(`/queue/chat/${memberNo}`, (msg) => {
-            const payload = JSON.parse(msg.body);
-            handleIncomingMessage(payload);
-          });
-        },
-      onStompError: (frame) => {
-        console.error("STOMP 오류", frame);
+        // 메시지 구독 예: 개인 큐
+        client.subscribe(`/queue/chat/${memberNo}`, (message) => {
+          const payload = JSON.parse(message.body);
+          // handleIncomingMessage(payload);
+          console.log('받은 메시지:', payload);
+        });
       },
+      onStompError: (frame) => {
+        console.error('STOMP 오류', frame);
+      },
+      onDisconnect: () => {
+        setIsConnected(false);
+        console.log('WebSocket 연결 종료');
+      },
+
+       onWebSocketError: (e) => console.error("WS 에러:", e),   // ★ 추가
+        onWebSocketClose: (e) => console.warn("WS 닫힘:", e),    // ★ 추가
     });
 
     client.activate();
+    console.log("📤 client.activate() 호출"); 
     stompRef.current = client;
 
-    return () => client.deactivate(); // 언마운트 시 연결 해제
+    // 언마운트 시 연결 해제
+    return () => {
+      client.deactivate();
+      setIsConnected(false);
+    };
   }, [memberNo, token]);
 
   const handleIncomingMessage = (payload) => {
@@ -220,102 +241,117 @@ const Chat = () => {
     );
   };
   
-
+console.log("채팅방 목록 : ", rooms);
   return (
-    <div className="chat-wrapper">
-      {/* 왼쪽 채팅 목록 */}
-      <div className="chat-room-list">
-        <div className="chat-list-header">
-          <h3>채팅 목록</h3>
-          <button onClick={() => setShowSearch(!showSearch)}>+ 추가</button>
-        </div>
-
-        {showSearch && (
-          <div className="chat-search-box">
-            <input
-              type="text"
-              placeholder="닉네임 검색"
-              value={searchNickname}
-              onChange={(e) => setSearchNickname(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearchMember()}
-            />
-            <button onClick={handleSearchMember}>검색</button>
-            <div className="search-results">
-              {loadingSearch && <div>검색 중...</div>}
-              {searchResults.map((user) => (
-                <div
-                  key={user.targetNo}
-                  className="search-result-item"
-                  onClick={() => handleCreateRoom(user.targetNo)}
-                >
-                  <img src={user.memberImg || "/default-profile.png"} alt="프로필" className="room-profile" />
-                  <span>{user.memberNickname}</span>
-                </div>
-              ))}
-            </div>
+    <div>
+      <div>연결 상태: {isConnected ? "연결됨" : "연결 안 됨"}</div>
+      <div className="chat-wrapper">
+        {/* 왼쪽 채팅 목록 */}
+        <div className="chat-room-list">
+          <div className="chat-list-header">
+            <h3>채팅 목록</h3>
+            <button onClick={() => setShowSearch(!showSearch)}>+ 추가</button>
           </div>
-        )}
 
-        {/* 채팅 목록 */}
-        {Array.isArray(rooms) && rooms.map((room) => (
-          <div
-            key={room.memberNo}
-            className={`chat-room-item ${selectedRoom?.roomId === room.roomId ? "selected" : ""}`}
-            onClick={() => handleSelectRoom(room)}
-          >
-            <img src={room.memberImg} alt="profile" className="room-profile" />
-            <div className="room-info">
-              <div className="room-name">{room.memberName}</div>
-              <div className="room-last-message">{room.lastMessage}</div>
-            </div>
-            <div className="room-meta">
-              <div className="room-time">{room.sendTime}</div>
-              {room.notReadCount > 0 && <div className="room-unread">{room.notReadCount}</div>}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* 오른쪽 채팅창 */}
-      <div className="chat-container">
-        {selectedRoom ? (
-          <>
-            <div className="chat-header">
-              <h2>{selectedRoom.memberName}</h2>
-            </div>
-
-            <div className="chat-messages">
-              {messages.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`chat-message ${
-                    msg.sender === memberName ? "my-message" : "other-message"
-                  }`}
-                >
-                  <div className="message-sender">{msg.sender}</div>
-                  <div className="message-content">{msg.content}</div>
-                  <div className="message-timestamp">
-                    {new Date(msg.timestamp).toLocaleTimeString()}
-                  </div>
-                </div>
-              ))}
-              <div ref={messagesEndRef}></div>
-            </div>
-
-            <div className="chat-input">
+          {showSearch && (
+            <div className="chat-search-box">
               <input
                 type="text"
-                value={input}
-                placeholder="메시지를 입력하세요..."
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyPress}
+                placeholder="닉네임 검색"
+                value={searchNickname}
+                onChange={(e) => setSearchNickname(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearchMember()}
               />
-              <button onClick={handleSendMessage}>보내기</button>
+              <button onClick={handleSearchMember}>검색</button>
+              <div className="search-results">
+                {loadingSearch && <div>검색 중...</div>}
+                {searchResults.map((user) => (
+                  <div
+                    key={user.targetNo}
+                    className="search-result-item"
+                    onClick={() => handleCreateRoom(user.targetNo)}
+                  >
+                    <img src={user.memberImg || "/default-profile.png"} alt="프로필" className="room-profile" />
+                    <span>{user.memberNickname}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </>
-        ) : (
-          <div className="chat-placeholder">채팅방을 선택하세요</div>
-        )}
+          )}
+
+          {/* 채팅 목록 */}
+          {Array.isArray(rooms) && rooms.map(room => (
+            <div
+              key={room.chatRoomNo}                                          // ✔ 방 PK
+              className={`chat-room-item ${
+                selectedRoom?.chatRoomNo === room.chatRoomNo ? "selected" : ""
+              }`}
+              onClick={() => handleSelectRoom(room)}
+            >
+              {/* 프로필 이미지: 값이 없으면 기본 이미지 */}
+              <img
+                src={`http://localhost:8080${room.targetProfile}` || "/default-profile.png"}           // ✔ 대소문자 P, fallback
+                alt="profile"
+                className="room-profile"
+                onError={e => { e.currentTarget.src = "/default-profile.png"; }}
+              />
+
+              <div className="room-info">
+                <div className="room-name">{room.targetNickname}</div>       {/* ✔ Nick N 대문자 */}
+                <div className="room-last-message">{room.lastMessage}</div>  {/* maxMessageNo → lastMessage */}
+              </div>
+
+              <div className="room-meta">
+                <div className="room-time">{room.sendTime}</div>
+                {room.notReadCount > 0 && (
+                  <div className="room-unread">{room.notReadCount}</div>
+                )}
+              </div>
+            </div>
+          ))}
+          </div>
+
+        {/* 오른쪽 채팅창 */}
+        <div className="chat-container">
+          {selectedRoom ? (
+            <>
+              <div className="chat-header">
+                <h2>{selectedRoom.memberName}</h2>
+              </div>
+
+              <div className="chat-messages">
+                {messages.map((msg, index) => (
+                  <div
+                    key={index}
+                    className={`chat-message ${
+                      msg.sender === memberName ? "my-message" : "other-message"
+                    }`}
+                  >
+                    <div className="message-sender">{msg.sender}</div>
+                    <div className="message-content">{msg.content}</div>
+                    <div className="message-timestamp">
+                      {new Date(msg.timestamp).toLocaleTimeString()}
+                    </div>
+                  </div>
+                ))}
+                <div ref={messagesEndRef}></div>
+              </div>
+
+              <div className="chat-input">
+                <input
+                  type="text"
+                  value={input}
+                  placeholder="메시지를 입력하세요..."
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                />
+                <button onClick={handleSendMessage}>보내기</button>
+              </div>
+            </>
+          ) : (
+            <div className="chat-placeholder">채팅방을 선택하세요</div>
+          )}
+        </div>
       </div>
     </div>
   );

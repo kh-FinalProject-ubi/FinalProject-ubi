@@ -20,7 +20,7 @@
 				AND R2.OPEN_MEMBER = #{memberNo}),
 				R.PARTICIPANT,
 				R.OPEN_MEMBER
-				) TARGET_NO	
+				) PARTICIPANT	
 			,NVL2((SELECT OPEN_MEMBER FROM MEMBER_CHAT_ROOM R2
 				WHERE R2.CHAT_ROOM_NO = R.CHAT_ROOM_NO
 				AND R2.OPEN_MEMBER = #{memberNo}),
@@ -92,7 +92,7 @@
 	<!-- 채팅 메세지 삽입 -->
 	<insert id="insertMessage">
 		INSERT INTO "MESSAGE"
-		VALUES(SEQ_MESSAGE_NO.NEXTVAL, #{senderNo}, #{messageContent}, 'N', SYSDATE, DEAFULT, #{chatRoomNo})
+		VALUES(SEQ_MESSAGE_NO.NEXTVAL, #{senderNo}, #{chatContent}, 'N', SYSDATE, DEAFULT, #{chatRoomNo})
 	</insert>
 	
 

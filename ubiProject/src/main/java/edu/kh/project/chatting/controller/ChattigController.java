@@ -188,10 +188,14 @@ public class ChattigController {
     
     @MessageMapping("sendMessage")
     public void send(Message msg) {
+    	try {
     	service.insertMessage(msg);
         // 상대에게 1:1로 푸시
         messagingTemplate.convertAndSend("/queue/chat/" + msg.getTargetNo(), msg);
         // ↔ 혹은 방 브로드캐스트: /topic/room.{roomId}
+    	} catch (Exception e) {
+    		e.printStackTrace();
+		}
     }
  
     // 채팅방 목록 조회 - 비동기
