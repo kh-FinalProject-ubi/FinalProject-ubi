@@ -44,7 +44,7 @@
 	
 	<!-- 채팅 상대 검색 -->
 	<select id="selectTarget">
-	  SELECT MEMBER_NO, MEMBER_EMAIL, MEMBER_NICKNAME, MEMBER_IMG  
+	  SELECT MEMBER_NO AS TARGET_NO, MEMBER_EMAIL, MEMBER_NICKNAME, MEMBER_IMG  
 	  FROM MEMBER
 	  WHERE (MEMBER_EMAIL LIKE '%' || #{memberNickname} || '%' 
        			OR MEMBER_NICKNAME LIKE '%' || #{memberNickname} || '%')
@@ -54,22 +54,22 @@
 	
 	<!-- 채팅방번호 체크(기존에 있는지) -->
 	<select id="checkChattingRoomNo">
-		SELECT NVL(SUM(CHATTING_ROOM_NO),0) CHATTING_ROOM_NO 
-		FROM CHATTING_ROOM
-		WHERE (OPEN_MEMBER = #{loginMemberNo} 
+		SELECT NVL(SUM(CHAT_ROOM_NO),0) CHAT_ROOM_NO 
+		FROM MEMBER_CHAT_ROOM
+		WHERE (OPEN_MEMBER = #{memberNo} 
 		AND PARTICIPANT = #{targetNo})
-		OR (OPEN_MEMBER = #{targetNo} AND PARTICIPANT = #{loginMemberNo})
+		OR (OPEN_MEMBER = #{targetNo} AND PARTICIPANT = #{memberNo})
 	</select>
 	
 	<!-- 채팅방 생성 -->
-	<insert id="createChattingRoom" parameterType="map" useGeneratedKeys="true">
+	<insert id="createChattingRoom" parameterType="map">
 	
-		<selectKey keyProperty="chattingRoomNo" order="BEFORE" resultType="_int">
+		<selectKey keyProperty="chatRoomNo" order="BEFORE" resultType="_int">
 			SELECT SEQ_ROOM_NO.NEXTVAL FROM DUAL
 		</selectKey>
 	
-		INSERT INTO CHATTING_ROOM
-		VALUES(#{chattingRoomNo}, DEFAULT, #{loginMemberNo}, #{targetNo})
+		INSERT INTO MEMBER_CHAT_ROOM
+		VALUES(#{chatRoomNo}, #{memberNo}, #{targetNo}, SYSDATE, 'N')
 	</insert>
 	
 	<!-- 채팅방 메세지 조회 -->
@@ -92,7 +92,7 @@
 	<!-- 채팅 메세지 삽입 -->
 	<insert id="insertMessage">
 		INSERT INTO "MESSAGE"
-		VALUES(SEQ_MESSAGE_NO.NEXTVAL, #{messageContent}, DEFAULT, DEFAULT, #{senderNo}, #{chattingRoomNo})
+		VALUES(SEQ_MESSAGE_NO.NEXTVAL, #{senderNo}, #{messageContent}, 'N', SYSDATE, DEAFULT, #{chatRoomNo})
 	</insert>
 	
 

@@ -40,6 +40,8 @@ public class Member {
     // ✅ 지역 정보 추가
     private String regionDistrict; // 예: 강남구
     private String regionCity;     // 예: 서울특별시
+    
+    private String targetNo;
 	
 	
 }

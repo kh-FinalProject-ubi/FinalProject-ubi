@@ -290,7 +290,7 @@ export default function FacilitySearchPage() {
       category === "전체" ||
       categoryKeywords.some((target) => type?.includes(target));
     
-    return matchesKeyword && matchesServiceType && matchesCategory && matchesDistrict;
+    return matchesKeyword && matchesServiceType && matchesCategory;
 
   });
 
