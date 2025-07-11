@@ -26,6 +26,8 @@ import MytownBoardUpdate from "./pages/mytownboard/MytownBoardUpdate";
 import WelfareDetailPage from "./pages/welfareService/WelfareDetailPage";
 import SeoulWelfareDetailPage from "./pages/welfareService/SeoulWelfareDetailPage";
 import FacilityJobDetailPage from "./pages/welfareService/FacilityJobDetailPage";
+import LoginPage from "./components/LoginPage";
+import FindAccount from "./components/FindAcoount";
 
 initAuthFromToken(); // ✅ 렌더 이전에 동기적으로 실행!
 function App() {
@@ -36,6 +38,9 @@ function App() {
         <Route path="/" element={<Layout />}>
           {/* 자식 Route */}
           <Route index element={<MainPage />} />
+          {/* 로그인 페이지 추가 */}
+          <Route path="login" element={<LoginPage />} />
+          <Route path="/find" element={<FindAccount />} />
           <Route path="map" element={<WelfareMap />} />
           <Route path="welfareService" element={<WelfareService />} />
           <Route path="askBoard" element={<AskBoard />} />

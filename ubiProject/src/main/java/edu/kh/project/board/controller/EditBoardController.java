@@ -56,9 +56,9 @@ public class EditBoardController {
 	@Autowired
 	private JwtUtil jwtUtil;
 
-	 @Autowired
-	private WebApplicationContext context; 
-	
+	@Autowired
+	private WebApplicationContext context;
+
 	// 게시글 작성 화면 전환
 	@GetMapping("{boardCode:[0-9]+}")
 	public String boardInsert(@PathVariable("boardCode") int boardCode) {
@@ -77,34 +77,33 @@ public class EditBoardController {
 	 * @return
 	 */
 	@PostMapping("/{boardCode:[0-9]+}")
-	public ResponseEntity<Map<String, Object>> boardInsert(
-	        @PathVariable("boardCode") int boardCode,
-	        @RequestPart("board") Board inputBoard,
-	        @RequestPart(value = "images", required = false) List<MultipartFile> images,
-	        @RequestHeader("Authorization") String authHeader) throws Exception {
+	public ResponseEntity<Map<String, Object>> boardInsert(@PathVariable("boardCode") int boardCode,
+			@RequestPart("board") Board inputBoard,
+			@RequestPart(value = "images", required = false) List<MultipartFile> images,
+			@RequestHeader("Authorization") String authHeader) throws Exception {
 
-	    // "Bearer {token}" -> "{token}" 추출
-	    String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+		// "Bearer {token}" -> "{token}" 추출
+		String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
 
-	    Long memberNoLong = jwtUtil.extractMemberNo(token);
-	    int memberNo = memberNoLong.intValue();
+		Long memberNoLong = jwtUtil.extractMemberNo(token);
+		int memberNo = memberNoLong.intValue();
 
-	    inputBoard.setBoardType(boardCode);
-	    inputBoard.setMemberNo(memberNo);    
+		inputBoard.setBoardType(boardCode);
+		inputBoard.setMemberNo(memberNo);
 
-	    int boardNo = service.boardInsert(inputBoard, images);
+		int boardNo = service.boardInsert(inputBoard, images);
 
-	    Map<String, Object> response = new HashMap<>();
-	    if (boardNo > 0) {
-	        response.put("success", true);
-	        response.put("boardNo", boardNo);
-	        response.put("message", "게시글이 작성되었습니다.");
-	    } else {
-	        response.put("success", false);
-	        response.put("message", "게시글 작성 실패...");
-	    }
+		Map<String, Object> response = new HashMap<>();
+		if (boardNo > 0) {
+			response.put("success", true);
+			response.put("boardNo", boardNo);
+			response.put("message", "게시글이 작성되었습니다.");
+		} else {
+			response.put("success", false);
+			response.put("message", "게시글 작성 실패...");
+		}
 
-	    return ResponseEntity.ok(response);
+		return ResponseEntity.ok(response);
 	}
 
 	/**
@@ -159,8 +158,7 @@ public class EditBoardController {
 			@PathVariable("boardNo") int boardNo, @RequestParam("boardTitle") String boardTitle,
 			@RequestParam("boardContent") String boardContent,
 			@RequestParam(value = "images", required = false) List<MultipartFile> images,
-			@RequestParam(name = "boardType") int boardType,
-			@RequestParam("postType") String postType,
+			@RequestParam(name = "boardType") int boardType, @RequestParam("postType") String postType,
 			@RequestParam(value = "deleteOrderList", required = false) String deleteOrderList,
 			@RequestHeader("Authorization") String authHeader) throws Exception {
 
@@ -203,46 +201,41 @@ public class EditBoardController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", "수정 실패"));
 		}
 	}
-	
-	
+
 	// 삭제 메서드
 	// /editBoard/1/2000/delete?cp=1
 	@DeleteMapping("{boardCode:[0-9]+}/{boardNo:[0-9]+}")
-	public ResponseEntity<String> boardDelete(
-	        @PathVariable("boardCode") int boardCode,
-	        @PathVariable("boardNo") int boardNo,
-	        @RequestHeader("Authorization") String authHeader) {
+	public ResponseEntity<String> boardDelete(@PathVariable("boardCode") int boardCode,
+			@PathVariable("boardNo") int boardNo, @RequestHeader("Authorization") String authHeader) {
 
-	    String token = authHeader.replace("Bearer ", "");
-	    Long memberNoLong = jwtUtil.extractMemberNo(token);
-	    int memberNo = memberNoLong.intValue();
+		String token = authHeader.replace("Bearer ", "");
+		Long memberNoLong = jwtUtil.extractMemberNo(token);
+		int memberNo = memberNoLong.intValue();
+		String role = jwtUtil.extractRole(token); // ADMIN, USER 등
 
-	    Map<String, Integer> map = Map.of(
-	        "boardCode", boardCode,
-	        "boardNo", boardNo,
-	        "memberNo", memberNo
-	    );
+		Map<String, Object> map = Map.of("boardCode", boardCode, "boardNo", boardNo, "memberNo", memberNo, "role", role);
 
-	    int result = service.boardDelete(map);
+		
+		int result = service.boardDelete(map);
 
-	    if (result > 0) {
-	        return ResponseEntity.ok("삭제되었습니다.");
-	    } else {
-	        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("삭제 실패");
-	    }
+		if (result > 0) {
+			return ResponseEntity.ok("삭제되었습니다.");
+		} else {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("삭제 실패");
+		}
 	}
-	
+
 	// 사진 업로드 메서드
 	@PostMapping("/image-upload")
 	public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
 		if (file.isEmpty()) {
 			return ResponseEntity.badRequest().body("파일이 없습니다.");
 		}
-		
+
 		// 파일 저장 처리
 		String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
 		File dest = new File("C:/uploadFiles/board/" + fileName);
-		
+
 		try {
 			file.transferTo(dest);
 			return ResponseEntity.ok(fileName);
@@ -250,6 +243,5 @@ public class EditBoardController {
 			return ResponseEntity.status(500).body("파일 업로드 실패");
 		}
 	}
-	
-	
+
 }

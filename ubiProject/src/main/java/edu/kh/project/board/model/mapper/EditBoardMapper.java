@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.board.model.dto.BoardImage;
@@ -51,7 +52,7 @@ public interface EditBoardMapper {
 	 * @param map
 	 * @return
 	 */
-	int boardDelete(Map<String, Integer> map);
+	int boardDelete(Map<String, Object> map);
 
 
 }

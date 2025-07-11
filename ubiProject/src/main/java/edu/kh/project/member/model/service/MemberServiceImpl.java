@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -173,6 +174,8 @@ public class MemberServiceImpl implements MemberService {
 
 		// 1. 기존 신고 상태 조회 (Y, N, null)
 		String status = mapper.checkReportStatus(targetMemberNo, reporterMemberNo);
+		System.out.println("신고 상태: " + status + " (null? " + (status == null) + ")");
+
 
 		// 2. 기존 멤버 신고 횟수 조회
 		int beforeCount = mapper.selectMemberReportCount(targetMemberNo);
@@ -288,5 +291,37 @@ public class MemberServiceImpl implements MemberService {
 
 		return false;
 	}
+	
+	  public String findMemberId(String name, String email) {
+	        return mapper.findMemberId(name, email);
+	    }
 
+
+	@Override
+	public boolean resetPassword(String memberId, String email) {
+	    Member member = mapper.selectMemberByIdAndEmail(memberId, email);
+	    if (member == null) return false;
+
+	    String tempPw = generateTempPassword();
+	    String encryptedPw = bcrypt.encode(tempPw); // 기존 bcrypt 인스턴스 사용
+
+	    mapper.updatePassword(member.getMemberNo(), encryptedPw);
+
+	    try {
+	        SimpleMailMessage message = new SimpleMailMessage();
+	        message.setTo(email);
+	        message.setSubject("[UBI] 임시 비밀번호 안내");
+	        message.setText("임시 비밀번호: " + tempPw + "\n로그인 후 반드시 비밀번호를 변경해주세요.");
+	        message.setFrom("noreply@ubi.com");
+	        mailSender.send(message);
+	        return true;
+	    } catch (Exception e) {
+	        log.error("임시 비밀번호 이메일 전송 실패", e);
+	        return false;
+	    }
+	}
+	
+	private String generateTempPassword() {
+	    return UUID.randomUUID().toString().substring(0, 10);
+	}
 }

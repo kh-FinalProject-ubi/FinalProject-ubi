@@ -6,6 +6,23 @@ import useSelectedRegionStore from "../hook/welfarefacility/useSelectedRegionSto
 import useModalStore from "../stores/useModalStore";
 import useAlertSocket from "../hook/alert/useAlertSocket";
 
+const AlertModal = () => {
+  const alertMessage = useModalStore((state) => state.alertMessage);
+  const clearAlertMessage = useModalStore((state) => state.clearAlertMessage);
+  const navigate = useNavigate();
+
+  if (!alertMessage) return null;
+
+  return (
+    <div className="alert-modal">
+      <div className="alert-content">
+        <p>{alertMessage}</p>
+        <button onClick={clearAlertMessage}>닫기</button>
+      </div>
+    </div>
+  );
+};
+
 const Header = () => {
   const {
     token,
@@ -48,11 +65,12 @@ const Header = () => {
 
   const LogoutButton = () => {
     const logout = useAuthStore((state) => state.logout);
+
     const handleLogout = () => {
-      logout();
+      clearAuth(); // useAuthStore에서 토큰 등 초기화
       localStorage.removeItem("kakaoId");
       alert("로그아웃되었습니다.");
-      window.location.href = "/";
+      navigate("/"); // 홈으로 이동
     };
     return <button onClick={handleLogout}>로그아웃</button>;
   };
@@ -69,91 +87,98 @@ const Header = () => {
   };
 
   return (
-    <header className="site-header">
-      <div className="header-inner">
-        <h1 className="logo">
-          <a href="/">
-            <img id="logo" src="/ubi.svg" alt="로고" />
-            UBI
-          </a>
-        </h1>
+    <>
+      <header className="site-header">
+        <div className="header-inner">
+          <h1 className="logo">
+            <a href="/">
+              <img id="logo" src="/ubi.svg" alt="로고" />
+              UBI
+            </a>
+          </h1>
 
-        <nav className="nav-menu">
-          <Link to="/welfareService">공공서비스</Link>
-          <span onClick={handleFacilityClick} style={{ cursor: "pointer" }}>
-            복지시설
-          </span>
-          <Link to="/mytownBoard">우리 동네 좋아요</Link>
-          <Link to="/askBoard">문의게시판</Link>
-          <Link to="/noticeBoard">공지사항</Link>
-          <Link to="/localBenefits">지역 복지 혜택</Link>
-        </nav>
+          <nav className="nav-menu">
+            <Link to="/welfareService">공공서비스</Link>
+            <span onClick={handleFacilityClick} style={{ cursor: "pointer" }}>
+              복지시설
+            </span>
+            <Link to="/mytownBoard">우리 동네 좋아요</Link>
+            <Link to="/askBoard">문의게시판</Link>
+            <Link to="/noticeBoard">공지사항</Link>
+            <Link to="/localBenefits">지역 복지 혜택</Link>
+          </nav>
 
-        <div className="header-right">
-          {isLogin ? (
-            <>
-              <button
-                className="alarm-btn"
-                onClick={() => setShowDropdown((prev) => !prev)}
-              >
-                <img src="/alarm.svg" alt="알림 아이콘" />
-                {alerts.some((a) => !a.isRead) && (
-                  <span className="new-badge">new</span>
-                )}
-              </button>
-
-              {showDropdown && (
-                <div className="alert-dropdown" ref={dropdownRef}>
-                  {alerts.length === 0 ? (
-                    <div className="alert-empty">알림이 없습니다</div>
-                  ) : (
-                    alerts.map((alert, idx) => (
-                      <div
-                        key={idx}
-                        className="alert-item"
-                        onClick={() => {
-                          navigate(alert.targetUrl);
-                          setShowDropdown(false);
-                        }}
-                      >
-                        <span>{alert.type}</span> | {alert.content}
-                      </div>
-                    ))
+          <div className="header-right">
+            {isLogin ? (
+              <>
+                <button
+                  className="alarm-btn"
+                  onClick={() => setShowDropdown((prev) => !prev)}
+                >
+                  <img src="/alarm.svg" alt="알림 아이콘" />
+                  {alerts.some((a) => !a.isRead) && (
+                    <span className="new-badge">new</span>
                   )}
-                </div>
-              )}
+                </button>
 
-              <button className="chatting-btn">
-                <img src="/chatting.svg" alt="채팅 아이콘" />
-              </button>
+                {showDropdown && (
+                  <div className="alert-dropdown" ref={dropdownRef}>
+                    {alerts.length === 0 ? (
+                      <div className="alert-empty">알림이 없습니다</div>
+                    ) : (
+                      alerts.map((alert, idx) => (
+                        <div
+                          key={idx}
+                          className="alert-item"
+                          onClick={() => {
+                            navigate(alert.targetUrl);
+                            setShowDropdown(false);
+                          }}
+                        >
+                          <span>{alert.type}</span> | {alert.content}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
 
-              <Link to="/mypage/Profile">
-                <img
-                  className="profile-img"
-                  src={
-                    memberImg
-                      ? `http://localhost:8080${memberImg}`
-                      : "/default-profile.png"
-                  }
-                  alt="프로필"
-                />
-              </Link>
+                <button className="chatting-btn">
+                  <img src="/chatting.svg" alt="채팅 아이콘" />
+                </button>
 
-              <span className="nickname">{memberNickname}님</span>
+                <Link to="/mypage/Profile">
+                  <img
+                    className="profile-img"
+                    src={
+                      memberImg
+                        ? `http://localhost:8080${memberImg}`
+                        : "/default-profile.png"
+                    }
+                    alt="프로필"
+                  />
+                </Link>
 
-              <button className="logout-btn" onClick={clearAuth}>
-                로그아웃
-              </button>
-            </>
-          ) : (
-            <>
-              <button onClick={openLoginModal}>로그인</button>
-              <Link to="/signup">회원가입</Link>
-            </>
-          )}
+                <span className="nickname">{memberNickname}님</span>
+
+                {/* 로그인 상태 */}
+                <button className="logout-btn" onClick={clearAuth}>
+                  로그아웃
+                </button>
+              </>
+            ) : (
+              <>
+                {/* 비로그인 상태 */}
+                <button onClick={() => navigate("/login")}>로그인</button>
+                <Link to="/signup">회원가입</Link>
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* 회원 정지 알람 */}
+      <AlertModal />
+    </>
   );
 };
 

@@ -91,6 +91,8 @@ public interface MemberMapper {
 	void insertSuspensionTest(@Param("targetMemberNo") int targetMemberNo, @Param("start") LocalDateTime now,
 			@Param("end") LocalDateTime end);
 
+	void updateReportStatusSuspension(int memberNo);
+
 	// 정지 기능을 위해 멤버 테이블의 카운트만 체크하는 메서드
 	int selectMemberReportCount(int targetMemberNo);
 
@@ -102,14 +104,19 @@ public interface MemberMapper {
 
 	// 멤버 테이블에 report 카운트 리셋
 	void resetReportCount(int memberNo);
-	
+
 	Member selectMemberByNo(long memberNo);
 
 	// 정지 연장 메서드
-	void extendSuspensionEnd(@Param("targetMemberNo") int targetMemberNo,
-            @Param("end") LocalDateTime end);
+	void extendSuspensionEnd(@Param("targetMemberNo") int targetMemberNo, @Param("end") LocalDateTime end);
 
-	// 신고 상태 변경
-	void updateReportStatusSuspension(int memberNo);
+	// 아이디 찾기
+	String findMemberId(@Param("name") String name, @Param("email") String email);
+
+	// 받아온 아이디 DB에서 비교하기
+	Member selectMemberByIdAndEmail(@Param("memberId") String memberId, @Param("email") String email);
+
+	// 재설정 받은 비밀번호 업데이트 구문
+	int updatePassword(@Param("memberNo") int memberNo, @Param("newPw") String newPw);
 
 }
