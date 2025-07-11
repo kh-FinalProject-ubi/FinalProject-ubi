@@ -291,7 +291,6 @@ export default function FacilitySearchPage() {
       categoryKeywords.some((target) => type?.includes(target));
     
     return matchesKeyword && matchesServiceType && matchesCategory;
-
   });
 
   const totalPages = Math.ceil(filteredFacilities.length / itemsPerPage);
