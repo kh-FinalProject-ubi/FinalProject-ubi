@@ -45,7 +45,7 @@ public class MytownBoardController {
 	public ResponseEntity<Board> getLocalBoardDetail(@PathVariable("boardNo") int boardNo,
 			@RequestParam(value = "memberNo", required = false) Integer memberNo) {
 
-		// ✅ 게시글 상세조회
+		//  게시글 상세조회
 		Board board = service.selectLocalBoardDetail(boardNo, memberNo);
 
 		if (board != null && memberNo != null) {

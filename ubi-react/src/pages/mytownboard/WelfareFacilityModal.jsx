@@ -8,16 +8,32 @@ import {
 } from "../../utils/welfarefacilityMap";
 import "../../styles/welfarefacility/FacilitySearchPage.css";
 
-export default function WelfareFacilityModal({ city, district, onSelect, onClose }) {
+export default function WelfareFacilityModal({
+  city,
+  district,
+  onSelect,
+  onClose,
+}) {
   const [keyword, setKeyword] = useState("");
   const [category, setCategory] = useState("전체");
   const [serviceType, setServiceType] = useState("전체");
 
-  const { data: welfareData = [], loading: welfareLoading, error } = useFacilities("old", category, city, district);
-  const { data: sportsData = [], loading: sportsLoading } = useSportsFacilities(city, district);
+  const {
+    data: welfareData = [],
+    loading: welfareLoading,
+    error,
+  } = useFacilities("old", category, city, district);
+  const { data: sportsData = [], loading: sportsLoading } = useSportsFacilities(
+    city,
+    district
+  );
   const loading = welfareLoading || sportsLoading;
 
-  const combinedFacilities = getCombinedFacilities(category, welfareData, sportsData);
+  const combinedFacilities = getCombinedFacilities(
+    category,
+    welfareData,
+    sportsData
+  );
   const filteredFacilities = getFilteredFacilities({
     facilities: combinedFacilities,
     keyword,
@@ -29,9 +45,19 @@ export default function WelfareFacilityModal({ city, district, onSelect, onClose
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content" style={{ maxHeight: "80vh", overflowY: "auto", padding: "20px" }}>
-        <h2>복지시설 선택 (작성자 지역: {city} {district})</h2>
-        <button onClick={onClose} style={{ float: "right", fontWeight: "bold" }}>✖</button>
+      <div
+        className="modal-content"
+        style={{ maxHeight: "80vh", overflowY: "auto", padding: "20px" }}
+      >
+        <h2>
+          복지시설 선택 (작성자 지역: {city} {district})
+        </h2>
+        <button
+          onClick={onClose}
+          style={{ float: "right", fontWeight: "bold" }}
+        >
+          ✖
+        </button>
 
         {/* 필터바 */}
         <div className="filter-bar">
@@ -48,7 +74,9 @@ export default function WelfareFacilityModal({ city, district, onSelect, onClose
               <button
                 key={type}
                 onClick={() => setServiceType(type)}
-                className={`service-btn ${serviceType === type ? "selected" : ""}`}
+                className={`service-btn ${
+                  serviceType === type ? "selected" : ""
+                }`}
               >
                 {type}
               </button>
@@ -56,39 +84,77 @@ export default function WelfareFacilityModal({ city, district, onSelect, onClose
           </div>
 
           <div className="category-filter">
-            {["전체", "체육시설", "요양시설", "의료시설", "행정시설"].map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={`service-btn ${category === cat ? "selected" : ""}`}
-              >
-                {cat}
-              </button>
-            ))}
+            {["전체", "체육시설", "요양시설", "의료시설", "행정시설"].map(
+              (cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setCategory(cat)}
+                  className={`service-btn ${
+                    category === cat ? "selected" : ""
+                  }`}
+                >
+                  {cat}
+                </button>
+              )
+            )}
           </div>
         </div>
 
         {/* 결과 */}
         {loading && <p>불러오는 중...</p>}
-        {error && <p style={{ color: "red" }}>시설 데이터를 불러오는 데 실패했습니다.</p>}
-        {!loading && filteredFacilities.length === 0 && <p>조건에 맞는 시설이 없습니다.</p>}
+        {error && (
+          <p style={{ color: "red" }}>
+            시설 데이터를 불러오는 데 실패했습니다.
+          </p>
+        )}
+        {!loading && filteredFacilities.length === 0 && (
+          <p>조건에 맞는 시설이 없습니다.</p>
+        )}
 
         <ul style={{ listStyle: "none", padding: 0 }}>
           {filteredFacilities.map((facility, idx) => {
-            const name = facility["FACLT_NM"] || facility["facilityName"] || facility["시설명"] || "시설명 없음";
-            const id = facility["serviceId"] || facility["FACLT_ID"] || facility["id"] || facility["시설코드"] || facility["SvcId"] || facility["SVCID"] || "ID 없음";
-            const category = facility["category"] || facility["시설종류명"] || facility["type"] || "기타";
+            const name =
+              facility["FACLT_NM"] ||
+              facility["facilityName"] ||
+              facility["시설명"] ||
+              "시설명 없음";
+            const id =
+              facility["serviceId"] ||
+              facility["FACLT_ID"] ||
+              facility["id"] ||
+              facility["시설코드"] ||
+              facility["SvcId"] ||
+              facility["SVCID"] ||
+              "ID 없음";
 
+            // 매핑 함수
+            const mapToDisplayCategory = (rawType) => {
+              return (
+                Object.entries(categoryMap).find(([key, keywords]) =>
+                  keywords.some((kw) => rawType?.includes(kw))
+                )?.[0] || "기타"
+              );
+            };
+            const rowcategory =
+              facility["category"] ||
+              facility["시설종류명"] ||
+              facility["type"] ||
+              "기타";
+
+            const category = mapToDisplayCategory(rowcategory); // ✅ 매핑된 카테고리 사
+
+            const address =
+              facility["address"] || facility["ADDR"] || facility["주소"] || "";
             return (
               <li
                 key={`${name}-${id}-${idx}`}
                 style={{
                   padding: "10px",
                   borderBottom: "1px solid #ddd",
-                  cursor: "pointer"
+                  cursor: "pointer",
                 }}
                 onClick={() => {
-                  onSelect({ name, id });
+                  onSelect({ name, id, category, address });
                   onClose();
                 }}
               >

@@ -91,8 +91,28 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 	 */
 	@Override
 	public int writeBoard(Board dto) {
+		
+	    // 1. 복지시설후기일 경우: 복지시설 테이블에 먼저 등록
+        if ("복지시설후기".equals(dto.getPostType())) {
+            String facilityId = dto.getFacilityApiServiceId();
+
+            if (facilityId != null && mapper.existsFacilityById(facilityId) == 0) {
+                mapper.insertFacilityFromBoard(dto);
+            }
+        }
+
+        // 2. 복지혜택후기일 경우: 복지혜택 테이블에 먼저 등록
+        if ("복지혜택후기".equals(dto.getPostType())) {
+            String welfareId = dto.getApiServiceId();
+
+            if (welfareId != null && mapper.existsWelfareById(welfareId) == 0) {
+                mapper.insertWelfareFromBoard(dto);
+            }
+        }
 		// 게시글 등록
 		mapper.insertBoard(dto);
+		
+		
 
 		int boardNo = mapper.getLastInsertedId();
 
@@ -117,6 +137,9 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 			}
 		}
 		return boardNo;
+		
+		
+		
 	}
 
 	/**

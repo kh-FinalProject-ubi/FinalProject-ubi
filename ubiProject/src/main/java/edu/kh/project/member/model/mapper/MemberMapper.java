@@ -119,4 +119,8 @@ public interface MemberMapper {
 	// 재설정 받은 비밀번호 업데이트 구문
 	int updatePassword(@Param("memberNo") int memberNo, @Param("newPw") String newPw);
 
+	String selectMemberRegionCity(int memberNo);
+
+	String selectMemberRegionDistrict(int memberNo);
+
 }

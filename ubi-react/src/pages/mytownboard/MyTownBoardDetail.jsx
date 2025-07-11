@@ -124,6 +124,14 @@ function MyTownBoardDetail() {
   return (
     <div>
       <h2>{board.boardTitle}</h2>
+      <p>
+        작성유형: {board.postType}
+        {board.postType === "복지시설후기" && board.facilityName && (
+          <>
+            &nbsp;|&nbsp;복지시설: <strong>{board.facilityName}</strong>
+          </>
+        )}
+      </p>
       <img
         src={
           `http://localhost:8080${board.memberImg}` || "/default-profile.png"
