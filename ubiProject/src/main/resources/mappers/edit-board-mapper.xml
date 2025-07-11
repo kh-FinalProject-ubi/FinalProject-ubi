@@ -61,10 +61,12 @@
 		BOARD_TITLE = #{boardTitle},
 		BOARD_CONTENT = #{boardContent},
 		POST_TYPE = #{postType}
-		WHERE BOARD_TYPE = #{boardType}
+		WHERE
+		BOARD_TYPE = #{boardType}
 		AND
 		BOARD_NO = #{boardNo}
-		AND MEMBER_NO = #{memberNo}
+		AND MEMBER_NO =
+		#{memberNo}
 	</update>
 
 	<!-- 게시글 이미지 삭제 -->
@@ -98,12 +100,22 @@
 
 	<!-- 게시글 삭제 -->
 	<update id="boardDelete">
+		UPDATE BOARD
+		SET BOARD_DEL_FL = 'Y'
+		WHERE BOARD_TYPE = #{boardCode}
+		AND BOARD_NO = #{boardNo}
+		<if test="isAdmin == false">
+			AND MEMBER_NO = #{memberNo}
+		</if>
+	</update>
+	
+	<!-- 관리자 게시글 삭제 로직 -->
+	<update id="boardDeleteByAdmin">
 		UPDATE "BOARD" SET
 		BOARD_DEL_FL = 'Y'
 		WHERE BOARD_TYPE
 		= #{boardCode}
 		AND BOARD_NO = #{boardNo}
-		AND MEMBER_NO = #{memberNo}
 	</update>
 
 </mapper>

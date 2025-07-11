@@ -33,6 +33,12 @@ public interface MemberService {
 	// 멤버 테이블 신고시
 	boolean reportMember(int targetMemberNo, int reporterMemberNo, String reason);
 
+	// 아이디 찾기
+	String findMemberId(String name, String email);
+
+	// 비밀번호 리셋 구문
+	boolean resetPassword(String memberId, String email);
+
 
 
 

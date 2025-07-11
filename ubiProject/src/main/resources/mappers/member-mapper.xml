@@ -167,10 +167,12 @@
 		REPORTER_NO,
 		TARGET_MEMBER_NO
 		) VALUES (
-		SEQ_REPORT_NO.NEXTVAL, 'MEMBER', 0,
+		SEQ_REPORT_NO.NEXTVAL, 'MEMBER',
+		#{targetMemberNo},
 		#{reason},
 		'Y', SYSDATE,
-		#{reporterMemberNo}, #{targetMemberNo}
+		#{reporterMemberNo},
+		#{targetMemberNo}
 		)
 	</insert>
 
@@ -249,7 +251,8 @@
 	<!-- 신고 횟수 0으로 초기화 -->
 	<update id="resetReportCount" parameterType="int">
 		UPDATE MEMBER
-		SET REPORT_COUNT = REPORT_COUNT % 5
+		SET
+		REPORT_COUNT = REPORT_COUNT % 5
 		WHERE MEMBER_NO = #{memberNo}
 	</update>
 
@@ -279,6 +282,27 @@
 		AND
 		TARGET_MEMBER_NO = #{memberNo}
 		AND REPORT_STATUS = 'Y'
+	</update>
+
+	<select id="selectMemberIdByNameAndEmail" resultType="string">
+		SELECT MEMBER_ID
+		FROM MEMBER
+		WHERE MEMBER_NAME = #{name}
+		AND MEMBER_EMAIL = #{email}
+	</select>
+
+	<!-- 아이디 비밀번호 찾기 -->
+	<select id="findMemberId" resultType="Member">
+		SELECT *
+		FROM MEMBER
+		WHERE MEMBER_ID = #{memberId}
+		AND MEMBER_EMAIL = #{email}
+	</select>
+
+	<update id="updatePassword">
+		UPDATE MEMBER
+		SET MEMBER_PW = #{newPw}
+		WHERE MEMBER_NO = #{memberNo}
 	</update>
 
 </mapper>
