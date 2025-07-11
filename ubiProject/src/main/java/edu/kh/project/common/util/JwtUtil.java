@@ -1,5 +1,6 @@
 package edu.kh.project.common.util;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -101,4 +102,5 @@ public class JwtUtil {
 
 		return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 	}
+	
 }
