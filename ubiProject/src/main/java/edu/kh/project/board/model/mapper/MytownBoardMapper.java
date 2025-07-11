@@ -107,6 +107,19 @@ public interface MytownBoardMapper {
 	int deleteImagesByBoardNo(int boardNo);
 
 	int insertBoardImage1(BoardImage image);
+	
+	// 복지시설 존재 여부
+    int existsFacilityById(String id);
+
+    // 복지혜택 존재 여부
+    int existsWelfareById(String id);
+
+    // 복지시설 INSERT (게시글 작성 시 최초 저장)
+    int insertFacilityFromBoard(Board dto);
+
+    // 복지혜택 INSERT (게시글 작성 시 최초 저장)
+    int insertWelfareFromBoard(Board dto);
+	
 
 	// 신고를 위한 메서드 목록
 

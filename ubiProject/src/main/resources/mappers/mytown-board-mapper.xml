@@ -3,6 +3,7 @@
 <mapper
 	namespace="edu.kh.project.board.model.mapper.MytownBoardMapper">
 
+ 
 
 	<!-- 로그인된 회원과 동일한 시군구의 회원이 작성한 게시글 목록 조회 -->
 	<!-- BoardMapper.xml -->
@@ -78,6 +79,50 @@
 		FROM BOARD WHERE BOARD_TYPE = 3 AND BOARD_DEL_FL = 'N'
 	</select>
 
+<!-- 복지시설 존재 여부 -->
+  <select id="existsFacilityById" resultType="int">
+  SELECT COUNT(*) FROM WELFARE_FACILITY WHERE FACILITY_API_SERVICE_ID = #{id}
+  </select>
+
+  <!-- 복지혜택 존재 여부 -->
+  <select id="existsWelfareById" resultType="int">
+    SELECT COUNT(*) FROM WELFARE WHERE API_SERVICE_ID = #{id}
+  </select>
+
+  <!-- 복지시설 INSERT -->
+  <insert id="insertFacilityFromBoard" parameterType="Board">
+    INSERT INTO WELFARE_FACILITY (
+    FACILITY_NO,
+    FACILITY_API_SERVICE_ID,
+    MEMBER_NO,
+    FACILITY_NAME,
+    FACILITY_KIND_CD,
+    FACILITY_ADDR,
+    REGION_CITY,
+    REGION_DISTRICT,
+    JJ_TIME,
+    JJ_DEL_FL,
+    ALARM_SENT_FL
+  ) VALUES (
+    SYS_GUID(),
+    #{facilityApiServiceId},
+    #{memberNo},
+    #{facilityName},
+    #{facilityKindCd},  <!-- 여기 수정됨 -->
+    #{facilityAddress},
+    #{regionCity},
+    #{regionDistrict},
+    SYSDATE,
+    'N',
+    'N'
+  )
+  </insert>
+
+  <!-- 복지혜택 INSERT -->
+  <insert id="insertWelfareFromBoard" parameterType="Board">
+    INSERT INTO WELFARE (SERVICE_ID, WELFARE_NAME, AGENCY_NAME)
+    VALUES (#{apiServiceId}, #{welfareName}, #{welfareAgency})
+  </insert>
 
 	<!-- 상세조회 -->
 	<select id="selectLocalBoardDetail"
@@ -118,6 +163,7 @@
 		B.FACILITY_API_SERVICE_ID,
 		LS.BOARD_TYPE,
 		LS.POST_TYPE,
+		WF.FACILITY_NAME AS facilityName,
 
 		-- ✅ 신고 여부
 		(
@@ -139,6 +185,8 @@
 		ON B.BOARD_TYPE =
 		LS.BOARD_TYPE
 		AND B.POST_TYPE = LS.POST_TYPE
+		 LEFT JOIN WELFARE_FACILITY WF
+    ON B.FACILITY_API_SERVICE_ID = WF.FACILITY_API_SERVICE_ID
 		WHERE B.BOARD_NO =
 		#{boardNo}
 	</select>
@@ -152,20 +200,46 @@
 	</update>
 
 	<!-- 게시글 작성 -->
-	<insert id="insertBoard"
-		parameterType="edu.kh.project.board.model.dto.Board">
-		INSERT INTO BOARD (
-		BOARD_NO, BOARD_TYPE, BOARD_TITLE,
-		BOARD_CONTENT, MEMBER_NO,
-		BOARD_DATE,BOARD_READ_COUNT,STAR_COUNT,POST_TYPE,
-		API_SERVICE_ID,
-		    FACILITY_API_SERVICE_ID
-		) VALUES (
-		SEQ_BOARD_NO.NEXTVAL, 3, #{boardTitle}, #{boardContent}, #{memberNo},
-		SYSDATE, 0,
-		#{starCount} ,#{postType}, #{ApiServiceId},#{facilityApiServiceId},
-		)
-	</insert>
+	<insert id="insertBoard" parameterType="edu.kh.project.board.model.dto.Board">
+  INSERT INTO BOARD (
+    BOARD_NO,
+    BOARD_TYPE,
+    BOARD_TITLE,
+    BOARD_CONTENT,
+    MEMBER_NO,
+    BOARD_DATE,
+    BOARD_READ_COUNT,
+    STAR_COUNT,
+    POST_TYPE
+    <if test="postType == '복지혜택후기' or postType == '복지시설후기'">
+      , 
+      <choose>
+        <when test="postType == '복지혜택후기'">API_SERVICE_ID</when>
+        <when test="postType == '복지시설후기'">FACILITY_API_SERVICE_ID</when>
+      </choose>
+    </if>
+  )
+  VALUES (
+    SEQ_BOARD_NO.NEXTVAL,
+    3,
+    #{boardTitle},
+    #{boardContent},
+    #{memberNo},
+    SYSDATE,
+    0,
+    #{starCount},
+    #{postType}
+    <if test="postType == '복지혜택후기' or postType == '복지시설후기'">
+      , 
+      <choose>
+        <when test="postType == '복지혜택후기'">#{apiServiceId}</when>
+        <when test="postType == '복지시설후기'">#{facilityApiServiceId}</when>
+      </choose>
+    </if>
+  )
+</insert>
+
+
 
 	<!-- 해시태그 입력 -->
 	<insert id="insertHashtag">

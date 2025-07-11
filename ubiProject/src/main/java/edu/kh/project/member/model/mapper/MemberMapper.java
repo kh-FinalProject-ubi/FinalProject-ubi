@@ -112,4 +112,8 @@ public interface MemberMapper {
 	// 신고 상태 변경
 	void updateReportStatusSuspension(int memberNo);
 
+	String selectMemberRegionCity(int memberNo);
+
+	String selectMemberRegionDistrict(int memberNo);
+
 }
