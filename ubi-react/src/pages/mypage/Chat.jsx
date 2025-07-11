@@ -8,10 +8,13 @@ import LoadingOverlay from '../../components/Loading';
 import ProfileImgUploader from "./ProfileImgUploader";
 import { div } from 'framer-motion/client';
 import { stripHtml } from "./striptHtml";
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
 
 
 const Chat = () => {
   const { memberNo, memberName, token } = useAuthStore();
+  const stompRef = useRef(null);
 
   const [rooms, setRooms] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState(null);
@@ -22,6 +25,7 @@ const Chat = () => {
   const [searchResults, setSearchResults] = useState([]);
   const messagesEndRef = useRef(null);
   const [loadingSearch, setLoadingSearch] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
 
   // ✅ 채팅방 목록 불러오기
   const showChat = async () => {
@@ -68,15 +72,27 @@ const Chat = () => {
 
   const handleSendMessage = () => {
     if (input.trim() === "" || !selectedRoom) return;
-
-    const newMessage = {
-      sender: memberName,
-      content: input,
+    if (!isConnected) {
+      alert("WebSocket 연결 중입니다. 잠시 후 다시 시도하세요.");
+      return;
+    }
+    const payload = {
+      chatRoomNo: selectedRoom.roomId,
+      senderNo: memberNo,
+      messageContent: input,
       timestamp: new Date().toISOString(),
     };
 
-    setMessages((prev) => [...prev, newMessage]);
+    // 🔹 ① 서버로 실시간 전송
+    stompRef.current.publish({
+      destination: "/app/chatting/sendMessage",   // 서버 @MessageMapping 엔드포인트
+      body: JSON.stringify(payload),
+    });
+
+    // 🔹 ② 낙관적 UI 반영
+    setMessages((prev) => [...prev, { ...payload }]);
     setInput("");
+    scrollToBottom();
   };
 
   const handleKeyPress = (e) => {
@@ -96,6 +112,7 @@ const Chat = () => {
       });
       if (res.status === 200) {
         setSearchResults(res.data);
+        console.log("멤버넘버 : ", res.data);
       } else {
         setSearchResults([]);
       }
@@ -115,14 +132,14 @@ const Chat = () => {
 
     try {
       const res = await axios.post(
-        "/api/chatting/create",
-        { targetMemberNo },
+        "/api/chatting/create", null, 
         {
+          params: { targetMemberNo },
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      if (res.status === 201 || res.status === 200) {
+      if (res.status === 200) {
         setShowSearch(false);
         setSearchNickname("");
         setSearchResults([]);
@@ -134,19 +151,75 @@ const Chat = () => {
   };
 
   useEffect(() => {
-    if (!searchNickname.trim()) {
-      setSearchResults([]);
-      return;
+      if (!searchNickname.trim()) {
+        setSearchResults([]);
+        return;
+      }
+
+      const debounceTimer = setTimeout(() => {
+        handleSearchMember(); // 300ms 이후 검색 실행
+      }, 300);
+
+      return () => clearTimeout(debounceTimer); // 이전 요청 취소
+    }, [searchNickname]);
+
+    if (!memberNo) return <div>로그인 정보가 없습니다.</div>;
+
+    useEffect(() => {
+    if (!memberNo || !token) return; // 로그인 후 실행
+
+    // SockJS → STOMP client
+    const socket = new SockJS("/ws");       // 백엔드 WebSocket 엔드포인트
+    const client = new Client({
+      webSocketFactory: () => socket,
+      connectHeaders: {                      // JWT 전송 (옵션)
+        Authorization: `Bearer ${token}`,
+      },
+      debug: (str) => console.log("[STOMP]", str),
+      onConnect: () => {
+          console.log("📡 WebSocket 연결 완료");
+          setIsConnected(true);
+
+          client.subscribe(`/queue/chat/${memberNo}`, (msg) => {
+            const payload = JSON.parse(msg.body);
+            handleIncomingMessage(payload);
+          });
+        },
+      onStompError: (frame) => {
+        console.error("STOMP 오류", frame);
+      },
+    });
+
+    client.activate();
+    stompRef.current = client;
+
+    return () => client.deactivate(); // 언마운트 시 연결 해제
+  }, [memberNo, token]);
+
+  const handleIncomingMessage = (payload) => {
+    /** payload 예시
+     * { roomId, senderNo, senderName, content, timestamp }
+     */
+    // ① 현재 열려 있는 방이면 메시지 목록에 바로 추가
+    if (selectedRoom?.roomId === payload.roomId) {
+      setMessages((prev) => [...prev, {
+        sender: payload.senderName,
+        content: payload.content,
+        timestamp: payload.timestamp,
+      }]);
+      scrollToBottom();
     }
 
-    const debounceTimer = setTimeout(() => {
-      handleSearchMember(); // 300ms 이후 검색 실행
-    }, 300);
-
-    return () => clearTimeout(debounceTimer); // 이전 요청 취소
-  }, [searchNickname]);
-
-  if (!memberNo) return <div>로그인 정보가 없습니다.</div>;
+    // ② 채팅방 목록 notReadCount 업데이트
+    setRooms((prev) =>
+      prev.map((r) =>
+        r.roomId === payload.roomId
+          ? { ...r, lastMessage: payload.content, notReadCount: (r.notReadCount || 0) + (selectedRoom?.roomId === r.roomId ? 0 : 1) }
+          : r
+      )
+    );
+  };
+  
 
   return (
     <div className="chat-wrapper">
@@ -171,9 +244,9 @@ const Chat = () => {
               {loadingSearch && <div>검색 중...</div>}
               {searchResults.map((user) => (
                 <div
-                  key={user.memberNo}
+                  key={user.targetNo}
                   className="search-result-item"
-                  onClick={() => handleCreateRoom(user.memberNo)}
+                  onClick={() => handleCreateRoom(user.targetNo)}
                 >
                   <img src={user.memberImg || "/default-profile.png"} alt="프로필" className="room-profile" />
                   <span>{user.memberNickname}</span>
@@ -186,11 +259,11 @@ const Chat = () => {
         {/* 채팅 목록 */}
         {Array.isArray(rooms) && rooms.map((room) => (
           <div
-            key={room.roomId}
+            key={room.memberNo}
             className={`chat-room-item ${selectedRoom?.roomId === room.roomId ? "selected" : ""}`}
             onClick={() => handleSelectRoom(room)}
           >
-            <img src={room.targetProfile} alt="profile" className="room-profile" />
+            <img src={room.memberImg} alt="profile" className="room-profile" />
             <div className="room-info">
               <div className="room-name">{room.memberName}</div>
               <div className="room-last-message">{room.lastMessage}</div>

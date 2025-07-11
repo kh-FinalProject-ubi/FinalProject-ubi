@@ -7,9 +7,12 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -37,6 +40,8 @@ public class ChattigController {
     private final ChattingService service;
     
 	private final JwtUtil jwtU;    
+	
+	private final SimpMessagingTemplate messagingTemplate;
   
     /** 채팅 목록 조회 및 페이지 전환
      * @param loginMember : 현재 로그인한 회원 번호 수집
@@ -110,9 +115,10 @@ public class ChattigController {
 		    map.put("memberNo", memberNo);
 
 		    List<Member> results = service.selectTarget(map);
+		    System.out.println(results);
 
 		    if (results != null) {
-		        return ResponseEntity.ok(results); // 🔹 새 경로 반환
+		        return ResponseEntity.ok(results);
 		    } else {
 		    	
 		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("채팅 상대 조회 실패");
@@ -120,7 +126,7 @@ public class ChattigController {
     		
     	}catch (Exception e) {
     		e.printStackTrace(); // 콘솔에 출력
-    	    log.error("회원 검색 중 오류 발생", e); // 슬프지만 대부분은 이게 빠져 있음
+    	    log.error("회원 검색 중 오류 발생", e);
     		
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 			
@@ -129,7 +135,7 @@ public class ChattigController {
     }
     
     // 채팅방 입장(없으면 생성) - 비동기
-    @GetMapping("create")
+    @PostMapping("create")
     @ResponseBody
     public ResponseEntity<Object> chattingEnter(@RequestParam("targetMemberNo") int targetNo, 
     						 @RequestHeader("Authorization") String authorizationHeader) {
@@ -151,6 +157,9 @@ public class ChattigController {
     		Map<String, Integer> map = new HashMap<String, Integer>();
     		
     		map.put("targetNo", targetNo);
+    		map.put("memberNo", memberNo);
+    		
+    		log.info("받아온 값 : ", map);
     		
     		// 채팅방번호 체크 서비스 호출 및 반환(기존 생성된 방이 있는지)
     		int chattingNo = service.checkChattingRoomNo(map);
@@ -162,7 +171,7 @@ public class ChattigController {
     		}
     		
     		if (chattingNo > 0) {
- 		        return ResponseEntity.ok(chattingNo); // 🔹 새 경로 반환
+ 		        return ResponseEntity.ok(chattingNo); // 새 경로 반환
  		    } else {
  		    	
  		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("채팅 상대 조회 실패");
@@ -175,6 +184,14 @@ public class ChattigController {
     		
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);    		
 		}
+    }
+    
+    @MessageMapping("sendMessage")
+    public void send(Message msg) {
+    	service.insertMessage(msg);
+        // 상대에게 1:1로 푸시
+        messagingTemplate.convertAndSend("/queue/chat/" + msg.getTargetNo(), msg);
+        // ↔ 혹은 방 브로드캐스트: /topic/room.{roomId}
     }
  
     // 채팅방 목록 조회 - 비동기

@@ -38,7 +38,7 @@ public class ChattingServiceImpl implements ChattingService{
     	int result = mapper.createChattingRoom(map);
     	
     	if(result > 0) {
-    		return (int)map.get("chattingRoomNo");
+    		return (int)map.get("chatRoomNo");
     	}
     	
         return 0;
