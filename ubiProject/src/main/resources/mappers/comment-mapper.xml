@@ -172,7 +172,6 @@
 		AND REPORT_STATUS = 'Y'
 	</select>
 
-
 	<!-- 답변 했다고 수정하는 메서드 -->
 	<update id="updateBoardAnswer">
 		UPDATE BOARD

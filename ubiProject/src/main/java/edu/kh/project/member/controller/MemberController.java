@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import edu.kh.project.common.util.JwtUtil;
+import edu.kh.project.email.model.service.EmailService;
 import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.member.model.mapper.MemberMapper;
 import edu.kh.project.member.model.service.MemberService;
@@ -40,6 +41,9 @@ public class MemberController {
 
 	@Autowired
 	private MemberMapper mapper;
+
+	@Autowired
+	private EmailService emailService;
 
 	private String parseMemberStandard(String codeStr) {
 		switch (codeStr) {
@@ -507,32 +511,67 @@ public class MemberController {
 		return ResponseEntity.ok().build();
 	}
 
-	// ID 찾기
-	@PostMapping("/find-id")
-	public ResponseEntity<?> findId(@RequestBody Map<String, String> param) {
-		String name = param.get("name");
-		String email = param.get("email");
-		String memberId = service.findMemberId(name, email);
+	@GetMapping("/sendCode")
+	public ResponseEntity<?> sendCode(  @RequestParam(name = "email") String email,
+		    @RequestParam(name = "type") String type) {
+	    try {
+	        String code = emailService.sendEmail(type, email);
 
-		if (memberId != null) {
-			return ResponseEntity.ok(Map.of("memberId", memberId));
-		} else {
+	        if (code != null) {
+	            return ResponseEntity.ok(Map.of("code", code));
+	            // 또는 Map<String, String> 으로 명시
+	        } else {
+	            return ResponseEntity.status(500).body(Map.of("message", "이메일 전송 실패"));
+	        }
+
+	    } catch (Exception e) {
+	        return ResponseEntity.status(500).body(Map.of("message", "서버 오류: " + e.getMessage()));
+	    }
+	}
+	
+	@PostMapping("/verifyCode")
+	public ResponseEntity<?> verifyCode(@RequestBody Map<String, String> paramMap) {
+	    String email = paramMap.get("email");
+	    String code = paramMap.get("code");
+
+	    int result = emailService.checkAuthKey(Map.of("email", email, "authKey", code));
+
+	    boolean verified = result > 0;
+
+	    return ResponseEntity.ok(Map.of("verified", verified));
+	}
+	
+	// 아이디 찾기
+	@PostMapping("/find-id")
+	public ResponseEntity<?> findId(@RequestBody Map<String, String> paramMap) {
+		String name = paramMap.get("name");
+		String email = paramMap.get("email");
+
+		String foundId = service.findIdByNameAndEmail(name, email);
+
+		if (foundId == null) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "일치하는 회원이 없습니다."));
 		}
+
+		return ResponseEntity.ok(Map.of("memberId", foundId));
 	}
 
-	// PW 찾기
-	@PostMapping("/find-pw")
-	public ResponseEntity<?> findPw(@RequestBody Map<String, String> param) {
-		String memberId = param.get("memberId");
-		String email = param.get("email");
+	// 2. 비밀번호 재설정
+	@PostMapping("/reset-pw")
+	public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> paramMap) {
+		String memberId = paramMap.get("memberId");
+		String email = paramMap.get("email");
+		String newPassword = paramMap.get("newPassword");
 
-		boolean success = service.resetPassword(memberId, email);
+		boolean success = service.resetPassword(memberId, email, newPassword);
 
 		if (success) {
-			return ResponseEntity.ok(Map.of("message", "임시 비밀번호가 이메일로 전송되었습니다."));
-		} else {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "정보가 일치하지 않습니다."));
+			return ResponseEntity.ok(Map.of("message", "비밀번호가 성공적으로 변경되었습니다."));
 		}
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "정보가 일치하지 않습니다."));
 	}
 }
+
+	
+

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import useAuthStore from "../stores/useAuthStore";
-import FindAccount from "./FindAcoount";
+import { useNavigate, Link } from "react-router-dom";
 
 const LoginPage = () => {
   const [memberId, setMemberId] = useState("");
@@ -87,8 +86,12 @@ const LoginPage = () => {
             </button>
 
             <div className="find-account-link">
-              <button onClick={() => setMode("find-id")}>아이디 찾기</button>
-              <button onClick={() => setMode("find-pw")}>비밀번호 찾기</button>
+            <Link to="/login/find-id">
+  <button>아이디 찾기</button>
+</Link>
+<Link to="/login/find-pw">
+  <button>비밀번호 찾기</button>
+</Link>
             </div>
           </div>
         ) : (

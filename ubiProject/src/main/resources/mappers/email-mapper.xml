@@ -8,7 +8,7 @@
 	-->
 	<!-- 인증번호 수정 -->
 	<update id="updateAuthKey">
-	 UPDATE "TB_AUTH_KEY" SET
+	 UPDATE "AUTH_KEY" SET
 	 AUTH_KEY = #{authKey},
 	 CREATE_TIME = SYSDATE
 	 WHERE EMAIL = #{email}
@@ -16,14 +16,14 @@
 	
 	<!-- 인증 번호 삽입 -->
 	<insert id="insertAuthKey">
-	 INSERT INTO "TB_AUTH_KEY"
+	 INSERT INTO "AUTH_KEY"
 	 VALUES(SEQ_KEY_NO.NEXTVAL, #{email}, #{authKey}, DEFAULT)
 	</insert>
 	
 	<!-- 이메일 + 인증번호 확인 -->
 	<select id="checkAuthKey">
 	SELECT COUNT(*)
-	FROM "TB_AUTH_KEY"
+	FROM "AUTH_KEY"
 	WHERE EMAIL = #{email}
 	AND AUTH_KEY = #{authKey}
 	</select>
