@@ -3,6 +3,7 @@ package edu.kh.project.websocket.config;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -13,36 +14,26 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import edu.kh.project.websocket.handler.ChattingWebsocketHandler;
 import edu.kh.project.websocket.handler.TestWebSocketHandler;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
+import edu.kh.project.common.config.LoggingHandshakeInterceptor;
+
 @Configuration
-@EnableWebSocketMessageBroker        // ⭐ STOMP 사용
+@EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-
-	private final JwtChannelInterceptor jwtChannelInterceptor;
-	
-    @Override
-    public void configureMessageBroker(MessageBrokerRegistry registry) {
-        // 서버 → 클라이언트 브로커 경로
-        registry.enableSimpleBroker("/queue", "/topic");
-        // 클라이언트 → 서버 MessageMapping prefix
-        registry.setApplicationDestinationPrefixes("/app");
-    }
-
-    @Override
-    public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // SockJS 엔드포인트
-        registry.addEndpoint("/ws-chat")
-                .setAllowedOriginPatterns("*")   // 개발 중 전체 허용
-                .withSockJS();
-    }
-    
-    @Override
-    public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(jwtChannelInterceptor);  // 여기서 사용
-    }
+  @Override
+  public void registerStompEndpoints(StompEndpointRegistry registry) {
+    registry.addEndpoint("/ws-chat").setAllowedOrigins("*").withSockJS();
+  }
+  @Override
+  public void configureMessageBroker(MessageBrokerRegistry registry) {
+    registry.enableSimpleBroker("/queue/", "/topic/");
+    registry.setApplicationDestinationPrefixes("/app");
+    registry.setUserDestinationPrefix("/user");
+  }
 }
+
 	
 //	// 웹소켓 핸들러를 등록하는 메서드	
 //	@Override

@@ -27,10 +27,12 @@ export default defineConfig({
         ws: true, // ✅ 핵심!
       },
       '/ws-chat': {
-      target: 'http://localhost:8080',
+      target: 'ws://localhost:8080',    // ✅
       changeOrigin: true,
       ws: true, // WebSocket용
+      secure: false,
       },
     },
+    logLevel: 'debug', 
   },
 });

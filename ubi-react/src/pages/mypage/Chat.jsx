@@ -6,13 +6,14 @@ import useAuthStore from '../../stores/useAuthStore';
 import { AnimatePresence, motion } from 'framer-motion';
 import LoadingOverlay from '../../components/Loading';
 import ProfileImgUploader from "./ProfileImgUploader";
-import { div } from 'framer-motion/client';
-import { stripHtml } from "./striptHtml";
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 
 
+
 const Chat = () => {
+  console.log("SockJS 타입:", typeof SockJS);
+  console.log("SockJS 실제 객체:", SockJS); 
   const { memberNo, memberName, token } = useAuthStore();
   const stompRef = useRef(null);
 
@@ -60,45 +61,77 @@ const Chat = () => {
   }, [messages]);
 
   const handleSelectRoom = (room) => {
-    setSelectedRoom(room);
-    setMessages([
-      {
-        sender: room.memberName,
-        content: "채팅에 오신 것을 환영합니다.",
-        timestamp: new Date().toISOString(),
-      },
-    ]);
-  };
+      setSelectedRoom(room);
+      setMessages([]); // 새로 초기화
+      // TODO: 필요하면 서버에서 메시지 목록 받아오기
+    };;
 
+  useEffect(() => {
+    if (!memberNo) return;
+
+    const client = new Client({
+      webSocketFactory: () => new SockJS("http://localhost:8080/ws-chat"),
+      connectHeaders: {
+        Authorization: `Bearer ${token}`,
+      },
+      debug: (str) => console.log(str),
+      reconnectDelay: 5000,
+      onConnect: () => {
+        setIsConnected(true);
+
+        // 특정 유저의 채팅 메시지 구독 (user destination prefix를 설정했다면)
+        client.subscribe(`/user/queue/chat/${memberNo}`, (message) => {
+          const body = JSON.parse(message.body);
+
+          // 현재 선택된 방의 메시지일 때만 상태 업데이트
+          if (selectedRoom && body.chatRoomNo === selectedRoom.chatRoomNo) {
+            setMessages((prev) => [...prev, body]);
+          }
+        });
+      },
+      onStompError: (frame) => {
+        console.error("STOMP error:", frame);
+      },
+      onDisconnect: () => {
+        setIsConnected(false);
+      },
+    });
+
+    client.activate();
+    stompRef.current = client;
+
+    return () => {
+      client.deactivate();
+      setIsConnected(false);
+    };
+  }, [memberNo, selectedRoom]);
+
+   // 메시지 보내기
   const handleSendMessage = () => {
-    if (input.trim() === "" || !selectedRoom) return;
-    if (!isConnected) {
-      alert("WebSocket 연결 중입니다. 잠시 후 다시 시도하세요.");
-      return;
-    }
+    if (!input.trim() || !selectedRoom || !isConnected) return;
+
     const payload = {
       chatRoomNo: selectedRoom.chatRoomNo,
       senderNo: memberNo,
-      targetNo: selectedRoom.participant,
+      targetNo: selectedRoom.participant,  // 실제 상대 회원 번호 맞게 바꾸기
       chatContent: input,
       sendTime: new Date().toISOString(),
     };
 
-    // 🔹 ① 서버로 실시간 전송
     stompRef.current.publish({
-      destination: "/app/chatting/sendMessage",   // 서버 @MessageMapping 엔드포인트
+      destination: '/app/chatting/sendMessage',
       body: JSON.stringify(payload),
     });
 
-    // 🔹 ② 낙관적 UI 반영
-    setMessages((prev) => [...prev, {
+    // 낙관적 UI 업데이트
+    setMessages(prev => [...prev, {
       senderNo: memberNo,
-      content: input,
-      sendTime: payload.timestamp,
+      chatContent: input,
+      sendTime: new Date().toISOString(),
+      chatRoomNo: selectedRoom.chatRoomNo,
     }]);
 
-    setInput("");
-    scrollToBottom();
+    setInput('');
   };
 
   const handleKeyPress = (e) => {
@@ -157,89 +190,19 @@ const Chat = () => {
   };
   
   useEffect(() => {
-      if (!searchNickname.trim()) {
-        setSearchResults([]);
-        return;
-      }
-
-      const debounceTimer = setTimeout(() => {
-        handleSearchMember(); // 300ms 이후 검색 실행
-      }, 300);
-
-      return () => clearTimeout(debounceTimer); // 이전 요청 취소
-    }, [searchNickname]);
-
-    if (!memberNo) return <div>로그인 정보가 없습니다.</div>;
-
-  useEffect(() => {
-    if (!memberNo || !token) return;
-    console.log("⚡ Chat.jsx useEffect 실행");
-
-    const socket = new SockJS("http://localhost:8080/ws-chat");  // 백엔드 WebSocket 엔드포인트
-    const client = new Client({
-      webSocketFactory: () => socket,
-      connectHeaders: {
-        Authorization: `Bearer ${token}`,  // JWT 헤더 전송
-      },
-      debug: (str) => console.log('[STOMP]', str),
-      
-      onConnect: () => {
-        console.log('📡 WebSocket 연결 완료');
-        setIsConnected(true);
-
-        // 메시지 구독 예: 개인 큐
-        client.subscribe(`/queue/chat/${memberNo}`, (message) => {
-          const payload = JSON.parse(message.body);
-          // handleIncomingMessage(payload);
-          console.log('받은 메시지:', payload);
-        });
-      },
-      onStompError: (frame) => {
-        console.error('STOMP 오류', frame);
-      },
-      onDisconnect: () => {
-        setIsConnected(false);
-        console.log('WebSocket 연결 종료');
-      },
-
-       onWebSocketError: (e) => console.error("WS 에러:", e),   // ★ 추가
-        onWebSocketClose: (e) => console.warn("WS 닫힘:", e),    // ★ 추가
-    });
-
-    client.activate();
-    console.log("📤 client.activate() 호출"); 
-    stompRef.current = client;
-
-    // 언마운트 시 연결 해제
-    return () => {
-      client.deactivate();
-      setIsConnected(false);
-    };
-  }, [memberNo, token]);
-
-  const handleIncomingMessage = (payload) => {
-    /** payload 예시
-     * { roomId, senderNo, senderName, content, timestamp }
-     */
-    // ① 현재 열려 있는 방이면 메시지 목록에 바로 추가
-    if (selectedRoom?.roomId === payload.roomId) {
-      setMessages((prev) => [...prev, {
-        sender: payload.senderName,
-        content: payload.content,
-        timestamp: payload.timestamp,
-      }]);
-      scrollToBottom();
+    if (!searchNickname.trim()) {
+      setSearchResults([]);
+      return;
     }
 
-    // ② 채팅방 목록 notReadCount 업데이트
-    setRooms((prev) =>
-      prev.map((r) =>
-        r.roomId === payload.roomId
-          ? { ...r, lastMessage: payload.content, notReadCount: (r.notReadCount || 0) + (selectedRoom?.roomId === r.roomId ? 0 : 1) }
-          : r
-      )
-    );
-  };
+    const debounceTimer = setTimeout(() => {
+      handleSearchMember(); // 300ms 이후 검색 실행
+    }, 300);
+
+    return () => clearTimeout(debounceTimer); // 이전 요청 취소
+  }, [searchNickname]);
+
+  if (!memberNo) return <div>로그인 정보가 없습니다.</div>;
   
 console.log("채팅방 목록 : ", rooms);
   return (
@@ -290,7 +253,7 @@ console.log("채팅방 목록 : ", rooms);
             >
               {/* 프로필 이미지: 값이 없으면 기본 이미지 */}
               <img
-                src={`http://localhost:8080${room.targetProfile}` || "/default-profile.png"}           // ✔ 대소문자 P, fallback
+                src={room.targetProfile ? `http://localhost:8080${room.targetProfile}` : "/default-profile.png"}
                 alt="profile"
                 className="room-profile"
                 onError={e => { e.currentTarget.src = "/default-profile.png"; }}

@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../stores/useAuthStore";
 import useSelectedRegionStore from "../hook/welfarefacility/useSelectedRegionStore";
 import useModalStore from "../stores/useModalStore";
-import useAlertSocket from "../hook/alert/useAlertSocket";
+// import useAlertSocket from "../hook/alert/useAlertSocket";
 
 const AlertModal = () => {
   const alertMessage = useModalStore((state) => state.alertMessage);
@@ -48,9 +48,9 @@ const Header = () => {
   const dropdownRef = useRef(null);
 
   //  WebSocket 알림 수신 연결 (항상 호출)
-  useAlertSocket(memberNo, (newAlert) => {
-    setAlerts((prev) => [newAlert, ...prev]);
-  });
+  // useAlertSocket(memberNo, (newAlert) => {
+  //   setAlerts((prev) => [newAlert, ...prev]);
+  // });
 
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
