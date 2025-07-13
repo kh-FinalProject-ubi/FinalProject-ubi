@@ -21,17 +21,27 @@ import edu.kh.project.common.config.LoggingHandshakeInterceptor;
 
 @Configuration
 @EnableWebSocketMessageBroker
+@RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+	
+  private final JwtChannelInterceptor jwtChannelInterceptor; // 주입
+	
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
-    registry.addEndpoint("/ws-chat").setAllowedOrigins("*").withSockJS();
+    registry.addEndpoint("/ws-chat")
+    		.setAllowedOrigins("*")
+    		.withSockJS();
   }
   @Override
   public void configureMessageBroker(MessageBrokerRegistry registry) {
     registry.enableSimpleBroker("/queue/", "/topic/");
     registry.setApplicationDestinationPrefixes("/app");
-    registry.setUserDestinationPrefix("/user");
   }
+
+	@Override
+	public void configureClientInboundChannel(ChannelRegistration reg) {
+	    reg.interceptors(jwtChannelInterceptor);
+	}
 }
 
 	

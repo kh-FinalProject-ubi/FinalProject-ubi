@@ -14,6 +14,13 @@ import { Client } from '@stomp/stompjs';
 const Chat = () => {
   console.log("SockJS 타입:", typeof SockJS);
   console.log("SockJS 실제 객체:", SockJS); 
+  window.sock = new SockJS("/ws-chat");
+  window.sock.onopen = () => console.log("OPEN!");
+  window.sock.onclose = () => console.log("CLOSE!");
+  window.sock.onerror = (e) => console.log("ERROR", e);
+  window.sock.onmessage = (e) => console.log("MESSAGE", e.data);
+
+
   const { memberNo, memberName, token } = useAuthStore();
   const stompRef = useRef(null);
 
@@ -66,45 +73,70 @@ const Chat = () => {
       // TODO: 필요하면 서버에서 메시지 목록 받아오기
     };;
 
+  // ────────── 웹소켓 연결 useEffect ──────────
   useEffect(() => {
-    if (!memberNo) return;
-
+    console.log("[CHAT‑USEEFFECT] 실행됨", { token, memberNo });
+    if (!token || !memberNo) return;
+    
+    console.log("[WS‑FACTORY] 호출됨"); 
+    // 1) STOMP 클라이언트 생성
     const client = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws-chat"),
+      // 프록시(t=5173) → 백엔드(8080)로 전달되도록 상대경로 사용
+     webSocketFactory: () => {
+        const sock = new SockJS("http://localhost:8080/ws-chat");
+        console.log("[WS‑SOCK]", sock);
+        setTimeout(() => {
+          console.log("SockJS readyState:", sock.readyState); // 0: 연결 중, 1: 연결됨, 3: 닫힘
+        }, 1000);
+        return sock;
+      },
+      // 2) 헤더에 JWT 토큰 삽입
       connectHeaders: {
         Authorization: `Bearer ${token}`,
       },
-      debug: (str) => console.log(str),
+
+      // 3) 자동 재연결 (5초)
       reconnectDelay: 5000,
+
+      // 디버그 로그(원하면 지워도 됨)
+      debug: (msg) => console.log("[STOMP]", msg),
+
+      // 4) 연결 후 구독
       onConnect: () => {
         setIsConnected(true);
 
-        // 특정 유저의 채팅 메시지 구독 (user destination prefix를 설정했다면)
-        client.subscribe(`/user/queue/chat/${memberNo}`, (message) => {
-          const body = JSON.parse(message.body);
-
-          // 현재 선택된 방의 메시지일 때만 상태 업데이트
-          if (selectedRoom && body.chatRoomNo === selectedRoom.chatRoomNo) {
-            setMessages((prev) => [...prev, body]);
+        client.subscribe(
+          `/user/queue/chat/${memberNo}`,         // ★ 서버와 맞춘 구독 경로
+          (frame) => {
+            const body = JSON.parse(frame.body);
+            // 현재 선택된 방의 메시지만 반영
+            if (selectedRoom && body.chatRoomNo === selectedRoom.chatRoomNo) {
+              setMessages((prev) => [...prev, body]);
+            }
           }
-        });
+        );
       },
+
       onStompError: (frame) => {
-        console.error("STOMP error:", frame);
+        console.error("STOMP ERROR:", frame);
       },
-      onDisconnect: () => {
-        setIsConnected(false);
-      },
+      onDisconnect: () => setIsConnected(false),
     });
 
-    client.activate();
     stompRef.current = client;
+    console.log("[DEBUG] stompRef.current 할당됨:", stompRef.current); // 이걸로 확인 가능
 
+
+    client.activate();
+
+    // 5) 언마운트 시 해제
     return () => {
       client.deactivate();
       setIsConnected(false);
     };
-  }, [memberNo, selectedRoom]);
+  }, [token, memberNo, selectedRoom]);  // selectedRoom 포함: 방 바꿀 때 재구독
+
+
 
    // 메시지 보내기
   const handleSendMessage = () => {
