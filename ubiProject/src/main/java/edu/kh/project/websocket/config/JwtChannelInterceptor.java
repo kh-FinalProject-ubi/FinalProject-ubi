@@ -16,7 +16,25 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class JwtChannelInterceptor implements ChannelInterceptor {
 
-    private final JwtUtil jwtUtil;
+	private final JwtUtil jwtUtil;
+	
+//    @Override
+//    public Message<?> preSend(Message<?> message, MessageChannel channel) {
+//        StompHeaderAccessor acc = StompHeaderAccessor.wrap(message);
+//        if (StompCommand.CONNECT.equals(acc.getCommand())) {
+//        	String auth = acc.getFirstNativeHeader("Authorization");
+//        	if (auth != null && auth.startsWith("Bearer ")) {
+//        	    String token = auth.substring(7);  // "Bearer "를 제거한 순수 토큰만 추출
+//        	    // 이후 token을 이용해 JWT 검증 수행
+//        	    boolean valid = jwtUtil.validateToken(token);
+//        	    if (!valid) {
+//        	        // 유효하지 않은 토큰 처리
+//        	    }
+//        }
+//        }
+//        return message;
+//    
+//    }
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
