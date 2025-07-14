@@ -120,4 +120,6 @@ public interface MemberMapper {
 	int updatePassword(@Param("memberId") String memberId, @Param("encPw") String encPw);
 
 
+	Object selectMemberAuthority(int memberNo);
+
 }

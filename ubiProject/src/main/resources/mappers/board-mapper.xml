@@ -336,5 +336,11 @@
 		CAST(IMG_RENAME AS VARCHAR2(300)) "rename"
 		FROM "BOARD_IMG"
 	</select>
+	
+	<select id="selectBoardCode" resultType="int">
+		SELECT BOARD_CODE
+		FROM BOARD
+		WHERE BOARD_NO = #{boardNo}
+	</select>
 
 </mapper>

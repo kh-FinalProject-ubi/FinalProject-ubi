@@ -135,7 +135,7 @@ const Header = () => {
                             setShowDropdown(false);
                           }}
                         >
-                          <span>{alert.type}</span> | {alert.content}
+                          <p>{alert.content}</p>
                         </div>
                       ))
                     )}

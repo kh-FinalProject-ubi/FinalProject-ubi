@@ -85,6 +85,8 @@ public interface BoardMapper {
 	List<String> selectDBImageList();
 
 	Integer selectWriterNo(int boardNo);
+
+	Integer selectBoardCode(int boardNo);
 	
 	
 

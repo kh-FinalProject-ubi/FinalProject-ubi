@@ -16,10 +16,10 @@ export default function useAlertSocket(memberNo, onAlertReceive) {
     }
 
     try {
-      console.log("🔑 전달된 token:", token); // ✅ 인코딩 없이 출력
+      console.log("🔑 전달된 token:", token);
 
       const client = new Client({
-        brokerURL: "ws://localhost:8080/ws-alert",
+        webSocketFactory: () => new SockJS("http://localhost:8080/ws-alert"),
         connectHeaders: {
           Authorization: `Bearer ${token}`,
         },
@@ -30,18 +30,37 @@ export default function useAlertSocket(memberNo, onAlertReceive) {
         onConnect: () => {
           console.log("🟢 WebSocket 연결 성공");
 
+          // 🔔 개인 알림 (댓글, 문의답변 등)
           const topic = `/topic/alert/${memberNo}`;
-          console.log("📍 구독 경로:", `/topic/alert/${memberNo}`);
+          console.log("📍 개인 알림 구독:", topic);
 
           client.subscribe(topic, (message) => {
-            console.log("📩 수신된 메시지:", message);
             try {
               const alert = JSON.parse(message.body);
+              console.log("📩 개인 알림 수신:", alert);
+
               if (typeof onAlertReceive === "function") {
-                onAlertReceive(alert);
+                onAlertReceive(alert); // COMMENT, INQUIRY_REPLY 모두 포함
               }
             } catch (err) {
               console.error("🚨 메시지 파싱 오류:", err);
+            }
+          });
+
+          // 📢 공지사항 알림
+          const noticeTopic = `/topic/notice/all`;
+          console.log("📍 공지사항 알림 구독:", noticeTopic);
+
+          client.subscribe(noticeTopic, (message) => {
+            try {
+              const alert = JSON.parse(message.body);
+              console.log("📢 공지 알림 수신:", alert);
+
+              if (typeof onAlertReceive === "function") {
+                onAlertReceive(alert); // NOTICE
+              }
+            } catch (err) {
+              console.error("🚨 공지사항 파싱 오류:", err);
             }
           });
         },
