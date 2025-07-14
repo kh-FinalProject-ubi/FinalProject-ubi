@@ -6,6 +6,7 @@ import TileLayer from "ol/layer/Tile";
 import XYZ from "ol/source/XYZ";
 import TileWMS from "ol/source/TileWMS";
 import CrimeLegend from "./CrimeLegend";
+import styles from "../styles/CrimeSafetyMap.module.css";
 
 // 🌍 배경 지도 URL 설정
 const baseMapUrls = {
@@ -128,51 +129,40 @@ const CrimeSafetyMap = () => {
 
   return (
     <div>
-      <h3>범죄지도 히트맵</h3>
+      {/* 타이틀 */}
+      <h3 className={styles.sectionTitle}>범죄지도 히트맵</h3>
 
-      {/* ✅ 지명 토글 버튼 */}
-      <div style={{ marginBottom: "8px" }}>
-        <label>
+      <div className={styles.controls}>
+        {/* ✅ 지명 레이어 토글 */}
+        <label className={styles.labelToggle}>
           <input
             type="checkbox"
             checked={showHybrid}
             onChange={() => setShowHybrid((prev) => !prev)}
-          />{" "}
+            style={{ marginRight: "6px" }}
+          />
           지명 레이어 표시
         </label>
+
+        {/* ✅ 범죄 유형 선택 */}
+        <div className={styles.buttonGroup}>
+          {Object.keys(layerConfig).map((crime) => (
+            <button
+              key={crime}
+              onClick={() => setSelectedCrime(crime)}
+              className={`${styles.crimeButton} ${
+                selectedCrime === crime ? styles.crimeButtonActive : ""
+              }`}
+            >
+              {crime}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* 범죄 유형 선택 */}
-      <div style={{ marginBottom: "10px" }}>
-        {Object.keys(layerConfig).map((crime) => (
-          <button
-            key={crime}
-            onClick={() => setSelectedCrime(crime)}
-            style={{
-              marginRight: "6px",
-              backgroundColor: selectedCrime === crime ? "#2c3e50" : "#95a5a6",
-              color: "white",
-              padding: "6px 12px",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
-          >
-            {crime}
-          </button>
-        ))}
-      </div>
-
-      {/* 지도 출력 */}
-      <div
-        style={{
-          position: "relative",
-          width: "100%",
-          height: "600px",
-          border: "1px solid #ccc",
-        }}
-      >
-        <div ref={mapRef} style={{ width: "100%", height: "100%" }} />
+      {/* 지도 출력 영역 */}
+      <div className={styles.mapContainer}>
+        <div ref={mapRef} className={styles.mapCanvas} />
         <CrimeLegend visible={true} selectedType={selectedCrime} />
       </div>
     </div>

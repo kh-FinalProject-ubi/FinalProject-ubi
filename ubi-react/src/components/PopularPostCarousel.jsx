@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import "../styles/Carousel.css";
+import styles from "../styles/Carousel.module.css";
 
 const PopularPostCarousel = () => {
   const [posts, setPosts] = useState([]);
@@ -23,14 +23,17 @@ const PopularPostCarousel = () => {
   }, []);
 
   return (
-    <div className="carousel-wrapper">
+    <div className={styles.carouselWrapper}>
       {posts.map((post) => (
-        <article key={post.boardNo} className="carousel-card post-card">
+        <article
+          key={post.boardNo}
+          className={`${styles.carouselCard} ${styles.postCard}`}
+        >
           <Link to={`/mytownBoard/${post.boardNo}`}>
             <img
               src={post.thumbnail || "/default-thumbnail.png"}
               alt={`${post.boardTitle} 썸네일`}
-              className="post-thumb"
+              className={styles.postThumb}
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = "/default-thumbnail.png";
@@ -38,9 +41,9 @@ const PopularPostCarousel = () => {
             />
           </Link>
 
-          <h4 className="post-title">{post.boardTitle}</h4>
+          <h4 className={styles.postTitle}>{post.boardTitle}</h4>
 
-          <div className="post-meta">
+          <div className={styles.postMeta}>
             <img
               src={post.memberImg || "/default-profile.png"}
               alt="프로필"
@@ -49,7 +52,7 @@ const PopularPostCarousel = () => {
               style={{ borderRadius: "50%", marginRight: "6px" }}
             />
             <span>{post.memberNickname}</span>
-            <span className="divider">·</span>
+            <span className={styles.divider}>·</span>
             <span>조회수 {post.boardReadCount}</span>
           </div>
         </article>
@@ -57,5 +60,4 @@ const PopularPostCarousel = () => {
     </div>
   );
 };
-
 export default PopularPostCarousel;
