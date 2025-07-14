@@ -35,7 +35,6 @@ const Header = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
-
   // 알림 수신
   useAlertSocket(memberNo, (newAlert) => {
     console.log("📩 수신된 알림:", newAlert);
@@ -112,7 +111,6 @@ const Header = () => {
           <div className={styles.headerRight}>
             {isLogin ? (
               <>
-
                 <button
                   className={styles.alarmBtn}
                   onClick={() => setShowDropdown((prev) => !prev)}
@@ -147,12 +145,9 @@ const Header = () => {
                           <p>{alert.content}</p>
                         </div>
                       ))
-
-      
-                      )}
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
 
                 <button className={styles.alarmBtn}>
                   <img src="/chatting.svg" alt="채팅 아이콘" />
@@ -170,16 +165,13 @@ const Header = () => {
                   />
                 </Link>
 
-
                 <span className={styles.nickname}>{memberNickname}님</span>
                 <button className={styles.logoutBtn} onClick={clearAuth}>
-
                   로그아웃
                 </button>
               </>
             ) : (
               <>
-
                 <button
                   className={styles.loginBtn}
                   onClick={() => navigate("/login")}
