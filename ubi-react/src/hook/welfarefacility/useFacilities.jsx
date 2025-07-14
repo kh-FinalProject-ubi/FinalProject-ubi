@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { normalizeRegion } from "../../utils/regionUtils";
 
-
 export function useFacilities(
   apiType = "old",
   category = "전체",
@@ -91,8 +90,10 @@ export const normalizeFacilityDistricts = (facilities, city) => {
       item["SIGUNGU_NM"] ||
       item["SIGUNGU"] ||
       item["regionDistrict"] ||
-      (item["REFINE_ROADNM_ADDR"] && item["REFINE_ROADNM_ADDR"].split(" ")[1]) ||
-      (item["address"] && item["address"].split(" ")[1]) || "";
+      (item["REFINE_ROADNM_ADDR"] &&
+        item["REFINE_ROADNM_ADDR"].split(" ")[1]) ||
+      (item["address"] && item["address"].split(" ")[1]) ||
+      "";
 
     const rawCity = item.regionCity || city;
     const { regionDistrict } = normalizeRegion(rawCity, rawDistrict);
@@ -148,7 +149,11 @@ export const isMatchServiceTarget = (facility, selectedType) => {
   );
 };
 
-export const getCombinedFacilities = (category, welfareData = [], sportsData = []) => {
+export const getCombinedFacilities = (
+  category,
+  welfareData = [],
+  sportsData = []
+) => {
   if (category === "체육시설") {
     return Array.isArray(sportsData) ? sportsData : [];
   }
@@ -177,7 +182,12 @@ export const getFilteredFacilities = ({
         : true;
 
     const type =
-      f["상세유형"] || f["시설종류명"] || f["SVC_TYPE"] || f["category"] || "";
+      f["상세유형"] ||
+      f["시설종류명"] ||
+      f["SVC_TYPE"] ||
+      f["category"] ||
+      f["OPEN_FACLT_TYPE_DIV_NM"] ||
+      "";
 
     const matchesKeyword = keyword === "" || name.includes(keyword);
     const matchesServiceType = isMatchServiceTarget(f, serviceType);
@@ -187,11 +197,7 @@ export const getFilteredFacilities = ({
       categoryKeywords.some((target) => type?.includes(target));
 
     return (
-      matchesKeyword &&
-      matchesServiceType &&
-      matchesCategory &&
-      matchesDistrict
+      matchesKeyword && matchesServiceType && matchesCategory && matchesDistrict
     );
   });
 };
-

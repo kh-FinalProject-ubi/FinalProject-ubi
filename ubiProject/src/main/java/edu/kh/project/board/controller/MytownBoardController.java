@@ -42,25 +42,37 @@ public class MytownBoardController {
 	}
 
 	@GetMapping("/mytownBoard/{boardNo}")
-	public ResponseEntity<Board> getLocalBoardDetail(@PathVariable("boardNo") int boardNo,
-			@RequestParam(value = "memberNo", required = false) Integer memberNo) {
+	public ResponseEntity<Board> getLocalBoardDetail(
+	        @PathVariable("boardNo") int boardNo,
+	        @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
-		//  게시글 상세조회
-		Board board = service.selectLocalBoardDetail(boardNo, memberNo);
+	    Long memberNo = null;
 
-		if (board != null && memberNo != null) {
-			int likeCheck = service.checkBoardLike(boardNo, memberNo); // 1 or 0
-			board.setLikeCheck(likeCheck);
-			String reportStatus = service.checkBoardReportStatus(boardNo, memberNo); // "Y" or "N" or null
-			board.setReportedByMe(reportStatus);
-			
-		} else if (board != null) {
-			board.setLikeCheck(0); // 비회원 등
-		}
+	    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+	        try {
+	            String token = authHeader.substring(7); // "Bearer " 제거
+	            memberNo = jwtUtil.extractMemberNo(token); // ✅ Long 타입 반환
+	        } catch (Exception e) {
+	            System.out.println("⚠️ JWT 파싱 실패: " + e.getMessage());
+	            // memberNo는 null로 둠 → 비회원 처리
+	        }
+	    }
 
-		return board != null ? ResponseEntity.ok(board) : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+	    Board board = service.selectLocalBoardDetail(boardNo, memberNo != null ? memberNo.intValue() : null);
+
+	    if (board != null && memberNo != null) {
+	        int likeCheck = service.checkBoardLike(boardNo, memberNo.intValue());
+	        board.setLikeCheck(likeCheck);
+	        String reportStatus = service.checkBoardReportStatus(boardNo, memberNo.intValue());
+	        board.setReportedByMe(reportStatus);
+	    } else if (board != null) {
+	        board.setLikeCheck(0);
+	    }
+
+	    return board != null
+	        ? ResponseEntity.ok(board)
+	        : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 	}
-
 	@PostMapping("/mytownBoard/{boardNo}/like")
 	public ResponseEntity<?> toggleBoardLike(@PathVariable("boardNo") int boardNo,
 			@RequestParam("memberNo") int memberNo, @RequestParam("writerNo") int writerNo) {

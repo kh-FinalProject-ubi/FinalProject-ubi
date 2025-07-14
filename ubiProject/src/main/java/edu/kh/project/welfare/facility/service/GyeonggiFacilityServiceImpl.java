@@ -165,19 +165,58 @@ public class GyeonggiFacilityServiceImpl implements GyeonggiFacilityService {
                 page++;
             }
 
-            String simplifiedDistrict = district.contains(" ") ? district.split(" ")[0] : district;
+            // ✅ 시군구 정규화 처리 (특례시 적용)
+            if ("수원시".equals(district)) {
+                district = "수원특례시";
+            } else if ("고양시".equals(district)) {
+                district = "고양특례시";
+            } else if ("용인시".equals(district)) {
+                district = "용인특례시";
+            } else if ("성남시".equals(district)) {
+                district = "성남특례시";
+            }
+            
+         // ✅ 역정규화 (비교용 district: 여전히 주소에는 "고양시" 등 일반 시로 들어있음)
+            String comparisonDistrict = switch (district) {
+                case "수원특례시" -> "수원시";
+                case "고양특례시" -> "고양시";
+                case "용인특례시" -> "용인시";
+                case "성남특례시" -> "성남시";
+                default -> district;
+            };
+
+
+            String simplifiedDistrict = comparisonDistrict.contains(" ") ? comparisonDistrict.split(" ")[0] : comparisonDistrict;
+       
+            
             String normCity = normalize(cleanCity);
             String normDistrict = normalize(simplifiedDistrict);
+            String normDistrictOriginal = normalize(district);     // 고양특례시 → 고양특례시
 
             List<GyeonggiFacility> filtered = new ArrayList<>();
             for (GyeonggiFacility facility : allFacilities) {
                 String addressNorm = normalize(facility.getRefineRoadnmAddr());
 
-                if (addressNorm.contains(normCity) && addressNorm.contains(normDistrict)) {
+                if (addressNorm.contains(normCity) &&
+                        (addressNorm.contains(normDistrict) || addressNorm.contains(normDistrictOriginal))) {
                     facility.setRegionCity(cleanCity);
                     facility.setRegionDistrict(district);
                     filtered.add(facility);
                 }
+                
+             // ✅ 고유 식별자 생성 로직 추가 (Serviceid)
+                String namePart = facility.getFacilityName().replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+                String addrPart = facility.getRefineRoadnmAddr().replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+
+                int hashCode = Math.abs((namePart + addrPart).hashCode()); // 양수 해시코드
+                String hashString = Integer.toString(hashCode, 36); // 36진수 (영문+숫자 압축)
+
+                String serviceId = "gye" + apiType.charAt(0) + hashString; // 예: "gyecx93da"
+                if (serviceId.length() > 10) {
+                    serviceId = serviceId.substring(0, 10); // 최대 10자 제한
+                }
+
+                facility.setServiceId(serviceId);
             }
 
             log.info("✅ [{}] 필터링된 시설 수: {}", apiType, filtered.size());

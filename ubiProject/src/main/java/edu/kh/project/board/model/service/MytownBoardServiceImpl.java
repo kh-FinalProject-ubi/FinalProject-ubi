@@ -97,6 +97,9 @@ public class MytownBoardServiceImpl implements MytownBoardService {
             String facilityId = dto.getFacilityApiServiceId();
 
             if (facilityId != null && mapper.existsFacilityById(facilityId) == 0) {
+            	  // 지역정보도 dto에 담겨야 함
+                dto.setRegionCity(memberMapper.selectMemberRegionCity(dto.getMemberNo()));
+                dto.setRegionDistrict(memberMapper.selectMemberRegionDistrict(dto.getMemberNo()));
                 mapper.insertFacilityFromBoard(dto);
             }
         }
@@ -220,6 +223,15 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 
 		return result;
 	}
+	
+	/**
+	 * 
+	 */
+	@Override
+	public int getBoardWriterNo(int boardNo) {
+	    return mapper.selectBoardWriterNo(boardNo);
+	}
+	
 
 	@Override
 	public boolean reportBoard(int boardNo, int memberNo) {

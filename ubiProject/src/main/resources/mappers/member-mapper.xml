@@ -304,5 +304,19 @@
 		SET MEMBER_PW = #{newPw}
 		WHERE MEMBER_NO = #{memberNo}
 	</update>
+	
+	 <!-- ✅ 로그인 회원의 REGION_CITY 조회 -->
+  <select id="selectMemberRegionCity" parameterType="int" resultType="string">
+    SELECT REGION_CITY
+    FROM MEMBER
+    WHERE MEMBER_NO = #{memberNo}
+  </select>
+
+  <!-- ✅ 로그인 회원의 REGION_DISTRICT 조회 -->
+  <select id="selectMemberRegionDistrict" parameterType="int" resultType="string">
+    SELECT REGION_DISTRICT
+    FROM MEMBER
+    WHERE MEMBER_NO = #{memberNo}
+  </select>
 
 </mapper>
