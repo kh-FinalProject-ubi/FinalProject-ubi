@@ -23,6 +23,47 @@ const PopularPostCarousel = () => {
   }, []);
 
   return (
+//   <div className="carousel-wrapper">
+//     {posts.map((board) => (
+//       <article key={board.boardNo} className="carousel-card post-card">
+//         <Link to={`/mytownBoard/${board.boardNo}`}>
+//           <img
+//             src={
+//               board.thumbnail
+//                 ? board.thumbnail.replace(/\/{2,}/g, "/")
+//                 : "/default-thumbnail.png"
+//             }
+//             alt={`${board.boardTitle} 썸네일`}
+//             className="post-thumb"
+//             onError={(e) => {
+//               e.target.onerror = null;
+//               e.target.src = "/default-thumbnail.png";
+//             }}
+//           />
+//         </Link>
+
+//         <h4 className="post-title">{board.boardTitle}</h4>
+
+//         <div className="post-meta">
+//           <img
+//             src={board.memberImg || "/default-profile.png"}
+//             alt="프로필"
+//             width="24"
+//             height="24"
+//             style={{ borderRadius: "50%", marginRight: "6px" }}
+//           />
+//           <span>{board.memberNickname}</span>
+//           <span className="divider">·</span>
+//           <span>조회수 {board.boardReadCount}</span>
+//         </div>
+//       </article>
+//     ))}
+//   </div>
+// );
+// };
+
+// export default PopularPostCarousel;
+
     <div className={styles.carouselWrapper}>
       {posts.map((post) => (
         <article
@@ -30,15 +71,19 @@ const PopularPostCarousel = () => {
           className={`${styles.carouselCard} ${styles.postCard}`}
         >
           <Link to={`/mytownBoard/${post.boardNo}`}>
-            <img
-              src={post.thumbnail || "/default-thumbnail.png"}
-              alt={`${post.boardTitle} 썸네일`}
-              className={styles.postThumb}
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "/default-thumbnail.png";
-              }}
-            />
+          <img
+            src={
+              board.thumbnail
+                ? board.thumbnail.replace(/\/{2,}/g, "/")
+                : "/default-thumbnail.png"
+            }
+            alt={`${board.boardTitle} 썸네일`}
+            className="post-thumb"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "/default-thumbnail.png";
+            }}
+          />
           </Link>
 
           <h4 className={styles.postTitle}>{post.boardTitle}</h4>

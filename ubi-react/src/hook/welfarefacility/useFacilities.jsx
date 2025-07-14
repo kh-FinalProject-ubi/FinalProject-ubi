@@ -187,6 +187,7 @@ export const getFilteredFacilities = ({
       f["SVC_TYPE"] ||
       f["category"] ||
       f["OPEN_FACLT_TYPE_DIV_NM"] ||
+            f["typeCategory"] ||
       "";
 
     const matchesKeyword = keyword === "" || name.includes(keyword);

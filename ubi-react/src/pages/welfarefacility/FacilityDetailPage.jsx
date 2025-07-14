@@ -1,30 +1,21 @@
 // 📁 src/pages/welfarefacility/FacilityDetailPage.jsx
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import KakaoMapView from "../../components/welfarefacility/KakaoMapView"; // 카카오맵 컴포넌트
+import KakaoMapView from "../../components/welfarefacility/KakaoMapView";
+import axios from "axios";
 import "../../styles/welfarefacility/FacilityDetailPage.css";
-import CommentSection from "./../comment/Comment";
+import ReviewCarousel from "./ReviewCarousel";
 
-// 🧹 설명 문자열 전처리 함수
 function cleanDescription(desc) {
   return (
     desc
       .replace(/<!--\[data-hwpjson][\s\S]*?-->/g, "")
       .replace(/"{[^}]*}"/g, "")
-
-      // ✅ 숫자. 또는 번호 패턴 개행 추가
       .replace(/([0-9]+)\.\s*/g, "\n$1. ")
       .replace(/\(([0-9]+)\)/g, "\n($1)")
-
-      // ✅ 특수 기호 앞 줄바꿈
       .replace(/- /g, "\n- ")
-      .replace(/►/g, "\n►")
-
-      // ✅ 공백 정리
-
+      .replace(/\u25BA/g, "\n►")
       .replace(/\n{3,}/g, "\n\n")
-
-      // ✅ 앞뒤 공백 제거
       .trim()
   );
 }
@@ -32,6 +23,29 @@ function cleanDescription(desc) {
 export default function FacilityDetailPage() {
   const location = useLocation();
   const facility = location.state?.facility;
+
+  const [relatedPosts, setRelatedPosts] = useState([]);
+
+  const facilityServiceId =
+    facility?.serviceId ||
+    facility?.["serviceId"] ||
+    facility?.["FACILITY_API_SERVICE_ID"] ||
+    facility?.["SVCID"] ||
+    null;
+
+  useEffect(() => {
+    if (facilityServiceId) {
+      axios
+        .get(`/api/board/mytownBoard/facility/${facilityServiceId}`)
+        .then((res) => {
+          console.log("📥 관련 게시글 응답:", res.data);
+          setRelatedPosts(res.data);
+        })
+        .catch((err) => {
+          console.error("❌ 게시글 목록 조회 실패:", err);
+        });
+    }
+  }, [facilityServiceId]);
 
   if (!facility) {
     return <div>❌ 잘못된 접근입니다. 시설 정보가 없습니다.</div>;
@@ -48,57 +62,42 @@ export default function FacilityDetailPage() {
     facility["주소"] ||
     facility["REFINE_ROADNM_ADDR"] ||
     facility["ADDR"] ||
-  facility["address"];
+    facility["address"];
 
   const tel =
-    facility.tel || facility["전화번호"] || facility["DETAIL_TELNO"] || "없음";
+    facility.tel ||
+    facility["전화번호"] ||
+    facility["DETAIL_TELNO"] ||
+    "없음";
 
   const imageUrl = facility.imageUrl || null;
 
-
   const lat =
- facility.lat ||
- facility.latitude || // ✅ 추가
-facility["Y"] ||
-  null;
+    facility.lat ||
+    facility.latitude ||
+    facility["Y"] ||
+    null;
 
   const lng =
- facility.lng ||
- facility.longitude || // ✅ 추가
-facility["X"] ||
-  null;
+    facility.lng ||
+    facility.longitude ||
+    facility["X"] ||
+    null;
 
-
-   console.log("lat check", {
-  rawLat: facility.latitude,
-  parsedLat: parseFloat(facility.latitude),
-  type: typeof facility.latitude,
-});
   const reservationUrl =
-    facility.reservationUrl || facility["SVCURL"] || facility["HMPG_ADDR"];
+    facility.reservationUrl ||
+    facility["SVCURL"] ||
+    facility["HMPG_ADDR"];
+
   const phone =
     facility.phone ||
     facility["TELNO"] ||
     facility["DETAIL_TELNO"] ||
     facility["TEL"];
+
   const rawDescription = facility.description || facility["DTLCONT"] || "";
   const description = cleanDescription(rawDescription);
- 
-// const lat =
-//   facility.lat ||
-//   facility.latitude || // ✅ 추가
-//   facility["Y"] ||
-//   parseFloat(facility["위도"]) ||
-//   null;
 
-// const lng =
-//   facility.lng ||
-//   facility.longitude || // ✅ 추가
-//   facility["X"] ||
-//   parseFloat(facility["경도"]) ||
-//   null;
-
-  // ✅ 표시할 항목만 골라서 매핑
   const displayFields = {
     시설명: name,
     시설주소: address,
@@ -127,7 +126,6 @@ facility["X"] ||
         </ul>
       </section>
 
-      {/* 📖 설명 */}
       {description && (
         <section className="facility-section">
           <h3>📖 이용 안내</h3>
@@ -135,7 +133,6 @@ facility["X"] ||
         </section>
       )}
 
-      {/* ✅ 예약하기 버튼 (상세정보와 지도 사이) */}
       {(reservationUrl || phone) && (
         <div style={{ textAlign: "center", margin: "20px 0" }}>
           {reservationUrl ? (
@@ -167,12 +164,12 @@ facility["X"] ||
         <KakaoMapView address={!lat ? address : null} lat={lat} lng={lng} />
       </section>
 
-      {/* <CommentSection
-        // 주소
-        token={token}
-        loginMemberNo={loginMemberNo}
-        role={role}
-      /> */}
+      {relatedPosts.length > 0 && (
+        <section className="facility-section">
+          <h3>📰 이 시설과 관련된 게시글</h3>
+          <ReviewCarousel reviews={relatedPosts} />
+        </section>
+      )}
     </div>
   );
 }
