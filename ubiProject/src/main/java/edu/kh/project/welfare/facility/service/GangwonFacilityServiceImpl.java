@@ -124,7 +124,42 @@ public class GangwonFacilityServiceImpl implements GangwonFacilityService {
                     f.setMealTime(node.path("급식시간").asText(""));
 
                     f.setType(category);
-                    f.setCategory("복지시설");
+                    
+                    // ✅ 시설 분류(category) 자동 판별
+                    String[] yoyoKeywords = { "복지센터", "간호센터", "요양센터", "요양시설", "요양원" };
+                    String[] bokjiKeywords = { "협회", "경로당" };
+                    String rawName = f.getFacilityName();
+
+                    String typeCategory = "기타";
+
+                    for (String kw : yoyoKeywords) {
+                        if (rawName.contains(kw)) {
+                            typeCategory = "요양시설";
+                            break;
+                        }
+                    }
+                    if (typeCategory.equals("기타")) {
+                        for (String kw : bokjiKeywords) {
+                            if (rawName.contains(kw)) {
+                                typeCategory = "복지시설";
+                                break;
+                            }
+                        }
+                    }
+
+                    f.setCategory(typeCategory);
+
+                    
+                    
+                    // ✅ 고유 식별자(serviceId) 생성 (영문+숫자 해시 기반)
+                    String namePart = name.replaceAll("[^\\p{IsAlphabetic}\\p{IsDigit}]", "").toLowerCase();
+                    String addrPart = address.replaceAll("[^\\p{IsAlphabetic}\\p{IsDigit}]", "").toLowerCase();
+                    int hash = Math.abs((namePart + addrPart).hashCode());
+                    String hashStr = Integer.toString(hash, 36);
+                    String serviceId = "gw" + hashStr;
+                    if (serviceId.length() > 10) serviceId = serviceId.substring(0, 10);
+
+                    f.setServiceId(serviceId);
 
                     facilities.add(f);
                 }

@@ -10,6 +10,7 @@ public class GangwonFacility {
 	private String lat;
 	private String lng;
 	private String homepage;
+	private String serviceId;
 	private String type;
 	private String category;
 	private String regionCity;
