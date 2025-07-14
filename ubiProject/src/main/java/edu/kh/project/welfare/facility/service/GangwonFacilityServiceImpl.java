@@ -125,30 +125,19 @@ public class GangwonFacilityServiceImpl implements GangwonFacilityService {
 
                     f.setType(category);
                     
-                    // ✅ 시설 분류(category) 자동 판별
-                    String[] yoyoKeywords = { "복지센터", "간호센터", "요양센터", "요양시설", "요양원" };
-                    String[] bokjiKeywords = { "협회", "경로당" };
-                    String rawName = f.getFacilityName();
-
-                    String typeCategory = "기타";
-
-                    for (String kw : yoyoKeywords) {
-                        if (rawName.contains(kw)) {
-                            typeCategory = "요양시설";
-                            break;
-                        }
+                    // ✅ 시설유형 분류
+                    String keywords = name.toLowerCase();
+                    if (keywords.contains("요양") || keywords.contains("복지센터") || keywords.contains("간호센터") || keywords.contains("요양센터") || keywords.contains("요양원") || keywords.contains("경로당") || keywords.contains("협회")) {
+                        f.setCategory("요양시설");
+                    } else if (keywords.contains("체육") || keywords.contains("운동") || keywords.contains("헬스")) {
+                        f.setCategory("체육시설");
+                    } else if (keywords.contains("병원") || keywords.contains("의료") || keywords.contains("보건") || keywords.contains("재활")) {
+                        f.setCategory("의료시설");
+                    } else if (keywords.contains("센터") || keywords.contains("기관") || keywords.contains("지원") || keywords.contains("행정")|| keywords.contains("복지관")|| keywords.contains("대학")) {
+                        f.setCategory("행정시설");
+                    } else {
+                        f.setCategory("기타");
                     }
-                    if (typeCategory.equals("기타")) {
-                        for (String kw : bokjiKeywords) {
-                            if (rawName.contains(kw)) {
-                                typeCategory = "복지시설";
-                                break;
-                            }
-                        }
-                    }
-
-                    f.setCategory(typeCategory);
-
                     
                     
                     // ✅ 고유 식별자(serviceId) 생성 (영문+숫자 해시 기반)

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useFacilities } from "../../hook/welfarefacility/useFacilities";
 import { useSportsFacilities } from "../../hook/welfarefacility/useSportsFacilities";
 import {
@@ -49,6 +49,16 @@ export default function WelfareFacilityModal({
     selectedDistrict: normDistrict,
     selectedCity: normCity,
   });
+  // ✅ 새로고침 트리거 추가
+  useEffect(() => {
+    if (!city || !district) {
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    }
+  }, [city, district]);
+
+  
 
   return (
     <div className="modal-overlay">

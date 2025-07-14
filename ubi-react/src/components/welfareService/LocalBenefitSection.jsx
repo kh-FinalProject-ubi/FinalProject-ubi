@@ -7,7 +7,7 @@ import { applyAllFilters } from "../../utils/applyAllFilters";
 import LikeButton from "../welfareLike/LikeButton";
 import { useNavigate } from "react-router-dom";
 import { extractRegionFromTaddress } from "../../utils/extractRegionFromTaddress";
-import "../../styles/LocalBenefitSection.css";
+import styles from "../../styles/LocalBenefitSection.module.css";
 
 const LocalBenefitSection = () => {
   const { data: benefits, loading, error } = useLocalBenefitData();
@@ -105,29 +105,26 @@ const LocalBenefitSection = () => {
     : [];
 
   return (
-    <section className="local-benefit-section">
-      <h2 className="section-title">🎁 지역 복지 혜택 모음</h2>
+    <section className={styles.section}>
+      <h2 className={styles.title}>🎁 지역 복지 혜택 모음</h2>
 
-      {/* 🔘 주소 소스 선택 탭 */}
       {!token ? null : (
-        <div className="address-tab">
+        <div className={styles.addressTab}>
           <button
-            className={addressSource === "token" ? "selected" : ""}
+            className={addressSource === "token" ? styles.selected : ""}
             onClick={() => setAddressSource("token")}
           >
             내 주소
           </button>
-
           <button
-            className={addressSource === "selected" ? "selected" : ""}
+            className={addressSource === "selected" ? styles.selected : ""}
             onClick={() => setAddressSource("selected")}
           >
             선택한 주소
           </button>
-
           {tempRegionCity && tempRegionDistrict && (
             <button
-              className={addressSource === "temp" ? "selected" : ""}
+              className={addressSource === "temp" ? styles.selected : ""}
               onClick={() => setAddressSource("temp")}
             >
               임시 주소
@@ -136,7 +133,6 @@ const LocalBenefitSection = () => {
         </div>
       )}
 
-      {/* 🔎 필터 UI */}
       <WelfareSearchFilter
         onFilterChange={setFilterOptions}
         fixedRegion={region}
@@ -146,33 +142,33 @@ const LocalBenefitSection = () => {
       {loading && <p>로딩 중...</p>}
       {error && <p>데이터를 불러오는 데 실패했습니다.</p>}
 
-      <div className="benefit-grid">
+      <div className={styles.grid}>
         {filteredData.length > 0
           ? filteredData.map((item) => (
               <div
-                className="benefit-card"
+                className={styles.card}
                 key={item.id || item.title}
                 onClick={() =>
                   navigate("/welfareService/detail", { state: { data: item } })
                 }
               >
-                <div className="card-header">
+                <div className={styles.cardHeader}>
                   <h3>{item.title}</h3>
-                  <span className="category">{item.category}</span>
+                  <span className={styles.category}>{item.category}</span>
                 </div>
                 {item.imageUrl && (
                   <img
                     src={item.imageUrl}
                     alt="복지 이미지"
-                    className="thumbnail"
+                    className={styles.thumbnail}
                   />
                 )}
-                <p className="region">{item.region}</p>
-                <p className="description">
+                <p className={styles.region}>{item.region}</p>
+                <p className={styles.description}>
                   {item.description?.slice(0, 80)}...
                 </p>
                 <div
-                  className="card-footer"
+                  className={styles.footer}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <LikeButton

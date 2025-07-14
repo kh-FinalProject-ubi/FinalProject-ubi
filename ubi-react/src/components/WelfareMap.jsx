@@ -18,10 +18,9 @@ import useSelectedRegionStore from "../hook/welfarefacility/useSelectedRegionSto
 import useLocalBenefitData from "../hook/welfareService/useLocalBenefitData";
 import { normalizeSido, normalizeSigungu } from "../utils/regionUtils";
 
-import "../styles/WelfareMap.css";
+import styles from "../styles/WelfareMap.module.css";
 
-/* ------------------ 지역 정규화 유틸 ------------------ */
-export const mapCleanFullName = (fullName) => {
+const mapCleanFullName = (fullName) => {
   const tokens = fullName.split(" ");
   if (tokens.length < 2) return fullName;
   const [sido, sigungu] = tokens;
@@ -31,7 +30,6 @@ export const mapCleanFullName = (fullName) => {
 const extractCleanAddress = (rawAddress) =>
   rawAddress?.includes("^^^") ? rawAddress.split("^^^")[1] : rawAddress || "";
 
-/* ------------------ 메인 컴포넌트 ------------------ */
 const WelfareMap = () => {
   const mapElement = useRef();
   const mapRef = useRef(null);
@@ -39,6 +37,9 @@ const WelfareMap = () => {
   const districtBLayerRef = useRef(null);
 
   const { token, address } = useAuthStore();
+  const { setRegion } = useSelectedRegionStore();
+  const { data: allBenefits, loading } = useLocalBenefitData();
+
   const districtARaw = token
     ? extractCleanAddress(address)
     : "서울특별시 종로구";
@@ -47,9 +48,6 @@ const WelfareMap = () => {
     [districtARaw]
   );
   const [districtB, setDistrictB] = useState(null);
-
-  const { setRegion } = useSelectedRegionStore();
-  const { data: allBenefits, loading, error } = useLocalBenefitData();
 
   const groupedData = useMemo(() => {
     const result = {};
@@ -65,7 +63,6 @@ const WelfareMap = () => {
     return result;
   }, [allBenefits]);
 
-  /* ---------------- 지도 초기화 ---------------- */
   useEffect(() => {
     const map = new Map({
       target: mapElement.current,
@@ -94,7 +91,6 @@ const WelfareMap = () => {
     return () => map.setTarget(null);
   }, []);
 
-  /* ---------------- 역지오코딩 ---------------- */
   const reverseGeocode = (lon, lat) => {
     fetch(`/api/welfare-curl/reverse-geocode?lon=${lon}&lat=${lat}`)
       .then((res) => res.json())
@@ -103,18 +99,15 @@ const WelfareMap = () => {
         if (!structure) return;
 
         setRegion(structure.level1, structure.level2);
-
         const cleanFull = mapCleanFullName(
           `${structure.level1} ${structure.level2}`
         );
-
         if (cleanFull === normalizedDistrictA) return;
         displayBPolygon(cleanFull);
       })
       .catch((err) => console.error("❌ 지오코딩 실패:", err));
   };
 
-  /* ---------------- 폴리곤 표시 ---------------- */
   const displayPolygon = (fullNameClean, color, layerRef) => {
     fetch("/TL_SCCO_SIG_KDJ.json")
       .then((res) => res.json())
@@ -159,35 +152,33 @@ const WelfareMap = () => {
     setDistrictB(cleanFull);
   };
 
-  /* ---------------- 렌더링 ---------------- */
   return (
     <div>
-      <h2 className="map-title">복지 지도</h2>
-
-      <div className="map-wrapper">
-        <div ref={mapElement} className="map-canvas" />
-        <aside className="benefit-panel">
-          <div className="tab">지역</div>
-          <div className="content">
-            <div className="compare-text">
+      <h2 className={styles.mapTitle}>복지 지도</h2>
+      <div className={styles.mapWrapper}>
+        <div ref={mapElement} className={styles.mapCanvas} />
+        <aside className={styles.benefitPanel}>
+          <div className={styles.tab}>지역</div>
+          <div className={styles.content}>
+            <div className={styles.compareText}>
               기준 지역 (A): {normalizedDistrictA}
             </div>
             {districtB && (
-              <div className="compare-text">비교 지역 (B): {districtB}</div>
+              <div className={styles.compareText}>
+                비교 지역 (B): {districtB}
+              </div>
             )}
-
-            {!districtB && (
-              <WelfareBenefitView
-                district={normalizedDistrictA}
-                benefits={groupedData[normalizedDistrictA] ?? []}
-                isLoading={loading}
-              />
-            )}
-            {districtB && (
+            {districtB ? (
               <WelfareCompareView
                 districtA={normalizedDistrictA}
                 districtB={districtB}
                 benefits={groupedData}
+                isLoading={loading}
+              />
+            ) : (
+              <WelfareBenefitView
+                district={normalizedDistrictA}
+                benefits={groupedData[normalizedDistrictA] ?? []}
                 isLoading={loading}
               />
             )}

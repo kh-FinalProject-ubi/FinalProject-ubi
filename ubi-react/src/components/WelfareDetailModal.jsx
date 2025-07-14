@@ -1,5 +1,5 @@
 import React from "react";
-import "../styles/WelfareDetailModal.css";
+import styles from "../styles/WelfareDetailModal.module.css";
 
 const WelfareDetailModal = ({ detail, onClose }) => {
   if (!detail) return null;
@@ -7,9 +7,9 @@ const WelfareDetailModal = ({ detail, onClose }) => {
   const safe = (val) => val || "정보 없음";
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+        <button className={styles.modalClose} onClick={onClose}>
           &times;
         </button>
 

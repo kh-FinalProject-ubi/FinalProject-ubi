@@ -384,4 +384,9 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 	public String checkBoardReportStatus(int boardNo, int memberNo) {
 		 return mapper.selectReportStatus(boardNo, memberNo);
 	}
+	
+	  @Override
+	    public List<Board> getBoardListByFacilityServiceId(String facilityServiceId) {
+	        return mapper.selectBoardListByFacilityServiceId(facilityServiceId);
+	    }
 }

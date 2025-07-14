@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import "../styles/Header.css";
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../stores/useAuthStore";
 import useSelectedRegionStore from "../hook/welfarefacility/useSelectedRegionStore";
 import useModalStore from "../stores/useModalStore";
 import useAlertSocket from "../hook/alert/useAlertSocket";
+import styles from "../styles/Header.module.css";
 
 // 알림 모달
 const AlertModal = () => {
@@ -14,8 +14,8 @@ const AlertModal = () => {
   if (!alertMessage) return null;
 
   return (
-    <div className="alert-modal">
-      <div className="alert-content">
+    <div className={styles.alertModal}>
+      <div className={styles.alertContent}>
         <p>{alertMessage}</p>
         <button onClick={clearAlertMessage}>닫기</button>
       </div>
@@ -24,24 +24,17 @@ const AlertModal = () => {
 };
 
 const Header = () => {
-  const {
-    token,
-    memberName,
-    memberImg,
-    address,
-    clearAuth,
-    memberNo,
-    memberNickname,
-  } = useAuthStore();
+  const { token, memberImg, clearAuth, memberNo, memberNickname } =
+    useAuthStore();
   const isLogin = !!token;
 
   const { selectedCity, selectedDistrict } = useSelectedRegionStore();
-  const { openLoginModal } = useModalStore();
   const navigate = useNavigate();
 
   const [alerts, setAlerts] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
+
 
   // 알림 수신
   useAlertSocket(memberNo, (newAlert) => {
@@ -76,7 +69,6 @@ const Header = () => {
     });
   });
 
-  // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -91,7 +83,6 @@ const Header = () => {
   const handleFacilityClick = () => {
     const city = selectedCity || "서울특별시";
     const district = selectedDistrict || "종로구";
-
     navigate(
       `/facility/search?city=${encodeURIComponent(
         city
@@ -108,31 +99,22 @@ const Header = () => {
 
   return (
     <>
-      <header className="site-header">
-        <div className="header-inner">
-          <h1 className="logo">
+      <header className={styles.siteHeader}>
+        {/* 1. 상단 영역: 로고와 사용자 정보 */}
+        <div className={styles.topRow}>
+          <h2>
             <a href="/">
-              <img id="logo" src="/ubi.svg" alt="로고" />
+              <img className={styles.logo} src="/ubi.svg" alt="로고" />
               UBI
             </a>
-          </h1>
+          </h2>
 
-          <nav className="nav-menu">
-            <Link to="/welfareService">공공서비스</Link>
-            <span onClick={handleFacilityClick} style={{ cursor: "pointer" }}>
-              복지시설
-            </span>
-            <Link to="/mytownBoard">우리 동네 좋아요</Link>
-            <Link to="/askBoard">문의게시판</Link>
-            <Link to="/noticeBoard">공지사항</Link>
-            <Link to="/localBenefits">지역 복지 혜택</Link>
-          </nav>
-
-          <div className="header-right">
+          <div className={styles.headerRight}>
             {isLogin ? (
               <>
+
                 <button
-                  className="alarm-btn"
+                  className={styles.alarmBtn}
                   onClick={() => setShowDropdown((prev) => !prev)}
                 >
                   <img src="/alarm.svg" alt="알림 아이콘" />
@@ -142,7 +124,7 @@ const Header = () => {
                 </button>
 
                 {showDropdown && (
-                  <div className="alert-dropdown" ref={dropdownRef}>
+                  <div className={styles.alertDropdown} ref={dropdownRef}>
                     {alerts.length === 0 ? (
                       <div className="alert-empty">알림이 없습니다</div>
                     ) : (
@@ -165,17 +147,20 @@ const Header = () => {
                           <p>{alert.content}</p>
                         </div>
                       ))
-                    )}
-                  </div>
-                )}
 
-                <button className="chatting-btn">
+      
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <button className={styles.alarmBtn}>
                   <img src="/chatting.svg" alt="채팅 아이콘" />
                 </button>
 
                 <Link to="/mypage/Profile">
                   <img
-                    className="profile-img"
+                    className={styles.profileImg}
                     src={
                       memberImg
                         ? `http://localhost:8080${memberImg}`
@@ -185,17 +170,64 @@ const Header = () => {
                   />
                 </Link>
 
-                <span className="nickname">{memberNickname}님</span>
-                <button className="logout-btn" onClick={handleLogout}>
+
+                <span className={styles.nickname}>{memberNickname}님</span>
+                <button className={styles.logoutBtn} onClick={clearAuth}>
+
                   로그아웃
                 </button>
               </>
             ) : (
               <>
-                <button onClick={() => navigate("/login")}>로그인</button>
-                <Link to="/signup">회원가입</Link>
+
+                <button
+                  className={styles.loginBtn}
+                  onClick={() => navigate("/login")}
+                >
+                  로그인
+                </button>
+                <Link to="/signup" className={styles.signupLink}>
+                  회원가입
+                </Link>
               </>
             )}
+          </div>
+        </div>
+
+        {/* 2. 하단 영역: 메뉴와 지역 선택 */}
+        <div className={styles.bottomRow}>
+          <nav className={styles.navMenu}>
+            <NavLink
+              to={`/facility/search?city=${encodeURIComponent(
+                selectedCity || "서울특별시"
+              )}&district=${encodeURIComponent(selectedDistrict || "종로구")}`}
+              className={({ isActive }) => (isActive ? styles.active : "")}
+            >
+              복지시설
+            </NavLink>
+            <NavLink
+              to="/mytownBoard"
+              className={({ isActive }) => (isActive ? styles.active : "")}
+            >
+              우리 동네 좋아요
+            </NavLink>
+            <NavLink
+              to="/askBoard"
+              className={({ isActive }) => (isActive ? styles.active : "")}
+            >
+              문의게시판
+            </NavLink>
+            <NavLink
+              to="/noticeBoard"
+              className={({ isActive }) => (isActive ? styles.active : "")}
+            >
+              공지사항
+            </NavLink>
+          </nav>
+          <div className={styles.locationSelector}>
+            <span>
+              {selectedCity || "서울시"} {selectedDistrict || "종로구"} ▼
+            </span>
           </div>
         </div>
       </header>

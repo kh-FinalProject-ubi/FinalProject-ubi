@@ -82,14 +82,33 @@ const Chat = () => {
     // 1) STOMP 클라이언트 생성
     const client = new Client({
       // 프록시(t=5173) → 백엔드(8080)로 전달되도록 상대경로 사용
-     webSocketFactory: () => {
-        const sock = new SockJS("http://localhost:8080/ws-chat");
-        console.log("[WS‑SOCK]", sock);
-        setTimeout(() => {
-          console.log("SockJS readyState:", sock.readyState); // 0: 연결 중, 1: 연결됨, 3: 닫힘
-        }, 1000);
-        return sock;
-      },
+    webSocketFactory: () => {
+      // ① SockJS 인스턴스 생성
+      const sock = new SockJS("/ws-chat", null, {
+        transports: ["websocket", "xhr-streaming", "xhr-polling"],
+        timeout: 30000,
+      });
+
+      // ② 연결 URL을 출력하는 다양한 방법 (환경마다 다를 수 있음)
+      try {
+        console.log("🧪 SockJS URL:", sock._transportUrl || sock.url);
+      } catch (e) {
+        console.warn("❌ SockJS URL 접근 불가:", e);
+      }
+
+      // ③ 전체 SockJS 객체 출력
+      console.log("[WS-SOCK]", sock);
+
+      // ④ readyState 상태를 1초 후에 출력
+      setTimeout(() => {
+        const status = ["CONNECTING", "OPEN", "CLOSING", "CLOSED"];
+        console.log("🧪 SockJS readyState:", sock.readyState, `(${status[sock.readyState] || "UNKNOWN"})`);
+      }, 1000);
+
+      // ⑤ 반환 필수
+      return sock;
+    },
+
       // 2) 헤더에 JWT 토큰 삽입
       connectHeaders: {
         Authorization: `Bearer ${token}`,

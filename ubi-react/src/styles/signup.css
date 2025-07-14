@@ -102,7 +102,6 @@
 
 /* 🟡 보조 버튼 (로그인하러 가기 등) */
 .secondary-button {
-  margin-top: 10px;
   padding: 14px 0;
   font-size: 16px;
   background-color: #ffe45e;

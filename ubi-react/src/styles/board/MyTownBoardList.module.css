@@ -1,0 +1,214 @@
+/* --- 전체 레이아웃 --- */
+.container {
+  width: 100%;
+  padding: 2rem 15%;
+  box-sizing: border-box;
+}
+
+.mainTitle {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+
+/* --- 상단 검색바 & 정렬 --- */
+.topSearchContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.searchBar {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: #888;
+}
+
+.searchBar input {
+  width: 100%;
+  padding: 12px 12px 12px 45px;
+  border: 1px solid #ddd;
+  border-radius: 25px;
+  font-size: 1rem;
+}
+
+.sortButton {
+  padding: 10px 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* --- 검색 필터 --- */
+.filterContainer {
+  margin-bottom: 2rem;
+}
+
+.filterTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.filterBox {
+  background-color: #fffbe6;
+  border-radius: 12px;
+  padding: 20px 30px;
+}
+
+.filterRow {
+  display: flex;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #f0e6c2;
+}
+
+.filterRow:last-child {
+  border-bottom: none;
+}
+
+.filterLabel {
+  width: 120px;
+  font-weight: 500;
+  color: #333;
+}
+
+.filterContent {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.regionButton {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.tagButton {
+  padding: 6px 15px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 500;
+  background-color: #fff2b2;
+  color: #5c3c00;
+}
+
+.tagSelected {
+  background-color: #5e60ce;
+  color: white;
+}
+
+/* --- 글쓰기 버튼 --- */
+.writeButtonContainer {
+  display: flex;
+  justify-content: flex-end;
+  margin: 1rem 0;
+}
+
+.writeButton {
+  padding: 0.7em 1.8em;
+  background-color: #ffc107;
+  color: #333;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* --- 게시글 그리드 (기존과 유사) --- */
+.boardGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.boardCard {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s;
+}
+.boardCard:hover {
+  transform: translateY(-5px);
+}
+
+.thumbnail {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.cardContent {
+  padding: 15px;
+}
+
+.cardTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.cardText {
+  font-size: 0.9rem;
+  color: #666;
+  height: 3.6em;
+  overflow: hidden;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  padding-top: 15px;
+  margin-top: 15px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.profileImg {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+/* --- 기타 (기존과 유사) --- */
+.noResults,
+.paginationContainer {
+  text-align: center;
+  margin: 3rem 0;
+}
+.paginationContainer button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px 8px;
+}
+.paginationContainer .activePage {
+  color: #5e60ce;
+  font-weight: bold;
+}

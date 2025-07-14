@@ -468,5 +468,23 @@
 		AND R.REPORTER_NO = #{memberNo}
 		FETCH FIRST 1 ROWS ONLY
 	</select>
+	
+	
+	 <select id="selectBoardListByFacilityServiceId" resultType="Board">
+    SELECT 
+      BOARD_NO,
+      BOARD_TITLE,
+      BOARD_CONTENT,
+      BOARD_DATE,
+      BOARD_READ_COUNT,
+      STAR_COUNT,
+      POST_TYPE,
+      FACILITY_API_SERVICE_ID,
+      MEMBER_NICKNAME
+    FROM BOARD
+    JOIN MEMBER ON BOARD.MEMBER_NO = MEMBER.MEMBER_NO
+    WHERE FACILITY_API_SERVICE_ID = #{facilityServiceId}
+    ORDER BY BOARD_DATE DESC
+  </select>
 
 </mapper>
