@@ -1,0 +1,80 @@
+/* WelfareMap.module.css */
+
+.mapTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: var(--gray-800);
+}
+
+.mapWrapper {
+  display: grid;
+  grid-template-columns: 45% 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.mapCanvas {
+  width: 100%;
+  height: 420px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.benefitPanel {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.tab {
+  background: var(--yellow);
+  padding: 20px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--gray-800);
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.compareText {
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.benefitCardList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.benefitCard {
+  width: 100%;
+}
+
+@media (max-width: 992px) {
+  .mapWrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .benefitPanel {
+    max-height: none;
+  }
+}

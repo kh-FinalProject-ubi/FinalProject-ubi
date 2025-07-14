@@ -1,0 +1,63 @@
+/* ✅ MainPage.module.css */
+
+:root {
+  --yellow: #ffe56d;
+  --indigo: #5e60ce;
+  --red: #ff5252;
+  --bg-light: #f9fbfd;
+  --gray-600: #6c6c6c;
+  --gray-800: #2e2e2e;
+  --gap-block: 60px;
+  --gap-tight: 30px;
+}
+
+.mainWrapper {
+  width: 100%;
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: var(--gap-block) 15%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-block);
+}
+
+/* 지도 영역 */
+.mapSection {
+}
+
+.mapToggle {
+  display: flex;
+  gap: 12px;
+  margin-bottom: var(--gap-tight);
+}
+
+.mapToggle button {
+  padding: 10px 18px;
+  border: 1px solid var(--gray-600);
+  background-color: white;
+  color: var(--gray-800);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+}
+
+.mapToggle button.active {
+  background-color: var(--indigo);
+  color: white;
+  border-color: var(--indigo);
+}
+
+/* 많이 찜한 혜택 / 많이 본 게시글 */
+.popularBenefitSection,
+.popularPostSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-tight);
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--gray-800);
+}
