@@ -189,12 +189,16 @@ public class ChattigController {
     @MessageMapping("sendMessage")
     public void send(Message msg) {
     	try {
+    		 log.info("✅ [Controller] 메시지 도착: {}", msg);
+    		
     	service.insertMessage(msg);
+    	log.info("📥 메시지 DB 저장 완료");
         // 상대에게 1:1로 푸시
         messagingTemplate.convertAndSend("/queue/chat/" + msg.getTargetNo(), msg);
+        log.info("📤 메시지 전송: /queue/chat/{}", msg.getTargetNo());
         // ↔ 혹은 방 브로드캐스트: /topic/room.{roomId}
     	} catch (Exception e) {
-    		e.printStackTrace();
+    		log.error("❌ 메시지 처리 중 예외 발생", e);
 		}
     }
  

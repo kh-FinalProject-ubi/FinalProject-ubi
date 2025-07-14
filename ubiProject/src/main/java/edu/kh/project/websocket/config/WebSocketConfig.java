@@ -25,13 +25,14 @@ import edu.kh.project.websocket.interceptor.AlertWebSocketAuthInterceptor;
 import edu.kh.project.websocket.interceptor.ChatWebSocketAuthInterceptor;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-
+import lombok.extern.slf4j.Slf4j;
 import edu.kh.project.common.config.LoggingHandshakeInterceptor;
 
 @CrossOrigin(origins = "*")
 @Configuration
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
+@Slf4j
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 	
   private final ChatWebSocketAuthInterceptor interceptor; // 주입
@@ -50,13 +51,21 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
   }
   @Override
   public void configureMessageBroker(MessageBrokerRegistry registry) {
-    registry.enableSimpleBroker("/queue/", "/topic/");
+	  log.info("✅ 메시지 브로커 설정 시작");
+    registry.enableSimpleBroker("/queue/", "/topic/", "/user");
     registry.setApplicationDestinationPrefixes("/app");
+    registry.setUserDestinationPrefix("/user");
+    log.info("✅ 브로커 등록 완료: /queue/, /topic/ /app");
   }
 
 	@Override
 	public void configureClientInboundChannel(ChannelRegistration reg) {
 	    reg.interceptors(interceptor);
+	}
+	
+	@Override
+	public void configureClientOutboundChannel(ChannelRegistration registration) {
+	    registration.interceptors(interceptor); // 👈 이걸 반드시 추가
 	}
 }
 

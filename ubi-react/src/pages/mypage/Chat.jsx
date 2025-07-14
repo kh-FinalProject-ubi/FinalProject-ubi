@@ -73,87 +73,86 @@ const Chat = () => {
       // TODO: 필요하면 서버에서 메시지 목록 받아오기
     };;
 
-  // ────────── 웹소켓 연결 useEffect ──────────
   useEffect(() => {
     console.log("[CHAT‑USEEFFECT] 실행됨", { token, memberNo });
     if (!token || !memberNo) return;
-    
-    console.log("[WS‑FACTORY] 호출됨"); 
-    // 1) STOMP 클라이언트 생성
+
     const client = new Client({
-      // 프록시(t=5173) → 백엔드(8080)로 전달되도록 상대경로 사용
-    webSocketFactory: () => {
-      // ① SockJS 인스턴스 생성
-      const sock = new SockJS("/ws-chat", null, {
-        transports: ["websocket", "xhr-streaming", "xhr-polling"],
-        timeout: 30000,
-      });
+      webSocketFactory: () => {
+        const sock = new SockJS("http://localhost:8080/ws-chat", null, {
+          transports: ["websocket", "xhr-streaming", "xhr-polling"],
+          timeout: 30000,
+        });
 
-      // ② 연결 URL을 출력하는 다양한 방법 (환경마다 다를 수 있음)
-      try {
-        console.log("🧪 SockJS URL:", sock._transportUrl || sock.url);
-      } catch (e) {
-        console.warn("❌ SockJS URL 접근 불가:", e);
-      }
+        setTimeout(() => {
+          const status = ["CONNECTING", "OPEN", "CLOSING", "CLOSED"];
+          console.log("🧪 SockJS readyState:", sock.readyState, `(${status[sock.readyState] || "UNKNOWN"})`);
+        }, 1000);
 
-      // ③ 전체 SockJS 객체 출력
-      console.log("[WS-SOCK]", sock);
+        return sock;
+      },
 
-      // ④ readyState 상태를 1초 후에 출력
-      setTimeout(() => {
-        const status = ["CONNECTING", "OPEN", "CLOSING", "CLOSED"];
-        console.log("🧪 SockJS readyState:", sock.readyState, `(${status[sock.readyState] || "UNKNOWN"})`);
-      }, 1000);
-
-      // ⑤ 반환 필수
-      return sock;
-    },
-
-      // 2) 헤더에 JWT 토큰 삽입
       connectHeaders: {
         Authorization: `Bearer ${token}`,
       },
 
-      // 3) 자동 재연결 (5초)
       reconnectDelay: 5000,
 
-      // 디버그 로그(원하면 지워도 됨)
       debug: (msg) => console.log("[STOMP]", msg),
 
-      // 4) 연결 후 구독
-      onConnect: () => {
-        setIsConnected(true);
+      onConnect: (frame) => {
+        try {
+          console.log("✅ STOMP 연결 성공!", frame);
+          setIsConnected(true);
 
-        client.subscribe(
-          `/user/queue/chat/${memberNo}`,         // ★ 서버와 맞춘 구독 경로
-          (frame) => {
-            const body = JSON.parse(frame.body);
-            // 현재 선택된 방의 메시지만 반영
-            if (selectedRoom && body.chatRoomNo === selectedRoom.chatRoomNo) {
-              setMessages((prev) => [...prev, body]);
+          const destination = `/user/queue/chat/${memberNo}`;
+          console.log("📍 구독할 경로:", destination);
+
+          client.subscribe(destination, (message) => {
+            try {
+              const body = JSON.parse(message.body);
+              console.log("📩 받은 메시지:", body);
+
+              if (selectedRoom && body.chatRoomNo === selectedRoom.chatRoomNo) {
+                console.log("🎯 현재 선택된 방:", selectedRoom);
+                setMessages((prev) => [...prev, body]);
+              }
+            } catch (err) {
+              console.error("❌ 메시지 처리 중 오류:", err);
             }
-          }
-        );
+          });
+        } catch (err) {
+          console.error("❌ onConnect 내부 오류:", err);
+        }
       },
 
       onStompError: (frame) => {
-        console.error("STOMP ERROR:", frame);
+        console.error("❌ STOMP 오류:", frame.headers["message"]);
+        console.error("❌ 상세 설명:", frame.body);
       },
-      onDisconnect: () => setIsConnected(false),
+
+      onDisconnect: () => {
+        console.log("🔌 연결 해제됨");
+        setIsConnected(false);
+      },
     });
 
-    stompRef.current = client;
-    console.log("[DEBUG] stompRef.current 할당됨:", stompRef.current); // 이걸로 확인 가능
+    client.onWebSocketError = (err) => {
+      console.error("🌐 WebSocket 오류 발생", err);
+    };
 
+    stompRef.current = client;
+    console.log("📦 stompRef.current 설정 완료:", client);
 
     client.activate();
+    console.log("🚀 STOMP client.activate() 호출 완료");
 
-    // 5) 언마운트 시 해제
     return () => {
+      console.log("🧹 클린업 - 연결 해제 시도");
       client.deactivate();
       setIsConnected(false);
     };
-  }, [token, memberNo, selectedRoom]);  // selectedRoom 포함: 방 바꿀 때 재구독
+  }, [token, memberNo, selectedRoom]);
 
 
 
