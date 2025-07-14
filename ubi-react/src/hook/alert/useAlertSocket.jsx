@@ -117,7 +117,9 @@ export default function useAlertSocket(memberNo, onAlertReceive) {
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
       }
-      prevMemberNoRef.current = null;
+
+      // ❌ 이거 삭제해야 중복 구독 안 됨
+      // prevMemberNoRef.current = null;
     };
   }, [memberNo, onAlertReceive, token]);
 }

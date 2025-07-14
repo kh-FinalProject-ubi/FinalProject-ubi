@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -17,7 +18,7 @@ import edu.kh.project.board.model.mapper.CommentMapper;
 import edu.kh.project.board.model.mapper.MytownBoardMapper;
 import edu.kh.project.member.model.mapper.MemberMapper;
 import edu.kh.project.websocket.dto.AlertDto;
-import edu.kh.project.websocket.type.AlertType;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -50,57 +51,10 @@ public class CommentServiceImpl implements CommentService {
 	// 댓글/답글 등록 서비스
 	@Override
 	public int insert(Comment comment) {
-	    int result = mapper.insert(comment);
-
-	    if (result > 0) {
-	        Integer writerNo = boardMapper.selectWriterNo(comment.getBoardNo());
-
-	        // 🚨 추가: 관리자 → 사용자 문의 게시판 답글일 경우
-	        Integer boardCode = boardMapper.selectBoardCode(comment.getBoardNo());
-	        boolean isInquiryBoard = (boardCode != null && boardCode == 4);
-	        boolean isAdmin = memberMapper.selectMemberAuthority(comment.getMemberNo()).equals("ADMIN");
-
-	        // 자신이 쓴 글이 아니고, 조건 충족 시 알림 전송
-	        if (writerNo != null && !writerNo.equals(comment.getMemberNo())) {
-	            if (isInquiryBoard && isAdmin) {
-	                // 🟡 관리자 문의 답변 알림
-	                sendInquiryReplyAlert(writerNo.longValue(), "/inquiry/detail/" + comment.getBoardNo());
-	            } else {
-	                // 🟢 일반 댓글 알림
-	                sendCommentAlert(writerNo.longValue(), "/free/detail/" + comment.getBoardNo());
-	            }
-	        }
-	    }
-
-	    return result;
+	    return mapper.insert(comment);
 	}
 
-	// ✅ 댓글 알림 전송 전용 메서드
-	private void sendCommentAlert(Long receiverNo, String targetUrl) {
-		AlertDto alert = AlertDto.builder().memberNo(receiverNo).type(AlertType.COMMENT).content("📬 새로운 댓글이 달렸습니다.")
-				.targetUrl(targetUrl)
-				.createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).isRead(false)
-				.build();
 
-		// STOMP WebSocket 전송
-		messagingTemplate.convertAndSend("/topic/alert/" + receiverNo, alert);
-		log.info("✅ 댓글 알림 전송 완료 to memberNo={}", receiverNo);
-	}
-	
-	// ✅ 사용자 문의 답변 알림 메서드
-	private void sendInquiryReplyAlert(Long receiverNo, String targetUrl) {
-	    AlertDto alert = AlertDto.builder()
-	        .memberNo(receiverNo)
-	        .type(AlertType.INQUIRY_REPLY) // AlertType에 INQUIRY_REPLY 추가 필요
-	        .content("📮 관리자 답변이 등록되었습니다.")
-	        .targetUrl(targetUrl)
-	        .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-	        .isRead(false)
-	        .build();
-
-	    messagingTemplate.convertAndSend("/topic/alert/" + receiverNo, alert);
-	    log.info("✅ 문의 답변 알림 전송 완료 to memberNo={}", receiverNo);
-	}
 
 	// 댓글 삭제 기능 + 관리자 댓글 확인 후에 0인 경우 boardAnswer N을 바꾸는 메서드
 	@Override

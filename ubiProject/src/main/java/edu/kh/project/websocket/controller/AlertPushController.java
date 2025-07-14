@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.kh.project.websocket.dto.AlertDto;
-import edu.kh.project.websocket.type.AlertType;
+import edu.kh.project.websocket.mapper.AlertMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,37 +24,78 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AlertPushController {
 
-	// Spring에서 제공하는 STOMP 메시지 전송 도구
-	private final SimpMessagingTemplate messagingTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final AlertMapper alertMapper;
 
-	/**
-	 * [POST] /api/alert/push - 특정 회원에게 WebSocket(STOMP) 기반 알림 전송 - 클라이언트는
-	 * "/topic/alert/{memberNo}"를 구독 중이어야 수신 가능
-	 */
-	@PostMapping("/push")
-	public void pushAlert(@RequestBody AlertDto alertDto) {
+    /**
+     * 알림 전송 요청 시 → DB 저장 후 WebSocket 전송
+     */
+    @PostMapping("/push")
+    public void pushAlert(@RequestBody AlertDto alertDto) {
 
-		if (alertDto.getMemberNo() == null) {
-			log.error("❌ memberNo 없음 → destination 생성 불가");
-			return;
-		}
+        if (alertDto.getMemberNo() == null) {
+            log.error("❌ memberNo 없음 → destination 생성 불가");
+            return;
+        }
 
-		String destination = "/topic/alert/" + alertDto.getMemberNo();
+        // 1. DB 저장용 Alert 엔티티 생성
+        AlertDto alert = AlertDto.builder()
+                .memberNo(alertDto.getMemberNo())
+                .type(alertDto.getType()) // String
+                .content(alertDto.getContent())
+                .targetUrl(alertDto.getTargetUrl())
+                .isRead(false)
+                .build();
 
-		// WebSocket을 통해 알림 DTO 전송
-		messagingTemplate.convertAndSend(destination, alertDto);
-		log.info("✅ WebSocket 알림 전송 완료 → {}", destination);
-	}
+        // 2. DB 저장
+        alertMapper.insertAlert(alert);
 
-	@GetMapping("/test")
-	public void testAlert() {
-		AlertDto alert = AlertDto.builder().memberNo(16L) // ✅ 여기 memberNo는 user03의 번호로 설정
-				.type(AlertType.COMMENT).content("테스트 알림입니다").targetUrl("/free/detail/99")
-				.createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).isRead(false)
-				.build();
+        // 3. 전송용 AlertDto 생성 (저장된 alertId 포함)
+        AlertDto resultDto = AlertDto.builder()
+                .alertId(alert.getAlertId()) // auto-generated key
+                .memberNo(alert.getMemberNo())
+                .type(alert.getType())
+                .content(alert.getContent())
+                .targetUrl(alert.getTargetUrl())
+                .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .isRead(false)
+                .boardNo(alertDto.getBoardNo())
+                .build();
 
-		System.out.println("📤 알림 전송 → /topic/alert/16");
+        // 4. WebSocket 전송
+        String destination = "/topic/alert/" + alert.getMemberNo();
+        messagingTemplate.convertAndSend(destination, resultDto);
 
-		messagingTemplate.convertAndSend("/topic/alert/16", alert);
-	}
+        log.info("✅ WebSocket 알림 전송 완료 → {}", destination);
+    }
+
+    /**
+     * 테스트 알림용
+     */
+    @GetMapping("/test")
+    public void testAlert() {
+    	AlertDto alert = AlertDto.builder()
+                .memberNo(16L)
+                .type("COMMENT")
+                .content("테스트 알림입니다")
+                .targetUrl("/free/detail/99")
+                .isRead(false)
+                .build();
+
+        alertMapper.insertAlert(alert);
+
+        AlertDto resultDto = AlertDto.builder()
+                .alertId(alert.getAlertId())
+                .memberNo(alert.getMemberNo())
+                .type(alert.getType())
+                .content(alert.getContent())
+                .targetUrl(alert.getTargetUrl())
+                .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .isRead(false)
+                .boardNo(99)
+                .build();
+
+        messagingTemplate.convertAndSend("/topic/alert/16", resultDto);
+        log.info("📤 테스트 알림 전송 → /topic/alert/16");
+    }
 }

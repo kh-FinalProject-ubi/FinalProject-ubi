@@ -6,10 +6,10 @@ import useSelectedRegionStore from "../hook/welfarefacility/useSelectedRegionSto
 import useModalStore from "../stores/useModalStore";
 import useAlertSocket from "../hook/alert/useAlertSocket";
 
+// 알림 모달
 const AlertModal = () => {
   const alertMessage = useModalStore((state) => state.alertMessage);
   const clearAlertMessage = useModalStore((state) => state.clearAlertMessage);
-  const navigate = useNavigate();
 
   if (!alertMessage) return null;
 
@@ -39,17 +39,41 @@ const Header = () => {
   const { openLoginModal } = useModalStore();
   const navigate = useNavigate();
 
-  console.log("헤더:", memberNickname);
-
-  //  알림 상태
-
   const [alerts, setAlerts] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
-  //  WebSocket 알림 수신 연결 (항상 호출)
+  // 알림 수신
   useAlertSocket(memberNo, (newAlert) => {
-    setAlerts((prev) => [newAlert, ...prev]);
+    console.log("📩 수신된 알림:", newAlert);
+
+    const { type, boardNo, alertId } = newAlert;
+
+    let targetUrl = "/";
+    switch (type) {
+      case "NOTICE":
+        targetUrl = `/noticeBoard/${boardNo}`;
+        break;
+      case "COMMENT":
+        targetUrl = `/mytownBoard/${boardNo}`;
+        break;
+      case "QUESTION_REPLY":
+        targetUrl = `/askBoard/${boardNo}`;
+        break;
+      case "WELFARE_UPDATE":
+        targetUrl = `/welfare/${boardNo}`;
+        break;
+      default:
+        console.warn("⚠️ 알 수 없는 알림 타입:", type);
+    }
+    console.log("📬 수신된 알림:", newAlert);
+    // ✅ 중복 alertId는 추가하지 않음
+    setAlerts((prev) => {
+      if (prev.some((a) => a.alertId === alertId)) {
+        return prev;
+      }
+      return [{ ...newAlert, targetUrl }, ...prev];
+    });
   });
 
   // 외부 클릭 시 드롭다운 닫기
@@ -63,18 +87,7 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const LogoutButton = () => {
-    const logout = useAuthStore((state) => state.logout);
-
-    const handleLogout = () => {
-      clearAuth(); // useAuthStore에서 토큰 등 초기화
-      localStorage.removeItem("kakaoId");
-      alert("로그아웃되었습니다.");
-      navigate("/"); // 홈으로 이동
-    };
-    return <button onClick={handleLogout}>로그아웃</button>;
-  };
-
+  // 복지시설 버튼 클릭
   const handleFacilityClick = () => {
     const city = selectedCity || "서울특별시";
     const district = selectedDistrict || "종로구";
@@ -84,6 +97,13 @@ const Header = () => {
         city
       )}&district=${encodeURIComponent(district)}`
     );
+  };
+
+  const handleLogout = () => {
+    clearAuth();
+    localStorage.removeItem("kakaoId");
+    alert("로그아웃되었습니다.");
+    navigate("/");
   };
 
   return (
@@ -126,12 +146,19 @@ const Header = () => {
                     {alerts.length === 0 ? (
                       <div className="alert-empty">알림이 없습니다</div>
                     ) : (
-                      alerts.map((alert, idx) => (
+                      alerts.map((alert) => (
                         <div
-                          key={idx}
+                          key={alert.alertId}
                           className="alert-item"
                           onClick={() => {
-                            navigate(alert.targetUrl);
+                            console.log("🧪 클릭한 alertId:", alert.alertId);
+                            console.log("🧪 현재 alerts 목록:", alerts);
+                            if (alert.targetUrl) {
+                              navigate(alert.targetUrl);
+                            }
+                            setAlerts((prev) =>
+                              prev.filter((a) => a.alertId !== alert.alertId)
+                            );
                             setShowDropdown(false);
                           }}
                         >
@@ -159,15 +186,12 @@ const Header = () => {
                 </Link>
 
                 <span className="nickname">{memberNickname}님</span>
-
-                {/* 로그인 상태 */}
-                <button className="logout-btn" onClick={clearAuth}>
+                <button className="logout-btn" onClick={handleLogout}>
                   로그아웃
                 </button>
               </>
             ) : (
               <>
-                {/* 비로그인 상태 */}
                 <button onClick={() => navigate("/login")}>로그인</button>
                 <Link to="/signup">회원가입</Link>
               </>
@@ -176,7 +200,6 @@ const Header = () => {
         </div>
       </header>
 
-      {/* 회원 정지 알람 */}
       <AlertModal />
     </>
   );
