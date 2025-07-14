@@ -1,9 +1,14 @@
 package edu.kh.project.websocket.config;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.MimeTypeUtils;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -12,25 +17,36 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import edu.kh.project.websocket.handler.ChattingWebsocketHandler;
 import edu.kh.project.websocket.handler.TestWebSocketHandler;
+import edu.kh.project.websocket.interceptor.AlertWebSocketAuthInterceptor;
+import edu.kh.project.websocket.interceptor.ChatWebSocketAuthInterceptor;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
 import edu.kh.project.common.config.LoggingHandshakeInterceptor;
 
+@CrossOrigin(origins = "*")
 @Configuration
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 	
-  private final JwtChannelInterceptor jwtChannelInterceptor; // 주입
-	
+  private final ChatWebSocketAuthInterceptor interceptor; // 주입
+
+  @PostConstruct
+  public void init() {
+      System.out.println("✅ WebSocketConfig 등록됨");
+  }
+  
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
     registry.addEndpoint("/ws-chat")
-    		.setAllowedOrigins("*")
+    		.setAllowedOriginPatterns("*")
     		.withSockJS();
+    System.out.println("✅ registerStompEndpoints 등록됨");
   }
   @Override
   public void configureMessageBroker(MessageBrokerRegistry registry) {
@@ -40,7 +56,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 	@Override
 	public void configureClientInboundChannel(ChannelRegistration reg) {
-	    reg.interceptors(jwtChannelInterceptor);
+	    reg.interceptors(interceptor);
 	}
 }
 
