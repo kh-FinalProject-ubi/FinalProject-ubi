@@ -88,6 +88,12 @@ public interface MytownBoardService {
 
 	String checkBoardReportStatus(int boardNo, int memberNo);
 
+	/**
+	 * 
+	 * @param serviceId
+	 * @return
+	 */
+	List<Board> getBoardListByFacilityServiceId(String facilityServiceId);
 
 	
 

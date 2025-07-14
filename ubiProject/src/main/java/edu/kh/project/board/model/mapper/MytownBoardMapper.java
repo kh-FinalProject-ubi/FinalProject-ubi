@@ -158,4 +158,6 @@ public interface MytownBoardMapper {
 	// 해당 게시글에서 이 회원이 이 게시글을 신고했어?
 	String selectReportStatus(@Param("boardNo") int boardNo, @Param("memberNo") int memberNo);
 
+	List<Board> selectBoardListByFacilityServiceId(String facilityServiceId);
+
 }
