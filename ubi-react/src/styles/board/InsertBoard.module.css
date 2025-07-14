@@ -1,0 +1,84 @@
+.container {
+  width: 100%;
+  padding: 2rem 15%;
+  box-sizing: border-box;
+}
+
+.inputGroup {
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden; /* 자식 요소의 radius를 부모에 맞춤 */
+  margin-bottom: 1rem;
+}
+
+.postTypeSelect {
+  padding: 12px 15px;
+  border: none;
+  border-right: 1px solid #ccc;
+  background-color: #f8f9fa;
+  font-size: 1rem;
+}
+
+.postTypeSelect:focus {
+  outline: none;
+}
+
+.titleInput {
+  flex: 1;
+  padding: 12px 15px;
+  border: none;
+  font-size: 1rem;
+}
+
+.titleInput:focus {
+  outline: none;
+}
+
+.buttonContainer {
+  display: flex;
+  gap: 10px;
+  margin-top: 1rem;
+}
+
+.listButton,
+.submitButton {
+  padding: 0.7em 1.8em;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.listButton {
+  background-color: #fff;
+  color: #333;
+}
+
+.listButton:hover {
+  background-color: #f8f8f8;
+}
+
+.submitButton {
+  background-color: #ffc107;
+  color: #333;
+  border-color: #ffc107;
+}
+
+.submitButton:hover {
+  background-color: #ffca2c;
+}
+
+/* Summernote 에디터 스타일 오버라이드 */
+:global(.note-editor.note-frame) {
+  border-radius: 8px;
+  border-color: #ccc;
+}
+:global(.note-toolbar) {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ccc;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}

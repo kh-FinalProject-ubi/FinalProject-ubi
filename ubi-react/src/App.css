@@ -1,5 +1,7 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
 #root {
-  max-width: 1280px;
+  max-width: 1920px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
@@ -39,4 +41,10 @@
 
 .read-the-docs {
   color: #888;
+}
+
+body {
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
+    Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR",
+    "Malgun Gothic", sans-serif;
 }
