@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import WelfareDetailModal from "./WelfareDetailModal";
-import "../styles/WelfareCompareView.css";
+import styles from "../styles/WelfareCompareView.module.css"; // ✅ CSS 모듈 import
 import useAuthStore from "../stores/useAuthStore";
 import { filterBenefitsByStandard } from "../utils/filterBenefitsByStandard";
 import { mapCleanFullName } from "../utils/regionUtils";
@@ -86,25 +86,23 @@ const WelfareCompareView = ({
   }
 
   return (
-    <div className="welfare-compare-view">
+    <div className={styles.compareView}>
       <h3>
         🆚 {cleanA} vs {cleanB} 복지 혜택 비교
       </h3>
 
       {token && (
-        <label style={{ display: "block", margin: "0.5rem 0" }}>
+        <label className={styles.toggleShowAll}>
           <input
             type="checkbox"
             checked={showAll}
-            onChange={() => {
-              setShowAll((prev) => !prev);
-            }}
+            onChange={() => setShowAll((prev) => !prev)}
           />{" "}
           전체 보기
         </label>
       )}
 
-      <table className="welfare-compare-table">
+      <table className={styles.compareTable}>
         <thead>
           <tr>
             <th>{cleanA}</th>
@@ -117,13 +115,13 @@ const WelfareCompareView = ({
           }).map((_, idx) => (
             <tr key={idx}>
               <td
+                className={styles.clickableCell}
                 onClick={() =>
                   filteredListA[idx] &&
                   fetchDetail(
                     filteredListA[idx].servId || filteredListA[idx].id
                   )
                 }
-                style={{ cursor: "pointer" }}
               >
                 {filteredListA[idx] ? (
                   <>
@@ -131,7 +129,7 @@ const WelfareCompareView = ({
                       {filteredListA[idx].servNm ||
                         filteredListA[idx].title ||
                         "제목 없음"}
-                    </strong>{" "}
+                    </strong>
                     <br />(
                     {Array.isArray(filteredListA[idx].intrsThemaNmArray)
                       ? filteredListA[idx].intrsThemaNmArray.join(", ")
@@ -145,15 +143,14 @@ const WelfareCompareView = ({
                   "-"
                 )}
               </td>
-
               <td
+                className={styles.clickableCell}
                 onClick={() =>
                   filteredListB[idx] &&
                   fetchDetail(
                     filteredListB[idx].servId || filteredListB[idx].id
                   )
                 }
-                style={{ cursor: "pointer" }}
               >
                 {filteredListB[idx] ? (
                   <>
@@ -161,7 +158,7 @@ const WelfareCompareView = ({
                       {filteredListB[idx].servNm ||
                         filteredListB[idx].title ||
                         "제목 없음"}
-                    </strong>{" "}
+                    </strong>
                     <br />(
                     {Array.isArray(filteredListB[idx].intrsThemaNmArray)
                       ? filteredListB[idx].intrsThemaNmArray.join(", ")

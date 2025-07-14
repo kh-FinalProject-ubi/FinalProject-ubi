@@ -1,5 +1,4 @@
-/* WelfareDetailModal.css 예시 */
-.modal-overlay {
+.modalOverlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -12,7 +11,7 @@
   z-index: 999;
 }
 
-.modal-content {
+.modalContent {
   background: #fff;
   padding: 2rem;
   border-radius: 10px;
@@ -22,7 +21,7 @@
   position: relative;
 }
 
-.modal-close {
+.modalClose {
   position: absolute;
   top: 12px;
   right: 12px;

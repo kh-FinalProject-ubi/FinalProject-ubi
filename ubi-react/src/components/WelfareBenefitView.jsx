@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import WelfareDetailModal from "./WelfareDetailModal";
 import useAuthStore from "../stores/useAuthStore";
-import "../styles/WelfareBenefitView.css";
+import styles from "../styles/WelfareBenefitView.module.css";
 import { filterBenefitsByStandard } from "../utils/filterBenefitsByStandard";
 import { mapCleanFullName } from "../utils/regionUtils";
 
@@ -82,33 +82,30 @@ const WelfareBenefitView = ({ district = "", benefits = [], isLoading }) => {
       </h3>
 
       {token && (
-        <label className="toggle-showall">
+        <label className={styles.toggleShowAll}>
           <input
             type="checkbox"
             checked={showAll}
-            onChange={() => {
-              console.log("🌀 showAll 변경:", !showAll);
-              setShowAll((prev) => !prev);
-            }}
-          />{" "}
+            onChange={() => setShowAll((prev) => !prev)}
+          />
           전체 보기
         </label>
       )}
 
-      <div className="benefit-card-list">
+      <div className={styles.benefitCardList}>
         {filteredList.map((item, idx) => (
           <div
-            className="benefit-card"
+            className={styles.benefitCard}
             key={item.servId || item.id || idx}
             onClick={() => fetchDetail(item.servId || item.id)}
           >
-            <h4 className="benefit-title">{item.servNm || item.title}</h4>
-            <p className="benefit-tags">
+            <h4 className={styles.benefitTitle}>{item.servNm || item.title}</h4>
+            <p className={styles.benefitTags}>
               {Array.isArray(item.intrsThemaNmArray)
                 ? item.intrsThemaNmArray.join(", ")
                 : item.intrsThemaNmArray || "주제 없음"}
             </p>
-            <p className="benefit-description">
+            <p className={styles.benefitDescription}>
               {item.servDgst || item.description}
             </p>
           </div>

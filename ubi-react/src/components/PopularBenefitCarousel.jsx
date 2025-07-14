@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import usePopularBenefits from "../hook/welfareService/usePopularBenefits";
 import { normalizeRegion } from "../utils/regionUtils";
-import "../styles/Carousel.css";
+import styles from "../styles/Carousel.module.css";
 
 const PopularBenefitCarousel = () => {
   const { data: popularBenefits, loading } = usePopularBenefits();
@@ -32,15 +32,14 @@ const PopularBenefitCarousel = () => {
   if (!popularBenefits.length) return <p>인기 혜택이 없습니다.</p>;
 
   return (
-    <div className="carousel-wrapper">
+    <div className={styles.carouselWrapper}>
       {popularBenefits.map((b) => {
         const { regionCity, regionDistrict } = normalizeRegion(
           b.regionCity,
           b.regionDistrict
         );
-
         return (
-          <article key={b.apiServiceId} className="carousel-card">
+          <article key={b.apiServiceId} className={styles.carouselCard}>
             <span className="badge">복지</span>
             <h4>{b.serviceName}</h4>
             <p>{b.category || "분류 없음"}</p>
