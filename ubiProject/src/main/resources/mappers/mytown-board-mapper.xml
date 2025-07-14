@@ -325,7 +325,7 @@
 		UPDATE BOARD
 		SET BOARD_DEL_FL = 'Y'
 		WHERE BOARD_NO =
-		#{boardNo} AND MEMBER_NO = #{memberNo}
+		#{boardNo}
 	</update>
 
 
@@ -338,7 +338,7 @@
 		STAR_COUNT = #{starCount},
 		POST_TYPE =
 		#{postType}
-		WHERE BOARD_NO = #{boardNo} AND MEMBER_NO = #{memberNo}
+		WHERE BOARD_NO = #{boardNo}
 	</update>
 
 

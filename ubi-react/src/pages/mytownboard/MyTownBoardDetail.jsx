@@ -18,6 +18,7 @@ function MyTownBoardDetail() {
   const [selectedMember, setSelectedMember] = useState(null); // 신고할 대상 선택하기
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 }); // 모달창이 어디가 뜨게 할지 기본값
   const [reportedByMe, setReportedByMe] = useState(false); // 게시글이 신고됐을 때 신고상태 보여주기
+  const [showDetail, setShowDetail] = useState(true);
 
   // const {regionCity, regionDistrict } = useAuthStore();
   const writerNo = board?.memberNo; // 게시글 작성자 번호
@@ -83,7 +84,7 @@ function MyTownBoardDetail() {
   useEffect(() => {
     if (!token) {
       alert("로그인이 필요한 페이지입니다.");
-      navigate("/mytownBoard", { replace: true });
+      navigate(-1);
       return;
     }
 
@@ -155,9 +156,7 @@ function MyTownBoardDetail() {
       <p>
         <strong>지역:</strong> {board.regionCity} {board.regionDistrict}
       </p>
-
       <span>조회수{board.boardReadCount}</span>
-
       <button
         onClick={handleLike}
         style={{
@@ -170,7 +169,6 @@ function MyTownBoardDetail() {
       >
         {liked ? "❤️" : "🤍"} {likeCount}
       </button>
-
       {/* 신고 버튼 */}
       {token && loginMemberNo !== writerNo && (
         <button
@@ -188,28 +186,23 @@ function MyTownBoardDetail() {
           <span>⭐ {board.starCount ?? 0}</span>
         )}
       </div>
-
       {board.content}
-
       {/* ✅ 글 내용과 이미지가 섞인 HTML 출력 */}
       <div
         className="board-content"
         dangerouslySetInnerHTML={{ __html: contentWithImages }}
       />
-
       {/* 해시태그 표시 */}
       <div style={{ marginTop: "10px", color: "#3b5998" }}>
         {tagList.map((tag, idx) => (
           <span key={idx}>#{tag} </span>
         ))}
       </div>
-
       {/* ✅ 목록으로 돌아가기 버튼 */}
       <button onClick={() => navigate("/mytownBoard")}>
         목록으로 돌아가기
       </button>
-
-      {loginMemberNo === writerNo && (
+      {(loginMemberNo === writerNo || role === "ADMIN") && (
         <div style={{ marginTop: "20px" }}>
           <button
             onClick={() => navigate(`/mytownBoard/update/${board.boardNo}`)}
@@ -225,6 +218,7 @@ function MyTownBoardDetail() {
                   await axios.delete(
                     `/api/editboard/mytown/${board.boardNo}/delete`,
                     {
+                      headers: { Authorization: `Bearer ${token}` }, // ✅ 관리자도 인증
                       params: { memberNo: loginMemberNo },
                     }
                   );
@@ -248,7 +242,6 @@ function MyTownBoardDetail() {
         loginMemberNo={loginMemberNo}
         role={role}
       />
-
       {modalVisible &&
         selectedMember &&
         selectedMember.role !== "ADMIN" &&

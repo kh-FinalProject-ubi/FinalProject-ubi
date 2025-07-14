@@ -108,14 +108,5 @@
 			AND MEMBER_NO = #{memberNo}
 		</if>
 	</update>
-	
-	<!-- 관리자 게시글 삭제 로직 -->
-	<update id="boardDeleteByAdmin">
-		UPDATE "BOARD" SET
-		BOARD_DEL_FL = 'Y'
-		WHERE BOARD_TYPE
-		= #{boardCode}
-		AND BOARD_NO = #{boardNo}
-	</update>
 
 </mapper>

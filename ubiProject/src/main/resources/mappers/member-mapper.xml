@@ -325,7 +325,7 @@
   </select>
 
 	<select id="selectMemberAuthority" resultType="string">
-		SELECT MEMBER_AUTH
+		SELECT AUTHORITY
 		FROM MEMBER
 		WHERE MEMBER_NO = #{memberNo}
 	</select>

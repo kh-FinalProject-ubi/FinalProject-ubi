@@ -81,44 +81,49 @@ function MytownBoardUpdate() {
 
   // 2. 썸머노트 초기화
   useEffect(() => {
+    // boardContent가 로드될 때까지 초기화하지 말자
     if (!boardContent) return;
 
-    $("#summernote").summernote({
-      height: 300,
-      lang: "ko-KR",
-      callbacks: {
-        onChange: function (contents) {
-          if (isInitialSet.current) return;
-          setBoardContent(contents);
-        },
-        onImageUpload: function (files) {
-          const formData = new FormData();
-          formData.append("image", files[0]);
+    // 초기화는 딱 한번만
+    if (isInitialSet.current) {
+      $("#summernote").summernote({
+        height: 300,
+        lang: "ko-KR",
+        callbacks: {
+          onChange: function (contents) {
+            if (isInitialSet.current) return; // 초기 세팅 무시
+            setBoardContent(contents);
+          },
+          onImageUpload: function (files) {
+            const formData = new FormData();
+            formData.append("image", files[0]);
 
-          fetch("/api/editboard/mytown/uploadImage", {
-            method: "POST",
-            body: formData,
-          })
-            .then((res) => res.text())
-            .then((imageUrl) => {
-              $("#summernote").summernote("insertImage", imageUrl);
-              uploadedImagesRef.current.push(imageUrl);
+            fetch("/api/editboard/mytown/uploadImage", {
+              method: "POST",
+              body: formData,
             })
-            .catch((err) => {
-              console.error("이미지 업로드 실패", err);
-            });
+              .then((res) => res.text())
+              .then((imageUrl) => {
+                $("#summernote").summernote("insertImage", imageUrl);
+                uploadedImagesRef.current.push(imageUrl);
+              })
+              .catch((err) => {
+                console.error("이미지 업로드 실패", err);
+              });
+          },
         },
-      },
-      toolbar: [
-        ["style", ["bold", "italic", "underline"]],
-        ["para", ["ul", "ol"]],
-        ["insert", ["link", "picture"]],
-        ["misc", ["undo", "redo"]],
-      ],
-    });
+        toolbar: [
+          ["style", ["bold", "italic", "underline"]],
+          ["para", ["ul", "ol"]],
+          ["insert", ["link", "picture"]],
+          ["misc", ["undo", "redo"]],
+        ],
+      });
 
-    $("#summernote").summernote("code", boardContent);
-    isInitialSet.current = false;
+      // 초기 내용 세팅
+      $("#summernote").summernote("code", boardContent);
+      isInitialSet.current = false;
+    }
   }, [boardContent]);
 
   // 3. 수정 요청 처리
@@ -139,6 +144,37 @@ function MytownBoardUpdate() {
       .map((tag) => tag.replace("#", "").trim())
       .filter((tag) => tag.length > 0);
 
+    // 🔍 변경사항 감지
+    const originHashtags =
+      Array.isArray(board.hashtagList) && board.hashtagList.length > 0
+        ? board.hashtagList
+        : board.hashtags
+        ? board.hashtags.split(",").map((t) => t.trim())
+        : [];
+
+    const isSameHashtag =
+      JSON.stringify(hashtagList.sort()) ===
+      JSON.stringify(originHashtags.sort());
+
+    const isSame =
+      boardTitle === board.boardTitle &&
+      updatedContent === board.boardContent &&
+      starRating === (board.starCount || 0) &&
+      postTypeCheck ===
+        (board.facilityApiServiceId
+          ? "복지시설후기"
+          : board.postType === "후기"
+          ? "복지혜택후기"
+          : board.postType) &&
+      isSameHashtag &&
+      imageList.length === 0; // 이미지 추가/삭제 없으면 수정 안 한 것으로 간주
+
+    if (isSame) {
+      alert("변경된 내용이 없습니다.");
+      return; // 서버 요청 막기
+    }
+
+    // 수정 요청
     const updatedBoard = {
       boardTitle,
       boardContent: updatedContent,
