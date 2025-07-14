@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -46,6 +47,9 @@ public class SecurityConfig {
         http
             // ✅ 세션 사용 안 함 (JWT 기반)
             .csrf(csrf -> csrf.disable())
+    	    .headers(headers -> headers
+    	            .frameOptions(frame -> frame.disable()))
+    	    .cors(Customizer.withDefaults())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
             // ✅ 인증/인가 실패 시 JSON 응답 반환
@@ -73,12 +77,13 @@ public class SecurityConfig {
             	    .requestMatchers("/api/welfare-curl/**").permitAll()
             	    .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
             	    .requestMatchers("/ws-alert/**", "/topic/**").permitAll()
-            	    .requestMatchers("/ws-chat", "/ws-chat/**").permitAll()
+            	    .requestMatchers("/ws-chat/**").permitAll()
             	    .requestMatchers("/myPage/profile/**").permitAll()
             	    // ✅ 나머지 찜 API는 인증 필요
             	    .requestMatchers("/api/welfare/like/**", "/api/welfare/my-likes").authenticated()
 
             	    .anyRequest().permitAll()
+
             	    
             	)
 
