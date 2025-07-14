@@ -232,9 +232,11 @@ public class MemberController {
 
 	@GetMapping("/checkId")
 	public ResponseEntity<?> checkId(@RequestParam("memberId") String memberId) {
-		boolean isAvailable = service.checkIdAvailable(memberId); // 중복 없으면 true
-		return isAvailable ? ResponseEntity.ok().build()
-				: ResponseEntity.status(409).body(Map.of("message", "이미 사용 중인 아이디입니다."));
+	    System.out.println("✅ checkId() 호출됨: " + memberId);
+	    boolean isAvailable = service.checkIdAvailable(memberId);
+	    return isAvailable 
+	        ? ResponseEntity.ok().build()
+	        : ResponseEntity.status(409).body(Map.of("message", "이미 사용 중인 아이디입니다."));
 	}
 
 	@GetMapping("/checkNickname")

@@ -1,5 +1,5 @@
 // Signup.jsx
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import DaumPostcode from "react-daum-postcode";
 import { useNavigate } from "react-router-dom";
 import TermsAndPrivacyModal from "../components/TermsAndPrivacyModal";
@@ -40,6 +40,8 @@ const Signup = () => {
   const [emailError, setEmailError] = useState("");
   const [idValid, setIdValid] = useState(null);
   const [pwValid, setPwValid] = useState(null);
+  const [idStatus, setIdStatus] = useState(""); // 'loading', 'available', 'duplicate', 'invalid'
+  const [nicknameStatus, setNicknameStatus] = useState(""); // 동일
 
   const openLogin = useModalStore((state) => state.openLoginModal);
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -47,7 +49,7 @@ const Signup = () => {
   const handleIdChange = (e) => {
     const val = e.target.value;
     setMemberId(val);
-    const idRegex = /^[a-zA-Z]{4,15}$/;
+    const idRegex = /^[a-zA-Z0-9]{4,15}$/;
     setIdValid(idRegex.test(val));
   };
 
@@ -57,6 +59,40 @@ const Signup = () => {
     const pwRegex = /^[a-zA-Z0-9]+$/;
     setPwValid(pwRegex.test(val));
   };
+
+  useEffect(() => {
+    if (!memberId) return setIdStatus("");
+    const idRegex = /^[a-zA-Z0-9]{4,15}$/;
+    if (!idRegex.test(memberId)) return setIdStatus("invalid");
+
+    setIdStatus("loading");
+    const delay = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/member/checkId?memberId=${memberId}`);
+        setIdStatus(res.ok ? "available" : "duplicate");
+      } catch {
+        setIdStatus("error");
+      }
+    }, 500);
+    return () => clearTimeout(delay);
+  }, [memberId]);
+
+  useEffect(() => {
+    if (!memberNickname) return setNicknameStatus("");
+
+    setNicknameStatus("loading");
+    const delay = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/member/checkNickname?memberNickname=${memberNickname}`
+        );
+        setNicknameStatus(res.ok ? "available" : "duplicate");
+      } catch {
+        setNicknameStatus("error");
+      }
+    }, 500);
+    return () => clearTimeout(delay);
+  }, [memberNickname]);
 
   const handleComplete = (data) => {
     const fullAddr = data.roadAddress || data.jibunAddress;
@@ -224,19 +260,28 @@ const Signup = () => {
         <input
           type="text"
           value={memberId}
-          onChange={handleIdChange}
+          onChange={(e) => setMemberId(e.target.value)}
           placeholder="아이디"
           required
         />
-        {idValid === false && (
-          <div style={{ color: "red", fontSize: "13px" }}>
-            입력이 정확하지 않습니다. 아이디는 영문자 4자 이상 15자 미만이어야
-            합니다.
-          </div>
-        )}
-        {idValid === true && (
-          <div style={{ color: "green", fontSize: "13px" }}>
-            적합한 아이디입니다.
+        {memberId && (
+          <div style={{ fontSize: "13px" }}>
+            {idStatus === "loading" && <span>⏳ 확인 중...</span>}
+            {idStatus === "available" && (
+              <span style={{ color: "green" }}>
+                ✔ 사용 가능한 아이디입니다.
+              </span>
+            )}
+            {idStatus === "duplicate" && (
+              <span style={{ color: "red" }}>
+                ❌ 이미 사용 중인 아이디입니다.
+              </span>
+            )}
+            {idStatus === "invalid" && (
+              <span style={{ color: "red" }}>
+                아이디는 영문자/숫자 4~15자여야 합니다.
+              </span>
+            )}
           </div>
         )}
         {idError && <span style={{ color: "red" }}>{idError}</span>}
@@ -276,6 +321,7 @@ const Signup = () => {
           placeholder="이름"
           required
         />
+        {/* ✅ 닉네임 입력 */}
         <input
           type="text"
           value={memberNickname}
@@ -283,6 +329,21 @@ const Signup = () => {
           placeholder="닉네임"
           required
         />
+        {memberNickname && (
+          <div style={{ fontSize: "13px" }}>
+            {nicknameStatus === "loading" && <span>⏳ 확인 중...</span>}
+            {nicknameStatus === "available" && (
+              <span style={{ color: "green" }}>
+                ✔ 사용 가능한 닉네임입니다.
+              </span>
+            )}
+            {nicknameStatus === "duplicate" && (
+              <span style={{ color: "red" }}>
+                ❌ 이미 사용 중인 닉네임입니다.
+              </span>
+            )}
+          </div>
+        )}
         {nicknameError && <span style={{ color: "red" }}>{nicknameError}</span>}
 
         <div className="form-row">
