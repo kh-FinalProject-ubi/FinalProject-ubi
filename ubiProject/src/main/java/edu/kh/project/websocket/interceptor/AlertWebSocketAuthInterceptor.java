@@ -33,6 +33,9 @@ public class AlertWebSocketAuthInterceptor implements ChannelInterceptor {
                 log.info("📌 [WebSocket] 받은 토큰: {}", token);
 
                 if (token != null && token.startsWith("Bearer ")) {
+                    // ✅ 'Bearer ' 접두어 제거
+                    token = token.substring(7);
+
                     boolean valid = jwtUtil.validateToken(token);
                     log.info("✅ [WebSocket] 토큰 유효 여부: {}", valid);
 
@@ -40,14 +43,15 @@ public class AlertWebSocketAuthInterceptor implements ChannelInterceptor {
                         Authentication auth = jwtUtil.getAuthentication(token);
                         accessor.setUser(auth);
 
-                        // ✅ 이 줄이 없으면 인증 정보가 WebSocket 채널에서 날아감
+                        // ✅ 인증 정보가 유지되도록 설정
                         accessor.setLeaveMutable(true);
 
+                        // ✅ SecurityContext에도 등록
                         SecurityContextHolder.getContext().setAuthentication(auth);
                         log.info("✅ [WebSocket] 인증 완료, 사용자 등록됨");
                     } else {
                         log.warn("❌ [WebSocket] 유효하지 않은 JWT 토큰");
-                        return null;
+                        return null; // 연결 차단
                     }
                 } else {
                     log.warn("❌ [WebSocket] Authorization 헤더 누락 또는 Bearer 형식 오류");
@@ -56,6 +60,7 @@ public class AlertWebSocketAuthInterceptor implements ChannelInterceptor {
             }
 
             return message;
+
         } catch (Exception e) {
             log.error("❌ [WebSocket] 인증 중 예외 발생", e);
             return null;

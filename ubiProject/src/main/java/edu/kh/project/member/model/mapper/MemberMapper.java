@@ -123,4 +123,6 @@ public interface MemberMapper {
 
 	String selectMemberRegionDistrict(int memberNo);
 
+	Object selectMemberAuthority(int memberNo);
+
 }

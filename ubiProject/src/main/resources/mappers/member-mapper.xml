@@ -305,4 +305,10 @@
 		WHERE MEMBER_NO = #{memberNo}
 	</update>
 
+	<select id="selectMemberAuthority" resultType="string">
+		SELECT MEMBER_AUTH
+		FROM MEMBER
+		WHERE MEMBER_NO = #{memberNo}
+	</select>
+
 </mapper>
