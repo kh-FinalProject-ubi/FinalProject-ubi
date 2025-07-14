@@ -73,10 +73,13 @@ public class SecurityConfig {
             	    .requestMatchers("/api/welfare-curl/**").permitAll()
             	    .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
             	    .requestMatchers("/ws-alert/**", "/topic/**").permitAll()
+            	    .requestMatchers("/ws-chat", "/ws-chat/**").permitAll()
+            	    .requestMatchers("/myPage/profile/**").permitAll()
             	    // ✅ 나머지 찜 API는 인증 필요
             	    .requestMatchers("/api/welfare/like/**", "/api/welfare/my-likes").authenticated()
 
             	    .anyRequest().permitAll()
+            	    
             	)
 
             // ✅ JWT 필터 등록: UsernamePasswordAuthenticationFilter 이전에 실행되도록
