@@ -1,0 +1,61 @@
+/* 🗺️ 지도 박스 전체 컨테이너 */
+.mapContainer {
+  position: relative;
+  width: 840px; /* ✅ 너비 조정 */
+  height: 500px; /* ✅ 높이 조정 */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 12px;
+}
+
+/* 지도 본체 */
+.mapCanvas {
+  width: 100%;
+  height: 100%;
+}
+
+.sectionTitle {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #2c3e50;
+}
+
+/* 체크박스 + 버튼 섹션 */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* 지명 레이어 토글 */
+.labelToggle {
+  font-weight: 500;
+  color: #333;
+  user-select: none;
+}
+
+/* 범죄 유형 버튼 */
+.buttonGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.crimeButton {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 4px;
+  background-color: #95a5a6;
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.crimeButtonActive {
+  background-color: #2c3e50;
+}

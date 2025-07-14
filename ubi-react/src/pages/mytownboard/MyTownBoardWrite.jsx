@@ -6,6 +6,7 @@ import "summernote/dist/summernote-lite";
 import useAuthStore from "../../stores/useAuthStore";
 import WelfareFacilityModal from "./WelfareFacilityModal";
 import Modal from "../../components/common/Modal";
+import LocalBenefitModal from "./LocalBenefitModal";
 
 const MyTownBoardWrite = () => {
   const { memberNo, regionCity, regionDistrict } = useAuthStore();
@@ -344,7 +345,25 @@ const MyTownBoardWrite = () => {
           />
         </Modal>
       )}
+
+      {showBenefitModal && (
+  <Modal onClose={() => setShowBenefitModal(false)}>
+    <LocalBenefitModal
+      isOpen={showBenefitModal}
+      onClose={() => setShowBenefitModal(false)}
+      onSelect={({ serviceId, name, agency }) => {
+        setSelectedWelfare({ serviceId, name, agency });
+        setSelectedWelfareName(name);
+        setSelectedBenefitId(serviceId);
+        setShowBenefitModal(false);
+      }}
+    />
+  </Modal>
+)}
+
     </div>
+
+    
   );
 };
 

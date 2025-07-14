@@ -120,5 +120,11 @@ public class MytownBoardController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
 		}
 	}
+	
+	
+	@GetMapping("/mytownBoard/facility/{facilityServiceId}")
+	public List<Board> getPostsByFacility(@PathVariable("facilityServiceId") String facilityServiceId) {
+	    return service.getBoardListByFacilityServiceId(facilityServiceId);
+	}
 
 }
