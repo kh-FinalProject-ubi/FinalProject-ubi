@@ -20,7 +20,7 @@ import edu.kh.project.board.model.dto.BoardImage;
 import edu.kh.project.board.model.mapper.EditBoardMapper;
 import edu.kh.project.common.util.Utility;
 import edu.kh.project.websocket.dto.AlertDto;
-import edu.kh.project.websocket.type.AlertType;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -54,17 +54,18 @@ public class EditBoardServiceImpl implements EditBoardService {
 	    int boardNo = inputBoard.getBoardNo();
 	    
 	 // 공지사항(boardCode == 1)일 때만 알림 전송
-	    if (inputBoard.getBoardCode() == 1) {
-	        AlertDto alert = AlertDto.builder()
-	            .type(AlertType.NOTICE) // AlertType에 NOTICE 추가 필요
-	            .content("📢 새로운 공지사항이 등록되었습니다.")
-	            .targetUrl("/notice/detail/" + boardNo) // 실제 상세 페이지 URL
-	            .isRead(false)
-	            .build();
-
-	        // 모든 사용자에게 브로드캐스트 (또는 등급별 구분 가능)
-	        messagingTemplate.convertAndSend("/topic/notice/all", alert);
-	    }
+//	    if (inputBoard.getBoardCode() == 1) {
+//	        AlertDto alert = AlertDto.builder()
+//	            //.type(AlertType.NOTICE) // AlertType에 NOTICE 추가 필요
+//	            .content("📢 새로운 공지사항이 등록되었습니다.")
+//	            .targetUrl("/notice/detail/" + boardNo) // 실제 상세 페이지 URL
+//	            .boardNo(boardNo)
+//	            .isRead(false)
+//	            .build();
+//
+//	        // 모든 사용자에게 브로드캐스트 (또는 등급별 구분 가능)
+//	        messagingTemplate.convertAndSend("/topic/notice/all", alert);
+//	    }
 
 	    // 2. 이미지 업로드 처리
 	    List<BoardImage> uploadList = new ArrayList<>();
