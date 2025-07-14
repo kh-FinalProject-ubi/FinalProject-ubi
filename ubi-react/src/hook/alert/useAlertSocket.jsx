@@ -19,7 +19,7 @@ export default function useAlertSocket(memberNo, onAlertReceive) {
       console.log("🔑 전달된 token:", token);
 
       const client = new Client({
-        webSocketFactory: () => new SockJS("http://localhost:8080/ws-alert"),
+        brokerURL: "ws://localhost:8080/ws-alert",
         connectHeaders: {
           Authorization: `Bearer ${token}`,
         },
