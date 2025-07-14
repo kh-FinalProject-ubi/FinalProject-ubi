@@ -132,7 +132,6 @@ const InsertBoard = () => {
       })
       .then((data) => {
         if (data && data.boardNo) {
-          alert("작성 성공");
           const boardNo = data.boardNo;
           navigate(`/${boardCode}/${boardNo}`);
         } else {
