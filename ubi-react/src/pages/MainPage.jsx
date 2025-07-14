@@ -3,7 +3,7 @@ import WelfareMap from "../components/WelfareMap";
 import PublicDataMap from "../components/PublicDataMap";
 import PopularBenefitCarousel from "../components/PopularBenefitCarousel";
 import PopularPostCarousel from "../components/PopularPostCarousel";
-import "../styles/MainPage.css";
+import "../styles/MainPage.module.css";
 import MemberSyncProvider from "../components/MemberSyncProvider";
 
 const MainPage = () => {

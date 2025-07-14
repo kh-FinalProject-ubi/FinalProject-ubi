@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import useAuthStore from "../../stores/useAuthStore";
-import Pagination from "../../components/Pagination";
+import styles from "../../styles/board/AskBoard.module.css"; // AskBoard용 CSS 모듈
 
 const boardCodeMap = {
   "/noticeBoard": 1,
@@ -18,12 +18,9 @@ const AskBoard = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { token, role, memberNo: loginMemberNo } = useAuthStore();
-
+  const { token, role } = useAuthStore();
   const path = location.pathname;
   const boardCode = boardCodeMap[path];
-
-  // authority 값이 있을 때만 isAdmin, isUser를 계산
   const isAdmin = role === "ADMIN";
   const isUser = role === "USER";
 
@@ -33,8 +30,7 @@ const AskBoard = () => {
 
   useEffect(() => {
     if (!boardCode) return;
-
-    axios;
+    setLoading(true);
     axios
       .get(`/api/board/${boardCode}`, {
         params: { cp: currentPage },
@@ -47,19 +43,35 @@ const AskBoard = () => {
       .catch((err) => {
         console.error("게시판 목록 조회 실패:", err);
         alert("게시판을 불러오는 데 실패했습니다.");
-
         navigate("/");
       });
   }, [boardCode, navigate, currentPage]);
 
-  if (!boardCode) return <p>존재하지 않는 게시판입니다.</p>;
-  if (loading) return <p>로딩 중...</p>;
+  // --- 페이지네이션 로직 ---
+  const pageNumbers = [];
+  if (pagination) {
+    const pageGroupSize = 10;
+    const startPage =
+      Math.floor((currentPage - 1) / pageGroupSize) * pageGroupSize + 1;
+    const endPage = Math.min(startPage + pageGroupSize - 1, pagination.maxPage);
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+  }
 
+  if (!boardCode) return <p>존재하지 않는 게시판입니다.</p>;
+  if (loading)
+    return (
+      <div className={styles.container}>
+        <p>로딩 중...</p>
+      </div>
+    );
 
   return (
-    <div>
-      <h2>문의게시판</h2>
-      <table style={{ width: "100%", textAlign: "center" }}>
+    <div className={styles.container}>
+      <h2 className={styles.boardTitle}>문의게시판</h2>
+
+      <table className={styles.boardTable}>
         <thead>
           <tr>
             <th>번호</th>
@@ -67,47 +79,91 @@ const AskBoard = () => {
             <th>제목</th>
             <th>작성자</th>
             <th>작성일</th>
-            <th>답변상태</th>
+            <th>진행도</th>
             <th>조회수</th>
           </tr>
         </thead>
         <tbody>
           {boardList.map((board, index) => (
-            <tr key={board.boardNo}>
-              <td>{index + 1 + (currentPage - 1) * 10}</td>
-              <td>{board.postType}</td>
+            <tr
+              key={board.boardNo}
+              className={styles.clickableRow}
+              onClick={() => navigate(`${path}/${board.boardNo}`)}
+            >
+              <td>{index + 1 + (currentPage - 1) * pagination.limit}</td>
               <td>
-                <Link to={`${path}/${board.boardNo}`}>
-                  <strong>{board.boardTitle}</strong>
-                </Link>
+                <span className={styles.postTypeTag}>{board.postType}</span>
               </td>
+              <td className={styles.titleCell}>{board.boardTitle}</td>
               <td>{board.memberNickname}</td>
               <td>{board.boardDate}</td>
-              <td style={{ color: board.boardAnswer === "Y" ? "green" : "gray" }}>
-              {board.boardAnswer === "Y" ? "답변완료" : "답변대기"}
-</td>
+              <td>
+                <span
+                  className={
+                    board.boardAnswer === "Y" ? styles.answeredStatus : ""
+                  }
+                >
+                  {board.boardAnswer === "Y" ? "답변완료" : "답변 전"}
+                </span>
+              </td>
               <td>{board.boardReadCount}</td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      {pagination && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={pagination.maxPage}
-          onPageChange={handlePageChange}
-        />
-      )}
+      <div className={styles.bottomContainer}>
+        {token && (isAdmin || isUser) && (
+          <button
+            className={styles.writeButton}
+            onClick={() => navigate(`${path}/write`)}
+          >
+            글쓰기
+          </button>
+        )}
+      </div>
 
-      {(isAdmin || isUser) && (
-        <button
-          onClick={() => navigate(`${path}/write`)}
-          style={{ marginTop: "1rem", float: "right" }}
-        >
-          글 작성
-        </button>
-      )}
+      <div className={styles.paginationContainer}>
+        {pagination && pagination.maxPage > 1 && (
+          <>
+            <button
+              onClick={() => handlePageChange(1)}
+              disabled={currentPage === 1}
+            >
+              &lt;&lt;
+            </button>
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              &lt;
+            </button>
+            {pageNumbers.map((number) => (
+              <button
+                key={number}
+                onClick={() => handlePageChange(number)}
+                className={
+                  currentPage === number ? styles.activePage : styles.pageNumber
+                }
+              >
+                {number}
+              </button>
+            ))}
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === pagination.maxPage}
+            >
+              &gt;
+            </button>
+            <button
+              onClick={() => handlePageChange(pagination.maxPage)}
+              disabled={currentPage === pagination.maxPage}
+            >
+              &gt;&gt;
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 };

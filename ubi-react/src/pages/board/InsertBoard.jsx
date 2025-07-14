@@ -5,6 +5,7 @@ import "summernote/dist/summernote-lite.css";
 import $ from "jquery";
 import "summernote/dist/summernote-lite";
 import useAuthStore from "../../stores/useAuthStore";
+import styles from "../../styles/board/InsertBoard.module.css";
 
 const boardCodeMap = {
   noticeBoard: 1,
@@ -13,30 +14,29 @@ const boardCodeMap = {
 
 const InsertBoard = () => {
   const { token, memberNo: loginMemberNo } = useAuthStore();
-  const { boardCode } = useParams(); // "noticeBoard" or "askBoard"
+  const { boardCode } = useParams();
   const navigate = useNavigate();
 
   const numericBoardCode = boardCodeMap[boardCode];
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [postType, setPostType] = useState(""); // 후에 useEffect에서 기본값 지정
-  const [images, setImages] = useState([]);
+  const [postType, setPostType] = useState("");
+  const [images, setImages] = useState([]); // 이 상태는 현재 UI에서 사용되지 않지만, 로직을 위해 유지합니다.
 
   const summernoteInitialized = useRef(false);
-  const contentRef = useRef("");
 
+  // Summernote 이미지 업로더 (기존 기능 유지)
   const imageUploader = (file) => {
     const formData = new FormData();
     formData.append("file", file);
-
     axios
       .post("/api/editBoard/image-upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
       .then((res) => {
         const imageUrl = `/images/board/${res.data}`;
-        $("#summernote").summernote("insertImage", imageUrl, function ($image) {
+        $("#summernote").summernote("insertImage", imageUrl, ($image) => {
           $image.css("width", "100%");
         });
       })
@@ -46,7 +46,7 @@ const InsertBoard = () => {
       });
   };
 
-  // ✅ 게시판 유형에 따라 postType 초기값 설정
+  // 게시판 유형에 따라 postType 초기값 설정 (기존 기능 유지)
   useEffect(() => {
     if (numericBoardCode === 1) {
       setPostType("공지");
@@ -55,10 +55,12 @@ const InsertBoard = () => {
     }
   }, [numericBoardCode]);
 
+  // Summernote 초기화 (기존 기능 유지)
   useEffect(() => {
     if (!summernoteInitialized.current) {
       $("#summernote").summernote({
-        height: 300,
+        height: 400,
+        placeholder: "내용을 입력하세요.",
         toolbar: [
           ["style", ["style"]],
           ["font", ["bold", "italic", "underline", "strikethrough", "clear"]],
@@ -69,20 +71,14 @@ const InsertBoard = () => {
           ["insert", ["link", "picture"]],
         ],
         callbacks: {
-          onChange: (contents) => {
-            contentRef.current = contents;
-            setContent(contents);
-          },
+          onChange: (contents) => setContent(contents),
           onImageUpload: (files) => {
-            for (const file of files) {
-              imageUploader(file);
-            }
+            for (const file of files) imageUploader(file);
           },
         },
       });
       summernoteInitialized.current = true;
     }
-
     return () => {
       if (summernoteInitialized.current) {
         $("#summernote").summernote("destroy");
@@ -91,10 +87,7 @@ const InsertBoard = () => {
     };
   }, []);
 
-  const onFileChange = (e) => {
-    setImages(Array.from(e.target.files));
-  };
-
+  // 폼 제출 핸들러 (기존 기능 유지)
   const handleSubmit = () => {
     if (!title.trim()) {
       alert("제목을 입력해주세요.");
@@ -110,7 +103,6 @@ const InsertBoard = () => {
     }
 
     const formData = new FormData();
-
     const boardObj = {
       boardTitle: title,
       boardContent: content,
@@ -124,15 +116,11 @@ const InsertBoard = () => {
       new Blob([JSON.stringify(boardObj)], { type: "application/json" })
     );
 
-    images.forEach((file) => {
-      formData.append("images", file);
-    });
+    images.forEach((file) => formData.append("images", file));
 
     fetch(`/api/editBoard/${numericBoardCode}`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
       body: formData,
     })
       .then(async (res) => {
@@ -145,7 +133,6 @@ const InsertBoard = () => {
       .then((data) => {
         if (data && data.boardNo) {
           alert("작성 성공");
-          console.log("✅ 작성 결과:", data);
           const boardNo = data.boardNo;
           navigate(`/${boardCode}/${boardNo}`);
         } else {
@@ -159,41 +146,47 @@ const InsertBoard = () => {
   };
 
   return (
-    <div>
-      <input
-        type="text"
-        placeholder="제목을 입력하세요"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        style={{ marginRight: 10 }}
-      />
+    <div className={styles.container}>
+      <div className={styles.inputGroup}>
+        <select
+          name="postType"
+          value={postType}
+          onChange={(e) => setPostType(e.target.value)}
+          className={styles.postTypeSelect}
+        >
+          {numericBoardCode === 1 && (
+            <>
+              <option value="공지">공지</option>
+              <option value="이벤트">이벤트</option>
+              <option value="중요">중요</option>
+            </>
+          )}
+          {numericBoardCode === 2 && (
+            <>
+              <option value="문의">문의</option>
+              <option value="신고">신고</option>
+            </>
+          )}
+        </select>
+        <input
+          type="text"
+          placeholder="제목을 입력하세요"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className={styles.titleInput}
+        />
+      </div>
 
-      <select
-        name="postType"
-        value={postType}
-        onChange={(e) => setPostType(e.target.value)}
-      >
-        {numericBoardCode === 1 && (
-          <>
-            <option value="공지">공지</option>
-            <option value="이벤트">이벤트</option>
-            <option value="중요">중요</option>
-          </>
-        )}
-        {numericBoardCode === 2 && (
-          <>
-            <option value="문의">문의</option>
-            <option value="신고">신고</option>
-          </>
-        )}
-      </select>
+      <div id="summernote" />
 
-      <div id="summernote" style={{ marginTop: 10 }} />
-
-      <button onClick={() => navigate(-1)}>목록</button>
-      <button onClick={handleSubmit} style={{ marginTop: 10 }}>
-        글쓰기 완료
-      </button>
+      <div className={styles.buttonContainer}>
+        <button onClick={() => navigate(-1)} className={styles.listButton}>
+          목록
+        </button>
+        <button onClick={handleSubmit} className={styles.submitButton}>
+          글쓰기 완료
+        </button>
+      </div>
     </div>
   );
 };
