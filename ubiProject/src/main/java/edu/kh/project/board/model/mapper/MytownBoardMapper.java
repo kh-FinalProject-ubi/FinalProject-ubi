@@ -108,6 +108,8 @@ public interface MytownBoardMapper {
 
 	int insertBoardImage1(BoardImage image);
 	
+	
+	
 	// 복지시설 존재 여부
     int existsFacilityById(String id);
 

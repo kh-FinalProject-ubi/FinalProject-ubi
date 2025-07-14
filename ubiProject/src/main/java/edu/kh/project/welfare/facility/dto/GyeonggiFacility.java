@@ -93,6 +93,8 @@ public class GyeonggiFacility {
 
     @JsonProperty("SIGUN_NM")
     private String sigunNm;
+    
+    private String serviceId; // 서비스 아이디 추가 
 
     // 내부 주소 기반 필터용
     private String regionCity;

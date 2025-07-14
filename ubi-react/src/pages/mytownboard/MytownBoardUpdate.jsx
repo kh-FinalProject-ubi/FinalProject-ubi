@@ -1,36 +1,30 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
-import 'summernote/dist/summernote-lite.css';
-import $ from 'jquery';
-import 'summernote/dist/summernote-lite.js';
-import useAuthStore from '../../stores/useAuthStore';
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
+import "summernote/dist/summernote-lite.css";
+import $ from "jquery";
+import "summernote/dist/summernote-lite.js";
+import useAuthStore from "../../stores/useAuthStore";
 
 function MytownBoardUpdate() {
   const { boardNo } = useParams();
-  const { memberNo: loginMemberNo } = useAuthStore();
+  const { token } = useAuthStore(); // ✅ 토큰 가져오기
   const [board, setBoard] = useState(null);
-  const [boardTitle, setBoardTitle] = useState('');
-  const [boardContent, setBoardContent] = useState('');
+  const [boardTitle, setBoardTitle] = useState("");
+  const [boardContent, setBoardContent] = useState("");
   const uploadedImagesRef = useRef([]);
   const navigate = useNavigate();
-const isInitialSet = useRef(true); // 처음 한 번만 true
-// ✅ handleUpdate 내부에서 imageList를 객체 형태로 변환
-const imageList = uploadedImagesRef.current.map((url, index) => ({
-  imagePath: url,
-  imageOrder: index
-}));
-
-const [hashtags, setHashtags] = useState("");
+  const isInitialSet = useRef(true);
+  const [hashtags, setHashtags] = useState("");
   const [postTypeCheck, setPostTypeCheck] = useState("");
   const [starRating, setStarRating] = useState(0);
 
-const postTypeCheckOptions = ["자유", "자랑", "복지시설후기", "복지혜택후기"];
-
- const [showFacilityModal, setShowFacilityModal] = useState(false);
+  const postTypeCheckOptions = ["자유", "자랑", "복지시설후기", "복지혜택후기"];
+  const [showFacilityModal, setShowFacilityModal] = useState(false);
   const [showBenefitModal, setShowBenefitModal] = useState(false);
   const [selectedFacilityName, setSelectedFacilityName] = useState("");
   const [selectedFacilityId, setSelectedFacilityId] = useState("");
+
   // 1. 게시글 데이터 불러오기
   useEffect(() => {
     if (!boardNo || isNaN(boardNo)) {
@@ -39,131 +33,132 @@ const postTypeCheckOptions = ["자유", "자랑", "복지시설후기", "복지�
       return;
     }
 
-    axios.get(`/api/board/mytownBoard/${boardNo}`)
-      .then(res => {
+    axios
+      .get(`/api/board/mytownBoard/${boardNo}`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ 토큰 포함
+        },
+      })
+      .then((res) => {
         const data = res.data;
-
-        if (data.memberNo !== loginMemberNo) {
-          alert("작성자만 수정할 수 있습니다.");
-          navigate("/mytownBoard");
-          return;
-        }
 
         setBoard(data);
         setBoardTitle(data.boardTitle);
         setBoardContent(data.boardContent);
 
         setPostTypeCheck(
-  data.postType === "후기"
-    ? data.facilityApiServiceId
-      ? "복지시설후기"
-      : "복지혜택후기"
-    : data.postType
-);
+          data.postType === "후기"
+            ? data.facilityApiServiceId
+              ? "복지시설후기"
+              : "복지혜택후기"
+            : data.postType
+        );
 
-setStarRating(data.starCount || 0);
-setSelectedFacilityId(data.facilityApiServiceId || "");
-setSelectedFacilityName(data.facilityApiServiceId ? "(기존 시설 표시 가능 시 이름 fetch)" : ""); // 선택사항
+        setStarRating(data.starCount || 0);
+        setSelectedFacilityId(data.facilityApiServiceId || "");
+        setSelectedFacilityName(
+          data.facilityApiServiceId ? "(기존 시설 표시 가능 시 이름 fetch)" : ""
+        );
 
-// 1. hashtagList 형태일 경우
-if (Array.isArray(data.hashtagList)) {
-  setHashtags(data.hashtagList.map(tag => `#${tag}`).join(" "));
-}
-// 2. hashtags 필드가 문자열일 경우 (tagUtil.js에서 파생된 경우)
-else if (typeof data.hashtags === "string") {
-  const tagArr = data.hashtags
-    .split(',')
-    .map(t => t.trim())
-    .filter(t => t !== '');
-  setHashtags(tagArr.map(tag => `#${tag}`).join(" "));
-} else {
-  setHashtags("");
-}
-
+        if (Array.isArray(data.hashtagList)) {
+          setHashtags(data.hashtagList.map((tag) => `#${tag}`).join(" "));
+        } else if (typeof data.hashtags === "string") {
+          const tagArr = data.hashtags
+            .split(",")
+            .map((t) => t.trim())
+            .filter((t) => t !== "");
+          setHashtags(tagArr.map((tag) => `#${tag}`).join(" "));
+        } else {
+          setHashtags("");
+        }
       })
-      .catch(err => {
+      .catch((err) => {
         console.error("게시글 불러오기 실패", err);
         alert("게시글 정보를 가져오지 못했습니다.");
         navigate("/mytownBoard");
       });
-  }, [boardNo, loginMemberNo, navigate]);
+  }, [boardNo, navigate, token]);
 
-  // 2. 썸머노트 초기화 (boardContent 준비된 후)
+  // 2. 썸머노트 초기화
   useEffect(() => {
     if (!boardContent) return;
 
-    $('#summernote').summernote({
+    $("#summernote").summernote({
       height: 300,
-        lang: "ko-KR",
- 
+      lang: "ko-KR",
       callbacks: {
         onChange: function (contents) {
-                if (isInitialSet.current) return; // 🔒 첫 설정 이후에만 반영
+          if (isInitialSet.current) return;
           setBoardContent(contents);
         },
         onImageUpload: function (files) {
           const formData = new FormData();
-          formData.append('image', files[0]);
+          formData.append("image", files[0]);
 
           fetch("/api/editboard/mytown/uploadImage", {
             method: "POST",
-            body: formData
+            body: formData,
           })
-            .then(res => res.text())
-            .then(imageUrl => {
-              $('#summernote').summernote('insertImage', imageUrl);
+            .then((res) => res.text())
+            .then((imageUrl) => {
+              $("#summernote").summernote("insertImage", imageUrl);
               uploadedImagesRef.current.push(imageUrl);
             })
-            .catch(err => {
+            .catch((err) => {
               console.error("이미지 업로드 실패", err);
             });
-        }
+        },
       },
       toolbar: [
-        ['style', ['bold', 'italic', 'underline']],
-        ['para', ['ul', 'ol']],
-        ['insert', ['link', 'picture']],
-        ['misc', ['undo', 'redo']]
-      ]
+        ["style", ["bold", "italic", "underline"]],
+        ["para", ["ul", "ol"]],
+        ["insert", ["link", "picture"]],
+        ["misc", ["undo", "redo"]],
+      ],
     });
 
-    $('#summernote').summernote('code', boardContent);
+    $("#summernote").summernote("code", boardContent);
+    isInitialSet.current = false;
   }, [boardContent]);
 
   // 3. 수정 요청 처리
   const handleUpdate = async () => {
-    const updatedContent = $('#summernote').summernote('code');
+    const updatedContent = $("#summernote").summernote("code");
 
-  // ✅ 이미지 리스트 생성
-  const imageList = uploadedImagesRef.current.map((url, index) => {
-    const segments = url.split('/');
-    return {
-      imagePath: '/' + segments.slice(0, -1).join('/'),
-      imageName: segments[segments.length - 1],
-      imageOrder: index
-    };
-  });
+    const imageList = uploadedImagesRef.current.map((url, index) => {
+      const segments = url.split("/");
+      return {
+        imagePath: "/" + segments.slice(0, -1).join("/"),
+        imageName: segments[segments.length - 1],
+        imageOrder: index,
+      };
+    });
 
-
-
-const hashtagList = hashtags
-  .split(" ")
-  .map((tag) => tag.replace("#", "").trim())
-  .filter((tag) => tag.length > 0);;
+    const hashtagList = hashtags
+      .split(" ")
+      .map((tag) => tag.replace("#", "").trim())
+      .filter((tag) => tag.length > 0);
 
     const updatedBoard = {
-      boardTitle: boardTitle,
+      boardTitle,
       boardContent: updatedContent,
-      starCount: starRating, 
-      postType: postTypeCheck, 
-      memberNo: board?.memberNo ?? loginMemberNo,
-     hashtagList, // ✅
-          imageList // ✅ 추가!
-
+      starCount: starRating,
+      postType: postTypeCheck,
+      hashtagList,
+      imageList,
     };
 
     try {
-      await axios.post(`/api/editboard/mytown/${boardNo}/update`, updatedBoard);
+      await axios.post(
+        `/api/editboard/mytown/${boardNo}/update`,
+        updatedBoard,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       alert("수정이 완료되었습니다.");
       navigate(`/mytownBoard/${boardNo}`);
     } catch (err) {
@@ -175,9 +170,15 @@ const hashtagList = hashtags
   if (!board) return <p>로딩 중...</p>;
 
   return (
-    <div className="board-update-container" style={{ maxWidth: "800px", margin: "0 auto" }}>
+    <div
+      className="board-update-container"
+      style={{ maxWidth: "800px", margin: "0 auto" }}
+    >
       <h2>게시글 수정</h2>
-   <table border="1" border="1" style={{ width: "100%", marginTop: "20px", borderCollapse: "collapse" }}>
+      <table
+        border="1"
+        style={{ width: "100%", marginTop: "20px", borderCollapse: "collapse" }}
+      >
         <tbody>
           <tr>
             <th>작성유형</th>
@@ -194,18 +195,25 @@ const hashtagList = hashtags
                   {type}
                   {postTypeCheck === type && type === "복지시설후기" && (
                     <>
-                      <button onClick={() => setShowFacilityModal(true)}>복지시설 선택</button>
-                      {selectedFacilityName && <span> 선택: {selectedFacilityName}</span>}
+                      <button onClick={() => setShowFacilityModal(true)}>
+                        복지시설 선택
+                      </button>
+                      {selectedFacilityName && (
+                        <span> 선택: {selectedFacilityName}</span>
+                      )}
                     </>
                   )}
                   {postTypeCheck === type && type === "복지혜택후기" && (
-                    <button onClick={() => setShowBenefitModal(true)}>복지혜택 선택</button>
+                    <button onClick={() => setShowBenefitModal(true)}>
+                      복지혜택 선택
+                    </button>
                   )}
                 </label>
               ))}
             </td>
           </tr>
-          {(postTypeCheck === "복지시설후기" || postTypeCheck === "복지혜택후기") && (
+          {(postTypeCheck === "복지시설후기" ||
+            postTypeCheck === "복지혜택후기") && (
             <tr>
               <th>별점</th>
               <td>
@@ -213,12 +221,18 @@ const hashtagList = hashtags
                   <span
                     key={star}
                     onClick={() => setStarRating(star)}
-                    style={{ cursor: "pointer", color: starRating >= star ? "orange" : "lightgray", fontSize: "24px" }}
+                    style={{
+                      cursor: "pointer",
+                      color: starRating >= star ? "orange" : "lightgray",
+                      fontSize: "24px",
+                    }}
                   >
                     ★
                   </span>
                 ))}
-                <span style={{ marginLeft: "10px" }}>{starRating ? `${starRating}점` : "선택 안됨"}</span>
+                <span style={{ marginLeft: "10px" }}>
+                  {starRating ? `${starRating}점` : "선택 안됨"}
+                </span>
               </td>
             </tr>
           )}
@@ -242,12 +256,16 @@ const hashtagList = hashtags
         value={boardTitle}
         onChange={(e) => setBoardTitle(e.target.value)}
         placeholder="제목"
-        style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
+        style={{ width: "100%", marginBottom: "10px", padding: "8px" }}
       />
 
       <div id="summernote"></div>
 
-      <button onClick={handleUpdate} className="submit-btn" style={{ marginTop: '20px' }}>
+      <button
+        onClick={handleUpdate}
+        className="submit-btn"
+        style={{ marginTop: "20px" }}
+      >
         수정 완료
       </button>
     </div>

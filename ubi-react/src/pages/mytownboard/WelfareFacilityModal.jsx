@@ -6,6 +6,7 @@ import {
   getCombinedFacilities,
   getFilteredFacilities,
 } from "../../utils/welfarefacilityMap";
+import { normalizeRegion } from "../../utils/regionUtils"; // ✅ 추가
 import "../../styles/welfarefacility/FacilitySearchPage.css";
 
 export default function WelfareFacilityModal({
@@ -18,15 +19,21 @@ export default function WelfareFacilityModal({
   const [category, setCategory] = useState("전체");
   const [serviceType, setServiceType] = useState("전체");
 
+  // ✅ 시군구 정규화 적용
+  const { regionCity: normCity, regionDistrict: normDistrict } =
+    normalizeRegion(city, district);
+
   const {
     data: welfareData = [],
     loading: welfareLoading,
     error,
-  } = useFacilities("old", category, city, district);
+  } = useFacilities("old", category, normCity, normDistrict); // ✅ 정규화된 값 사용
+
   const { data: sportsData = [], loading: sportsLoading } = useSportsFacilities(
-    city,
-    district
+    normCity,
+    normDistrict // ✅ 동일하게 적용
   );
+
   const loading = welfareLoading || sportsLoading;
 
   const combinedFacilities = getCombinedFacilities(
@@ -39,8 +46,8 @@ export default function WelfareFacilityModal({
     keyword,
     serviceType,
     category,
-    selectedDistrict: district,
-    selectedCity: city,
+    selectedDistrict: normDistrict,
+    selectedCity: normCity,
   });
 
   return (
@@ -50,7 +57,7 @@ export default function WelfareFacilityModal({
         style={{ maxHeight: "80vh", overflowY: "auto", padding: "20px" }}
       >
         <h2>
-          복지시설 선택 (작성자 지역: {city} {district})
+          복지시설 선택 (작성자 지역: {normCity} {normDistrict})
         </h2>
         <button
           onClick={onClose}
@@ -127,7 +134,6 @@ export default function WelfareFacilityModal({
               facility["SVCID"] ||
               "ID 없음";
 
-            // 매핑 함수
             const mapToDisplayCategory = (rawType) => {
               return (
                 Object.entries(categoryMap).find(([key, keywords]) =>
@@ -135,16 +141,17 @@ export default function WelfareFacilityModal({
                 )?.[0] || "기타"
               );
             };
+
             const rowcategory =
               facility["category"] ||
               facility["시설종류명"] ||
               facility["type"] ||
               "기타";
-
-            const category = mapToDisplayCategory(rowcategory); // ✅ 매핑된 카테고리 사
+            const category = mapToDisplayCategory(rowcategory);
 
             const address =
               facility["address"] || facility["ADDR"] || facility["주소"] || "";
+
             return (
               <li
                 key={`${name}-${id}-${idx}`}

@@ -87,22 +87,18 @@ function MyTownBoardDetail() {
       return;
     }
 
-    const memberParam = loginMemberNo ? `?memberNo=${loginMemberNo}` : "";
-
-    fetch(`/api/board/mytownBoard/${boardNo}${memberParam}`)
-      .then(async (res) => {
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(`API error: ${res.status} - ${text}`);
-        }
-        return res.json();
+    axios
+      .get(`/api/board/mytownBoard/${boardNo}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       })
-      .then((data) => {
+      .then((res) => {
+        const data = res.data;
         setBoard(data);
         setLikeCount(data.likeCount);
         setLiked(data.likeCheck === 1);
         setReportedByMe(data.reportedByMe === "Y");
-        console.log(" 서버 응답:", data);
       })
       .catch((err) => {
         console.error("Error:", err);

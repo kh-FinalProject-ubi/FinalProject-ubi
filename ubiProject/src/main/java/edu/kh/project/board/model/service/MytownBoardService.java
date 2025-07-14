@@ -77,6 +77,8 @@ public interface MytownBoardService {
 	 */
 	int updateBoard(Board dto);
 	
+	int getBoardWriterNo(int boardNo);
+	
 	/** 신고
 	 * @param boardNO
 	 * @param memberNo
@@ -85,6 +87,8 @@ public interface MytownBoardService {
 	boolean reportBoard(int boardNO, int memberNo);
 
 	String checkBoardReportStatus(int boardNo, int memberNo);
+
+
 	
 
 	/**
