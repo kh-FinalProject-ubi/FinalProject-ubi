@@ -111,16 +111,13 @@ public interface MemberMapper {
 	void extendSuspensionEnd(@Param("targetMemberNo") int targetMemberNo, @Param("end") LocalDateTime end);
 
 	// 아이디 찾기
-	String findMemberId(@Param("name") String name, @Param("email") String email);
+	String selectMemberIdByNameAndEmail(@Param("name") String name, @Param("email") String email);
 
-	// 받아온 아이디 DB에서 비교하기
-	Member selectMemberByIdAndEmail(@Param("memberId") String memberId, @Param("email") String email);
+	// 아이디, 이메일 확인하기
+	int checkMemberIdAndEmail(@Param("memberId") String memberId, @Param("email") String email);
 
-	// 재설정 받은 비밀번호 업데이트 구문
-	int updatePassword(@Param("memberNo") int memberNo, @Param("newPw") String newPw);
+	// 비밀번호 업데이트
+	int updatePassword(@Param("memberId") String memberId, @Param("encPw") String encPw);
 
-	String selectMemberRegionCity(int memberNo);
-
-	String selectMemberRegionDistrict(int memberNo);
 
 }

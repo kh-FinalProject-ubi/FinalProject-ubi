@@ -292,35 +292,22 @@ public class MemberServiceImpl implements MemberService {
 		return false;
 	}
 	
-	  public String findMemberId(String name, String email) {
-	        return mapper.findMemberId(name, email);
-	    }
-
+	@Override
+	public String findIdByNameAndEmail(String name, String email) {
+		return mapper.selectMemberIdByNameAndEmail(name, email);
+	}
 
 	@Override
-	public boolean resetPassword(String memberId, String email) {
-	    Member member = mapper.selectMemberByIdAndEmail(memberId, email);
-	    if (member == null) return false;
+	public boolean resetPassword(String memberId, String email, String newPassword) {
+		// 사용자 검증
+		int count = mapper.checkMemberIdAndEmail(memberId, email);
+		if (count == 0) return false;
 
-	    String tempPw = generateTempPassword();
-	    String encryptedPw = bcrypt.encode(tempPw); // 기존 bcrypt 인스턴스 사용
-
-	    mapper.updatePassword(member.getMemberNo(), encryptedPw);
-
-	    try {
-	        SimpleMailMessage message = new SimpleMailMessage();
-	        message.setTo(email);
-	        message.setSubject("[UBI] 임시 비밀번호 안내");
-	        message.setText("임시 비밀번호: " + tempPw + "\n로그인 후 반드시 비밀번호를 변경해주세요.");
-	        message.setFrom("noreply@ubi.com");
-	        mailSender.send(message);
-	        return true;
-	    } catch (Exception e) {
-	        log.error("임시 비밀번호 이메일 전송 실패", e);
-	        return false;
-	    }
+		// 비밀번호 암호화 후 업데이트
+		String encPw = bcrypt.encode(newPassword);
+		return mapper.updatePassword(memberId, encPw) > 0;
 	}
-	
+
 	private String generateTempPassword() {
 	    return UUID.randomUUID().toString().substring(0, 10);
 	}

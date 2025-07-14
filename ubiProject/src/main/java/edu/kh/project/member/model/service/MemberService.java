@@ -4,21 +4,24 @@ import edu.kh.project.member.model.dto.Member;
 
 public interface MemberService {
 
-    /** 로그인 서비스 (ID / PW 기반) */
+	/** 로그인 서비스 (ID / PW 기반) */
 	Member login(String memberId, String memberPw);
-	
-    /** 이메일 중복 검사 */
-    int checkEmail(String memberEmail);
 
-    /** 닉네임 중복 검사 */
-    int checkNickname(String memberNickname);
+	/** 이메일 중복 검사 */
+	int checkEmail(String memberEmail);
 
-    /** 회원 가입 서비스 */
-    int signup(Member inputMember);
+	/** 닉네임 중복 검사 */
+	int checkNickname(String memberNickname);
 
-    /** 카카오 로그인 - 토큰 기반 처리 등 확장 가능 
-     * @throws Exception */
-    Member kakaoLogin(String authorizationCode) throws Exception;
+	/** 회원 가입 서비스 */
+	int signup(Member inputMember);
+
+	/**
+	 * 카카오 로그인 - 토큰 기반 처리 등 확장 가능
+	 * 
+	 * @throws Exception
+	 */
+	Member kakaoLogin(String authorizationCode) throws Exception;
 
 	String createRandomCode();
 
@@ -34,12 +37,9 @@ public interface MemberService {
 	boolean reportMember(int targetMemberNo, int reporterMemberNo, String reason);
 
 	// 아이디 찾기
-	String findMemberId(String name, String email);
+	String findIdByNameAndEmail(String name, String email);
 
-	// 비밀번호 리셋 구문
-	boolean resetPassword(String memberId, String email);
-
-
-
+	// 비밀번호 재설정
+	boolean resetPassword(String memberId, String email, String newPassword);
 
 }

@@ -284,25 +284,30 @@
 		AND REPORT_STATUS = 'Y'
 	</update>
 
-	<select id="selectMemberIdByNameAndEmail" resultType="string">
-		SELECT MEMBER_ID
+	<!-- 아이디 찾기 -->
+	<select id="selectMemberIdByNameAndEmail" resultType="String">
+		SELECT
+		MEMBER_ID
 		FROM MEMBER
 		WHERE MEMBER_NAME = #{name}
-		AND MEMBER_EMAIL = #{email}
+		AND MEMBER_EMAIL =
+		#{email}
 	</select>
 
-	<!-- 아이디 비밀번호 찾기 -->
-	<select id="findMemberId" resultType="Member">
-		SELECT *
+	<!-- 아이디 + 이메일 존재 확인 -->
+	<select id="checkMemberIdAndEmail" resultType="int">
+		SELECT COUNT(*)
 		FROM MEMBER
 		WHERE MEMBER_ID = #{memberId}
 		AND MEMBER_EMAIL = #{email}
 	</select>
 
+	<!-- 비밀번호 업데이트 -->
 	<update id="updatePassword">
 		UPDATE MEMBER
-		SET MEMBER_PW = #{newPw}
-		WHERE MEMBER_NO = #{memberNo}
+		SET MEMBER_PW = #{encPw}
+		WHERE
+		MEMBER_ID = #{memberId}
 	</update>
 
 </mapper>

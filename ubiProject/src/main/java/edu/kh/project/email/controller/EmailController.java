@@ -20,7 +20,7 @@ public class EmailController {
 	
 	@ResponseBody
 	@PostMapping("signup")
-	public int signup(@RequestBody String email) {
+	public int signup(@RequestBody String email) throws Exception {
 		
 		String authKey = service.sendEmail("signup", email);
 		

@@ -22,6 +22,10 @@ const FindAccount = ({ type, onBack }) => {
     newPwCheck: "",
   });
 
+  const [pwErrors, setPwErrors] = useState({
+    mismatch: "",
+  });
+
   useEffect(() => {
     if (type === "id") setStep("id-find");
     else if (type === "pw") setStep("pw-find");
@@ -30,21 +34,30 @@ const FindAccount = ({ type, onBack }) => {
   const sendCode = async (email, target) => {
     try {
       const res = await fetch(
-        `/api/sendCode?email=${encodeURIComponent(email)}&type=${target}`
+        `/api/member/sendCode?email=${encodeURIComponent(email)}&type=${target}`
       );
-      const data = await res.json();
 
-      if (res.ok) {
-        alert(`${email}로 인증번호가 발송되었습니다.`);
-        if (target === "id")
-          setIdForm({
-            ...idForm,
-            sentCode: data.code,
-          });
-        // 서버에서 보내준 코드 저장 (보안상 보통 안보내주고 클라이언트는 인증번호 입력만 처리)
-        else setPwForm({ ...pwForm, sentCode: data.code });
+      const text = await res.text();
+
+      if (!res.ok) {
+        alert("실패: " + text);
+        return;
+      }
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        alert("서버 응답 형식이 잘못되었습니다.");
+        return;
+      }
+
+      alert(`${email}로 인증번호가 발송되었습니다.`);
+
+      if (target === "id") {
+        setIdForm((prev) => ({ ...prev, sentCode: data.code }));
       } else {
-        alert(data.message || "인증번호 전송 실패");
+        setPwForm((prev) => ({ ...prev, sentCode: data.code }));
       }
     } catch (e) {
       alert("서버와 통신 중 오류가 발생했습니다.");
@@ -53,7 +66,7 @@ const FindAccount = ({ type, onBack }) => {
 
   const verifyCode = async (input, target) => {
     try {
-      const res = await fetch("/api/verifyCode", {
+      const res = await fetch("/api/member/verifyCode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -61,9 +74,10 @@ const FindAccount = ({ type, onBack }) => {
           code: input,
         }),
       });
+
       const data = await res.json();
       return res.ok && data.verified;
-    } catch {
+    } catch (e) {
       return false;
     }
   };
@@ -88,18 +102,21 @@ const FindAccount = ({ type, onBack }) => {
 
   const resetPw = async () => {
     if (pwForm.newPw !== pwForm.newPwCheck) {
-      alert("비밀번호가 일치하지 않습니다.");
+      setPwErrors({ mismatch: "비밀번호가 일치하지 않습니다." });
       return;
     }
+
     try {
-      const res = await fetch("/api/member/find-pw", {
+      const res = await fetch("/api/member/reset-pw", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           memberId: pwForm.memberId,
+          email: pwForm.email,
           newPassword: pwForm.newPw,
         }),
       });
+
       if (res.ok) {
         alert("비밀번호가 성공적으로 재설정되었습니다.");
         setStep("pw-reset-success");
@@ -131,6 +148,7 @@ const FindAccount = ({ type, onBack }) => {
       newPw: "",
       newPwCheck: "",
     });
+    setPwErrors({ mismatch: "" });
     onBack();
   };
 
@@ -164,12 +182,15 @@ const FindAccount = ({ type, onBack }) => {
                 type="text"
                 placeholder="인증번호 입력"
                 value={idForm.code}
-                onChange={(e) => setIdForm({ ...idForm, code: e.target.value })}
+                onChange={(e) =>
+                  setIdForm({ ...idForm, code: e.target.value })
+                }
               />
               <button
-                onClick={() => {
-                  if (verifyCode(idForm.code, idForm.sentCode)) {
-                    setIdForm({ ...idForm, foundId: "sampleUser123" }); // 가상 ID
+                onClick={async () => {
+                  const ok = await verifyCode(idForm.code, "id");
+                  if (ok) {
+                    await findId();
                   } else {
                     alert("인증번호가 올바르지 않습니다.");
                   }
@@ -205,7 +226,9 @@ const FindAccount = ({ type, onBack }) => {
             type="text"
             placeholder="아이디"
             value={pwForm.memberId}
-            onChange={(e) => setPwForm({ ...pwForm, memberId: e.target.value })}
+            onChange={(e) =>
+              setPwForm({ ...pwForm, memberId: e.target.value })
+            }
           />
           <input
             type="email"
@@ -223,11 +246,14 @@ const FindAccount = ({ type, onBack }) => {
                 type="text"
                 placeholder="인증번호 입력"
                 value={pwForm.code}
-                onChange={(e) => setPwForm({ ...pwForm, code: e.target.value })}
+                onChange={(e) =>
+                  setPwForm({ ...pwForm, code: e.target.value })
+                }
               />
               <button
-                onClick={() => {
-                  if (verifyCode(pwForm.code, pwForm.sentCode)) {
+                onClick={async () => {
+                  const ok = await verifyCode(pwForm.code, "pw");
+                  if (ok) {
                     setPwForm({ ...pwForm, verified: true });
                   } else {
                     alert("인증번호가 올바르지 않습니다.");
@@ -245,18 +271,23 @@ const FindAccount = ({ type, onBack }) => {
                 type="password"
                 placeholder="새 비밀번호"
                 value={pwForm.newPw}
-                onChange={(e) =>
-                  setPwForm({ ...pwForm, newPw: e.target.value })
-                }
+                onChange={(e) => {
+                  setPwForm({ ...pwForm, newPw: e.target.value });
+                  setPwErrors({ mismatch: "" });
+                }}
               />
               <input
                 type="password"
                 placeholder="새 비밀번호 확인"
                 value={pwForm.newPwCheck}
-                onChange={(e) =>
-                  setPwForm({ ...pwForm, newPwCheck: e.target.value })
-                }
+                onChange={(e) => {
+                  setPwForm({ ...pwForm, newPwCheck: e.target.value });
+                  setPwErrors({ mismatch: "" });
+                }}
               />
+              {pwErrors.mismatch && (
+                <span className="error-message">{pwErrors.mismatch}</span>
+              )}
               <button onClick={resetPw}>비밀번호 재설정</button>
             </>
           )}
