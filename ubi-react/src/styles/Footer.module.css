@@ -1,0 +1,28 @@
+.siteFooter {
+  background-color: #ffdd44; /* 피그마 노란색 */
+  color: #333;
+  padding: 2rem 15%; /* 다른 페이지와 동일하게 좌우 여백 적용 */
+  font-size: 0.9rem;
+  line-height: 1.6;
+  box-sizing: border-box;
+}
+
+.siteFooterInner {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.siteFooterColumn {
+  flex: 1 1 250px; /* 기본 너비 250px, 공간이 남으면 늘어남 */
+  margin-bottom: 1rem;
+}
+
+.siteFooterColumn strong {
+  font-size: 1.1rem;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 0.5rem;
+}

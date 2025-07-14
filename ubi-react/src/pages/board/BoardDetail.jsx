@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import useAuthStore from "../../stores/useAuthStore";
 import CommentSection from "../comment/Comment";
+import styles from "../../styles/board/BoardDetail.module.css";
 
 const BoardDetail = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ const BoardDetail = () => {
   const boardCodeMap = {
     noticeBoard: 1,
     askBoard: 2,
+    mytownBoard: 3, // "우리 동네 좋아요" 게시판 코드 추가
   };
   const boardCode = boardCodeMap[boardPath];
 
@@ -21,8 +23,8 @@ const BoardDetail = () => {
 
   const isAdmin = role === "ADMIN";
   const isWriter = loginMemberNo === board?.memberNo;
-  const isNotice = board?.boardType === 1;
 
+  // 게시글 상세 조회 (기존 로직 유지)
   useEffect(() => {
     if (!boardCode) {
       if (!hasAlerted) {
@@ -33,16 +35,6 @@ const BoardDetail = () => {
       return;
     }
 
-    if (!token && boardCode === 2) {
-      if (!hasAlerted) {
-        alert("로그인이 필요합니다.");
-        setHasAlerted(true);
-      }
-      navigate(`/${boardPath}`);
-      return;
-    }
-
-    // 게시판 상세 조회
     const fetchBoard = async () => {
       try {
         const res = await axios.get(`/api/board/${boardCode}/${boardNo}`, {
@@ -51,9 +43,10 @@ const BoardDetail = () => {
 
         const boardData = res.data.board;
 
+        // 문의게시판 게시글 권한 확인 (수정된 부분)
         if (
-          boardCode === 2 &&
-          !(loginMemberNo === boardData.memberNo || isAdmin)
+          boardCode === 2 && // 문의게시판이고,
+          !(loginMemberNo === boardData.memberNo || isAdmin) // 작성자나 관리자가 아니라면
         ) {
           if (!hasAlerted) {
             alert("해당 게시글을 볼 권한이 없습니다.");
@@ -84,101 +77,103 @@ const BoardDetail = () => {
     boardCode,
     boardNo,
     token,
-    role,
     loginMemberNo,
     navigate,
     boardPath,
     hasAlerted,
+    isAdmin,
   ]);
+
+  // 게시글 삭제 핸들러
+  const handleDelete = () => {
+    if (window.confirm("정말 삭제하시겠습니까?")) {
+      axios
+        .delete(`/api/editBoard/${boardCode}/${boardNo}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then(() => {
+          alert("삭제되었습니다.");
+          navigate(`/${boardPath}`);
+        })
+        .catch(() => alert("삭제 실패"));
+    }
+  };
 
   if (loading) return <p>로딩 중...</p>;
   if (!board) return <p>게시글 정보를 불러올 수 없습니다.</p>;
 
   return (
-    <main className="container">
-      <h1>{isNotice ? "공지게시판" : "문의게시판"}</h1>
+    <main className={styles.container}>
+      <h2 className={styles.pageTitle}>
+        {boardPath === "noticeBoard" && "공지사항"}
+        {boardPath === "askBoard" && "문의게시판"}
+        {boardPath === "mytownBoard" && "우리 동네 좋아요"}
+      </h2>
 
-      <section className="board-view">
-        <h2>[{board.postType}]</h2>
-        <h2 className="view-title">{board.boardTitle}</h2>
-
-        <div className="content-box">
-          <div
-            className="board-content"
-            dangerouslySetInnerHTML={{ __html: board.boardContent }}
-          ></div>
-
-          <div className="image-list">
-            {board.imageList?.map((img, idx) => {
-              const encodedName = encodeURIComponent(img.imageName);
-              const filePath = `http://localhost:8080${img.imagePath}${encodedName}`;
-              return (
-                <img
-                  key={idx}
-                  src={filePath}
-                  alt={`게시글 이미지 ${idx + 1}`}
-                  style={{ maxWidth: "100%", marginBottom: "10px" }}
-                />
-              );
-            })}
+      <section>
+        <div className={styles.boardHeader}>
+          <div className={styles.titleContainer}>
+            <h3 className={styles.boardTitle}>{board.boardTitle}</h3>
+            <span className={styles.tag}>{board.postType}</span>
           </div>
-
-          <p>조회수: {board.boardReadCount}</p>
-          <p>작성자 번호: {board.memberNo}</p>
+          <div className={styles.metaContainer}>
+            <div className={styles.userInfo}>
+              <img
+                src={board.memberImg || "/default-profile.png"}
+                alt="프로필"
+                className={styles.profileImg}
+              />
+              <div className={styles.authorInfo}>
+                <span className={styles.authorNickname}>
+                  {board.memberNickname}
+                </span>
+                <span className={styles.boardDate}>{board.boardDate}</span>
+              </div>
+            </div>
+            <div className={styles.stats}>
+              <span>❤️ {board.likeCount || 0}</span>
+              <span>조회 {board.boardReadCount}</span>
+            </div>
+          </div>
         </div>
 
-        <div className="btn-box">
+        <div
+          className={styles.boardContent}
+          dangerouslySetInnerHTML={{ __html: board.boardContent }}
+        ></div>
+
+        <div className={styles.buttonContainer}>
           <button
-            className="btn-yellow"
+            className={styles.listButton}
             onClick={() => navigate(`/${boardPath}`)}
           >
             목록
           </button>
-
           {(isWriter || isAdmin) && (
             <>
               <button
-                className="btn-yellow"
-                onClick={() => {
-                  const path = Object.entries(boardCodeMap).find(
-                    ([, code]) => code === board.boardType
-                  )?.[0];
-                  path
-                    ? navigate(`/${path}/${board.boardNo}/edit`)
-                    : alert("게시판 경로를 찾을 수 없습니다.");
-                }}
+                className={styles.editButton}
+                onClick={() => navigate(`/${boardPath}/${boardNo}/edit`)}
               >
                 수정
               </button>
-
-              <button
-                className="btn-yellow"
-                onClick={() => {
-                  if (window.confirm("정말 삭제하시겠습니까?")) {
-                    axios
-                      .delete(`/api/editBoard/${boardCode}/${boardNo}`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                      })
-                      .then(() => {
-                        alert("삭제되었습니다.");
-                        navigate(`/${boardPath}`);
-                      })
-                      .catch(() => alert("삭제 실패"));
-                  }
-                }}
-              >
+              <button className={styles.deleteButton} onClick={handleDelete}>
                 삭제
               </button>
             </>
           )}
         </div>
-        <CommentSection
-          boardCode={boardCode}
-          boardNo={boardNo}
-          token={token}
-          loginMemberNo={loginMemberNo}
-          role={role}
-        />
+
+        <div className={styles.commentSection}>
+          <h4 className={styles.commentTitle}>댓글</h4>
+          <CommentSection
+            boardCode={boardCode}
+            boardNo={boardNo}
+            token={token}
+            loginMemberNo={loginMemberNo}
+            role={role}
+          />
+        </div>
       </section>
     </main>
   );

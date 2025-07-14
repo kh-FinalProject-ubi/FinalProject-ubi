@@ -1,0 +1,145 @@
+/* --- 전체 레이아웃 --- */
+.container {
+  width: 100%;
+  padding: 2rem 15%;
+  box-sizing: border-box;
+}
+
+.pageTitle {
+  font-size: 16px;
+  font-weight: 400;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+}
+
+/* --- 게시글 상단 정보 --- */
+.boardHeader {
+  margin-bottom: 2rem;
+}
+
+.titleContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.boardTitle {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.tag {
+  background-color: #f1f1f1;
+  color: #555;
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-size: 0.85rem;
+}
+
+.metaContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profileImg {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.authorInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.authorNickname {
+  font-weight: 600;
+}
+
+.boardDate {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.stats {
+  display: flex;
+  gap: 1rem;
+  color: #555;
+}
+
+/* --- 게시글 본문 --- */
+.boardContent {
+  padding: 2rem 0;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  min-height: 200px;
+  line-height: 1.8;
+  font-size: 1rem;
+}
+
+/* Summernote로 작성된 콘텐츠 내부의 이미지 스타일 */
+.boardContent img {
+  max-width: 100%;
+  height: auto;
+  margin: 1rem 0;
+  border-radius: 8px;
+}
+
+/* --- 버튼 컨테이너 --- */
+.buttonContainer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin: 2rem 0;
+}
+
+.listButton,
+.editButton,
+.deleteButton {
+  padding: 0.6em 1.5em;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.listButton {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  color: #333;
+}
+
+.editButton {
+  background-color: #ffc107;
+  border: 1px solid #ffc107;
+  color: #333;
+}
+
+.deleteButton {
+  background-color: #e53e3e;
+  border: 1px solid #e53e3e;
+  color: white;
+}
+
+/* --- 댓글 섹션 (CommentSection 컴포넌트 영역) --- */
+.commentSection {
+  margin-top: 2rem;
+}
+
+.commentTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
