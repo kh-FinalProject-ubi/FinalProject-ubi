@@ -46,6 +46,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                
+                request.setAttribute("memberNo", memberNo.intValue());
+                request.setAttribute("role", role);
 
                 System.out.println("✅ SecurityContext 에 사용자 등록 완료");
             } else {

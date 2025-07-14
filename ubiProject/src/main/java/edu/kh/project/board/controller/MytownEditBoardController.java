@@ -94,10 +94,12 @@ public class MytownEditBoardController {
 
 	    // ✅ 3. 본인이 작성한 글인지 확인 (기존 글 작성자 조회)
 	    int writerNo = Service.getBoardWriterNo(boardNo); // 별도로 mapper에 존재한다고 가정
-	    if (writerNo != tokenMemberNo) {
-	        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("본인이 작성한 글만 수정할 수 있습니다.");
-	    }
+	    
+	    String role = (String) request.getAttribute("role");
 
+	    if (!"ADMIN".equals(role) && writerNo != tokenMemberNo) {
+	        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("관리자 또는 본인만 수정할 수 있습니다.");
+	    }
 	    // ✅ 4. board 정보 세팅
 	    dto.setBoardNo(boardNo);
 	    dto.setMemberNo(tokenMemberNo); // DB 조건절용

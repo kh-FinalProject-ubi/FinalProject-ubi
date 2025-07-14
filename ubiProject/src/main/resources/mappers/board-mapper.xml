@@ -338,7 +338,7 @@
 	</select>
 	
 	<select id="selectBoardCode" resultType="int">
-		SELECT BOARD_CODE
+		SELECT BOARD_TYPE
 		FROM BOARD
 		WHERE BOARD_NO = #{boardNo}
 	</select>
