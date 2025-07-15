@@ -1,10 +1,17 @@
 .container {
   width: 100%;
-  padding-top: 60px;
+  padding-top: 2rem;
   padding-left: 27%;
   padding-right: 27%;
   padding-bottom: 100px;
   box-sizing: border-box;
+}
+
+/* ✅ 페이지 제목 스타일 추가 */
+.pageTitle {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 15px; /* 요청하신 15px 여백 */
 }
 
 .inputGroup {
@@ -41,7 +48,7 @@
 
 .titleInput {
   flex: 1;
-  padding: 7px 15px; /* ✅ padding 값을 조절해 높이를 30px로 변경 */
+  padding: 7px 15px;
   border: none;
   font-size: 1rem;
 }
@@ -82,13 +89,9 @@
 }
 
 .submitButton {
-  background-color: #ffc107;
+  background-color: #ffdd44;
   color: #333;
-  border-color: #ffc107;
-}
-
-.submitButton:hover {
-  background-color: #ffca2c;
+  border-color: #ffdd44;
 }
 
 /* Summernote 에디터 스타일 오버라이드 */

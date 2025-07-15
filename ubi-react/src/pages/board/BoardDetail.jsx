@@ -135,18 +135,20 @@ const BoardDetail = () => {
 
   return (
     <main className={styles.container}>
-      <h2 className={styles.pageTitle}>
-        {boardPath === "noticeBoard" && "공지사항"}
-        {boardPath === "askBoard" && "문의게시판"}
-        {boardPath === "mytownBoard" && "우리 동네 좋아요"}
-      </h2>
+      <div className={styles.pageHeaderContainer}>
+        <h2 className={styles.pageTitle}>
+          {boardPath === "noticeBoard" && "공지사항"}
+          {boardPath === "askBoard" && "문의게시판"}
+          {boardPath === "mytownBoard" && "우리 동네 좋아요"}
+        </h2>
+        <span className={styles.tag}>{board.postType}</span>
+      </div>
 
       <section>
         <div className={styles.boardHeader}>
           <div className={styles.titleContainer}>
             <div className={styles.titleGroup}>
               <h3 className={styles.boardTitle}>{board.boardTitle}</h3>
-              <span className={styles.tag}>{board.postType}</span>
             </div>
             <div className={styles.buttonContainer}>
               {(isWriter || isAdmin) && (
