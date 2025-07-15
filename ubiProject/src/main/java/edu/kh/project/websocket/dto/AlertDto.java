@@ -18,7 +18,7 @@ public class AlertDto {
     private String content;     // 알림 내용
     private String targetUrl;   // 클릭 시 이동할 URL
     private String createdAt;   // 생성 시각 (yyyy-MM-dd HH:mm:ss)
-    private boolean isRead;     // 읽음 여부 (프론트에 boolean으로 전달)
+    private int isRead;     // 읽음 여부 (프론트에 boolean으로 전달)
     private String readAt;      // 읽은 시각 (null이면 안읽음)
     private int boardNo;        // 관련 게시글 번호
 
