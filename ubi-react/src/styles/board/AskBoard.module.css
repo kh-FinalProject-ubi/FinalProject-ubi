@@ -1,7 +1,7 @@
 /* 전체 컨테이너 */
 .container {
   width: 100%;
-  padding: 2rem 15%;
+  padding: 2rem 25%;
   box-sizing: border-box;
 }
 
@@ -95,6 +95,7 @@
   font-size: 0.9rem;
   padding: 0.2rem 0.4rem;
   font-weight: normal;
+  color: #888;
 }
 
 .paginationContainer button:disabled {

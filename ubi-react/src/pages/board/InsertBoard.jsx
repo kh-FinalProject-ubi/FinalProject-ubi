@@ -71,7 +71,27 @@ const InsertBoard = () => {
           ["insert", ["link", "picture"]],
         ],
         callbacks: {
-          onChange: (contents) => setContent(contents),
+          onChange: (contents) => {
+            // HTML 태그 제거하고 글자수만 체크
+            const textLength = $("<div>").html(contents).text().length;
+            if (textLength > 2000) {
+              const trimmed = $("<div>")
+                .html(contents)
+                .text()
+                .substring(0, 2000);
+              $("#summernote").summernote("code", trimmed);
+            } else {
+              setContent(contents);
+            }
+          },
+          onKeydown: (e) => {
+            const textLength = $("<div>")
+              .html($("#summernote").summernote("code"))
+              .text().length;
+            if (textLength >= 2000 && e.key.length === 1) {
+              e.preventDefault();
+            }
+          },
           onImageUpload: (files) => {
             for (const file of files) imageUploader(file);
           },

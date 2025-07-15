@@ -103,30 +103,26 @@ public class BoardServiceImpl implements BoardService {
 	@Override
 	public int boardLike(Map<String, Integer> map) {
 
-		int result = 0;
+	    int result = 0;
 
-		// 1. 좋아요가 체크된 상태인 경우(likeCheck == 1)
-		// -> BOARD_LIKE 테이블에 DELETE 수행
-		if (map.get("likeCheck") == 1) {
+	    // 현재 좋아요 상태 확인
+	    int likeCheck = mapper.checkBoardLike(map);
 
-			result = mapper.deleteBoardLike(map);
+	    if (likeCheck > 0) {
+	        // 이미 좋아요 상태면 삭제
+	        result = mapper.deleteBoardLike(map);
+	    } else {
+	        // 좋아요 안 한 상태면 삽입
+	        result = mapper.insertBoardLike(map);
+	    }
 
-		} else {
-			// 2. 좋아요가 해제된 상태인 경우(likeCheck == 0)
-			// -> BOARD_LIKE 테이블에 INSERT 수행
+	    if (result == 0) {
+	        throw new RuntimeException("좋아요 처리 실패: DB 반영 안 됨 (insert/delete 실패)");
+	    }
 
-			result = mapper.insertBoardLike(map);
-
-		}
-
-		// 3. 다시 해당 게시글의 좋아요 개수를 조회해서 반환
-		if (result > 0) {
-			return mapper.selectLikeCount(map.get("boardNo"));
-		}
-
-		return -1; // 좋아요 처리 실패
+	    return mapper.selectLikeCount(map.get("boardNo"));
 	}
-	
+
 	// 조회수 1 증가 서비스
 	@Override
 	public int updateReadCount(int boardNo) {
@@ -186,4 +182,13 @@ public class BoardServiceImpl implements BoardService {
  	public List<String> selectDBImageList() {
  		return mapper.selectDBImageList();
  	}
+
+ 	public int checkBoardLike(Map<String, Integer> map) {
+ 	    return mapper.checkBoardLike(map);
+ 	}
+
+ 	public int selectLikeCount(int boardNo) {
+ 	    return mapper.selectLikeCount(boardNo);
+ 	}
+ 	
 }
