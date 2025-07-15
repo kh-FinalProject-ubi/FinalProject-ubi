@@ -106,7 +106,7 @@ const LocalBenefitSection = () => {
 
   return (
     <section className={styles.section}>
-      <h2 className={styles.title}>🎁 지역 복지 혜택 모음</h2>
+      <h2 className={styles.title}> 지역 복지 혜택 모음</h2>
 
       {!token ? null : (
         <div className={styles.addressTab}>

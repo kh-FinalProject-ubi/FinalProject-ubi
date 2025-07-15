@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "../../styles/comment/Comment.css";
+import styles from "../../styles/comment/Comment.module.css";
 import CommentModal from "./CommentModal";
 
 const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
@@ -197,35 +197,34 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
 
     return (
       <li key={c.commentNo}>
-        <div className={`comment-item ${reportedByMe ? "reported" : ""}`}>
-          <div className="comment-content-area">
-            <div className="comment-header">
-              <div className="comment-author-info">
+        <div
+          className={`${styles.commentItem} ${
+            reportedByMe ? styles.reported : ""
+          }`}
+        >
+          <div className={styles.commentContentArea}>
+            <div className={styles.commentHeader}>
+              <div className={styles.commentAuthorInfo}>
                 <img
-                  src={`http://localhost:8080${c.memberImg}` || "/default-profile.png"}
+                  src={
+                    `http://localhost:8080${c.memberImg}` ||
+                    "/default-profile.png"
+                  }
                   alt="프로필 사진"
-                  className="profile-img"
+                  className={styles.profileImg}
                   onClick={(e) => {
                     const modalWidth = 300;
                     const modalHeight = 200;
-
                     let x = e.clientX + 20;
                     let y = e.clientY + 20;
-
-                    // 화면 넘지 않게 조정
-                    if (x + modalWidth > window.innerWidth) {
+                    if (x + modalWidth > window.innerWidth)
                       x = window.innerWidth - modalWidth - 10;
-                    }
-
-                    if (y + modalHeight > window.innerHeight) {
+                    if (y + modalHeight > window.innerHeight)
                       y = window.innerHeight - modalHeight - 50;
-                    }
-
                     setSelectedMember({
                       memberNo: c.memberNo,
                       memberImg: c.memberImg,
                       memberNickname: c.memberNickname,
-                      memberNo: c.memberNo,
                       memberRole: c.memberRole,
                     });
                     setModalPosition({ x, y });
@@ -233,26 +232,22 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
                   }}
                 />
                 <strong>{c.memberNickname}</strong>
-                <span className="comment-date">{c.commentDate}</span>
-
-                {/* 신고/취소 버튼 */}
+                <span className={styles.commentDate}>{c.commentDate}</span>
                 {token &&
                   !isMine &&
                   isUser &&
                   !isWriterAdmin &&
                   boardCode !== 2 && (
                     <button
-                      className="report-btn"
+                      className={styles.reportBtn}
                       onClick={() => handleReport(c.commentNo)}
                     >
                       <img src="/report.svg" alt="신고 아이콘" />
                     </button>
                   )}
               </div>
-
-              {/* 수정/삭제 버튼 (본인 or 관리자) */}
               {(isAdmin || isMine) && editingCommentNo !== c.commentNo && (
-                <div className="comment-actions-right">
+                <div className={styles.commentActionsRight}>
                   <button
                     onClick={() => startEditing(c.commentNo, c.commentContent)}
                   >
@@ -266,12 +261,11 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
             </div>
 
             {parentDeleted && (
-              <div className="parent-deleted-notice">
+              <div className={styles.parentDeletedNotice}>
                 삭제된 댓글의 답글입니다.
               </div>
             )}
 
-            {/* 댓글 내용 */}
             {editingCommentNo === c.commentNo ? (
               <>
                 <textarea
@@ -286,19 +280,20 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
                 </div>
               </>
             ) : reportedByMe ? (
-              <p className="comment-text reported-comment-text">
+              <p
+                className={`${styles.commentText} ${styles.reportedCommentText}`}
+              >
                 신고한 댓글입니다.
               </p>
             ) : (
-              <p className="comment-text">{c.commentContent}</p>
+              <p className={styles.commentText}>{c.commentContent}</p>
             )}
 
-            {/* 좋아요 / 답글 */}
             {token && !editingCommentNo && !reportedByMe && (
               <>
                 <button
-                  className={`comment-like-btn ${
-                    c.commentLiked ? "liked" : ""
+                  className={`${styles.commentLikeBtn} ${
+                    c.commentLiked ? styles.liked : ""
                   }`}
                   onClick={() => handleCommentLike(c.commentNo)}
                 >
@@ -311,7 +306,6 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
               </>
             )}
 
-            {/* 답글 작성 폼 */}
             {token && replyTarget === c.commentNo && !reportedByMe && (
               <form
                 onSubmit={(e) => handleReplySubmit(e, c.commentNo)}
@@ -336,23 +330,23 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
           </div>
         </div>
 
-        {/* 자식 댓글 렌더링 */}
         {c.children.length > 0 && (
-          <ul className="reply-list">
+          <ul className={styles.replyList}>
             {c.children.map((child) => renderComment(child, isDeleted))}
           </ul>
         )}
       </li>
     );
   };
+
   const commentTree = buildCommentTree(comments);
 
   return (
-    <section className="comment-section">
+    <section className={styles.commentSection}>
       <h3>댓글 {comments.filter((c) => c.commentDelFl !== "Y").length}</h3>
 
       {token && (
-        <form onSubmit={handleCommentSubmit} className="comment-form">
+        <form onSubmit={handleCommentSubmit} className={styles.commentForm}>
           <textarea
             value={commentContent}
             onChange={(e) => setCommentContent(e.target.value)}
