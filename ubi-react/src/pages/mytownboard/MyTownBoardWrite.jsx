@@ -111,7 +111,7 @@ const MyTownBoardWrite = () => {
         welfareName: postType === "복지혜택후기" ? selectedWelfare?.name : null,
         welfareAgency:
           postType === "복지혜택후기" ? selectedWelfare?.agency : null,
-           category: postType === "복지혜택후기" ? selectedWelfareCategory : null, 
+        category: postType === "복지혜택후기" ? selectedWelfareCategory : null,
       }),
     })
       .then(async (res) => {
@@ -234,26 +234,26 @@ const MyTownBoardWrite = () => {
                               )}
                             </>
                           )}
-                         {type === "복지혜택후기" && (
-  <>
-    <button
-      onClick={() => setShowBenefitModal(true)}
-      style={{ marginLeft: "10px" }}
-    >
-      복지혜택 선택
-    </button>
-    {selectedWelfareName && (
-      <span
-        style={{
-          marginLeft: "10px",
-          fontWeight: "bold",
-        }}
-      >
-        선택: {selectedWelfareName}
-      </span>
-    )}
-  </>
-)}
+                          {type === "복지혜택후기" && (
+                            <>
+                              <button
+                                onClick={() => setShowBenefitModal(true)}
+                                style={{ marginLeft: "10px" }}
+                              >
+                                복지혜택 선택
+                              </button>
+                              {selectedWelfareName && (
+                                <span
+                                  style={{
+                                    marginLeft: "10px",
+                                    fontWeight: "bold",
+                                  }}
+                                >
+                                  선택: {selectedWelfareName}
+                                </span>
+                              )}
+                            </>
+                          )}
                         </>
                       )}
                     </div>
@@ -302,7 +302,6 @@ const MyTownBoardWrite = () => {
           </tbody>
         </table>
       </div>
-
       <br />
       <input
         type="text"
@@ -311,12 +310,10 @@ const MyTownBoardWrite = () => {
         onChange={(e) => setTitle(e.target.value)}
         style={{ width: "100%", marginBottom: "10px", padding: "8px" }}
       />
-
       <div id="summernote" />
       <button onClick={handleSubmit} style={{ marginTop: "20px" }}>
         글쓰기 완료
       </button>
-
       {showFacilityModal && (
         <Modal onClose={() => setShowFacilityModal(false)}>
           <WelfareFacilityModal
@@ -328,42 +325,25 @@ const MyTownBoardWrite = () => {
               setSelectedFacilityId(id);
               setShowFacilityModal(false);
             }}
-           onClose={() => setShowFacilityModal(false)}
+            onClose={() => setShowFacilityModal(false)}
           />
         </Modal>
       )}
-
       {showBenefitModal && (
-
-  <Modal onClose={() => setShowBenefitModal(false)}>
-    <LocalBenefitModal
-      isOpen={showBenefitModal}
-      onClose={() => setShowBenefitModal(false)}
-      onSelect={({ serviceId, name, agency, category  }) => {
-        setSelectedWelfare({ serviceId, name, agency , category });
-        setSelectedWelfareName(name);
-        setSelectedBenefitId(serviceId);
-          setSelectedWelfareCategory(category); 
-        setShowBenefitModal(false);
-      }}
-    />
-  </Modal>
-)}
-
-//         <Modal onClose={() => setShowBenefitModal(false)}>
-//           <LocalBenefitModal
-//             isOpen={showBenefitModal}
-//             onClose={() => setShowBenefitModal(false)}
-//             onSelect={({ serviceId, name, agency }) => {
-//               setSelectedWelfare({ serviceId, name, agency });
-//               setSelectedWelfareName(name);
-//               setSelectedBenefitId(serviceId);
-//               setShowBenefitModal(false);
-//             }}
-//           />
-//         </Modal>
-//       )}
-
+        <Modal onClose={() => setShowBenefitModal(false)}>
+          <LocalBenefitModal
+            isOpen={showBenefitModal}
+            onClose={() => setShowBenefitModal(false)}
+            onSelect={({ serviceId, name, agency, category }) => {
+              setSelectedWelfare({ serviceId, name, agency, category });
+              setSelectedWelfareName(name);
+              setSelectedBenefitId(serviceId);
+              setSelectedWelfareCategory(category);
+              setShowBenefitModal(false);
+            }}
+          />
+        </Modal>
+      )}
     </div>
   );
 };
