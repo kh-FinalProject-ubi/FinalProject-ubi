@@ -8,7 +8,7 @@ import useAuthStore from "../../stores/useAuthStore";
 
 function MytownBoardUpdate() {
   const { boardNo } = useParams();
-  const { token } = useAuthStore(); // ✅ 토큰 가져오기
+  const { token } = useAuthStore();
   const [board, setBoard] = useState(null);
   const [boardTitle, setBoardTitle] = useState("");
   const [boardContent, setBoardContent] = useState("");
@@ -25,7 +25,6 @@ function MytownBoardUpdate() {
   const [selectedFacilityName, setSelectedFacilityName] = useState("");
   const [selectedFacilityId, setSelectedFacilityId] = useState("");
 
-  // 1. 게시글 데이터 불러오기
   useEffect(() => {
     if (!boardNo || isNaN(boardNo)) {
       alert("잘못된 접근입니다.");
@@ -35,13 +34,10 @@ function MytownBoardUpdate() {
 
     axios
       .get(`/api/board/mytownBoard/${boardNo}`, {
-        headers: {
-          Authorization: `Bearer ${token}`, // ✅ 토큰 포함
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
         const data = res.data;
-
         setBoard(data);
         setBoardTitle(data.boardTitle);
         setBoardContent(data.boardContent);
@@ -79,37 +75,36 @@ function MytownBoardUpdate() {
       });
   }, [boardNo, navigate, token]);
 
-  // 2. 썸머노트 초기화
   useEffect(() => {
-    // boardContent가 로드될 때까지 초기화하지 말자
     if (!boardContent) return;
 
-    // 초기화는 딱 한번만
     if (isInitialSet.current) {
       $("#summernote").summernote({
         height: 300,
         lang: "ko-KR",
         callbacks: {
           onChange: function (contents) {
-            if (isInitialSet.current) return; // 초기 세팅 무시
+            if (isInitialSet.current) return;
             setBoardContent(contents);
           },
           onImageUpload: function (files) {
-            const formData = new FormData();
-            formData.append("image", files[0]);
+            for (let i = 0; i < files.length; i++) {
+              const formData = new FormData();
+              formData.append("image", files[i]);
 
-            fetch("/api/editboard/mytown/uploadImage", {
-              method: "POST",
-              body: formData,
-            })
-              .then((res) => res.text())
-              .then((imageUrl) => {
-                $("#summernote").summernote("insertImage", imageUrl);
-                uploadedImagesRef.current.push(imageUrl);
+              fetch("/api/editboard/mytown/uploadImage", {
+                method: "POST",
+                body: formData,
               })
-              .catch((err) => {
-                console.error("이미지 업로드 실패", err);
-              });
+                .then((res) => res.text())
+                .then((imageUrl) => {
+                  $("#summernote").summernote("insertImage", imageUrl);
+                  uploadedImagesRef.current.push(imageUrl);
+                })
+                .catch((err) => {
+                  console.error("이미지 업로드 실패", err);
+                });
+            }
           },
         },
         toolbar: [
@@ -120,15 +115,26 @@ function MytownBoardUpdate() {
         ],
       });
 
-      // 초기 내용 세팅
       $("#summernote").summernote("code", boardContent);
       isInitialSet.current = false;
     }
   }, [boardContent]);
 
-  // 3. 수정 요청 처리
   const handleUpdate = async () => {
     const updatedContent = $("#summernote").summernote("code");
+
+    // ✅ 제목/내용 빈값 검사
+    if (!boardTitle.trim()) {
+      alert("제목을 입력하세요.");
+      return;
+    }
+
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = updatedContent;
+    if (!tempDiv.textContent.trim() && !tempDiv.querySelector("img")) {
+      alert("내용을 입력하세요.");
+      return;
+    }
 
     const imageList = uploadedImagesRef.current.map((url, index) => {
       const segments = url.split("/");
@@ -144,7 +150,6 @@ function MytownBoardUpdate() {
       .map((tag) => tag.replace("#", "").trim())
       .filter((tag) => tag.length > 0);
 
-    // 🔍 변경사항 감지
     const originHashtags =
       Array.isArray(board.hashtagList) && board.hashtagList.length > 0
         ? board.hashtagList
@@ -167,14 +172,13 @@ function MytownBoardUpdate() {
           ? "복지혜택후기"
           : board.postType) &&
       isSameHashtag &&
-      imageList.length === 0; // 이미지 추가/삭제 없으면 수정 안 한 것으로 간주
+      imageList.length === 0;
 
     if (isSame) {
       alert("변경된 내용이 없습니다.");
-      return; // 서버 요청 막기
+      return;
     }
 
-    // 수정 요청
     const updatedBoard = {
       boardTitle,
       boardContent: updatedContent,

@@ -190,6 +190,12 @@ const Header = () => {
         <div className={styles.bottomRow}>
           <nav className={styles.navMenu}>
             <NavLink
+              to="/localBenefits"
+              className={({ isActive }) => (isActive ? styles.active : "")}
+            >
+              지역 복지 혜택
+            </NavLink>
+            <NavLink
               to={`/facility/search?city=${encodeURIComponent(
                 selectedCity || "서울특별시"
               )}&district=${encodeURIComponent(selectedDistrict || "종로구")}`}

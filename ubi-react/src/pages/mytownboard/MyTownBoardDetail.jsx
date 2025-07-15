@@ -112,8 +112,8 @@ function MyTownBoardDetail() {
 
   // 이미지 경로가 상대경로인 경우 절대경로로 교체
   const contentWithImages = board.boardContent.replaceAll(
-    /<img src="\/images\/board\//g,
-    "http://localhost:8080/images/board/"
+    /src="\/images\/board\//g,
+    'src="http://localhost:8080/images/board/'
   );
   const tagList = generateTagList(board);
 
@@ -186,7 +186,6 @@ function MyTownBoardDetail() {
           <span>⭐ {board.starCount ?? 0}</span>
         )}
       </div>
-      {board.content}
       {/* ✅ 글 내용과 이미지가 섞인 HTML 출력 */}
       <div
         className="board-content"

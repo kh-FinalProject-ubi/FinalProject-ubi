@@ -9,11 +9,12 @@ const BoardDetail = () => {
   const navigate = useNavigate();
   const { boardPath, boardNo } = useParams();
   const { token, role, memberNo: loginMemberNo } = useAuthStore();
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
 
   const boardCodeMap = {
     noticeBoard: 1,
     askBoard: 2,
-    mytownBoard: 3, // "우리 동네 좋아요" 게시판 코드 추가
   };
   const boardCode = boardCodeMap[boardPath];
 
@@ -57,6 +58,9 @@ const BoardDetail = () => {
         }
 
         setBoard(boardData);
+        setLikeCount(boardData.likeCount || 0);
+        setLiked(boardData.isLiked || false);
+        console.log("isLiked from server:", boardData.isLiked);
       } catch (err) {
         if (!hasAlerted) {
           alert(
@@ -99,6 +103,36 @@ const BoardDetail = () => {
     }
   };
 
+  // 좋아요 게시글
+  const handleLike = async () => {
+    if (loginMemberNo === board.memberNo) {
+      alert("본인의 글에는 좋아요를 누를 수 없습니다.");
+      return;
+    }
+
+    try {
+      const res = await axios.post(
+        `/api/board/mytownBoard/${board.boardNo}/like`,
+        null,
+        {
+          params: {
+            memberNo: loginMemberNo,
+            writerNo: board.memberNo,
+          },
+        }
+      );
+
+      if (res.data === "liked") {
+        setLiked(true);
+        setLikeCount((prev) => prev + 1);
+      } else {
+        setLiked(false);
+        setLikeCount((prev) => prev - 1);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
   if (loading) return <p>로딩 중...</p>;
   if (!board) return <p>게시글 정보를 불러올 수 없습니다.</p>;
 
@@ -131,7 +165,22 @@ const BoardDetail = () => {
               </div>
             </div>
             <div className={styles.stats}>
-              <span>❤️ {board.likeCount || 0}</span>
+              <div className={styles.stats}>
+                {boardCode === 1 && ( // 공지사항의 경우
+                  <button
+                    onClick={handleLike}
+                    style={{
+                      marginLeft: "10px",
+                      border: "none",
+                      background: "none",
+                      cursor: "pointer",
+                      fontSize: "16px",
+                    }}
+                  >
+                    {liked ? "❤️" : "🤍"} {likeCount}
+                  </button>
+                )}
+              </div>
               <span>조회 {board.boardReadCount}</span>
             </div>
           </div>
@@ -165,7 +214,6 @@ const BoardDetail = () => {
         </div>
 
         <div className={styles.commentSection}>
-          <h4 className={styles.commentTitle}>댓글</h4>
           <CommentSection
             boardCode={boardCode}
             boardNo={boardNo}
