@@ -14,12 +14,6 @@ import { Client } from '@stomp/stompjs';
 const Chat = () => {
   console.log("SockJS 타입:", typeof SockJS);
   console.log("SockJS 실제 객체:", SockJS); 
-  window.sock = new SockJS("/ws-chat");
-  window.sock.onopen = () => console.log("OPEN!");
-  window.sock.onclose = () => console.log("CLOSE!");
-  window.sock.onerror = (e) => console.log("ERROR", e);
-  window.sock.onmessage = (e) => console.log("MESSAGE", e.data);
-
 
   const { memberNo, memberName, token } = useAuthStore();
   const stompRef = useRef(null);
@@ -67,22 +61,52 @@ const Chat = () => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSelectRoom = (room) => {
-      setSelectedRoom(room);
-      setMessages([]); // 새로 초기화
-      // TODO: 필요하면 서버에서 메시지 목록 받아오기
+  // 채팅내역 조회
+  const fetchMessages = async (roomNo) => {
+    try {
+      const res = await axios.get(`/api/chatting/messages`, {
+        params: { chatRoomNo: roomNo },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.status === 200) return setMessages(res.data);
+    } catch (err) {
+      console.error("메시지 조회 실패:", err);
+      return[];
+    }
+  };
+  
+  const handleSelectRoom = async (room) => {
+    // ① 방 선택 상태 업데이트
+    setSelectedRoom(room);
+    setMessages([]);               // 리스트 비우기(로딩 상태처럼)
+
+    try {
+      const list = await fetchMessages(room.chatRoomNo);
+      setMessages(list);
+    } catch (e) {
+      console.error("메시지 조회 실패:", e);
+    }
+
+    markAsRead(room.chatRoomNo);
   };
 
   useEffect(() => {
     console.log("[CHAT‑USEEFFECT] 실행됨", { token, memberNo });
     if (!token || !memberNo) return;
-
+      
     const client = new Client({
       webSocketFactory: () => {
         const sock = new SockJS("http://localhost:8080/ws-chat", null, {
-          transports: ["websocket", "xhr-streaming", "xhr-polling"], // ✅ fallback까지 허용
+          transports: ["websocket"], // ✅ fallback까지 허용
           timeout: 30000,
         });
+
+        sock.onopen = () => console.log("WebSocket 연결 성공");
+        sock.onclose = () => console.log("WebSocket 연결 종료");
+        sock.onerror = (e) => console.log("WebSocket 오류:", e);
+        sock.onmessage = (e) => console.log("WebSocket 메시지:", e.data);
+
+        console.log("SockJS readyState:", sock.readyState); // 연결 상태를 로그로 확인
 
         setTimeout(() => {
           const status = ["CONNECTING", "OPEN", "CLOSING", "CLOSED"];
@@ -134,6 +158,9 @@ const Chat = () => {
 
       onWebSocketClose: (event) => {
         console.error("🔌 WebSocket Closed", event);
+        console.error("이유:", event.reason);  // 종료 사유 확인
+        console.error("코드:", event.code);    // 종료 코드 확인
+        console.error("정상 종료 여부:", event.wasClean);  // 정상 종료 여부 확인
       },
 
       onWebSocketError: (error) => {
@@ -178,7 +205,7 @@ const Chat = () => {
     setMessages(prev => [...prev, {
       senderNo: memberNo,
       chatContent: input,
-      sendTime: new Date().toISOString(),
+      chatSendDate: new Date().toISOString(),
       chatRoomNo: selectedRoom.chatRoomNo,
     }]);
 
@@ -255,6 +282,40 @@ const Chat = () => {
 
   if (!memberNo) return <div>로그인 정보가 없습니다.</div>;
   
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+  
+  // 채팅 읽음 표시
+  const markAsRead = async (roomNo) => {
+    // 1) UI 낙관적 업데이트
+    setMessages(prev =>
+      (prev ?? []).map(msg =>
+        msg.senderNo !== memberNo && msg.chatReadFl === 'N'
+          ? { ...msg, chatReadFl: 'Y' }
+          : msg
+      )
+    );
+
+    // 2) 서버 PATCH
+    try {
+      await axios.patch(
+        "/api/chatting/read",
+        null,
+        {
+          params: { chatRoomNo: roomNo },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+    } catch (err) {
+      console.error("읽음 처리 실패:", err);
+      // 필요하면 롤백 로직 추가
+    }
+  };
+
+
+
+
 console.log("채팅방 목록 : ", rooms);
   return (
     <div>
@@ -334,18 +395,18 @@ console.log("채팅방 목록 : ", rooms);
               </div>
 
               <div className="chat-messages">
-                {messages.map((msg, index) => (
+                {messages.map((msg) => (
                   <div
-                    key={index}
+                    key={msg.chatNo}
                     className={`chat-message ${
-                      msg.sender === memberName ? "my-message" : "other-message"
+                      msg.senderNo === memberNo ? "my-message" : "other-message"
                     }`}
                   >
-                    <div className="message-sender">{msg.sender}</div>
-                    <div className="message-content">{msg.content}</div>
-                    <div className="message-timestamp">
-                      {new Date(msg.timestamp).toLocaleTimeString()}
+                    <div className="message-sender">
+                      {msg.senderNo === memberNo ? "나" : selectedRoom.targetNickname}
                     </div>
+                    <div className="message-content">{msg.chatContent}</div>
+                    <div className="message-timestamp">{msg.chatSendDate}</div>
                   </div>
                 ))}
                 <div ref={messagesEndRef}></div>

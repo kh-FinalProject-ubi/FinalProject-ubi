@@ -19,14 +19,13 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import edu.kh.project.websocket.handler.ChattingWebsocketHandler;
 import edu.kh.project.websocket.handler.TestWebSocketHandler;
 import edu.kh.project.websocket.interceptor.AlertWebSocketAuthInterceptor;
 import edu.kh.project.websocket.interceptor.ChatWebSocketAuthInterceptor;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import edu.kh.project.common.config.LoggingHandshakeInterceptor;
+import edu.kh.project.common.config.WebSocketEventListener;
 
 @CrossOrigin(origins = "*")
 @Configuration
@@ -44,10 +43,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
   
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
-    registry.addEndpoint("/ws-chat")
-    		.setAllowedOriginPatterns("*")
-    		.withSockJS()
-    		.setSessionCookieNeeded(false);
+	    registry.addEndpoint("/ws-chat")
+	        .setAllowedOriginPatterns("*")  // 모든 도메인 허용 (개발 중에만 사용)
+	        .withSockJS();
     System.out.println("✅ registerStompEndpoints 등록됨");
   }
   
