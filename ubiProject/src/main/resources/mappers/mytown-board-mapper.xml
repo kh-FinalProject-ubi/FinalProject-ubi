@@ -120,9 +120,32 @@
 
 	<!-- 복지혜택 INSERT -->
 	<insert id="insertWelfareFromBoard" parameterType="Board">
-		INSERT INTO WELFARE (SERVICE_ID, WELFARE_NAME, AGENCY_NAME)
-		VALUES (#{apiServiceId}, #{welfareName}, #{welfareAgency})
-	</insert>
+  INSERT INTO WELFARE (
+    SERVICE_NO,
+    		MEMBER_NO,
+    		    category,        
+    region_city,         
+    region_district,     
+    API_SERVICE_ID,
+    SERVICE_NAME,
+    AGENCY,
+      JJ_TIME,
+      JJ_DEL_FL
+  )
+  VALUES (
+    WELFARE_SEQ.NEXTVAL,
+    	#{memberNo},
+    	    #{category},      
+    #{regionCity},        
+    #{regionDistrict},
+    #{apiServiceId},
+    #{welfareName},
+    #{welfareAgency},
+    SYSDATE,
+    'N'
+  )
+</insert>
+
 
 	<!-- 상세조회 -->
 	<select id="selectLocalBoardDetail"
