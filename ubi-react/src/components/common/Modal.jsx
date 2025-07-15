@@ -1,11 +1,11 @@
 import React from "react";
-import "../../styles/common/Modal.css"; // 스타일은 직접 작성
+import styles from "../../styles/common/Modal.module.css";
 
 export default function Modal({ children, onClose }) {
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>
+    <div className={styles.modalBackdrop} onClick={onClose}>
+      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+        <button className={styles.modalClose} onClick={onClose}>
           ✕
         </button>
         {children}

@@ -1,7 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Pagination from "../components/Pagination";
-import "../styles/YouthPolicyList.css"; // 새로 추가할 CSS
 
 function YouthPolicyList() {
   const [policies, setPolicies] = useState([]);

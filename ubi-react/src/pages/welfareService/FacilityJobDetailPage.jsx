@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useSearchParams } from "react-router-dom";
 import useAuthStore from "../../stores/useAuthStore";
 import LikeButton from "../../components/welfareLike/LikeButton";
+import styles from "../../styles/DetailCommon.module.css";
 
 const safe = (val) => val || "정보 없음";
 
@@ -29,10 +30,12 @@ const FacilityJobDetailPage = () => {
   if (!data) return <p>❌ 데이터를 불러올 수 없습니다.</p>;
 
   return (
-    <div className="welfare-detail-page">
-      <h2>{safe(data.serviceName)}</h2>
-      <p>
-        <strong>📂 카테고리:</strong> {safe(data.category || "복지 일자리")}
+    <div className={styles.detailContainer}>
+      <h2 className={styles.heading}>{safe(data.serviceName)}</h2>
+
+      <p className={styles.paragraph}>
+        <span className={styles.label}>📂 카테고리:</span>{" "}
+        {safe(data.category || "복지 일자리")}
       </p>
 
       <LikeButton
@@ -52,28 +55,28 @@ const FacilityJobDetailPage = () => {
         lng={data?.lng}
       />
 
-      <p>
-        <strong>설명:</strong> {safe(data.description)}
+      <p className={styles.paragraph}>
+        <span className={styles.label}>설명:</span> {safe(data.description)}
       </p>
-      <p>
-        <strong>📍 지역:</strong>{" "}
+
+      <p className={styles.paragraph}>
+        <span className={styles.label}>📍 지역:</span>{" "}
         {`${safe(data.regionCity)} ${safe(data.regionDistrict)}`}
       </p>
 
-      {/* 선택적으로 급여, 연락처, 주소 표시 */}
       {data?.servicePay && (
-        <p>
-          <strong>💰 급여:</strong> {data.servicePay}
+        <p className={styles.paragraph}>
+          <span className={styles.label}>💰 급여:</span> {data.servicePay}
         </p>
       )}
       {data?.agency && (
-        <p>
-          <strong>📞 제공 기관:</strong> {data.agency}
+        <p className={styles.paragraph}>
+          <span className={styles.label}>📞 제공 기관:</span> {data.agency}
         </p>
       )}
       {data?.url && (
-        <p>
-          <strong>🔗 링크:</strong>{" "}
+        <p className={styles.paragraph}>
+          <span className={styles.label}>🔗 링크:</span>{" "}
           <a href={data.url} target="_blank" rel="noopener noreferrer">
             상세 페이지
           </a>

@@ -1,5 +1,6 @@
 import useAuthStore from "../../stores/useAuthStore";
-import LikeButton from "./../../components/welfareLike/LikeButton";
+import LikeButton from "../../components/welfareLike/LikeButton";
+import styles from "../../styles/DetailCommon.module.css";
 
 const safe = (val) => val || "정보 없음";
 
@@ -14,11 +15,14 @@ const GenericDetail = ({ data }) => {
   const token = useAuthStore((state) => state.token);
 
   return (
-    <div className="welfare-detail-page">
-      <h2>{safe(data?.title)}</h2>
-      <p>
-        <strong>📂 카테고리:</strong> {safe(data?.category)}
+    <div className={styles.detailContainer}>
+      <h2 className={styles.heading}>{safe(data?.title)}</h2>
+
+      <p className={styles.paragraph}>
+        <span className={styles.label}>📂 카테고리:</span>{" "}
+        {safe(data?.category)}
       </p>
+
       <LikeButton
         apiServiceId={data?.id}
         serviceName={data?.title}
@@ -27,26 +31,25 @@ const GenericDetail = ({ data }) => {
         regionDistrict={data?.regionDistrict}
         token={token}
       />
-      <p>
-        <strong>설명:</strong>
+
+      <p className={styles.paragraph}>
+        <span className={styles.label}>설명:</span>
       </p>
-      <pre style={{ whiteSpace: "pre-wrap" }}>
-        {cleanText(data?.description)}
-      </pre>
+
+      <pre className={styles.codeBlock}>{cleanText(data?.description)}</pre>
+
       {data?.imageUrl && (
-        <img
-          src={data.imageUrl}
-          alt="복지 이미지"
-          style={{ maxWidth: "100%", borderRadius: "8px", margin: "20px 0" }}
-        />
+        <img src={data.imageUrl} alt="복지 이미지" className={styles.image} />
       )}
-      <p>
-        <strong>📍 지역:</strong>{" "}
+
+      <p className={styles.paragraph}>
+        <span className={styles.label}>📍 지역:</span>{" "}
         {safe(`${data?.regionCity || ""} ${data?.regionDistrict || ""}`)}
       </p>
+
       {data?.link && (
-        <p>
-          <strong>제공 링크:</strong>{" "}
+        <p className={styles.paragraph}>
+          <span className={styles.label}>제공 링크:</span>{" "}
           <a href={data?.link} target="_blank" rel="noopener noreferrer">
             {data?.link}
           </a>

@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import DaumPostcode from "react-daum-postcode";
 import { useNavigate } from "react-router-dom";
 import TermsAndPrivacyModal from "../components/TermsAndPrivacyModal";
-import "../styles/signup.css";
+import styles from "../styles/Signup.module.css";
 import useModalStore from "../stores/useModalStore";
 import useAuthStore from "../stores/useAuthStore";
 
@@ -253,41 +253,40 @@ const Signup = () => {
   };
 
   return (
-    <div className="signup-container">
+    <div className={styles.container}>
       <h2>회원가입</h2>
-      <form className="signup-form" onSubmit={handleSubmit}>
-        {/* ✅ 아이디 입력 */}
+      <form className={styles.form} onSubmit={handleSubmit}>
         <input
+          className={styles.input}
           type="text"
           value={memberId}
           onChange={(e) => setMemberId(e.target.value)}
           placeholder="아이디"
           required
         />
+        {/* 상태별 메시지 */}
         {memberId && (
-          <div style={{ fontSize: "13px" }}>
+          <div className={styles.statusMessage}>
             {idStatus === "loading" && <span>⏳ 확인 중...</span>}
             {idStatus === "available" && (
-              <span style={{ color: "green" }}>
-                ✔ 사용 가능한 아이디입니다.
-              </span>
+              <span className={styles.valid}>✔ 사용 가능한 아이디입니다.</span>
             )}
             {idStatus === "duplicate" && (
-              <span style={{ color: "red" }}>
+              <span className={styles.invalid}>
                 ❌ 이미 사용 중인 아이디입니다.
               </span>
             )}
             {idStatus === "invalid" && (
-              <span style={{ color: "red" }}>
+              <span className={styles.invalid}>
                 아이디는 영문자/숫자 4~15자여야 합니다.
               </span>
             )}
           </div>
         )}
-        {idError && <span style={{ color: "red" }}>{idError}</span>}
+        {idError && <span className={styles.invalid}>{idError}</span>}
 
-        {/* ✅ 비밀번호 입력 */}
         <input
+          className={styles.input}
           type="password"
           value={memberPw}
           onChange={handlePwChange}
@@ -295,19 +294,17 @@ const Signup = () => {
           required
         />
         {pwValid === false && (
-          <div style={{ color: "red", fontSize: "13px" }}>
+          <div className={styles.invalid}>
             입력이 정확하지 않습니다. 비밀번호는 영문자와 숫자만 사용할 수
             있습니다.
           </div>
         )}
         {pwValid === true && (
-          <div style={{ color: "green", fontSize: "13px" }}>
-            적합한 비밀번호입니다.
-          </div>
+          <div className={styles.valid}>적합한 비밀번호입니다.</div>
         )}
 
-        {/* 비밀번호 확인 */}
         <input
+          className={styles.input}
           type="password"
           value={memberPwCh}
           onChange={(e) => setMemberPwCh(e.target.value)}
@@ -315,14 +312,16 @@ const Signup = () => {
           required
         />
         <input
+          className={styles.input}
           type="text"
           value={memberName}
           onChange={(e) => setMemberName(e.target.value)}
           placeholder="이름"
           required
         />
-        {/* ✅ 닉네임 입력 */}
+
         <input
+          className={styles.input}
           type="text"
           value={memberNickname}
           onChange={(e) => setMemberNickname(e.target.value)}
@@ -330,52 +329,47 @@ const Signup = () => {
           required
         />
         {memberNickname && (
-          <div style={{ fontSize: "13px" }}>
+          <div className={styles.statusMessage}>
             {nicknameStatus === "loading" && <span>⏳ 확인 중...</span>}
             {nicknameStatus === "available" && (
-              <span style={{ color: "green" }}>
-                ✔ 사용 가능한 닉네임입니다.
-              </span>
+              <span className={styles.valid}>✔ 사용 가능한 닉네임입니다.</span>
             )}
             {nicknameStatus === "duplicate" && (
-              <span style={{ color: "red" }}>
+              <span className={styles.invalid}>
                 ❌ 이미 사용 중인 닉네임입니다.
               </span>
             )}
           </div>
         )}
-        {nicknameError && <span style={{ color: "red" }}>{nicknameError}</span>}
+        {nicknameError && (
+          <span className={styles.invalid}>{nicknameError}</span>
+        )}
 
-        <div className="form-row">
+        <div className={styles.row}>
           <input
+            className={styles.input}
             type="email"
             value={memberEmail}
-            onChange={(e) => {
-              setMemberEmail(e.target.value);
-              setEmailError(""); // 입력 중이면 에러 제거
-            }}
+            onChange={(e) => setMemberEmail(e.target.value)}
             placeholder="이메일"
             required
           />
           <button
             type="button"
-            className="check-button"
+            className={styles.checkButton}
             onClick={handleSendAuthCode}
           >
             인증번호 발송
           </button>
         </div>
 
-        {emailError && (
-          <p style={{ color: "red", fontSize: "13px", marginTop: "-8px" }}>
-            {emailError}
-          </p>
-        )}
+        {emailError && <div className={styles.invalid}>{emailError}</div>}
 
         {emailSent && (
           <>
-            <div className="form-row">
+            <div className={styles.row}>
               <input
+                className={styles.input}
                 type="text"
                 placeholder="인증번호 입력"
                 value={authCode}
@@ -384,82 +378,74 @@ const Signup = () => {
               />
               <button
                 type="button"
-                className="check-button"
+                className={styles.checkButton}
                 onClick={handleCheckAuthCode}
                 disabled={timer === 0 || isEmailVerified}
               >
                 확인
               </button>
             </div>
-            <p className="timer-text">
+            <p className={styles.timerText}>
               {isEmailVerified ? (
-                <span style={{ color: "green" }}>이메일 인증 완료</span>
+                <span className={styles.valid}>이메일 인증 완료</span>
               ) : timer > 0 ? (
-                <>
-                  남은 시간: {Math.floor(timer / 60)}:
-                  {String(timer % 60).padStart(2, "0")}
-                </>
+                `남은 시간: ${Math.floor(timer / 60)}:${String(
+                  timer % 60
+                ).padStart(2, "0")}`
               ) : (
-                <span style={{ color: "red" }}>⏰ 인증 시간 만료</span>
+                <span className={styles.invalid}>⏰ 인증 시간 만료</span>
               )}
             </p>
           </>
         )}
 
         <input
+          className={styles.input}
           type="text"
           value={memberTel}
-          onChange={(e) => {
-            const value = e.target.value.replace(/\D/g, ""); // 숫자 이외 제거
-            if (value.length <= 11) setMemberTel(value);
-          }}
-          placeholder="전화번호 (숫자만 입력)"
+          onChange={(e) => setMemberTel(e.target.value.replace(/\D/g, ""))}
+          placeholder="전화번호"
           required
         />
-        <div>
-          <button type="button" onClick={() => setIsPopupOpen(true)}>
+
+        <div className={styles.addressBlock}>
+          <button
+            type="button"
+            onClick={() => setIsPopupOpen(true)}
+            className={styles.addressBtn}
+          >
             우편번호 검색
           </button>
-
           <input
+            className={styles.input}
             value={postcode}
-            type="text"
             placeholder="우편번호"
             readOnly
-            style={{ backgroundColor: "#f1f1f1", cursor: "default" }}
           />
           <input
+            className={styles.input}
             value={memberAddress}
-            type="text"
             placeholder="기본 주소"
             readOnly
-            style={{ backgroundColor: "#f1f1f1", cursor: "default" }}
           />
           <input
+            className={styles.input}
             ref={detailAddressRef}
             value={memberTaddress}
-            type="text"
             onChange={(e) => setMemberTaddress(e.target.value)}
-            placeholder="상세주소 (예: 101동 1001호)"
+            placeholder="상세주소"
             required
           />
         </div>
 
-        {isPopupOpen && (
-          <DaumPostcode
-            onComplete={handleComplete}
-            autoClose
-            style={{ zIndex: 1000, position: "absolute" }} // 필요시 스타일 추가
-          />
-        )}
         <h4>회원 유형 선택</h4>
-        <div className="member-type-block">
-          <div className="radio-row">
+        <div className={styles.memberTypeBlock}>
+          <div className={styles.radioRow}>
             {["노인", "청년", "아동"].map((label) => (
               <label
                 key={label}
-                className={`radio-box ${
-                  memberStandard === label ? "selected" : ""
+                className={`${styles.radioBox} ${
+                  memberStandard === label ? styles.selected : ""
                 }`}
               >
                 <input
@@ -467,13 +453,9 @@ const Signup = () => {
                   name="standard"
                   value={label}
                   checked={memberStandard === label}
-                  onClick={(e) => {
-                    if (memberStandard === label) {
-                      setMemberStandard("");
-                    } else {
-                      setMemberStandard(label);
-                    }
-                  }}
+                  onClick={() =>
+                    setMemberStandard(memberStandard === label ? "" : label)
+                  }
                   readOnly
                 />
                 {label}
@@ -481,68 +463,77 @@ const Signup = () => {
             ))}
           </div>
 
-          <div className="toggle-wrapper">
-            <label className="toggle-label">
-              <input
-                type="checkbox"
-                checked={isDisabled}
-                onChange={(e) => setIsDisabled(e.target.checked)}
-              />
-              <span className="toggle-custom" />
-              <span className="toggle-text">장애인 여부</span>
-            </label>
-          </div>
-          <div className="toggle-wrapper">
-            <label className="toggle-label">
-              <input
-                type="checkbox"
-                checked={isPregnant}
-                onChange={(e) => setIsPregnant(e.target.checked)}
-              />
-              <span className="toggle-custom" />
-              <span className="toggle-text">임산부 여부</span>
-            </label>
-          </div>
+          <label className={styles.toggleLabel}>
+            <input
+              type="checkbox"
+              checked={isDisabled}
+              onChange={(e) => setIsDisabled(e.target.checked)}
+            />
+            <span className={styles.toggleCustom}></span>
+            <span>장애인 여부</span>
+          </label>
+          <label className={styles.toggleLabel}>
+            <input
+              type="checkbox"
+              checked={isPregnant}
+              onChange={(e) => setIsPregnant(e.target.checked)}
+            />
+            <span className={styles.toggleCustom}></span>
+            <span>임산부 여부</span>
+          </label>
         </div>
-        {/* 약관 체크박스 및 자세히 보기 */}
-        <div>
+
+        <label className={styles.checkboxBlock}>
           <input
             type="checkbox"
             checked={agreeTerms}
             onChange={() => setAgreeTerms(!agreeTerms)}
-          />
+          />{" "}
           (필수) 이용약관 동의
-          <button type="button" onClick={() => setViewingPolicy("terms")}>
+          <button
+            type="button"
+            onClick={() => setViewingPolicy("terms")}
+            className={styles.link}
+          >
             자세히 보기
           </button>
-        </div>
-        <div>
+        </label>
+
+        <label className={styles.checkboxBlock}>
           <input
             type="checkbox"
             checked={agreePrivacy}
             onChange={() => setAgreePrivacy(!agreePrivacy)}
-          />
+          />{" "}
           (필수) 개인정보 수집 및 이용 동의
-          <button type="button" onClick={() => setViewingPolicy("privacy")}>
+          <button
+            type="button"
+            onClick={() => setViewingPolicy("privacy")}
+            className={styles.link}
+          >
             자세히 보기
           </button>
-        </div>
+        </label>
 
         <button
           type="submit"
-          className="submit-button"
+          className={styles.submitBtn}
           disabled={
-            isSubmitting ||
             !isEmailVerified ||
             memberPw !== memberPwCh ||
             memberTaddress.trim() === "" ||
             !agreeTerms ||
-            !agreePrivacy
+            !agreePrivacy ||
+            isSubmitting
           }
         >
           가입하기
         </button>
-        <button type="button" className="secondary-button" onClick={openLogin}>
+        <button
+          type="button"
+          className={styles.secondaryBtn}
+          onClick={openLogin}
+        >
           로그인 하러 가기
         </button>
       </form>
