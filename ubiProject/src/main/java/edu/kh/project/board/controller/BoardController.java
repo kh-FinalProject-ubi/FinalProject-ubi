@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -23,6 +24,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.board.model.service.BoardService;
+import edu.kh.project.common.util.JwtUtil;
 import edu.kh.project.member.model.dto.Member;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,6 +38,9 @@ import lombok.extern.slf4j.Slf4j;
 public class BoardController {
 
 	private final BoardService service;
+	
+	private final JwtUtil jwtUtil;
+
 
 	@GetMapping("/{boardCode:[0-9]+}")
 	public ResponseEntity<Map<String, Object>> selectBoardList(@PathVariable("boardCode") int boardCode,
@@ -72,76 +77,131 @@ public class BoardController {
 	 */
 	@GetMapping("/{boardCode:[0-9]+}/{boardNo:[0-9]+}")
 	public ResponseEntity<Map<String, Object>> getBoardDetail(
-			@PathVariable("boardCode") int boardCode,
-			@PathVariable("boardNo") int boardNo,
-			@SessionAttribute(value = "loginMember", required = false) Member loginMember, 
-			HttpServletRequest req,
-			HttpServletResponse resp) {
-		
-		Map<String, Integer> map = new HashMap<>();
-		map.put("boardCode", boardCode);
-		map.put("boardNo", boardNo);
-		
-		if (loginMember != null) {
-			map.put("memberNo", loginMember.getMemberNo());
-		}
+	        @PathVariable("boardCode") int boardCode,
+	        @PathVariable("boardNo") int boardNo,
+	        @RequestHeader(value = "Authorization", required = false) String authHeader,
+	        HttpServletRequest req,
+	        HttpServletResponse resp) {
 
-		Board board = service.selectOne(map);
-		
-		if (board == null) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "게시글이 존재하지 않습니다."));
-		}
+	    Map<String, Integer> map = new HashMap<>();
+	    map.put("boardCode", boardCode);
+	    map.put("boardNo", boardNo);
 
-		// 조회수 증가 로직
-		if (loginMember == null || loginMember.getMemberNo() != board.getMemberNo()) {
-			Cookie[] cookies = req.getCookies();
-			Cookie c = null;
+	    int loginMemberNo = 0;  // 기본값 (비로그인)
 
-			if (cookies != null) {
-				for (Cookie temp : cookies) {
-					if (temp.getName().equals("readBoardNo")) {
-						c = temp;
-						break;
-					}
-				}
-			}
+	    // Authorization 헤더가 있으면 토큰에서 memberNo 추출
+	    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+	        String token = authHeader.substring(7);
+	        try {
+	            Long memberNoLong = jwtUtil.extractMemberNo(token);
+	            if (memberNoLong != null) {
+	                loginMemberNo = memberNoLong.intValue();
+	                map.put("memberNo", loginMemberNo);
+	            }
+	        } catch (Exception e) {
+	            // 토큰이 유효하지 않을 경우 등 예외 처리 (로그 등)
+	            System.out.println("JWT 토큰에서 memberNo 추출 실패: " + e.getMessage());
+	        }
+	    }
 
-			int result = 0;
-			if (c == null) {
-				c = new Cookie("readBoardNo", "[" + boardNo + "]");
-				result = service.updateReadCount(boardNo);
-			} else if (!c.getValue().contains("[" + boardNo + "]")) {
-				c.setValue(c.getValue() + "[" + boardNo + "]");
-				result = service.updateReadCount(boardNo);
-			}
+	    Board board = service.selectOne(map);
 
-			if (result > 0) {
-				board.setBoardReadCount(result);
-				c.setPath("/");
+	    if (board == null) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                .body(Map.of("message", "게시글이 존재하지 않습니다."));
+	    }
 
-				LocalDateTime now = LocalDateTime.now();
-				LocalDateTime midnight = now.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
-				long seconds = Duration.between(now, midnight).getSeconds();
-				c.setMaxAge((int) seconds);
+	    // 조회수 증가 로직 (쿠키 중복 조회 방지)
+	    if (loginMemberNo == 0 || loginMemberNo != board.getMemberNo()) {
+	        Cookie[] cookies = req.getCookies();
+	        Cookie c = null;
 
-				resp.addCookie(c);
-			}
-		}
+	        if (cookies != null) {
+	            for (Cookie temp : cookies) {
+	                if ("readBoardNo".equals(temp.getName())) {
+	                    c = temp;
+	                    break;
+	                }
+	            }
+	        }
 
-		int loginMemberNo = loginMember != null ? loginMember.getMemberNo() : 0;
+	        int result = 0;
+	        if (c == null) {
+	            c = new Cookie("readBoardNo", "[" + boardNo + "]");
+	            result = service.updateReadCount(boardNo);
+	        } else if (!c.getValue().contains("[" + boardNo + "]")) {
+	            c.setValue(c.getValue() + "[" + boardNo + "]");
+	            result = service.updateReadCount(boardNo);
+	        }
 
-		return ResponseEntity.ok(Map.of("status", 200, "board", board, "loginMemberNo", loginMemberNo));
+	        if (result > 0) {
+	            board.setBoardReadCount(result);
+	            c.setPath("/");
+
+	            LocalDateTime now = LocalDateTime.now();
+	            LocalDateTime midnight = now.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+	            long seconds = Duration.between(now, midnight).getSeconds();
+	            c.setMaxAge((int) seconds);
+
+	            resp.addCookie(c);
+	        }
+	    }
+
+	    int isLiked = 0;
+	    if (loginMemberNo != 0) {
+	        isLiked = service.checkBoardLike(map);
+	    }
+
+	    int likeCount = service.selectLikeCount(boardNo);
+
+	    System.out.println("getBoardDetail - loginMemberNo: " + loginMemberNo);
+	    System.out.println("getBoardDetail - map: " + map);
+
+	    return ResponseEntity.ok(Map.of(
+	            "status", 200,
+	            "board", board,
+	            "loginMemberNo", loginMemberNo,
+	            "isLiked", isLiked,
+	            "likeCount", likeCount
+	    ));
 	}
-
+	
 	/**
 	 * 게시글 좋아요 체크/해제
 	 * 
 	 * @return
 	 */
-	@ResponseBody
-	@PostMapping("like") // /board/like (POST)
-	public int boardLike(@RequestBody Map<String, Integer> map) {
-		return service.boardLike(map);
+	@PostMapping("/{boardNo}/like")
+	public ResponseEntity<Map<String, Object>> boardLike(@PathVariable("boardNo") int boardNo,
+	                                                     @RequestBody Map<String, Integer> map,
+	                                                     @RequestHeader(value = "Authorization", required = false) String authHeader) {
+	    map.put("boardNo", boardNo);
 
+	    // JWT 토큰에서 memberNo 추출해서 map에 넣기 (필요 시)
+	    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+	        String token = authHeader.substring(7);
+	        try {
+	            Long memberNoLong = jwtUtil.extractMemberNo(token);
+	            if (memberNoLong != null) {
+	                map.put("memberNo", memberNoLong.intValue());
+	            }
+	        } catch (Exception e) {
+	            // 토큰 에러 처리
+	        }
+	    }
+
+	    int likeCount = service.boardLike(map);
+	    int isLiked = 0;
+
+	    Integer memberNo = map.get("memberNo");
+	    if (memberNo != null && memberNo != 0) {
+	        isLiked = service.checkBoardLike(map);
+	    }
+
+	    Map<String, Object> result = new HashMap<>();
+	    result.put("likeCount", likeCount);
+	    result.put("isLiked", isLiked);
+
+	    return ResponseEntity.ok(result);
 	}
 }

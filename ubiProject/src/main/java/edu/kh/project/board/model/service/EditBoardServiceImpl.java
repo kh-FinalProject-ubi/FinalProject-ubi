@@ -62,7 +62,7 @@ public class EditBoardServiceImpl implements EditBoardService {
 	        List<Long> memberList = mapper.selectAllMemberNoExceptAdmin(); // 또는 memberMapper 사용
 
 	        for (Long memberNo : memberList) {
-	        	memberList = mapper.selectAllMemberNoExceptAdmin();
+	        	
 	        	
 	            AlertDto alert = AlertDto.builder()
 	                .memberNo(memberNo)

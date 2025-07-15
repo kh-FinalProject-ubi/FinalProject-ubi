@@ -88,8 +88,8 @@ public interface BoardMapper {
 
 	Integer selectBoardType(int boardNo);
 
-	
-	
+	int checkBoardLike(Map<String, Integer> map);
+
 	
 
 }

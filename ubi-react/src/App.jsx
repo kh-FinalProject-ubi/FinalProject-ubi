@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainPage from "./pages/MainPage";
 import AskBoard from "./pages/board/AskBoard";
 import NoticeBoard from "./pages/board/NoticeBoard";
-import WelfareService from "./pages/WelfareService";
 import KakaoCallback from "./pages/KakaoCallback";
 import WelfareMap from "./components/WelfareMap";
 import Layout from "./components/Layout";
@@ -44,7 +43,6 @@ function App() {
           <Route path="/login/find-id" element={<FindId />} />
           <Route path="/login/find-pw" element={<FindPw />} />
           <Route path="map" element={<WelfareMap />} />
-          <Route path="welfareService" element={<WelfareService />} />
           <Route path="askBoard" element={<AskBoard />} />
           <Route path="noticeBoard" element={<NoticeBoard />} />
           <Route path="mytownBoard" element={<MyTownBoard />} />

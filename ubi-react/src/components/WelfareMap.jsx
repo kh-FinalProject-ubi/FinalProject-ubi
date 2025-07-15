@@ -12,7 +12,6 @@ import { Style, Stroke, Fill } from "ol/style";
 
 import WelfareCompareView from "./WelfareCompareView";
 import WelfareBenefitView from "./WelfareBenefitView";
-import Spinner from "./Spinner";
 import useAuthStore from "../stores/useAuthStore";
 import useSelectedRegionStore from "../hook/welfarefacility/useSelectedRegionStore";
 import useLocalBenefitData from "../hook/welfareService/useLocalBenefitData";

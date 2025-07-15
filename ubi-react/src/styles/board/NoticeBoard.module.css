@@ -1,7 +1,7 @@
 /* 전체 컨테이너 */
 .container {
   width: 100%;
-  padding: 2rem 15%;
+  padding: 2rem 25%;
   box-sizing: border-box;
 }
 
@@ -32,17 +32,26 @@
   background-color: #ffe56d; /* 공지게시판 테마 색상 */
 }
 
+/* 클릭 가능한 행 스타일 */
+.clickableRow:hover {
+  background-color: #f8f8f8;
+  cursor: pointer;
+}
+
 .titleCell {
   text-align: left;
 }
 
+/* 참조 스타일에 맞춰 a태그의 기본 스타일만 유지 */
 .titleCell a {
   color: #333;
   text-decoration: none;
-}
 
-.titleCell a:hover {
-  text-decoration: underline;
+  /* ✅ 제목이 길어지면 ...으로 표시하기 위한 스타일 */
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* '분류' 태그 스타일 (AskBoard와 동일) */
@@ -91,6 +100,7 @@
   font-size: 0.9rem;
   padding: 0.2rem 0.4rem;
   font-weight: normal;
+  color: #888;
 }
 
 .paginationContainer button:disabled {

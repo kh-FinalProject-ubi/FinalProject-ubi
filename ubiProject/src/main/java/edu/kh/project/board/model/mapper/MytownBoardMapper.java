@@ -97,7 +97,7 @@ public interface MytownBoardMapper {
 	 * @return
 	 */
 	int updateBoard(Board dto);
-
+	int updateImageOrder(BoardImage image);
 	/**
 	 * 이미지 처리
 	 * 
@@ -158,6 +158,10 @@ public interface MytownBoardMapper {
 	// 해당 게시글에서 이 회원이 이 게시글을 신고했어?
 	String selectReportStatus(@Param("boardNo") int boardNo, @Param("memberNo") int memberNo);
 
+	
+	// 복지 상세조회 
 	List<Board> selectBoardListByFacilityServiceId(String facilityServiceId);
+
+	List<Board> selectBoardListByWelfareServiceId(String apiServiceId);
 
 }

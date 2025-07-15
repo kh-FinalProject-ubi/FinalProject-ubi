@@ -1,17 +1,24 @@
 .container {
   width: 100%;
-  padding-top: 60px;
-  padding-left: 23%;
-  padding-right: 23%;
+  padding-top: 2rem;
+  padding-left: 27%;
+  padding-right: 27%;
   padding-bottom: 100px;
   box-sizing: border-box;
+}
+
+/* ✅ 페이지 제목 스타일 추가 */
+.pageTitle {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 15px; /* 요청하신 15px 여백 */
 }
 
 .inputGroup {
   display: flex;
   border: 1px solid #ccc;
   border-radius: 8px;
-  overflow: hidden; /* 자식 요소의 radius를 부모에 맞춤 */
+  overflow: hidden;
   margin-bottom: 1rem;
 }
 
@@ -21,17 +28,33 @@
   border-right: 1px solid #ccc;
   background-color: #f8f9fa;
   font-size: 1rem;
+  transition: background-color 0.2s;
 }
 
 .postTypeSelect:focus {
   outline: none;
 }
 
+/* --- 추가된 스타일 --- */
+.postTypeInquiry {
+  background-color: #ffdd44 !important; /* 문의: 노란색 */
+}
+
+.postTypeReport {
+  background-color: #e53e3e !important; /* 신고: 빨간색 */
+  color: white;
+}
+/* --- --- */
+
 .titleInput {
   flex: 1;
-  padding: 12px 15px;
+  padding: 7px 15px;
   border: none;
   font-size: 1rem;
+}
+
+.titleInput::placeholder {
+  color: #999;
 }
 
 .titleInput:focus {
@@ -40,6 +63,7 @@
 
 .buttonContainer {
   display: flex;
+  justify-content: flex-end; /* 버튼을 오른쪽으로 정렬 */
   gap: 10px;
   margin-top: 1rem;
 }
@@ -65,13 +89,9 @@
 }
 
 .submitButton {
-  background-color: #ffc107;
+  background-color: #ffdd44;
   color: #333;
-  border-color: #ffc107;
-}
-
-.submitButton:hover {
-  background-color: #ffca2c;
+  border-color: #ffdd44;
 }
 
 /* Summernote 에디터 스타일 오버라이드 */
@@ -84,4 +104,8 @@
   border-bottom: 1px solid #ccc;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
+}
+/* Summernote 높이 지정 */
+:global(.note-editable) {
+  height: 510px !important;
 }

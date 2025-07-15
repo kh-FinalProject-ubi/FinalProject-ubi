@@ -126,5 +126,10 @@ public class MytownBoardController {
 	public List<Board> getPostsByFacility(@PathVariable("facilityServiceId") String facilityServiceId) {
 	    return service.getBoardListByFacilityServiceId(facilityServiceId);
 	}
+	
+	@GetMapping("/mytownBoard/welfare/{apiServiceId}")
+	public List<Board> getPostsByWelfare(@PathVariable("apiServiceId") String apiServiceId) {
+	    return service.getBoardListByWelfareServiceId(apiServiceId);
+	}
 
 }

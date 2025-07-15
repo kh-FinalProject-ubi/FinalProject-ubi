@@ -81,7 +81,7 @@
 
 	<!-- 복지시설 존재 여부 -->
 	<select id="existsFacilityById" resultType="int">
-		SELECT COUNT(*) FROM WELFARE_FACILITY WHERE FACILITY_API_SERVICE_ID = #{id}
+		SELECT COUNT(*) FROM WELFARE_FACILITY WHERE FACILITY_API_SERVICE_ID = #{facilityServiceId}
 	</select>
 
 	<!-- 복지혜택 존재 여부 -->
@@ -188,6 +188,8 @@
 		LS.POST_TYPE,
 		WF.FACILITY_NAME
 		AS facilityName,
+		W.SERVICE_NAME AS welfareName,
+		
 
 		-- ✅ 신고 여부
 		(
@@ -215,6 +217,8 @@
 		AND B.POST_TYPE = LS.POST_TYPE
 		LEFT JOIN WELFARE_FACILITY WF
 		ON B.FACILITY_API_SERVICE_ID = WF.FACILITY_API_SERVICE_ID
+		LEFT JOIN WELFARE W
+  ON B.API_SERVICE_ID = W.API_SERVICE_ID
 		WHERE
 		B.BOARD_NO =
 		#{boardNo}
@@ -329,7 +333,11 @@
 		IMAGE_ORDER
 	</select>
 
-
+<update id="updateImageOrder" parameterType="edu.kh.project.board.model.dto.BoardImage">
+    UPDATE BOARD_IMAGE
+    SET IMAGE_ORDER = #{imageOrder}
+    WHERE BOARD_NO = #{boardNo} AND IMAGE_NAME = #{imageName}
+</update>
 
 	<select id="checkBoardLike" resultType="int">
 		SELECT COUNT(*) FROM
@@ -501,5 +509,57 @@
 		FETCH FIRST 1
 		ROWS ONLY
 	</select>
+	
+<select id="selectBoardListByFacilityServiceId" resultType="edu.kh.project.board.model.dto.Board">
+  SELECT 
+    B.BOARD_NO,
+    B.BOARD_TITLE,
+    B.BOARD_CONTENT,
+    B.BOARD_DATE,
+    B.STAR_COUNT,
+    B.MEMBER_NO,
+    M.MEMBER_NICKNAME,
+    M.MEMBER_IMG AS PROFILE_IMAGE,
 
+    -- 첨부 이미지 목록
+    (SELECT LISTAGG(IMAGE_PATH || '/' || IMAGE_NAME, ',')
+     FROM BOARD_IMAGE 
+     WHERE BOARD_NO = B.BOARD_NO) AS IMAGE_PATHS
+
+  FROM BOARD B
+  JOIN MEMBER M ON B.MEMBER_NO = M.MEMBER_NO
+  WHERE B.FACILITY_API_SERVICE_ID = #{facilityServiceId}
+    AND B.BOARD_TYPE = 3
+    AND B.BOARD_DEL_FL = 'N'
+  ORDER BY B.BOARD_DATE DESC
+</select>
+
+<select id="selectBoardListByWelfareServiceId"
+        resultType="edu.kh.project.board.model.dto.Board">
+    SELECT 
+        B.BOARD_NO,
+        B.BOARD_TITLE,
+        B.BOARD_CONTENT,
+        B.BOARD_DATE,
+        B.BOARD_READ_COUNT,
+        B.STAR_COUNT,
+        B.POST_TYPE,
+        B.API_SERVICE_ID,
+        M.MEMBER_NICKNAME,
+        M.MEMBER_IMG AS profileImage,
+
+        (SELECT COUNT(*) FROM BOARD_LIKE L WHERE L.BOARD_NO = B.BOARD_NO) AS LIKE_COUNT,
+
+        (SELECT I.IMAGE_PATH || '/' || I.IMAGE_NAME
+         FROM BOARD_IMAGE I
+         WHERE I.BOARD_NO = B.BOARD_NO AND I.IMAGE_ORDER = 0
+         AND ROWNUM = 1) AS thumbnail
+
+    FROM BOARD B
+    JOIN MEMBER M ON B.MEMBER_NO = M.MEMBER_NO
+    WHERE B.API_SERVICE_ID = #{apiServiceId}
+      AND B.BOARD_TYPE = 3
+      AND B.BOARD_DEL_FL = 'N'
+    ORDER BY B.BOARD_DATE DESC
+</select>
 </mapper>
