@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import "../styles/SeoulWelfare.css";
+// import "../styles/SeoulWelfare.css";
 
 // HTML 디코딩
 const decodeHTML = (html) => {
