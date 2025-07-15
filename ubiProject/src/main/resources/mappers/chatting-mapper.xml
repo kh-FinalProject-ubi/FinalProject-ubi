@@ -74,25 +74,26 @@
 	
 	<!-- 채팅방 메세지 조회 -->
 	<select id="selectMessageList">
-		SELECT MESSAGE_NO, MESSAGE_CONTENT, READ_FL, SENDER_NO, CHATTING_ROOM_NO,
-		TO_CHAR(SEND_TIME, 'YYYY.MM.DD HH24:MI') SEND_TIME 
-		FROM MESSAGE
-		WHERE CHATTING_ROOM_NO  = #{chattingRoomNo}
-		ORDER BY MESSAGE_NO
+		SELECT CHAT_NO, CHAT_CONTENT, CHAT_READ_FL, SENDER_NO, CHAT_ROOM_NO,
+		TO_CHAR(CHAT_SEND_DATE, 'YYYY.MM.DD HH24:MI') CHAT_SEND_DATE
+		FROM MEMBER_CHAT_MESSAGE
+		WHERE CHAT_ROOM_NO  = #{chatRoomNo}
+		ORDER BY CHAT_NO
 	</select>
 	
 	<!-- 채팅 메세지 중 내가 보내지 않은 글을 읽음으로 표시 -->
 	<update id="updateReadFlag">
-		UPDATE "MESSAGE" SET
-		READ_FL = 'Y'
-		WHERE CHATTING_ROOM_NO = #{chattingRoomNo}
+		UPDATE "MEMBER_CHAT_MESSAGE" SET
+		CHAT_READ_FL = 'Y'
+		WHERE CHAT_ROOM_NO = #{chatRoomNo}
 		AND SENDER_NO != #{memberNo}
+		AND CHAT_READ_FL = 'N'
 	</update>
 	
 	<!-- 채팅 메세지 삽입 -->
 	<insert id="insertMessage">
-		INSERT INTO "MESSAGE"
-		VALUES(SEQ_MESSAGE_NO.NEXTVAL, #{senderNo}, #{chatContent}, 'N', SYSDATE, DEAFULT, #{chatRoomNo})
+		INSERT INTO "MEMBER_CHAT_MESSAGE"
+		VALUES(SEQ_MESSAGE_NO.NEXTVAL, #{senderNo}, #{chatContent}, 'N', SYSDATE, DEFAULT, #{chatRoomNo})
 	</insert>
 	
 

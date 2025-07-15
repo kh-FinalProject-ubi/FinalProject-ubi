@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react-swc";
 export default defineConfig({
   plugins: [react()],
   define: {
-    global: {},
+    global: 'window',
   },
   server: {
     logLevel: 'debug', // ✅ 추가

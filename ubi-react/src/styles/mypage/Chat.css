@@ -91,20 +91,25 @@
 }
 
 .chat-message {
-  max-width: 60%;
-  margin-bottom: 10px;
-  padding: 8px;
-  border-radius: 5px;
+  margin: 4px 0;
+  max-width: 70%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 14px;
 }
 
+/* 내 메시지: 오른쪽 정렬 + 파란 말풍선 */
 .my-message {
-  background-color: #d1e7dd;
-  align-self: flex-end;
+  align-self: flex-end;             /* 오른쪽 */
+  background: #1976d2;              /* 말풍선 색 */
+  color: #fff;
 }
 
+/* 상대 메시지: 왼쪽 정렬 + 회색 말풍선 */
 .other-message {
-  background-color: white;
-  align-self: flex-start;
+  align-self: flex-start;           /* 왼쪽 */
+  background: #eee;
+  color: #000;
 }
 
 .message-sender {
