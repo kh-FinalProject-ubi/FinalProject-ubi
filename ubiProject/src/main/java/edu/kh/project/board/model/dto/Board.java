@@ -69,6 +69,11 @@ public class Board {
 	 private String facilityName;
 	 private String facilityKindCd; 
 	 private String facilityAddress;
+	 
+		// 복지혜택
+	 private String welfareName;
+	 private String welfareAgency;
+	 private String category;
 
 
 	// 특정 게시글 작성된 댓글 목록 리스트
