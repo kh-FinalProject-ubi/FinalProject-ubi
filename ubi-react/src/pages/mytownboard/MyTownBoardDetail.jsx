@@ -127,6 +127,13 @@ function MyTownBoardDetail() {
           <>
             &nbsp;|&nbsp;복지시설: <strong>{board.facilityName}</strong>
           </>
+          
+        )}
+               {board.postType === "복지혜택후기" && board.welfareName && (
+          <>
+            &nbsp;|&nbsp;복지혜택: <strong>{board.welfareName}</strong>
+          </>
+          
         )}
       </p>
       <img

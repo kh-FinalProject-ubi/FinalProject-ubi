@@ -4,6 +4,7 @@ import axios from "axios";
 import useAuthStore from "../../stores/useAuthStore";
 import LikeButton from "../../components/welfareLike/LikeButton";
 import styles from "../../styles/DetailCommon.module.css";
+import WelfareReviewSection from "./ReviewSession";
 
 // 안전하게 값 추출하는 함수
 const getValue = (node) => {
@@ -227,6 +228,12 @@ const WelfareDetailPage = () => {
           )}
         </p>
       )}
+
+    <WelfareReviewSection apiServiceId={data.apiServiceId} />
+
+
+
+      
     </div>
   );
 };

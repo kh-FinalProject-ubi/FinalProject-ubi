@@ -1,6 +1,7 @@
 import useAuthStore from "../../stores/useAuthStore";
 import LikeButton from "../../components/welfareLike/LikeButton";
 import styles from "../../styles/DetailCommon.module.css";
+import WelfareReviewSection from "./ReviewSession";
 
 const safe = (val) => val || "정보 없음";
 
@@ -55,6 +56,12 @@ const GenericDetail = ({ data }) => {
           </a>
         </p>
       )}
+
+
+
+    <WelfareReviewSection apiServiceId={data.apiServiceId} />
+
+      
     </div>
   );
 };
