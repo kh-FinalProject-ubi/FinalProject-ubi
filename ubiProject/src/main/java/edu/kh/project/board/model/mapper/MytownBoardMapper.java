@@ -25,9 +25,19 @@ public interface MytownBoardMapper {
 	 * @param regionCity
 	 * @return
 	 */
+//	List<Board> selectLocalBoardList(RowBounds rowBounds);
+//
+//	int getBoardLocalListCount();
+	
+	// 일반 목록 조회 (RowBounds)
 	List<Board> selectLocalBoardList(RowBounds rowBounds);
 
+	// 필터 목록 조회 (RowBounds)
+	List<Board> getFilteredBoardList(Map<String, Object> paramMap);
+
+	// 글 개수 조회
 	int getBoardLocalListCount();
+	int getFilteredBoardCount(Map<String, Object> paramMap);
 
 	/**
 	 * 상세조회
@@ -44,6 +54,7 @@ public interface MytownBoardMapper {
 	 * @return
 	 */
 	int increaseReadCount(int boardNo);
+	
 
 	// 게시글 작성
 	int insertBoard(Board dto);

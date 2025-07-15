@@ -79,6 +79,115 @@
 		FROM BOARD WHERE BOARD_TYPE = 3 AND BOARD_DEL_FL = 'N'
 	</select>
 
+
+<!-- 필터 검색 -->
+<select id="getFilteredBoardCount" resultType="int">
+  SELECT COUNT(*)
+  FROM BOARD B
+  LEFT JOIN MEMBER M ON B.MEMBER_NO = M.MEMBER_NO
+  <where>
+    B.BOARD_TYPE = 3
+    AND B.BOARD_DEL_FL = 'N'
+    <if test="postType != null and postType != ''">
+      AND B.POST_TYPE = #{postType}
+    </if>
+<if test="regionCity != null and regionCity != ''">
+  AND M.REGION_CITY = #{regionCity}
+</if>
+<if test="regionDistrict != null and regionDistrict != ''">
+  AND M.REGION_DISTRICT = #{regionDistrict}
+</if>
+    <if test="keyword != null and keyword != ''">
+      AND (B.BOARD_TITLE LIKE '%' || #{keyword} || '%' OR B.BOARD_CONTENT LIKE '%' || #{keyword} || '%')
+    </if>
+<if test="tagList != null and tagList.size() > 0">
+  AND EXISTS (
+    SELECT 1 FROM BOARD_HASHTAG H
+    WHERE H.BOARD_NO = B.BOARD_NO
+    AND H.HASHTAG_NAME IN
+    <foreach collection="tagList" item="tag" open="(" separator="," close=")">
+      #{tag}
+    </foreach>
+  ) 
+</if>
+  </where>
+</select>
+
+<select id="getFilteredBoardList" resultType="edu.kh.project.board.model.dto.Board">
+  SELECT *
+  FROM (
+    SELECT ROWNUM RNUM, A.*
+    FROM (
+      SELECT
+        B.BOARD_NO,
+        B.BOARD_TITLE,
+        B.BOARD_CONTENT,
+        B.POST_TYPE,
+        B.BOARD_READ_COUNT,
+        B.STAR_COUNT,
+       <![CDATA[
+  CASE 
+    WHEN SYSDATE - B.BOARD_DATE < 1/24/60 THEN FLOOR((SYSDATE - B.BOARD_DATE)*24*60*60) || '초 전'
+    WHEN SYSDATE - B.BOARD_DATE < 1/24 THEN FLOOR((SYSDATE - B.BOARD_DATE)*24*60) || '분 전'
+    WHEN SYSDATE - B.BOARD_DATE < 1 THEN FLOOR((SYSDATE - B.BOARD_DATE)*24) || '시간 전'
+    WHEN SYSDATE - B.BOARD_DATE < 30 THEN FLOOR(SYSDATE - B.BOARD_DATE) || '일 전'
+    WHEN SYSDATE - B.BOARD_DATE < 365 THEN FLOOR((SYSDATE - B.BOARD_DATE)/30) || '달 전'
+    ELSE FLOOR((SYSDATE - B.BOARD_DATE)/365) || '년 전'
+  END AS BOARD_DATE
+]]>,
+        M.MEMBER_NICKNAME AS memberNickname,
+        M.MEMBER_IMG AS memberImg,
+        M.REGION_CITY AS regionCity,
+        M.REGION_DISTRICT AS regionDistrict,
+        B.API_SERVICE_ID AS apiServiceId,
+        B.FACILITY_API_SERVICE_ID AS facilityApiServiceId,
+        (SELECT I.IMAGE_PATH || '/' || I.IMAGE_NAME
+         FROM BOARD_IMAGE I
+         WHERE I.BOARD_NO = B.BOARD_NO AND I.IMAGE_ORDER = 0 AND ROWNUM = 1) AS thumbnail,
+        (SELECT LISTAGG(H.HASHTAG_NAME, ',')
+         FROM BOARD_HASHTAG H
+         WHERE H.BOARD_NO = B.BOARD_NO) AS hashtags,
+        (SELECT COUNT(*) FROM BOARD_LIKE L WHERE L.BOARD_NO = B.BOARD_NO) AS likeCount
+      FROM BOARD B
+      JOIN MEMBER M ON B.MEMBER_NO = M.MEMBER_NO
+      <where>
+        B.BOARD_TYPE = 3
+        AND B.BOARD_DEL_FL = 'N'
+        <if test="postType != null and postType != ''">
+          AND B.POST_TYPE = #{postType}
+        </if>
+        <if test="regionCity != null and regionCity != ''">
+          AND M.REGION_CITY = #{regionCity}
+        </if>
+        <if test="regionDistrict != null and regionDistrict != ''">
+          AND M.REGION_DISTRICT = #{regionDistrict}
+        </if>
+        <if test="keyword != null and keyword != ''">
+          AND (
+            B.BOARD_TITLE LIKE '%' || #{keyword} || '%'
+            OR B.BOARD_CONTENT LIKE '%' || #{keyword} || '%'
+          )
+        </if>
+        <if test="tagList != null and tagList.size() > 0">
+          AND EXISTS (
+            SELECT 1
+            FROM BOARD_HASHTAG H
+            WHERE H.BOARD_NO = B.BOARD_NO
+            AND H.HASHTAG_NAME IN
+            <foreach collection="tagList" item="tag" open="(" separator="," close=")">
+              #{tag}
+            </foreach>
+          )
+        </if>
+      </where>
+      ORDER BY B.BOARD_DATE DESC
+    ) A
+  )
+  WHERE RNUM BETWEEN #{startRow} + 1 AND #{startRow} + #{limit}
+</select>
+
+
+
 	<!-- 복지시설 존재 여부 -->
 	<select id="existsFacilityById" resultType="int">
 		SELECT COUNT(*) FROM WELFARE_FACILITY WHERE FACILITY_API_SERVICE_ID = #{facilityServiceId}
