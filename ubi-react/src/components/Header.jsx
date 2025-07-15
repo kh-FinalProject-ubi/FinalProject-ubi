@@ -27,20 +27,18 @@ const Header = () => {
   const { token, memberImg, clearAuth, memberNo, memberNickname } =
     useAuthStore();
   const isLogin = !!token;
-
   const { selectedCity, selectedDistrict } = useSelectedRegionStore();
   const navigate = useNavigate();
 
   const [alerts, setAlerts] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+
+  const [hasNewAlert, setHasNewAlert] = useState(false);
   const dropdownRef = useRef(null);
 
-  // 알림 수신
+  // 실시간 알림 수신
   useAlertSocket(memberNo, (newAlert) => {
-    console.log("📩 수신된 알림:", newAlert);
-
     const { type, boardNo, alertId } = newAlert;
-
     let targetUrl = "/";
     switch (type) {
       case "NOTICE":
@@ -55,19 +53,17 @@ const Header = () => {
       case "WELFARE_UPDATE":
         targetUrl = `/welfare/${boardNo}`;
         break;
-      default:
-        console.warn("⚠️ 알 수 없는 알림 타입:", type);
     }
-    console.log("📬 수신된 알림:", newAlert);
-    // ✅ 중복 alertId는 추가하지 않음
+
     setAlerts((prev) => {
-      if (prev.some((a) => a.alertId === alertId)) {
-        return prev;
-      }
-      return [{ ...newAlert, targetUrl }, ...prev];
+      if (prev.some((a) => a.alertId === alertId)) return prev;
+      return [{ ...newAlert, isRead: false, targetUrl }, ...prev];
     });
+
+    setHasNewAlert(true);
   });
 
+  // 알림 목록 불러오기
   useEffect(() => {
     if (memberNo > 0) {
       fetch(`http://localhost:8080/api/alert/list?memberNo=${memberNo}`)
@@ -88,17 +84,25 @@ const Header = () => {
               case "WELFARE_UPDATE":
                 targetUrl = `/welfare/${alert.boardNo}`;
                 break;
-              default:
-                targetUrl = "/";
             }
-            return { ...alert, targetUrl };
+            return {
+              ...alert,
+              isRead: alert.isRead === 1 ? true : false, // ✅ 숫자 → boolean
+              targetUrl,
+            };
           });
           setAlerts(alertList);
+
+          // ✅ 읽지 않은 게 하나라도 있으면 NEW 띄우기
+          if (alertList.some((a) => !a.isRead)) {
+            setHasNewAlert(true);
+          }
         })
         .catch((err) => console.error("🔴 알림 목록 조회 실패:", err));
     }
   }, [memberNo]);
 
+  // 드롭다운 외 클릭 시 닫기
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -109,7 +113,25 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 복지시설 버튼 클릭
+  // 알림 클릭 시 읽음 처리 + 이동
+  const handleAlertClick = (alert) => {
+    fetch(`http://localhost:8080/api/alert/read/${alert.alertId}`, {
+      method: "PUT",
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("읽음 처리 실패");
+        setAlerts((prev) =>
+          prev.map((a) =>
+            a.alertId === alert.alertId ? { ...a, isRead: true } : a
+          )
+        );
+        setShowDropdown(false);
+        if (alert.targetUrl) navigate(alert.targetUrl);
+      })
+      .catch((err) => console.error("🔴 알림 읽음 처리 실패:", err));
+  };
+
+  // 복지시설 버튼 처리
   const handleFacilityClick = () => {
     const city = selectedCity || "서울특별시";
     const district = selectedDistrict || "종로구";
@@ -130,7 +152,6 @@ const Header = () => {
   return (
     <>
       <header className={styles.siteHeader}>
-        {/* 1. 상단 영역: 로고와 사용자 정보 */}
         <div className={styles.topRow}>
           <h2>
             <a href="/">
@@ -142,49 +163,44 @@ const Header = () => {
           <div className={styles.headerRight}>
             {isLogin ? (
               <>
+                {/* 알림 아이콘 */}
                 <button
                   className={styles.alarmBtn}
-                  onClick={() => setShowDropdown((prev) => !prev)}
+                  onClick={() => {
+                    setShowDropdown((prev) => !prev);
+                    setHasNewAlert(false); // ✅ 알림창 열면 NEW 뱃지 제거
+                  }}
                 >
                   <img src="/alarm.svg" alt="알림 아이콘" />
-                  {alerts.some((a) => !a.isRead) && (
-                    <span className="new-badge">new</span>
-                  )}
+                  {hasNewAlert && <span className="new-badge">NEW</span>}{" "}
+                  {/* ✅ 조건도 수정 */}
                 </button>
 
                 {showDropdown && (
                   <div className={styles.alertDropdown} ref={dropdownRef}>
-                    {alerts.length === 0 ? (
-                      <div className="alert-empty">알림이 없습니다</div>
+                    {alerts.filter((a) => !a.isRead).length === 0 ? (
+                      <div className="alert-empty">안 읽은 알림이 없습니다</div>
                     ) : (
-                      alerts.map((alert) => (
-                        <div
-                          key={alert.alertId}
-                          className="alert-item"
-                          onClick={() => {
-                            if (alert.targetUrl) {
-                              navigate(alert.targetUrl);
-                            }
-                            // 클릭 시 알림 제거
-                            setAlerts((prev) =>
-                              prev.filter((a) => a.alertId !== alert.alertId)
-                            );
-                            setShowDropdown(false);
-                          }}
-                        >
-                          {/* ✅ 알림 유형별 메시지 */}
-                          <p>
-                            {alert.type === "NOTICE" &&
-                              "새로운 공지사항이 등록되었습니다."}
-                            {alert.type === "COMMENT" &&
-                              "내 글에 댓글이 달렸습니다."}
-                            {alert.type === "QUESTION_REPLY" &&
-                              "문의글에 답변이 등록되었습니다."}
-                            {alert.type === "WELFARE_UPDATE" &&
-                              "찜한 복지 정보가 업데이트되었습니다."}
-                          </p>
-                        </div>
-                      ))
+                      alerts
+                        .filter((a) => !a.isRead)
+                        .map((alert) => (
+                          <div
+                            key={alert.alertId}
+                            className="alert-item"
+                            onClick={() => handleAlertClick(alert)}
+                          >
+                            <p>
+                              {alert.type === "NOTICE" &&
+                                "새로운 공지사항이 등록되었습니다."}
+                              {alert.type === "COMMENT" &&
+                                "내 글에 댓글이 달렸습니다."}
+                              {alert.type === "QUESTION_REPLY" &&
+                                "문의글에 답변이 등록되었습니다."}
+                              {alert.type === "WELFARE_UPDATE" &&
+                                "찜한 복지 정보가 업데이트되었습니다."}
+                            </p>
+                          </div>
+                        ))
                     )}
                   </div>
                 )}
@@ -206,7 +222,7 @@ const Header = () => {
                 </Link>
 
                 <span className={styles.nickname}>{memberNickname}님</span>
-                <button className={styles.logoutBtn} onClick={clearAuth}>
+                <button className={styles.logoutBtn} onClick={handleLogout}>
                   로그아웃
                 </button>
               </>
@@ -226,7 +242,6 @@ const Header = () => {
           </div>
         </div>
 
-        {/* 2. 하단 영역: 메뉴와 지역 선택 */}
         <div className={styles.bottomRow}>
           <nav className={styles.navMenu}>
             <NavLink

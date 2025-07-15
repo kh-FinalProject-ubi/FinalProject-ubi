@@ -1,17 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
 <mapper namespace="edu.kh.project.websocket.mapper.AlertMapper">
 
-	<insert id="insertAlert" parameterType="Alert">
+  <!-- 알림 저장 -->
+  <insert id="insertAlert" parameterType="Alert">
+    <selectKey keyProperty="alertId" resultType="long" order="BEFORE">
+      SELECT ALERT_SEQ.NEXTVAL FROM DUAL
+    </selectKey>
+    
+    INSERT INTO ALERT (
+      ALERT_ID,
+      MEMBER_NO,
+      TYPE,
+      CONTENT,
+      TARGET_URL,
+      BOARD_NO,
+      CREATED_AT,
+      IS_READ
+    ) VALUES (
+      #{alertId},
+      #{memberNo},
+      #{type},
+      #{content},
+      #{targetUrl},
+      #{boardNo},
+      DEFAULT,
+      'N'
+    )
+  </insert>
 
-		<!-- 🔑 시퀀스 값 미리 조회해서 alertId 세팅 -->
-    <selectKey
-			keyProperty="alertId" resultType="long" order="BEFORE">
-			SELECT ALERT_SEQ.NEXTVAL FROM DUAL
-		</selectKey> INSERT INTO
-		ALERT ( ALERT_ID, MEMBER_NO, TYPE, CONTENT, TARGET_URL, CREATED_AT,
-		IS_READ ) VALUES ( #{alertId}, #{memberNo}, #{type}, #{content},
-		#{targetUrl}, DEFAULT, 'N' ) </insert>
+  <!-- 알림 목록 조회 -->
+  <select id="selectAlertList" parameterType="long"
+          resultType="edu.kh.project.websocket.dto.AlertDto">
+    SELECT 
+      ALERT_ID,
+      MEMBER_NO,
+      TYPE,
+      CONTENT,
+      TARGET_URL,
+      BOARD_NO,
+      TO_CHAR(CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') AS CREATED_AT,
+      CASE WHEN IS_READ = 'Y' THEN 1 ELSE 0 END AS IS_READ
+    FROM ALERT
+    WHERE MEMBER_NO = #{memberNo}
+    ORDER BY CREATED_AT DESC
+  </select>
 
+  <!-- 알림 읽음 처리 -->
+  <update id="updateIsRead" parameterType="long">
+    UPDATE ALERT
+    SET IS_READ = 'Y'
+    WHERE ALERT_ID = #{alertId}
+  </update>
 
 </mapper>

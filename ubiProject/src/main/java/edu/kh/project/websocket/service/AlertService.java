@@ -10,5 +10,7 @@ public interface AlertService {
 	void sendAlert(long longValue, String string, String string2, int boardNo, String string3);
 	
 	List<AlertDto> getAlertList(Long memberNo);
+
+	int updateIsRead(Long alertId);
 }
 
