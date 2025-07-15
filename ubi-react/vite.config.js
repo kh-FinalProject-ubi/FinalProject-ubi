@@ -7,6 +7,7 @@ export default defineConfig({
     global: {},
   },
   server: {
+    logLevel: 'debug', // ✅ 추가
     port: 5173,
     proxy: {
       "/api": {
@@ -33,6 +34,5 @@ export default defineConfig({
         secure: false,
       },
     },
-    logLevel: 'debug', 
   },
 });

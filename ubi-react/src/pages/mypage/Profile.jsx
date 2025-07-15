@@ -11,6 +11,8 @@ import DaumPostcode from "react-daum-postcode";
 import { stripHtml } from "./striptHtml";
 
 const parseMemberStandardCode = (code) => {
+
+  
   switch (code) {
     case "A":
       return { main: "일반", isDisabled: true, isPregnant: true };
