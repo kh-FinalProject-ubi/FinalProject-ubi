@@ -5,17 +5,17 @@ import useAuthStore from "../../stores/useAuthStore";
 import "summernote/dist/summernote-lite.css";
 import $ from "jquery";
 import "summernote/dist/summernote-lite.js";
-import styles from "../../styles/board/InsertBoard.module.css";
+import styles from "../../styles/board/InsertBoard.module.css"; // InsertBoard의 CSS를 재사용
 
 const EditBoard = () => {
   const { boardPath, boardNo } = useParams();
+  const [title, setTitle] = useState("");
   const navigate = useNavigate();
   const { token } = useAuthStore();
 
   const summernoteInitialized = useRef(false);
   const contentRef = useRef("");
   const originalBoardRef = useRef(null);
-  const deletedImagesRef = useRef(new Set());
 
   const boardCodeMap = {
     noticeBoard: 1,
@@ -27,7 +27,7 @@ const EditBoard = () => {
   const [postType, setPostType] = useState("");
   const [hasAlerted, setHasAlerted] = useState(false);
 
-  // 이미지 업로더 (기존 기능 유지)
+  // 이미지 업로더
   const imageUploader = (file) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -47,7 +47,7 @@ const EditBoard = () => {
       });
   };
 
-  // 데이터 로딩 및 권한 확인 (기존 기능 유지)
+  // 데이터 로딩 및 권한 확인
   useEffect(() => {
     if (!token && !hasAlerted) {
       alert("로그인이 필요합니다.");
@@ -80,6 +80,7 @@ const EditBoard = () => {
           return;
         }
         setBoard(boardData);
+        setTitle(boardData.boardTitle);
         originalBoardRef.current = boardData;
         setPostType(
           boardData.postType || (boardData.boardType === 1 ? "공지" : "문의")
@@ -92,11 +93,11 @@ const EditBoard = () => {
     fetchBoard();
   }, [boardCodeInt, boardNo, token, navigate, hasAlerted, boardPath]);
 
-  // Summernote 초기화 (기존 기능 유지)
+  // Summernote 초기화
   useEffect(() => {
     if (board && !summernoteInitialized.current) {
       $("#summernote").summernote({
-        height: 400,
+        height: 510,
         toolbar: [
           ["style", ["style"]],
           ["font", ["bold", "italic", "underline", "strikethrough", "clear"]],
@@ -108,7 +109,22 @@ const EditBoard = () => {
         ],
         callbacks: {
           onChange: (contents) => {
-            contentRef.current = contents;
+            const textOnly = $("<div>").html(contents).text();
+            if (textOnly.length > 2000) {
+              const trimmed = textOnly.substring(0, 2000);
+              $("#summernote").summernote("code", trimmed);
+              contentRef.current = trimmed;
+            } else {
+              contentRef.current = contents;
+            }
+          },
+          onKeydown: (e) => {
+            const textOnly = $("<div>")
+              .html($("#summernote").summernote("code"))
+              .text();
+            if (textOnly.length >= 2000 && e.key.length === 1) {
+              e.preventDefault();
+            }
           },
           onImageUpload: (files) => {
             for (const file of files) imageUploader(file);
@@ -119,20 +135,22 @@ const EditBoard = () => {
       summernoteInitialized.current = true;
     }
     return () => {
-      if (summernoteInitialized.current) {
+      if (
+        summernoteInitialized.current &&
+        $("#summernote").data("summernote")
+      ) {
         $("#summernote").summernote("destroy");
         summernoteInitialized.current = false;
       }
     };
   }, [board]);
 
-  // 폼 제출 핸들러 (기존 기능 유지)
+  // 폼 제출 핸들러
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!board || !originalBoardRef.current) return;
 
-    const isTitleChanged =
-      board.boardTitle !== originalBoardRef.current.boardTitle;
+    const isTitleChanged = title !== originalBoardRef.current.boardTitle;
     const isContentChanged =
       contentRef.current !== originalBoardRef.current.boardContent;
     const isPostTypeChanged = postType !== originalBoardRef.current.postType;
@@ -143,7 +161,7 @@ const EditBoard = () => {
     }
 
     const formData = new FormData();
-    formData.append("boardTitle", board.boardTitle);
+    formData.append("boardTitle", title);
     formData.append("boardContent", contentRef.current);
     formData.append("postType", postType);
     formData.append("boardType", board.boardType);
@@ -165,15 +183,28 @@ const EditBoard = () => {
 
   if (!board) return <p>로딩 중...</p>;
 
+  // ✅ postType 값에 따라 동적으로 클래스를 생성합니다.
+  const selectClassName = `${styles.postTypeSelect} ${
+    postType === "신고"
+      ? styles.postTypeReport
+      : ["문의", "공지", "이벤트", "중요"].includes(postType)
+      ? styles.postTypeInquiry
+      : ""
+  }`;
+
   return (
     <div className={styles.container}>
+      <h2 className={styles.pageTitle}>
+        {board.boardType === 1 && "공지게시판"}
+        {board.boardType === 2 && "문의게시판"}
+      </h2>
       <form onSubmit={handleSubmit}>
         <div className={styles.inputGroup}>
           <select
             name="postType"
             value={postType}
             onChange={(e) => setPostType(e.target.value)}
-            className={styles.postTypeSelect}
+            className={selectClassName} // ✅ 동적으로 생성된 클래스 변수를 적용합니다.
           >
             {board.boardType === 1 && (
               <>
@@ -193,10 +224,9 @@ const EditBoard = () => {
             type="text"
             id="boardTitle"
             name="boardTitle"
-            value={board.boardTitle || ""}
-            onChange={(e) =>
-              setBoard({ ...board, [e.target.name]: e.target.value })
-            }
+            placeholder="제목을 입력해주세요"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             required
             className={styles.titleInput}
           />

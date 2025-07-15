@@ -173,13 +173,14 @@
 		C.COMMENT_PARENT_NO
 		ORDER SIBLINGS BY C.COMMENT_NO
 	</select>
-	
+
 	<!-- 게시글 번호로 작성자 회원 번호 조회 -->
-    <select id="selectWriterNo" resultType="int">
-        SELECT MEMBER_NO
-        FROM BOARD
-        WHERE BOARD_NO = #{boardNo}
-    </select>
+	<select id="selectWriterNo" resultType="int">
+		SELECT MEMBER_NO
+		FROM
+		BOARD
+		WHERE BOARD_NO = #{boardNo}
+	</select>
 
 
 	<!-- 좋아요 해제 -->
@@ -196,13 +197,19 @@
 		#{boardNo})
 	</insert>
 
-	<!-- 게시글 돟아요 수 조회 -->
-	<select id="selectLikeCount">
-		SELECT COUNT (*) FROM "BOARD_LIKE"
-		WHERE BOARD_NO =
-		#{boardNo}
+	<!-- 게시글 좋아요 수 조회 -->
+	<select id="selectLikeCount" resultType="int">
+		SELECT COUNT(*) FROM "BOARD_LIKE"
+		WHERE BOARD_NO = #{boardNo}
 	</select>
 
+	<!-- 로그인 회원 좋아요 여부 조회 -->
+	<select id="checkBoardLike" resultType="int">
+		SELECT COUNT(*) FROM "BOARD_LIKE"
+		WHERE BOARD_NO = #{boardNo}
+		AND MEMBER_NO = #{memberNo}
+	</select>
+	
 	<!-- 조회 수 1 증가 -->
 	<update id="updateReadCount">
 		UPDATE "BOARD" SET
@@ -336,10 +343,11 @@
 		CAST(IMG_RENAME AS VARCHAR2(300)) "rename"
 		FROM "BOARD_IMG"
 	</select>
-	
+
 	<select id="selectBoardType" resultType="int">
 		SELECT BOARD_TYPE
-		FROM BOARD
+		FROM
+		BOARD
 		WHERE BOARD_NO = #{boardNo}
 	</select>
 

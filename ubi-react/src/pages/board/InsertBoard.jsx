@@ -22,11 +22,10 @@ const InsertBoard = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [postType, setPostType] = useState("");
-  const [images, setImages] = useState([]); // 이 상태는 현재 UI에서 사용되지 않지만, 로직을 위해 유지합니다.
+  const [images, setImages] = useState([]);
 
   const summernoteInitialized = useRef(false);
 
-  // Summernote 이미지 업로더 (기존 기능 유지)
   const imageUploader = (file) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -46,7 +45,6 @@ const InsertBoard = () => {
       });
   };
 
-  // 게시판 유형에 따라 postType 초기값 설정 (기존 기능 유지)
   useEffect(() => {
     if (numericBoardCode === 1) {
       setPostType("공지");
@@ -55,7 +53,6 @@ const InsertBoard = () => {
     }
   }, [numericBoardCode]);
 
-  // Summernote 초기화 (기존 기능 유지)
   useEffect(() => {
     if (!summernoteInitialized.current) {
       $("#summernote").summernote({
@@ -71,7 +68,26 @@ const InsertBoard = () => {
           ["insert", ["link", "picture"]],
         ],
         callbacks: {
-          onChange: (contents) => setContent(contents),
+          onChange: (contents) => {
+            const textLength = $("<div>").html(contents).text().length;
+            if (textLength > 2000) {
+              const trimmed = $("<div>")
+                .html(contents)
+                .text()
+                .substring(0, 2000);
+              $("#summernote").summernote("code", trimmed);
+            } else {
+              setContent(contents);
+            }
+          },
+          onKeydown: (e) => {
+            const textLength = $("<div>")
+              .html($("#summernote").summernote("code"))
+              .text().length;
+            if (textLength >= 2000 && e.key.length === 1) {
+              e.preventDefault();
+            }
+          },
           onImageUpload: (files) => {
             for (const file of files) imageUploader(file);
           },
@@ -80,20 +96,23 @@ const InsertBoard = () => {
       summernoteInitialized.current = true;
     }
     return () => {
-      if (summernoteInitialized.current) {
+      if (
+        summernoteInitialized.current &&
+        $("#summernote").data("summernote")
+      ) {
         $("#summernote").summernote("destroy");
         summernoteInitialized.current = false;
       }
     };
   }, []);
 
-  // 폼 제출 핸들러 (기존 기능 유지)
   const handleSubmit = () => {
     if (!title.trim()) {
       alert("제목을 입력해주세요.");
       return;
     }
-    if (!content.trim()) {
+    const currentContent = $("#summernote").summernote("code");
+    if ($("<div>").html(currentContent).text().trim().length === 0) {
       alert("내용을 입력해주세요.");
       return;
     }
@@ -105,7 +124,7 @@ const InsertBoard = () => {
     const formData = new FormData();
     const boardObj = {
       boardTitle: title,
-      boardContent: content,
+      boardContent: currentContent,
       memberNo: loginMemberNo,
       postType,
       boardCode: numericBoardCode,
@@ -144,14 +163,28 @@ const InsertBoard = () => {
       });
   };
 
+  const selectClassName = `${styles.postTypeSelect} ${
+    postType === "문의" ? styles.postTypeInquiry : ""
+  }${postType === "공지" ? styles.postTypeInquiry : ""}${
+    postType === "이벤트" ? styles.postTypeInquiry : ""
+  }${postType === "중요" ? styles.postTypeInquiry : ""} ${
+    postType === "신고" ? styles.postTypeReport : ""
+  }`;
+
   return (
     <div className={styles.container}>
+      {/* ✅ 페이지 제목 추가 */}
+      <h2 className={styles.pageTitle}>
+        {numericBoardCode === 1 && "공지게시판"}
+        {numericBoardCode === 2 && "문의게시판"}
+      </h2>
+
       <div className={styles.inputGroup}>
         <select
           name="postType"
           value={postType}
           onChange={(e) => setPostType(e.target.value)}
-          className={styles.postTypeSelect}
+          className={selectClassName}
         >
           {numericBoardCode === 1 && (
             <>
