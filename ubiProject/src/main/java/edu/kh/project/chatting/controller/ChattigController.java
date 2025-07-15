@@ -269,5 +269,87 @@ public class ChattigController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);    		
 		}
     }
- 
+    
+    // 채팅방 나가기
+    @PostMapping("/exit")
+    @ResponseBody
+    public ResponseEntity<Object> exitChatRoom(@RequestParam ("chatRoomNo") int chatRoomNo,
+											   @RequestHeader("Authorization") String authorizationHeader) {
+    	try {
+    		
+    		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+    			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
+    		}
+    		
+    		String token = authorizationHeader.substring(7);
+    		
+    		if (!jwtU.validateToken(token)) {
+    			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
+    		}
+    		
+    		Long memberNoLong = jwtU.extractMemberNo(token);
+    		int memberNo = memberNoLong.intValue();
+    		
+    		Map<String, Integer> map = new HashMap<String, Integer>();
+    		
+    		map.put("memberNo", memberNo);
+    		map.put("chatRoomNo", chatRoomNo);
+    		
+    		int message = service.exitChatRoom(map);
+    		
+    		if (message > 0) {          // ✔︎ 0 row 도 OK
+    		    return ResponseEntity.ok(message);
+    		}
+    		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("채팅 나가기 실패");
+    		
+    	}catch (Exception e) {
+    		e.printStackTrace(); // 콘솔에 출력
+    	    log.error("채팅 나가기 실패", e);
+    		
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);    		
+		}
+    }
+    
+    // 채팅방 나가기
+    @PostMapping("/deleteMessage")
+    @ResponseBody
+    public ResponseEntity<Object> deleteMessage(@RequestParam ("chatNo") int chatNo,
+											   @RequestHeader("Authorization") String authorizationHeader) {
+    	try {
+    		
+    		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+    			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
+    		}
+    		
+    		String token = authorizationHeader.substring(7);
+    		
+    		if (!jwtU.validateToken(token)) {
+    			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
+    		}
+    		
+    		Long memberNoLong = jwtU.extractMemberNo(token);
+    		int memberNo = memberNoLong.intValue();
+    		
+    		Map<String, Integer> map = new HashMap<String, Integer>();
+    		
+    		System.out.println("chatNo: " + chatNo);
+    		System.out.println("memberNo: " + memberNo);
+    		map.put("memberNo", memberNo);
+    		map.put("chatRoomNo", chatNo);
+    		
+    		int message = service.deleteMessage(map);
+    		
+    		if (message >= 0) {          // ✔︎ 0 row 도 OK
+    		    return ResponseEntity.ok(message);
+    		}
+    		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("삭제 권한이 없습니다");
+    		
+    	}catch (Exception e) {
+    		e.printStackTrace(); // 콘솔에 출력
+    	    log.error("채팅 삭제 실패", e);
+    		
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);    		
+		}
+    }
+    
 }

@@ -51,5 +51,17 @@ public interface ChattingService {
      */
     int insertMessage(Message msg);
 
+	/** 채팅방 나가기
+	 * @param map
+	 * @return
+	 */
+	int exitChatRoom(Map<String, Integer> map);
+
+	/** 채팅 삭제
+	 * @param map
+	 * @return
+	 */
+	int deleteMessage(Map<String, Integer> map);
+
 
 }

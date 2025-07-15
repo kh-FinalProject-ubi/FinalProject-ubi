@@ -923,11 +923,15 @@ const Profile = () => {
                       <td>{l.hashtags}</td>
                       <td>{l.boardTitle}</td>
                       <td>
-                        {l.boardContent
-                          ? l.boardContent.length > 20
-                            ? `${l.boardContent.slice(0, 20)}...`
-                            : l.boardContent
-                          : "내용 없음"}
+                        {(() => {
+                          const plainContent = stripHtml(l.boardContent);
+
+                          if (!plainContent) return "내용 없음";
+
+                          return plainContent.length > 20
+                            ? `${plainContent.slice(0, 20)}...`
+                            : plainContent;
+                        })()}
                       </td>
                       <td>{l.memberNickname}</td>
                       <td>{l.boardDate}</td>
