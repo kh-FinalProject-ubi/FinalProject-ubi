@@ -71,7 +71,7 @@ const Chat = () => {
       setSelectedRoom(room);
       setMessages([]); // 새로 초기화
       // TODO: 필요하면 서버에서 메시지 목록 받아오기
-    };;
+  };
 
   useEffect(() => {
     console.log("[CHAT‑USEEFFECT] 실행됨", { token, memberNo });
@@ -80,7 +80,7 @@ const Chat = () => {
     const client = new Client({
       webSocketFactory: () => {
         const sock = new SockJS("http://localhost:8080/ws-chat", null, {
-          transports: ["websocket", "xhr-streaming", "xhr-polling"],
+          transports: ["websocket", "xhr-streaming", "xhr-polling"], // ✅ fallback까지 허용
           timeout: 30000,
         });
 
@@ -101,29 +101,25 @@ const Chat = () => {
       debug: (msg) => console.log("[STOMP]", msg),
 
       onConnect: (frame) => {
-        try {
-          console.log("✅ STOMP 연결 성공!", frame);
-          setIsConnected(true);
+        console.log("✅ STOMP 연결 성공!", frame);
+        setIsConnected(true);
 
-          const destination = `/user/queue/chat/${memberNo}`;
-          console.log("📍 구독할 경로:", destination);
+        const destination = `/user/queue/chat/${memberNo}`;
+        console.log("📍 구독할 경로:", destination);
 
-          client.subscribe(destination, (message) => {
-            try {
-              const body = JSON.parse(message.body);
-              console.log("📩 받은 메시지:", body);
+        client.subscribe(destination, (message) => {
+          try {
+            const body = JSON.parse(message.body);
+            console.log("📩 받은 메시지:", body);
 
-              if (selectedRoom && body.chatRoomNo === selectedRoom.chatRoomNo) {
-                console.log("🎯 현재 선택된 방:", selectedRoom);
-                setMessages((prev) => [...prev, body]);
-              }
-            } catch (err) {
-              console.error("❌ 메시지 처리 중 오류:", err);
+            if (selectedRoom && body.chatRoomNo === selectedRoom.chatRoomNo) {
+              console.log("🎯 현재 선택된 방:", selectedRoom);
+              setMessages((prev) => [...prev, body]);
             }
-          });
-        } catch (err) {
-          console.error("❌ onConnect 내부 오류:", err);
-        }
+          } catch (err) {
+            console.error("❌ 메시지 처리 중 오류:", err);
+          }
+        });
       },
 
       onStompError: (frame) => {
@@ -135,15 +131,20 @@ const Chat = () => {
         console.log("🔌 연결 해제됨");
         setIsConnected(false);
       },
-    });
 
-    client.onWebSocketError = (err) => {
-      console.error("🌐 WebSocket 오류 발생", err);
-    };
+      onWebSocketClose: (event) => {
+        console.error("🔌 WebSocket Closed", event);
+      },
+
+      onWebSocketError: (error) => {
+        console.error("❌ WebSocket Error", error);
+      },
+    });
 
     stompRef.current = client;
     console.log("📦 stompRef.current 설정 완료:", client);
 
+    console.log("🚀 STOMP client.activate() 호출 직전");
     client.activate();
     console.log("🚀 STOMP client.activate() 호출 완료");
 
