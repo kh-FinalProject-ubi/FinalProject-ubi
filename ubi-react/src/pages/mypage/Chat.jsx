@@ -299,7 +299,7 @@ const Chat = () => {
 
     // 2) 서버 PATCH
     try {
-      await axios.patch(
+      await axios.post(
         "/api/chatting/read",
         null,
         {

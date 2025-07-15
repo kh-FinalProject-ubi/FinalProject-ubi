@@ -239,7 +239,7 @@ public class ChattigController {
     
     
     // 채팅 읽음 표시 - 비동기
-    @PutMapping("read")
+    @PostMapping("read")
     @ResponseBody
     public ResponseEntity<Object> updateReadFlag(@RequestHeader("Authorization") String authorizationHeader,
 							  					 @RequestParam("chatRoomNo") int chatRoomNo) {
@@ -256,16 +256,15 @@ public class ChattigController {
     		
     		int message = service.updateReadFlag(chatRoomNo);
     		
-    		if (message > 0) {
- 		        return ResponseEntity.ok(message); // 새 경로 반환
- 		    } else {
- 		    	
- 		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("채팅 내역 조회 실패");
- 		    }
+    		if (message >= 0) {          // ✔︎ 0 row 도 OK
+    		    return ResponseEntity.noContent().build();   // 204 No Content
+    		}
+    		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    		                     .body("채팅 읽음 처리 실패");
     		
     	}catch (Exception e) {
     		e.printStackTrace(); // 콘솔에 출력
-    	    log.error("채팅 내역 조회 실패", e);
+    	    log.error("채팅 읽음 조회 실패", e);
     		
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);    		
 		}
