@@ -3,7 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { generateTagList } from "../../utils/tagUtils";
 import axios from "axios";
 import useAuthStore from "../../stores/useAuthStore";
-import "../../styles/comment/Comment.css";
 import CommentModal from "./../comment/CommentModal";
 import CommentSection from "../comment/Comment";
 import { Navigate } from "react-router-dom";
