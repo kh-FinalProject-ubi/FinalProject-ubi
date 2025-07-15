@@ -80,29 +80,24 @@ public class MytownEditBoardController {
 	 */
 	@PostMapping("/{boardNo}/update")
 	public ResponseEntity<?> updateBoard(
-	        @PathVariable("boardNo") int boardNo,
-	        @RequestBody Board dto,
-	        HttpServletRequest request) {
+	    @PathVariable("boardNo") int boardNo,
+	    @RequestBody Board dto,
+	    HttpServletRequest request) {
 
-	    // ✅ 1. 토큰에서 추출된 인증 사용자 번호 가져오기
 	    Integer tokenMemberNo = (Integer) request.getAttribute("memberNo");
+	    String role = (String) request.getAttribute("role");
 
-	    // ✅ 2. 비인증 접근 차단
 	    if (tokenMemberNo == null) {
 	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 유효하지 않습니다.");
 	    }
 
-	    // ✅ 3. 본인이 작성한 글인지 확인 (기존 글 작성자 조회)
-	    int writerNo = Service.getBoardWriterNo(boardNo); // 별도로 mapper에 존재한다고 가정
-	    
-	    String role = (String) request.getAttribute("role");
-
-	    if (!"ADMIN".equals(role) && writerNo != tokenMemberNo) {
-	        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("관리자 또는 본인만 수정할 수 있습니다.");
+	    int writerNo = Service.getBoardWriterNo(boardNo);
+	    if (writerNo != tokenMemberNo) {
+	        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("본인만 수정할 수 있습니다.");
 	    }
-	    // ✅ 4. board 정보 세팅
+
 	    dto.setBoardNo(boardNo);
-	    dto.setMemberNo(tokenMemberNo); // DB 조건절용
+	    dto.setMemberNo(tokenMemberNo);
 
 	    int result = Service.updateBoard(dto);
 
@@ -112,7 +107,7 @@ public class MytownEditBoardController {
 	        return ResponseEntity.status(500).body("게시글 수정 실패");
 	    }
 	}
-	
+
 	
 /**
  * 

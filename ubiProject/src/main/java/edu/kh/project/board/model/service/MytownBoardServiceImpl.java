@@ -195,33 +195,49 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 	 */
 	@Override
 	public int updateBoard(Board dto) {
-		// 1. 게시글 수정
-		int result = mapper.updateBoard(dto);
+	    // 1. 게시글 본문/제목/별점/유형 수정
+	    int result = mapper.updateBoard(dto);
+	    if (result == 0) return 0;
 
-		// 2. 해시태그 갱신: 기존 삭제 후 재삽입
-		mapper.deleteHashtags(dto.getBoardNo());
+	    // 2. 해시태그 갱신
+	    mapper.deleteHashtags(dto.getBoardNo());
+	    if (dto.getHashtagList() != null) {
+	        for (String tag : dto.getHashtagList()) {
+	            mapper.insertHashtag(dto.getBoardNo(), tag.trim());
+	        }
+	    }
 
-		if (dto.getHashtagList() != null && !dto.getHashtagList().isEmpty()) {
-			for (String tag : dto.getHashtagList()) {
-				mapper.insertHashtag(dto.getBoardNo(), tag.trim());
-			}
-		}
+	    // 3. 이미지 처리
+	    List<BoardImage> newImageList = dto.getImageList();
 
-		// 3. 이미지
-		mapper.deleteImagesByBoardNo(dto.getBoardNo());
+	    if (dto.getImageList() != null && !dto.getImageList().isEmpty()) {
+	        // 새 이미지가 있을 경우에만 기존 삭제 및 재삽입
+	        mapper.deleteImagesByBoardNo(dto.getBoardNo());
 
-		//
-		if (dto.getImageList() != null && !dto.getImageList().isEmpty()) {
-			for (int i = 0; i < dto.getImageList().size(); i++) {
-				BoardImage img = dto.getImageList().get(i);
-				img.setBoardNo(dto.getBoardNo());
-				img.setImageOrder(i); // 0번이 썸네일
+	        for (int i = 0; i < dto.getImageList().size(); i++) {
+	            BoardImage img = dto.getImageList().get(i);
+	            img.setBoardNo(dto.getBoardNo());
+	            img.setImageOrder(i);
+	            mapper.insertBoardImage(img);
+	        }
+	    } else {
+	        // 이미지 수정이 없으면 기존 이미지 유지, 썸네일 보장
+	        List<BoardImage> originList = mapper.selectBoardImageList(dto.getBoardNo());
 
-				mapper.insertBoardImage(img);
-			}
-		}
+	        if (!originList.isEmpty()) {
+	            boolean hasThumbnail = originList.stream().anyMatch(img -> img.getImageOrder() == 0);
 
-		return result;
+	            if (!hasThumbnail) {
+	                for (int i = 0; i < originList.size(); i++) {
+	                    BoardImage img = originList.get(i);
+	                    img.setImageOrder(i);
+	                    mapper.updateImageOrder(img);
+	                }
+	            }
+	        }
+	    }
+
+	    return result;
 	}
 	
 	/**
@@ -385,8 +401,16 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 		 return mapper.selectReportStatus(boardNo, memberNo);
 	}
 	
+	/**
+	 * 
+	 */
 	  @Override
 	    public List<Board> getBoardListByFacilityServiceId(String facilityServiceId) {
 	        return mapper.selectBoardListByFacilityServiceId(facilityServiceId);
 	    }
+	  
+	  @Override
+	  public List<Board> getBoardListByWelfareServiceId(String apiServiceId) {
+	      return mapper.selectBoardListByWelfareServiceId(apiServiceId);
+	  }
 }

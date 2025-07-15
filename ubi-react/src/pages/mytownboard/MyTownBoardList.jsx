@@ -16,6 +16,7 @@ function MyTownBoard() {
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState(null);
   const [selectedTags, setSelectedTags] = useState([]); // 새 디자인을 위한 해시태그 상태 추가
 
   // 인기 해시태그 목록 (예시 데이터)
@@ -28,14 +29,18 @@ function MyTownBoard() {
     return doc.body.textContent || "";
   };
 
-  // 데이터 로딩 (원본 유지)
-  useEffect(() => {
-    fetch(`/api/board/mytownBoard`)
-      .then((res) => res.json())
-      .then((data) => setBoardList(data.boardList))
-      .catch((err) => console.error("Error:", err));
-  }, []);
+ //  데이터 로딩
+useEffect(() => {
+  fetch(`/api/board/mytownBoard?page=${currentPage}`)
+    .then((res) => res.json())
+    .then((data) => {
+      setBoardList(data.boardList);
+      setPagination(data.pagination);
+    })
+    .catch((err) => console.error("Error:", err));
+}, [currentPage]);
 
+const displayedBoards = boardList; // 서버에서 전달된 현재 페이지 게시글
   // 해시태그 클릭 핸들러 (새 기능)
   const handleTagClick = (tag) => {
     setSelectedTags((prevTags) =>
@@ -46,36 +51,45 @@ function MyTownBoard() {
     setCurrentPage(1);
   };
 
+const postTypeMap = {
+  "자유": "자유",
+  "우리 동네 자랑": "자랑",
+  "복지 혜택 후기": "복지혜택후기",
+  "복지 시설 후기": "복지시설후기",
+};
+
+const matchRegion =
+  !selectedCity ||
+  (board.regionCity.includes(selectedCity) && (
+    !selectedDistrict || board.regionDistrict === selectedDistrict
+  ));
+  
   // 필터링 로직 (해시태그 필터 추가)
-  const filteredBoards = boardList.filter((board) => {
-    const matchPostType = !postTypeCheck || board.postType === postTypeCheck;
-    const matchRegion =
-      !selectedCity ||
-      (board.regionCity === selectedCity &&
-        (!selectedDistrict || board.regionDistrict === selectedDistrict));
+ const filteredBoards = boardList.filter((board) => {
+  const matchPostType =
+    !postTypeCheck || board.postType === postTypeMap[postTypeCheck];
 
-    const keyword = searchKeyword.trim().toLowerCase();
-    const matchSearch =
-      !keyword ||
-      board.boardTitle?.toLowerCase().includes(keyword) ||
-      board.boardContent?.toLowerCase().includes(keyword);
+  const matchRegion =
+    !selectedCity ||
+    (board.regionCity.includes(selectedCity) &&
+      (!selectedDistrict || board.regionDistrict === selectedDistrict));
 
-    const boardTags = generateTagList(board).map((t) => t.toLowerCase());
-    const matchTags =
-      selectedTags.length === 0 ||
-      selectedTags.every((tag) => boardTags.includes(tag.toLowerCase()));
+  const keyword = searchKeyword.trim().toLowerCase();
+  const matchSearch =
+    !keyword ||
+    board.boardTitle?.toLowerCase().includes(keyword) ||
+    board.boardContent?.toLowerCase().includes(keyword);
 
-    return matchPostType && matchRegion && matchSearch && matchTags;
-  });
+  const boardTags = generateTagList(board).map((t) => t.toLowerCase());
+  const matchTags =
+    selectedTags.length === 0 ||
+    selectedTags.every((tag) => boardTags.includes(tag.toLowerCase()));
 
-  // 페이지네이션 로직 (원본 유지, itemsPerPage 수정)
-  const itemsPerPage = 12;
-  const maxPage = Math.ceil(filteredBoards.length / itemsPerPage);
-  const displayedBoards = filteredBoards.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  return matchPostType && matchRegion && matchSearch && matchTags;
+});
 
+console.log("원본 게시글 수:", boardList.length);
+console.log("필터링 후 게시글 수:", filteredBoards.length);
   return (
     <div className={styles.container}>
       <h2 className={styles.mainTitle}>우리 동네 좋아요</h2>
@@ -210,16 +224,37 @@ function MyTownBoard() {
               key={board.boardNo}
               className={styles.boardCard}
             >
-              <img
-                className={styles.thumbnail}
-                src={board.thumbnail || "/default-thumbnail.png"}
-                alt="썸네일"
-              />
+<img
+  className={styles.thumbnail}
+  src={
+    (board.thumbnail ? board.thumbnail.replace(/\/{2,}/g, "/") : "/default-thumbnail.png")
+  }
+  alt="썸네일"
+/>
               <div className={styles.cardContent}>
                 <h3 className={styles.cardTitle}>{board.boardTitle}</h3>
-                <p className={styles.cardText}>
+
+  {/* ✅ 해시태그 추가 */}
+  <div className={styles.tagContainer}>
+    {generateTagList(board).map((tag, idx) => (
+      <span key={idx} className={styles.tag}>#{tag}</span>
+    ))}
+  </div>
+                  <p className={styles.cardText}>
                   {stripHtml(board.boardContent)}
                 </p>
+ {/* ✅ 별점 + 작성일: 후기 유형일 때만 표시 */}
+  {(board.postType === "복지혜택후기" || board.postType === "복지시설후기") && (
+    <div className={styles.ratingRow}>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <span key={i} style={{ color: i <= board.starCount ? 'orange' : '#ddd' }}>★</span>
+      ))}
+      <span style={{ marginLeft: "10px", fontSize: "13px", color: "#666" }}>
+        {board.boardDate}
+      </span>
+    </div>
+  )}
+
                 <div className={styles.userInfo}>
                   <img
                     className={styles.profileImg}
@@ -228,6 +263,11 @@ function MyTownBoard() {
                   />
                   <span>{board.memberNickname}</span>
                 </div>
+                   <div className={styles.iconInfo}>
+      <span style={{ marginRight: "8px" }}>❤️ {board.likeCount}</span>
+      <span>|</span>
+      <span>조회 {board.boardReadCount}</span>
+    </div>
               </div>
             </Link>
           ))}
@@ -237,45 +277,44 @@ function MyTownBoard() {
       )}
 
       {/* --- 페이지네이션 (원본 유지) --- */}
-      <div className={styles.paginationContainer}>
-        {maxPage > 1 && (
-          <>
-            <button
-              onClick={() => setCurrentPage(1)}
-              disabled={currentPage <= 1}
-            >
-              &laquo;
-            </button>
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage <= 1}
-            >
-              &lt;
-            </button>
-            {Array.from({ length: maxPage }, (_, i) => i + 1).map((num) => (
-              <button
-                key={num}
-                onClick={() => setCurrentPage(num)}
-                className={num === currentPage ? styles.activePage : ""}
-              >
-                {num}
-              </button>
-            ))}
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(maxPage, p + 1))}
-              disabled={currentPage >= maxPage}
-            >
-              &gt;
-            </button>
-            <button
-              onClick={() => setCurrentPage(maxPage)}
-              disabled={currentPage >= maxPage}
-            >
-              &raquo;
-            </button>
-          </>
-        )}
-      </div>
+<div className={styles.paginationContainer}>
+  {pagination && pagination.maxPage > 1 && (
+    <>
+      <button onClick={() => setCurrentPage(1)} disabled={currentPage <= 1}>
+        &laquo;
+      </button>
+      <button
+        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+        disabled={currentPage <= 1}
+      >
+        &lt;
+      </button>
+      {Array.from({ length: pagination.maxPage }, (_, i) => i + 1).map(
+        (num) => (
+          <button
+            key={num}
+            onClick={() => setCurrentPage(num)}
+            className={num === currentPage ? styles.activePage : ""}
+          >
+            {num}
+          </button>
+        )
+      )}
+      <button
+        onClick={() => setCurrentPage((p) => Math.min(pagination.maxPage, p + 1))}
+        disabled={currentPage >= pagination.maxPage}
+      >
+        &gt;
+      </button>
+      <button
+        onClick={() => setCurrentPage(pagination.maxPage)}
+        disabled={currentPage >= pagination.maxPage}
+      >
+        &raquo;
+      </button>
+    </>
+  )}
+</div>
     </div>
   );
 }
