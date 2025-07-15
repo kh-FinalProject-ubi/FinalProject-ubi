@@ -8,12 +8,13 @@
 .commentItem {
   display: flex;
   align-items: flex-start;
-  padding: 16px 0;
+  padding: 15px 0;
   border-bottom: 1px solid #f0f0f0;
 }
 
 .commentContentArea {
   flex-grow: 1;
+  position: relative;
 }
 
 .commentHeader {
@@ -42,15 +43,19 @@
 .commentActionsRight button {
   background: none;
   border: none;
-  color: #888;
+  color: #5E60CE;
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   margin-left: 8px;
   padding: 2px 4px;
 }
 
 .commentActionsRight button:hover {
-  color: #333;
+  text-decoration: underline;
+}
+
+.commentTextWrapper {
+  position: relative;
 }
 
 .commentText {
@@ -58,27 +63,75 @@
   font-size: 0.95rem;
   line-height: 1.6;
   color: #333;
+  word-break: break-word;
+  white-space: pre-wrap;
 }
 
-.commentActionsBottom button {
+/* 더보기 버튼 오른쪽 정렬 */
+.moreBtn {
+  position: absolute;
+  top: 0;
+  right: 0;
   background: none;
   border: none;
-  color: #555;
+  color: #5E60CE;
   cursor: pointer;
   font-size: 0.85rem;
-  padding: 0;
-  margin-right: 12px;
 }
 
-.commentActionsBottom button:hover {
+.moreBtn:hover {
   text-decoration: underline;
 }
 
+.commentLikeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.commentLikeBtn img {
+  width: 16px;
+  height: 16px;
+}
+
+.commentLikeBtn.liked img {
+  filter: brightness(0) saturate(100%) invert(32%) sepia(90%) saturate(747%) hue-rotate(227deg) brightness(92%) contrast(102%);
+}
+
+.commentSection form {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.commentSection form textarea {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  font-size: 0.95rem;
+}
+
+.commentSection form button {
+  white-space: nowrap;
+  height: 100%;
+  background-color: #ffd600;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* 자식 댓글 들여쓰기 */
 .replyList li .commentItem {
-  margin-left: 50px;
-  border-left: 3px solid #e0e0e0;
-  padding-left: 15px;
-  border-radius: 6px;
+  margin-left: 10%;
+  border-left: none; /* ✅ 회색 선 제거 */
+  padding-left: 0;
 }
 
 .parentDeletedNotice {
@@ -91,34 +144,20 @@
   display: inline-block;
 }
 
-.commentSection form {
-  margin-top: 10px;
-}
-
-.commentSection form textarea {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  resize: vertical;
-  font-size: 0.95rem;
-}
-
-.commentSection form button {
-  margin-top: 8px;
-}
-
 .reportedCommentText {
   color: #ff4444;
   font-weight: bold;
 }
 
-.reportBtnReported {
-  background-color: transparent;
-  color: red;
-  font-weight: bold;
+.reportBtn {
+  background: none;
   border: none;
   cursor: pointer;
+}
+
+.reportBtn img {
+  width: 14px;
+  height: 14px;
 }
 
 .profileImg {
@@ -128,6 +167,7 @@
   object-fit: cover;
 }
 
+/* 모달 */
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -182,4 +222,22 @@
 .btnReport {
   background-color: #ff4d4f;
   color: white;
+}
+
+/* 답글, 수정, 삭제, 더보기 버튼 공통 스타일 */
+.commentActionsBottom button,
+.moreBtn,
+.commentActionsRight button {
+  color: #5E60CE;
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.commentActionsBottom button:hover,
+.moreBtn:hover,
+.commentActionsRight button:hover {
+  text-decoration: underline;
 }
