@@ -3,6 +3,7 @@ import { useLocation, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import useAuthStore from "../../stores/useAuthStore";
 import LikeButton from "../../components/welfareLike/LikeButton";
+import styles from "../../styles/DetailCommon.module.css";
 
 // 안전하게 값 추출하는 함수
 const getValue = (node) => {
@@ -86,11 +87,11 @@ const WelfareDetailPage = () => {
   if (!detail) return <p>❌ 복지 상세 정보를 불러오지 못했습니다.</p>;
 
   return (
-    <div className="welfare-detail-page">
-      <h2>{getValue(detail.servNm)}</h2>
+    <div className={styles.detailContainer}>
+      <h2 className={styles.heading}>{getValue(detail.servNm)}</h2>
 
-      <p>
-        <strong>카테고리:</strong> {data.category}
+      <p className={styles.paragraph}>
+        <span className={styles.label}>카테고리:</span> {data.category}
       </p>
 
       <LikeButton
@@ -115,38 +116,54 @@ const WelfareDetailPage = () => {
         lng={null}
       />
 
-      <p>
-        <strong>제공 부서:</strong> {getValue(detail.bizChrDeptNm)}
+      <p className={styles.paragraph}>
+        <span className={styles.label}>제공 부서:</span>{" "}
+        {getValue(detail.bizChrDeptNm)}
       </p>
-      <p>
-        <strong>주소지:</strong> {getValue(detail.ctpvNm)}{" "}
+
+      <p className={styles.paragraph}>
+        <span className={styles.label}>주소지:</span> {getValue(detail.ctpvNm)}{" "}
         {getValue(detail.sggNm)}
       </p>
-      <p>
-        <strong>지원 주기:</strong> {getValue(detail.sprtCycNm)}
+
+      <p className={styles.paragraph}>
+        <span className={styles.label}>지원 주기:</span>{" "}
+        {getValue(detail.sprtCycNm)}
       </p>
-      <p>
-        <strong>지원 방식:</strong> {getValue(detail.srvPvsnNm)}
+
+      <p className={styles.paragraph}>
+        <span className={styles.label}>지원 방식:</span>{" "}
+        {getValue(detail.srvPvsnNm)}
       </p>
-      <p>
-        <strong>지원 대상:</strong> {getValue(detail.sprtTrgtCn)}
+
+      <p className={styles.paragraph}>
+        <span className={styles.label}>지원 대상:</span>{" "}
+        {getValue(detail.sprtTrgtCn)}
       </p>
-      <p>
-        <strong>선정 기준:</strong> {getValue(detail.slctCritCn)}
+
+      <p className={styles.paragraph}>
+        <span className={styles.label}>선정 기준:</span>{" "}
+        {getValue(detail.slctCritCn)}
       </p>
-      <p>
-        <strong>신청 방식:</strong> {getValue(detail.aplyMtdNm)}
+
+      <p className={styles.paragraph}>
+        <span className={styles.label}>신청 방식:</span>{" "}
+        {getValue(detail.aplyMtdNm)}
       </p>
-      <p>
-        <strong>신청 방법:</strong> {getValue(detail.aplyMtdCn)}
+
+      <p className={styles.paragraph}>
+        <span className={styles.label}>신청 방법:</span>{" "}
+        {getValue(detail.aplyMtdCn)}
       </p>
-      <p>
-        <strong>지원 내용:</strong> {getValue(detail.alwServCn)}
+
+      <p className={styles.paragraph}>
+        <span className={styles.label}>지원 내용:</span>{" "}
+        {getValue(detail.alwServCn)}
       </p>
 
       {/* 문의처 */}
-      <p>
-        <strong>문의처:</strong>
+      <p className={styles.paragraph}>
+        <span className={styles.label}>문의처:</span>
         <br />
         {Array.isArray(detail.inqplCtadrList)
           ? detail.inqplCtadrList.map((item, i) => (
@@ -166,8 +183,8 @@ const WelfareDetailPage = () => {
 
       {/* 관련 법령 */}
       {detail.baslawList && (
-        <p>
-          <strong>관련 법령:</strong>
+        <p className={styles.paragraph}>
+          <span className={styles.label}>관련 법령:</span>
           <br />
           {Array.isArray(detail.baslawList)
             ? detail.baslawList.map((law, i) => (
@@ -180,10 +197,10 @@ const WelfareDetailPage = () => {
         </p>
       )}
 
-      {/* 서식 파일 */}
+      {/* 관련 서식 */}
       {detail.basfrmList && (
-        <p>
-          <strong>관련 서식:</strong>
+        <p className={styles.paragraph}>
+          <span className={styles.label}>관련 서식:</span>
           <br />
           {Array.isArray(detail.basfrmList) ? (
             detail.basfrmList.map((file, i) => (
@@ -213,5 +230,4 @@ const WelfareDetailPage = () => {
     </div>
   );
 };
-
 export default WelfareDetailPage;

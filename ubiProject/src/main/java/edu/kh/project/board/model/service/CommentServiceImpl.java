@@ -1,11 +1,9 @@
 package edu.kh.project.board.model.service;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -17,8 +15,7 @@ import edu.kh.project.board.model.mapper.BoardMapper;
 import edu.kh.project.board.model.mapper.CommentMapper;
 import edu.kh.project.board.model.mapper.MytownBoardMapper;
 import edu.kh.project.member.model.mapper.MemberMapper;
-import edu.kh.project.websocket.dto.AlertDto;
-
+import edu.kh.project.websocket.service.AlertService;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -31,6 +28,9 @@ public class CommentServiceImpl implements CommentService {
 
 	@Autowired
 	private BoardMapper boardMapper; // 게시글 작성자 번호 조회용 (필요 시 생성)
+	
+	@Autowired
+	private AlertService alertService; // ✅ 이 줄 추가
 
 	@Autowired
 	private MytownBoardMapper myTownBoardMapper;
@@ -51,7 +51,39 @@ public class CommentServiceImpl implements CommentService {
 	// 댓글/답글 등록 서비스
 	@Override
 	public int insert(Comment comment) {
-	    return mapper.insert(comment);
+	    int result = mapper.insert(comment);
+
+	    if (result > 0) {
+	        Integer writerNo = boardMapper.selectWriterNo(comment.getBoardNo());
+	        Integer boardType = boardMapper.selectBoardType(comment.getBoardNo());
+	        boolean isInquiryBoard = (boardType != null && boardType == 2);
+	        Integer authority = memberMapper.selectMemberAuthority(comment.getMemberNo());
+	        boolean isAdmin = (authority != null && authority == 2);
+
+	        if (writerNo != null && !writerNo.equals(comment.getMemberNo())) {
+	            if (isInquiryBoard && isAdmin) {
+	                // 문의 답변 알림
+	                alertService.sendAlert(
+	                    writerNo.longValue(),
+	                    "문의에 답변이 등록되었습니다.",
+	                    "/askBoard/" + comment.getBoardNo(),
+	                    comment.getBoardNo(),
+	                    "QUESTION_REPLY"
+	                );
+	            } else {
+	                // 일반 댓글 알림
+	                alertService.sendAlert(
+	                    writerNo.longValue(),
+	                    "내 글에 댓글이 달렸습니다.",
+	                    "/mytownBoard/" + comment.getBoardNo(),
+	                    comment.getBoardNo(),
+	                    "COMMENT"
+	                );
+	            }
+	        }
+	    }
+
+	    return result;
 	}
 
 

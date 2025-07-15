@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -77,7 +78,7 @@ public class SecurityConfig {
             	    .requestMatchers("/api/welfare-curl/**").permitAll()
             	    .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
             	    .requestMatchers("/ws-alert/**", "/topic/**").permitAll()
-            	    .requestMatchers("/ws-chat/**").permitAll()
+            	    .requestMatchers("/ws-chat/**", "/topic/**", "/queue/**", "/user/**").permitAll()
             	    .requestMatchers("/myPage/profile/**").permitAll()
             	    // ✅ 나머지 찜 API는 인증 필요
             	    .requestMatchers("/api/welfare/like/**", "/api/welfare/my-likes").authenticated()
@@ -105,5 +106,16 @@ public class SecurityConfig {
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+    
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring()
+            .requestMatchers(
+                "/ws-chat/**",    // ✅ 채팅 WebSocket만 제외
+                "/topic/**",      // simpleBroker 사용 시 필수
+                "/queue/**",      // userQueue 등도 필요
+                "/user/**"        // 대상 유저 메시지 처리에 필요
+            );
     }
 }

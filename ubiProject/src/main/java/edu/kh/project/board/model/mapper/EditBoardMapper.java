@@ -54,5 +54,7 @@ public interface EditBoardMapper {
 	 */
 	int boardDelete(Map<String, Object> map);
 
+	List<Long> selectAllMemberNoExceptAdmin();
+
 
 }

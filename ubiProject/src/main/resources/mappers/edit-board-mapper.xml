@@ -109,4 +109,8 @@
 		</if>
 	</update>
 
+	<select id="selectAllMemberNoExceptAdmin" resultType="long">
+		SELECT MEMBER_NO FROM MEMBER WHERE AUTHORITY != 2
+	</select>
+
 </mapper>

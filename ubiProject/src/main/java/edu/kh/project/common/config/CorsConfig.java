@@ -15,7 +15,8 @@ public class CorsConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                     .allowedOrigins("http://localhost:5173", "http://localhost:5174")
-                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                    .allowedOriginPatterns("*") // ✅ 이걸로 바꿔줘야 SockJS에서 동적으로 생성되는 origin도 허용됨
+                    .allowedMethods("*")
                     .allowedHeaders("*")
                     .allowCredentials(true);
             }

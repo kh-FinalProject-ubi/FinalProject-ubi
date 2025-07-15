@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import "../../styles/mypage/Profile.css";
+import styles from "../../styles/mypage/Profile.module.css";
 import useAuthStore from "../../stores/useAuthStore";
 import { AnimatePresence, motion } from "framer-motion";
 import LoadingOverlay from "../../components/Loading";
@@ -11,6 +11,8 @@ import DaumPostcode from "react-daum-postcode";
 import { stripHtml } from "./striptHtml";
 
 const parseMemberStandardCode = (code) => {
+
+  
   switch (code) {
     case "A":
       return { main: "일반", isDisabled: true, isPregnant: true };
@@ -103,7 +105,7 @@ const Profile = () => {
   // 내 기본 정보
   const getMemberData = async () => {
     try {
-      const res = await axios.get('/api/myPage/info', {
+      const res = await axios.get("/api/myPage/info", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -132,7 +134,6 @@ const Profile = () => {
       console.error("기본정보 조회 중 예외 발생 : ", err);
     }
   };
-
 
   // 내 정보 수정
   const saveMemberData = async () => {
@@ -395,18 +396,18 @@ const Profile = () => {
   };
 
   return (
-    <div className="mypage-profile">
+    <div className={styles.mypageProfile}>
       <h2>내 정보</h2>
 
       {member && (
-        <section className="basic-info">
+        <section className={styles.basicInfo}>
           <div style={{ position: "relative" }}>
             {loading && <LoadingOverlay />}
             <h3>기본 정보</h3>
-            <div className="profile-left">
+            <div className={styles.profileLeft}>
               <ProfileImgUploader member={member} onSave={onProfileSave} />
             </div>
-            <div className="profile-right">
+            <div className={styles.profileRight}>
               <ul>
                 {editMode ? (
                   <>
@@ -649,17 +650,17 @@ const Profile = () => {
       )}
 
       {/* 혜택 리스트 */}
-      <section className="benefit-list">
+      <section className={styles.benefitList}>
         <div style={{ position: "relative" }}>
           {loading && <LoadingOverlay />}
           <h3>혜택 목록 ({benefits.length})</h3>
-          <div className="category-tabs">
+          <div className={styles.categoryTabs}>
             {loading && <LoadingOverlay />}
             {["시설", "채용", "혜택"].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setCategory(cat)}
-                className={category === cat ? "active" : ""}
+                className={category === cat ? styles.active : ""}
               >
                 {cat}
               </button>
@@ -672,37 +673,39 @@ const Profile = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.25 }}
-              className="benefit-cards"
+              className={styles.benefitCards}
             >
               {benefits.map((benefit) => {
                 switch (category) {
                   case "채용":
                     return (
                       <div
-                        className="benefit-card"
+                        className={styles.postList}
                         key={benefit.recruitNo}
                         onClick={() =>
                           navigate(`welfareService/detail/${benefit.serviceNo}`)
                         }
                       >
-                        <div className="badge-row">채용 정보</div>
-                        <div className="benefit-title">{benefit.jobTitle}</div>
-                        <div className="benefit-agency">
+                        <div className={styles.badgeRow}>채용 정보</div>
+                        <div className={styles.benefitTitle}>
+                          {benefit.jobTitle}
+                        </div>
+                        <div className={styles.benefitAgency}>
                           {benefit.jobFacilityName}
                         </div>
-                        <div className="benefit-salary">
+                        <div className={styles.benefitSalary}>
                           입금조건: {benefit.jobSalary}
                         </div>
-                        <div className="benefit-field">
+                        <div className={styles.benefitField}>
                           채용분야: {benefit.jobPosition}
                         </div>
-                        <div className="benefit-requirement">
+                        <div className={styles.benefitRequirement}>
                           자격조건: {benefit.jobRequirement}
                         </div>
-                        <div className="benefit-description">
+                        <div className={styles.benefitDescription}>
                           내용: {benefit.jobContent}
                         </div>
-                        <p className="benefit-date">
+                        <p className={styles.benefitDate}>
                           {benefit.rcptbgndt && benefit.rcptenddt
                             ? `${benefit.rcptbgndt} ~ ${benefit.rcptenddt}`
                             : "상세 확인 필요"}
@@ -711,31 +714,29 @@ const Profile = () => {
                     );
 
                   case "시설":
-                    const isEvent = !!benefit.eventTitle; // 행사 여부
-
+                    const isEvent = !!benefit.eventTitle;
                     return (
-                      <div className="benefit-card" key={benefit.facilityNo}>
-                        <div className="badge-row">
+                      <div
+                        className={styles.benefitCard}
+                        key={benefit.facilityNo}
+                      >
+                        <div className={styles.badgeRow}>
                           {isEvent ? "이벤트 정보" : "시설 이용"}
                         </div>
-
-                        <div className="benefit-title">
+                        <div className={styles.benefitTitle}>
                           {isEvent ? benefit.eventTitle : benefit.facilityName}
                         </div>
-
-                        <div className="benefit-kind">
+                        <div className={styles.benefitKind}>
                           {isEvent
                             ? benefit.eventContent
                             : benefit.facilityKindNM}
                         </div>
-
                         {!isEvent && (
-                          <div className="benefit-requirement">
+                          <div className={styles.benefitRequirement}>
                             입장 기준: {benefit.requirement}
                           </div>
                         )}
-
-                        <p className="benefit-date">
+                        <p className={styles.benefitDate}>
                           {isEvent
                             ? benefit.eventDateStart && benefit.eventDateEnd
                               ? `${benefit.eventDateStart} ~ ${benefit.eventDateEnd}`
@@ -750,16 +751,16 @@ const Profile = () => {
                   case "혜택":
                     return (
                       <div
-                        className="benefit-card"
+                        className={styles.benefitCard}
                         key={benefit.serviceNo}
                         onClick={() => handleClick(benefit)}
                       >
-                        <div className="badge-row">
+                        <div className={styles.badgeRow}>
                           <span
-                            className={`badge ${
+                            className={`${styles.badge} ${
                               benefit.receptionStart && benefit.receptionEnd
-                                ? "신청혜택"
-                                : "기본혜택"
+                                ? styles.신청혜택
+                                : styles.기본혜택
                             }`}
                           >
                             {benefit.receptionStart && benefit.receptionEnd
@@ -767,14 +768,16 @@ const Profile = () => {
                               : "기본혜택"}
                           </span>
                         </div>
-                        <div className="benefit-title">
+                        <div className={styles.benefitTitle}>
                           {benefit.serviceName}
                         </div>
-                        <div className="benefit-agency">{benefit.agency}</div>
-                        <div className="benefit-description">
+                        <div className={styles.benefitAgency}>
+                          {benefit.agency}
+                        </div>
+                        <div className={styles.benefitDescription}>
                           {benefit.description}
                         </div>
-                        <p className="benefit">
+                        <p className={styles.benefit}>
                           {benefit.receptionStart && benefit.receptionEnd
                             ? `${benefit.receptionStart} ~ ${benefit.receptionEnd}`
                             : "상세 확인 필요"}
@@ -792,24 +795,25 @@ const Profile = () => {
       </section>
 
       {/* 게시글 목록 */}
-      <section className="post-list">
+      <section className={styles.postList}>
         <div style={{ position: "relative" }}>
-          <div className="category-tabs">
+          <div className={styles.categoryTabs}>
             {loading && <LoadingOverlay />}
             {["게시글", "댓글"].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setContentType(cat)}
-                className={contentType === cat ? "active" : ""}
+                className={contentType === cat ? styles.active : ""}
               >
                 {cat}
               </button>
             ))}
           </div>
+
           {contentType === "게시글" && (
             <div>
               <h3>내가 작성한 게시글 ({board.length})</h3>
-              <table className="post-table">
+              <table className={styles.postTable}>
                 <thead>
                   <tr>
                     <th>분류</th>
@@ -824,7 +828,7 @@ const Profile = () => {
                   {board.map((b) => (
                     <tr
                       key={b.boardNo}
-                      className="clickable-row"
+                      className={styles.clickableRow}
                       onClick={() => navigate(`/mytownBoard/${b.boardNo}`)}
                     >
                       <td>{b.postType}</td>
@@ -853,7 +857,7 @@ const Profile = () => {
           {contentType === "댓글" && (
             <div>
               <h3>내가 작성한 댓글 ({board.length})</h3>
-              <table className="post-table">
+              <table className={styles.postTable}>
                 <thead>
                   <tr>
                     <th>분류</th>
@@ -883,24 +887,25 @@ const Profile = () => {
         </div>
       </section>
 
-      <section className="post-list">
+      <section className={styles.postList}>
         <div style={{ position: "relative" }}>
-          <div className="category-tabs">
+          <div className={styles.categoryTabs}>
             {loading && <LoadingOverlay />}
             {["게시글", "댓글"].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setCommentContentType(cat)}
-                className={commentContentType === cat ? "active" : ""}
+                className={commentContentType === cat ? styles.active : ""}
               >
                 {cat}
               </button>
             ))}
           </div>
+
           {commentContentType === "게시글" && (
             <div>
               <h3>내가 좋아요를 누른 게시글 ({like.length})</h3>
-              <table className="post-table">
+              <table className={styles.postTable}>
                 <thead>
                   <tr>
                     <th>분류</th>
@@ -936,7 +941,7 @@ const Profile = () => {
           {commentContentType === "댓글" && (
             <div>
               <h3>내가 좋아요를 누른 댓글 ({like.length})</h3>
-              <table className="post-table">
+              <table className={styles.postTable}>
                 <thead>
                   <tr>
                     <th>분류</th>

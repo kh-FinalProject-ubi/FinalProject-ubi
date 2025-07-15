@@ -69,6 +69,37 @@ const Header = () => {
   });
 
   useEffect(() => {
+    if (memberNo > 0) {
+      fetch(`http://localhost:8080/api/alert/list?memberNo=${memberNo}`)
+        .then((res) => res.json())
+        .then((data) => {
+          const alertList = data.map((alert) => {
+            let targetUrl = "/";
+            switch (alert.type) {
+              case "NOTICE":
+                targetUrl = `/noticeBoard/${alert.boardNo}`;
+                break;
+              case "COMMENT":
+                targetUrl = `/mytownBoard/${alert.boardNo}`;
+                break;
+              case "QUESTION_REPLY":
+                targetUrl = `/askBoard/${alert.boardNo}`;
+                break;
+              case "WELFARE_UPDATE":
+                targetUrl = `/welfare/${alert.boardNo}`;
+                break;
+              default:
+                targetUrl = "/";
+            }
+            return { ...alert, targetUrl };
+          });
+          setAlerts(alertList);
+        })
+        .catch((err) => console.error("🔴 알림 목록 조회 실패:", err));
+    }
+  }, [memberNo]);
+
+  useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setShowDropdown(false);
@@ -131,18 +162,27 @@ const Header = () => {
                           key={alert.alertId}
                           className="alert-item"
                           onClick={() => {
-                            console.log("🧪 클릭한 alertId:", alert.alertId);
-                            console.log("🧪 현재 alerts 목록:", alerts);
                             if (alert.targetUrl) {
                               navigate(alert.targetUrl);
                             }
+                            // 클릭 시 알림 제거
                             setAlerts((prev) =>
                               prev.filter((a) => a.alertId !== alert.alertId)
                             );
                             setShowDropdown(false);
                           }}
                         >
-                          <p>{alert.content}</p>
+                          {/* ✅ 알림 유형별 메시지 */}
+                          <p>
+                            {alert.type === "NOTICE" &&
+                              "새로운 공지사항이 등록되었습니다."}
+                            {alert.type === "COMMENT" &&
+                              "내 글에 댓글이 달렸습니다."}
+                            {alert.type === "QUESTION_REPLY" &&
+                              "문의글에 답변이 등록되었습니다."}
+                            {alert.type === "WELFARE_UPDATE" &&
+                              "찜한 복지 정보가 업데이트되었습니다."}
+                          </p>
                         </div>
                       ))
                     )}
@@ -189,6 +229,12 @@ const Header = () => {
         {/* 2. 하단 영역: 메뉴와 지역 선택 */}
         <div className={styles.bottomRow}>
           <nav className={styles.navMenu}>
+            <NavLink
+              to="/localBenefits"
+              className={({ isActive }) => (isActive ? styles.active : "")}
+            >
+              지역 복지 혜택
+            </NavLink>
             <NavLink
               to={`/facility/search?city=${encodeURIComponent(
                 selectedCity || "서울특별시"

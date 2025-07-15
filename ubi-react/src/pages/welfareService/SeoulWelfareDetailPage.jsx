@@ -1,15 +1,23 @@
-import useAuthStore from "../../stores/useAuthStore";
-import LikeButton from "../../components/welfareLike/LikeButton";
-
 import { useLocation, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import useAuthStore from "../../stores/useAuthStore";
+import LikeButton from "../../components/welfareLike/LikeButton";
+import styles from "../../styles/DetailCommon.module.css";
+
+const safe = (val) => val || "정보 없음";
+
+const cleanText = (text) =>
+  String(text || "")
+    .replace(/<\/?[^>]+(>|$)/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 
 const SeoulWelfareDetailPage = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const apiServiceId = searchParams.get("apiServiceId");
   const token = useAuthStore((state) => state.token);
-  const safe = (val) => val || "정보 없음";
 
   const [data, setData] = useState(location.state?.data || null);
 
@@ -29,11 +37,11 @@ const SeoulWelfareDetailPage = () => {
   if (!data) return <p>❌ 데이터를 불러올 수 없습니다.</p>;
 
   return (
-    <div className="welfare-detail-page">
-      <h2>{safe(data.serviceName)}</h2>
+    <div className={styles.detailContainer}>
+      <h2 className={styles.heading}>{safe(data.serviceName)}</h2>
 
-      <p>
-        <strong>📂 카테고리:</strong> {safe(data.category)}
+      <p className={styles.paragraph}>
+        <span className={styles.label}>📂 카테고리:</span> {safe(data.category)}
       </p>
 
       <LikeButton
@@ -44,7 +52,7 @@ const SeoulWelfareDetailPage = () => {
         regionCity="서울특별시"
         regionDistrict={data.regionDistrict}
         description={data.description || "설명 없음"}
-        agency={"서울시 복지"} // 서울 복지일 경우 고정 가능
+        agency="서울시 복지"
         url={data.url || null}
         receptionStart={null}
         receptionEnd={null}
@@ -53,25 +61,28 @@ const SeoulWelfareDetailPage = () => {
         lng={null}
       />
 
-      <p>
-        <strong>설명:</strong> {safe(data.description)}
+      <p className={styles.paragraph}>
+        <span className={styles.label}>설명:</span>
       </p>
 
-      <p>
-        <strong>📍 지역:</strong> 서울특별시 {safe(data.regionDistrict)}
+      <pre className={styles.codeBlock}>{cleanText(data.description)}</pre>
+
+      <p className={styles.paragraph}>
+        <span className={styles.label}>📍 지역:</span> 서울특별시{" "}
+        {safe(data.regionDistrict)}
       </p>
 
       {data?.imageProfile && (
         <img
           src={data.imageProfile}
           alt="복지 이미지"
-          style={{ maxWidth: "100%", borderRadius: "8px", margin: "20px 0" }}
+          className={styles.image}
         />
       )}
 
       {data?.url && (
-        <p>
-          <strong>제공 링크:</strong>{" "}
+        <p className={styles.paragraph}>
+          <span className={styles.label}>제공 링크:</span>{" "}
           <a href={data.url} target="_blank" rel="noopener noreferrer">
             {data.url}
           </a>
