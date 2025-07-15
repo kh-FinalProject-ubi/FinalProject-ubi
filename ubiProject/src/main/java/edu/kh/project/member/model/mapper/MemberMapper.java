@@ -120,10 +120,12 @@ public interface MemberMapper {
 	int updatePassword(@Param("memberId") String memberId, @Param("encPw") String encPw);
 
 
-	Object selectMemberAuthority(int memberNo);
+	
 
 	String selectMemberRegionCity(int memberNo);
 
 	String selectMemberRegionDistrict(int memberNo);
+
+	Integer selectMemberAuthority(int memberNo);
 
 }

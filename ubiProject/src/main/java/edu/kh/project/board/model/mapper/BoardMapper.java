@@ -86,7 +86,9 @@ public interface BoardMapper {
 
 	Integer selectWriterNo(int boardNo);
 
-	Integer selectBoardCode(int boardNo);
+	Integer selectBoardType(int boardNo);
+
+	
 	
 	
 
