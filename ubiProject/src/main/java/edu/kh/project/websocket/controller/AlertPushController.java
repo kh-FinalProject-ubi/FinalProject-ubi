@@ -2,16 +2,20 @@ package edu.kh.project.websocket.controller;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import edu.kh.project.websocket.dto.Alert;
 import edu.kh.project.websocket.dto.AlertDto;
 import edu.kh.project.websocket.mapper.AlertMapper;
+import edu.kh.project.websocket.service.AlertService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,6 +31,7 @@ public class AlertPushController {
     private final SimpMessagingTemplate messagingTemplate;
     private final AlertMapper alertMapper;
 
+    private final AlertService alertService;
     /**
      * 알림 전송 요청 시 → DB 저장 후 WebSocket 전송
      */
@@ -39,14 +44,15 @@ public class AlertPushController {
         }
 
         // 1. DB 저장용 Alert 엔티티 생성
-        AlertDto alert = AlertDto.builder()
-                .memberNo(alertDto.getMemberNo())
-                .type(alertDto.getType()) // String
-                .content(alertDto.getContent())
-                .targetUrl(alertDto.getTargetUrl())
-                .isRead(false)
-                .build();
-
+        Alert alert = Alert.builder()
+        	    .memberNo(alertDto.getMemberNo())
+        	    .type(alertDto.getType())
+        	    .content(alertDto.getContent())
+        	    .targetUrl(alertDto.getTargetUrl())
+        	    .isRead("N")
+        	    .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+        	    .boardNo(alertDto.getBoardNo())
+        	    .build();
         // 2. DB 저장
         alertMapper.insertAlert(alert);
 
@@ -74,12 +80,12 @@ public class AlertPushController {
      */
     @GetMapping("/test")
     public void testAlert() {
-    	AlertDto alert = AlertDto.builder()
+    	Alert alert = Alert.builder()
                 .memberNo(16L)
                 .type("COMMENT")
                 .content("테스트 알림입니다")
                 .targetUrl("/free/detail/99")
-                .isRead(false)
+                .isRead("N")
                 .build();
 
         alertMapper.insertAlert(alert);
@@ -97,5 +103,11 @@ public class AlertPushController {
 
         messagingTemplate.convertAndSend("/topic/alert/16", resultDto);
         log.info("📤 테스트 알림 전송 → /topic/alert/16");
+    }
+    
+    
+    @GetMapping("/list")
+    public List<AlertDto> getAlertList(@RequestParam Long memberNo) {
+        return alertService.getAlertList(memberNo);
     }
 }

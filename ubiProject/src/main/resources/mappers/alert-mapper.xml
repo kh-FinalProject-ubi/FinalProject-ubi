@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="edu.kh.project.admin.model.mapper.AdminMapper">
+<mapper namespace="edu.kh.project.websocket.mapper.AlertMapper">
 
-	<insert id="insertAlert" parameterType="AlertDto" useGeneratedKeys="true"
-		keyProperty="alertId">
-		INSERT INTO ALERT
-		(ALERT_ID, MEMBER_NO, TYPE, CONTENT, TARGET_URL, CREATED_AT, IS_READ)
-		VALUES
-		(ALERT_SEQ.NEXTVAL, #{memberNo}, #{type}, #{content}, #{targetUrl},
-		DEFAULT, 'N')
-	</insert>
+	<insert id="insertAlert" parameterType="Alert">
+
+		<!-- 🔑 시퀀스 값 미리 조회해서 alertId 세팅 -->
+    <selectKey
+			keyProperty="alertId" resultType="long" order="BEFORE">
+			SELECT ALERT_SEQ.NEXTVAL FROM DUAL
+		</selectKey> INSERT INTO
+		ALERT ( ALERT_ID, MEMBER_NO, TYPE, CONTENT, TARGET_URL, CREATED_AT,
+		IS_READ ) VALUES ( #{alertId}, #{memberNo}, #{type}, #{content},
+		#{targetUrl}, DEFAULT, 'N' ) </insert>
 
 
 </mapper>

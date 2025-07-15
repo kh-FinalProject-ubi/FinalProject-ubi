@@ -324,7 +324,7 @@
     WHERE MEMBER_NO = #{memberNo}
   </select>
 
-	<select id="selectMemberAuthority" resultType="string">
+	<select id="selectMemberAuthority" resultType="int">
 		SELECT AUTHORITY
 		FROM MEMBER
 		WHERE MEMBER_NO = #{memberNo}
