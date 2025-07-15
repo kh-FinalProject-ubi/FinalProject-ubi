@@ -4,9 +4,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * WebSocket을 통해 특정 회원에게 실시간 알림을 전송하는 컨트롤러 (REST API 호출 → WebSocket Push 전송)
  */
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/alert")
@@ -64,7 +69,7 @@ public class AlertPushController {
                 .content(alert.getContent())
                 .targetUrl(alert.getTargetUrl())
                 .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-                .isRead(false)
+                .isRead(0) // ✅ false 대신 0
                 .boardNo(alertDto.getBoardNo())
                 .build();
 
@@ -97,7 +102,7 @@ public class AlertPushController {
                 .content(alert.getContent())
                 .targetUrl(alert.getTargetUrl())
                 .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-                .isRead(false)
+                .isRead(0) // ✅ false 대신 0
                 .boardNo(99)
                 .build();
 
@@ -107,7 +112,13 @@ public class AlertPushController {
     
     
     @GetMapping("/list")
-    public List<AlertDto> getAlertList(@RequestParam Long memberNo) {
+    public List<AlertDto> getAlertList(@RequestParam("memberNo") Long memberNo) {
         return alertService.getAlertList(memberNo);
+    }
+    
+    @PutMapping("/read/{alertId}")
+    public ResponseEntity<Integer> updateIsRead(@PathVariable("alertId") Long alertId) {
+        int result = alertService.updateIsRead(alertId);
+        return ResponseEntity.ok(result);
     }
 }

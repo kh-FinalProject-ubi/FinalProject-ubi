@@ -11,6 +11,7 @@
   FROM welfare
   WHERE member_no = #{memberNo}
     AND api_service_id = #{apiServiceId}
+    AND jj_del_fl = 'Y'
 </select>
 
 <!--  찜 하기 -->

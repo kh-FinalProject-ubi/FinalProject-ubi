@@ -1,0 +1,40 @@
+.layoutWrapper {
+  display: flex;
+}
+
+.sidebar {
+  width: 200px;
+  border-right: 1px solid #eee;
+  padding: 20px;
+}
+
+.sidebarTitle {
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.menuList {
+  list-style: none;
+  padding: 0;
+}
+
+.menuList a {
+  text-decoration: none;
+  color: black;
+  display: block;
+  padding: 8px;
+}
+
+.menuList a:hover {
+  background-color: #f5f5f5;
+}
+
+.active {
+  background-color: #ffe664;
+  font-weight: bold;
+}
+
+.contentArea {
+  flex: 1;
+  padding: 20px;
+}

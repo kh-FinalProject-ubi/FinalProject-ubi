@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import edu.kh.project.websocket.dto.Alert;
 import edu.kh.project.websocket.dto.AlertDto;
@@ -30,6 +31,7 @@ public class AlertServiceImpl implements AlertService {
                 .type(alertDto.getType()) // 문자열로 받음
                 .content(alertDto.getContent())
                 .targetUrl(alertDto.getTargetUrl())
+                .boardNo(alertDto.getBoardNo()) 
                 .isRead("N")
                 .build();
 
@@ -44,8 +46,8 @@ public class AlertServiceImpl implements AlertService {
                 .content(alert.getContent())
                 .targetUrl(alert.getTargetUrl())
                 .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-                .isRead(false)
-                .boardNo(alertDto.getBoardNo())
+                .isRead(0) // ✅ false 대신 0
+                .boardNo(alert.getBoardNo())
                 .build();
 
         String destination = "/topic/alert/" + dto.getMemberNo();
@@ -65,6 +67,8 @@ public class AlertServiceImpl implements AlertService {
             .build();
 
         sendAlert(dto); // 기존 AlertDto 버전 메서드 호출
+        
+        log.info("✅ WebSocket 알림 전송 완료 to {}, type = {}", dto.getMemberNo(), dto.getType());
     }
     
     @Override
@@ -72,5 +76,9 @@ public class AlertServiceImpl implements AlertService {
         return alertMapper.selectAlertList(memberNo);
     }
 
+    @Override
+    public int updateIsRead(Long alertId) {
+        return alertMapper.updateIsRead(alertId);
+    }
     
 }

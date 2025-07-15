@@ -21,4 +21,6 @@ public interface AlertMapper {
 	void insertAlert(AlertDto alert);
 
 	void insertAlert(Alert alert);
+	
+	
 }

@@ -88,13 +88,14 @@ public interface MytownBoardService {
 
 	String checkBoardReportStatus(int boardNo, int memberNo);
 
-	/**
+	/** 복지 상세조회에서 후기 조회
 	 * 
 	 * @param serviceId
 	 * @return
 	 */
 	List<Board> getBoardListByFacilityServiceId(String facilityServiceId);
 
+	List<Board> getBoardListByWelfareServiceId(String apiServiceId);
 	
 
 	/**
