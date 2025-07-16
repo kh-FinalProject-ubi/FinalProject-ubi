@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "../styles/TermsAndPrivacyModal.module.css";
-import ReactMarkdown from "react-markdown";
+// import ReactMarkdown from "react-markdown";
 
 const TermsAndPrivacyModal = ({ open, onClose, view }) => {
   if (!open) return null;

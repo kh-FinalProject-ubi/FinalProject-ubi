@@ -68,7 +68,7 @@ const Chat = () => {
         params: { chatRoomNo: roomNo },
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.status === 200) return setMessages(res.data);
+      if (res.status === 200) return res.data;
     } catch (err) {
       console.error("메시지 조회 실패:", err);
       return[];
@@ -134,16 +134,35 @@ const Chat = () => {
         client.subscribe(destination, (message) => {
           try {
             const body = JSON.parse(message.body);
-            console.log("📩 받은 메시지:", body);
 
             if (selectedRoom && body.chatRoomNo === selectedRoom.chatRoomNo) {
-              console.log("🎯 현재 선택된 방:", selectedRoom);
-              setMessages((prev) => [...prev, body]);
+              setMessages((prev) => {
+                const updated = [...prev];
+
+                const index = updated.findIndex(
+                  (msg) =>
+                    msg.chatContent === body.chatContent &&
+                    msg.senderNo === memberNo &&
+                    msg.chatNo && // 💡 보호 코드
+                    !msg.chatNo.toString().startsWith("srv_")
+                );
+
+                if (index !== -1) {
+                  updated[index] = {
+                    ...body,
+                    chatDelFl: 'N',
+                  };
+                  return updated;
+                }
+
+                return [...prev, { ...body, chatDelFl: 'N' }];
+              });
             }
           } catch (err) {
-            console.error("❌ 메시지 처리 중 오류:", err);
+            console.error("STOMP 메시지 처리 중 예외 발생:", err);
           }
         });
+
       },
 
       onStompError: (frame) => {
@@ -203,6 +222,7 @@ const Chat = () => {
 
     // 낙관적 UI 업데이트
     setMessages(prev => [...prev, {
+      chatNo: Date.now(), // ✅ 임시 chatNo로 고유값
       senderNo: memberNo,
       chatContent: input,
       chatSendDate: new Date().toISOString(),
@@ -288,7 +308,7 @@ const Chat = () => {
   
   // 채팅 읽음 표시
   const markAsRead = async (roomNo) => {
-    // 1) UI 낙관적 업데이트
+     // ✅ 메시지 UI 업데이트
     setMessages(prev =>
       (prev ?? []).map(msg =>
         msg.senderNo !== memberNo && msg.chatReadFl === 'N'
@@ -297,9 +317,17 @@ const Chat = () => {
       )
     );
 
+    setRooms(prev =>
+      (prev ?? []).map(room =>
+        room.chatRoomNo === roomNo
+          ? { ...room, notReadCount: 0 }
+          : room
+      )
+    );
+
     // 2) 서버 PATCH
     try {
-      await axios.patch(
+      await axios.post(
         "/api/chatting/read",
         null,
         {
@@ -312,6 +340,60 @@ const Chat = () => {
       // 필요하면 롤백 로직 추가
     }
   };
+
+  // 채팅방 나가기
+  const handleExitRoom = async (roomNo) => {
+    const confirmed = window.confirm("이 채팅방을 나가시겠습니까?");
+    if (!confirmed) return;
+
+    try {
+      const res = await axios.post("/api/chatting/exit", null, {
+        params: { chatRoomNo: roomNo },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.status === 200) {
+        // ✅ 방 목록에서 제거
+        setRooms(prev => prev.filter(room => room.chatRoomNo !== roomNo));
+
+        // ✅ 선택되어 있던 방도 초기화
+        if (selectedRoom?.chatRoomNo === roomNo) {
+          setSelectedRoom(null);
+          setMessages([]);
+        }
+      }
+    } catch (error) {
+      console.error("채팅방 나가기 실패:", error);
+      alert("채팅방 나가기 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 채팅 삭제
+  const handleDeleteMessage = async (chatNo) => {
+    const confirmDelete = window.confirm("이 메시지를 삭제하시겠습니까?");
+    if (!confirmDelete) return;
+
+    console.log("chatNo : ", chatNo);
+
+    try {
+      await axios.post("/api/chatting/deleteMessage", null, {
+        params: { chatNo },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // 프론트에서 상태 업데이트 (soft delete 처리)
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.chatNo === chatNo ? { ...msg, chatDelFl: "Y" } : msg
+        )
+      );
+
+    } catch (err) {
+      console.error("메시지 삭제 실패:", err);
+      alert("삭제 실패!");
+    }
+  };
+
 
 
 
@@ -357,7 +439,7 @@ console.log("채팅방 목록 : ", rooms);
           {/* 채팅 목록 */}
           {Array.isArray(rooms) && rooms.map(room => (
             <div
-              key={room.chatRoomNo}                                          // ✔ 방 PK
+              key={room.chatRoomNo}                                        
               className={`chat-room-item ${
                 selectedRoom?.chatRoomNo === room.chatRoomNo ? "selected" : ""
               }`}
@@ -394,6 +476,11 @@ console.log("채팅방 목록 : ", rooms);
                 <h2>{selectedRoom.memberName}</h2>
               </div>
 
+              <div className="chat-header">
+                <h2>{selectedRoom?.targetNickname}</h2>
+                <button onClick={() => handleExitRoom(selectedRoom.chatRoomNo)}>방 나가기</button>
+              </div>
+
               <div className="chat-messages">
                 {messages.map((msg) => (
                   <div
@@ -405,7 +492,25 @@ console.log("채팅방 목록 : ", rooms);
                     <div className="message-sender">
                       {msg.senderNo === memberNo ? "나" : selectedRoom.targetNickname}
                     </div>
-                    <div className="message-content">{msg.chatContent}</div>
+                    <div className="message-content">
+                        {msg.chatDelFl === "Y" ? (
+                          <i className="deleted-message">삭제된 메시지입니다.</i>
+                        ) : (
+                          <>
+                            <span>{msg.chatContent}</span>
+                            {msg.senderNo === memberNo && (
+                              <button
+                                className="delete-button"
+                                onClick={() => {
+                                  console.log("삭제 시도:", msg);
+                                  handleDeleteMessage(msg.chatNo)}}
+                              >
+                                🗑️
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </div>
                     <div className="message-timestamp">{msg.chatSendDate}</div>
                   </div>
                 ))}
