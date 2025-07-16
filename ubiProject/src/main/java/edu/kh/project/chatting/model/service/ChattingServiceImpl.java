@@ -69,6 +69,18 @@ public class ChattingServiceImpl implements ChattingService{
 	public int insertMessage(Message msg) {
 		return mapper.insertMessage(msg);
 	}
+
+	// 채팅방 나가기
+	@Override
+	public int exitChatRoom(Map<String, Integer> map) {
+		return mapper.exitChatRoom(map);
+	}
+	
+	// 채팅 삭제
+	@Override
+	public int deleteMessage(Map<String, Integer> map) {
+		return mapper.deleteMessage(map);
+	}
 	
 
 }

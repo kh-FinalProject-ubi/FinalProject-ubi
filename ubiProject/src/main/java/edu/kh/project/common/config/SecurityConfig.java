@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -89,7 +90,9 @@ public class SecurityConfig {
             	    .requestMatchers("/myPage/profile/**").permitAll()
             	    // ✅ 나머지 찜 API는 인증 필요
             	    .requestMatchers("/api/welfare/like/**", "/api/welfare/my-likes").authenticated()
-
+            	    .requestMatchers(HttpMethod.GET, "/api/comments/**").permitAll() 
+            	    // 댓글 작성, 수정, 삭제는 인증된 사용자(로그인한 사용자)만 가능
+            	    .requestMatchers("/api/comments/**").authenticated() 
             	    .anyRequest().permitAll()
 
             	    
@@ -133,7 +136,7 @@ public class SecurityConfig {
         // 개발 클라이언트 주소
         config.setAllowedOrigins(List.of("http://localhost:5173"));
         // WebSocket‑XHR 폴백에 필요한 메서드
-        config.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         // Authorization 헤더도 허용
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         // 쿠키·Authorization 헤더를 WebSocket/XHR에 실어 보낼 수 있게
