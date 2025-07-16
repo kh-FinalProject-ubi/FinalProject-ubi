@@ -15,7 +15,8 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
   const [selectedMember, setSelectedMember] = useState(null);
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
 
-  // 로그인한 회원이 관리자인지 구분
+  const [expandedComments, setExpandedComments] = useState(new Set());
+
   const isAdmin = role === "ADMIN";
 
   useEffect(() => {
@@ -28,7 +29,6 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
       const res = await axios.get(`/api/comments/${boardCode}/${boardNo}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      console.log("서버에서 받은 댓글 데이터", res.data);
       setComments(res.data || []);
     } catch (err) {
       console.error("댓글 조회 실패", err);
@@ -182,18 +182,33 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
     return roots;
   };
 
+  const toggleExpand = (commentNo) => {
+    setExpandedComments((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(commentNo)) newSet.delete(commentNo);
+      else newSet.add(commentNo);
+      return newSet;
+    });
+  };
+
   const renderComment = (c, parentDeleted = false) => {
     const isDeleted = c.commentDelFl === "Y";
     const isMine = c.memberNo === loginMemberNo;
     const reportedByMe = (c.reportedByMe || 0) > 0;
     const isUser = c.memberNo !== null;
-    // 댓글 작성자가 관리자인 경우
+
     const memberRoleStr =
       c.memberRole === "2" ? "ADMIN" : c.memberRole === "1" ? "USER" : "GUEST";
     const isWriterAdmin = memberRoleStr === "ADMIN";
 
-    // 삭제된 댓글이고 자식도 없으면 표시하지 않음
-    if (isDeleted && c.children.length === 0) return null;
+    const isExpanded = expandedComments.has(c.commentNo);
+
+    if (isDeleted)
+      return (
+        <ul className={styles.replyList}>
+          {c.children.map((child) => renderComment(child, true))}
+        </ul>
+      );
 
     return (
       <li key={c.commentNo}>
@@ -206,10 +221,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
             <div className={styles.commentHeader}>
               <div className={styles.commentAuthorInfo}>
                 <img
-                  src={
-                    `http://localhost:8080${c.memberImg}` ||
-                    "/default-profile.png"
-                  }
+                  src={`http://localhost:8080${c.memberImg}` || "/default-profile.png"}
                   alt="프로필 사진"
                   className={styles.profileImg}
                   onClick={(e) => {
@@ -242,7 +254,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
                       className={styles.reportBtn}
                       onClick={() => handleReport(c.commentNo)}
                     >
-                      <img src="/report.svg" alt="신고 아이콘" />
+                      <img src="/report.svg" alt="신고" />
                     </button>
                   )}
               </div>
@@ -280,13 +292,34 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
                 </div>
               </>
             ) : reportedByMe ? (
-              <p
-                className={`${styles.commentText} ${styles.reportedCommentText}`}
-              >
-                신고한 댓글입니다.
-              </p>
+              <p className={styles.reportedCommentText}>신고한 댓글입니다.</p>
             ) : (
-              <p className={styles.commentText}>{c.commentContent}</p>
+              <>
+                <p
+                  className={styles.commentText}
+                  style={
+                    isExpanded
+                      ? { display: "block" }
+                      : {
+                          display: "-webkit-box",
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }
+                  }
+                >
+                  {c.commentContent}
+                </p>
+                {c.commentContent.length > 100 && (
+                  <button
+                  className={styles.moreBtn}
+                  onClick={() => toggleExpand(c.commentNo)}
+                >
+                  {isExpanded ? "닫기" : "더보기"}
+                </button>
+                )}
+              </>
             )}
 
             {token && !editingCommentNo && !reportedByMe && (
@@ -297,12 +330,13 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
                   }`}
                   onClick={() => handleCommentLike(c.commentNo)}
                 >
-                  <img src="/commentLike.svg" alt="좋아요 아이콘" />
+                  <img src="/commentLike.svg" alt="좋아요" />
                 </button>
                 <span>{c.commentLike}</span>
                 <button onClick={() => handleReplyClick(c.commentNo)}>
                   답글
                 </button>
+                
               </>
             )}
 
@@ -318,11 +352,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
                   placeholder="답글을 입력하세요."
                   style={{ width: "100%", resize: "vertical" }}
                 />
-                <button
-                  type="submit"
-                  className="btn-yellow"
-                  style={{ marginTop: "5px" }}
-                >
+                <button type="submit" style={{ marginTop: "5px" }}>
                   답글 작성
                 </button>
               </form>
@@ -332,7 +362,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
 
         {c.children.length > 0 && (
           <ul className={styles.replyList}>
-            {c.children.map((child) => renderComment(child, isDeleted))}
+            {c.children.map((child) => renderComment(child, parentDeleted))}
           </ul>
         )}
       </li>
@@ -353,9 +383,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
             rows={3}
             placeholder="댓글을 입력하세요."
           />
-          <button type="submit" className="btn-yellow">
-            댓글 작성
-          </button>
+          <button type="submit">댓글 작성</button>
         </form>
       )}
 
