@@ -12,8 +12,15 @@
   height: 150px;
   cursor: pointer;
   border-radius: 50%;
-  overflow: hidden; /* ✅ 핵심 포인트 */
-  pointer-events: auto;
+  /* overflow: hidden;  ← 지움 */
+}
+
+.imageMask {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;         /* ✅ 여기로 이동 */
+  position: relative;
 }
 
 .blurMask {
@@ -29,15 +36,21 @@
 
 .profileImageBorder,
 .profileImageBlur {
-  display: block; /* 👈 이거 꼭 필요함 */
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 50%;
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;                 /* top/left/right/bottom 0 */
 }
+
+.profileImageBorder { z-index: 1; }
+.profileImageBlur {
+  z-index: 2;
+  filter: blur(4px) brightness(0.7);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.profileImageBlur.active { opacity: 1; }
 
 .profileImageBorder {
   z-index: 1;
@@ -83,18 +96,14 @@
 
 .buttonsContainer {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
+  inset: 0;
+  z-index: 3;
   display: flex;
   justify-content: center;
   align-items: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease;
-  z-index: 3;
+  transition: opacity 0.3s;
 }
 
 .visible {
