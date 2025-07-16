@@ -23,21 +23,56 @@
   outline-offset: 2px;
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 button {
   font-family: inherit;
 }
 
-/* ---------- 레이아웃 ---------- */
-
 /* ---------- 기본 정보 ---------- */
+
+.mypageProfile{
+  display: flex;
+  flex-direction: column;
+}
+
 .basicInfo {
   margin-bottom: 48px;
+  display: flex;
+  flex-direction: column;
+}
+
+.line {
+  width: 100%;
+  height: 1px;
+  background: #6C6C6C;
 }
 
 .basicInfo > div {
-  display: flex;
+  /* display: flex; */
   gap: 40px;
   align-items: flex-start;
+}
+
+.kako {
+  margin-left: 0.5rem;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.basicInfoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.profileRow {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  align-items: flex-start; /* 프로필 사진 위쪽 정렬 */
 }
 
 /* 왼쪽(프로필 이미지) */
@@ -70,9 +105,51 @@ button {
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   font-size: 14px;
   color: var(--gray-800);
+  font-weight: 300;
+}
+
+.profileRight.editMode li {
+  margin-bottom: 6px;
+}
+
+.addressHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0; /* ✅ 줄바꿈 허용 */
+}
+
+
+.zipcode {
+  font-size: 0.9rem;
+  color: #555;
+  border-radius: 0.4rem;
+}
+
+.addressBody {
+  flex: 1;          /* ✅ 남은 공간 다 차지 */
+  min-width: 0;
+  word-break: break-word;
+  white-space: normal;
+  font-size: 14px;
+}
+
+.addressBody p {
+  margin: 0;
+  color: #333;
+  line-height: 1.4;
+}
+
+.addressDetail p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #333;
+  line-height: 1.4;
+  white-space: normal;   /* 줄바꿈 허용 */
+  word-break: break-word;
 }
 
 .profileRight li strong {
@@ -82,11 +159,24 @@ button {
 
 .profileRight input {
   flex: 1;
-  padding: 6px 10px;
-  border: 1px solid var(--gray-300);
-  border-radius: var(--radius-s);
+  padding: 0px 5px;             /* ✅ 세로 여백 살짝 증가 */
   font-size: 14px;
+  font-weight: 300;      /* ✅ 동일하게 */
+  color: var(--gray-800);/* ✅ 동일하게 */
+  line-height: 1.6;             /* ✅ 줄 높이 늘려서 여유 있게 */
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #fff;
+  transition: all 0.2s ease;
+  font-family: inherit;  /* ✅ 시스템 기본값 또는 부모로부터 상속 */
 }
+
+.profileRight input:focus {
+  box-shadow: 0 0 0 2px rgba(255, 213, 79, 0.3);
+  border-color: var(--brand-yellow-darker);
+  outline: none;
+}
+
 
 /* 수정/저장 버튼 */
 .profileRight > button {
@@ -104,28 +194,37 @@ button {
 }
 
 /* 회원 유형 뱃지 */
-.member-standard-labels {
-  display: inline-flex;
-  gap: 6px;
+.memberStandardLabels {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
 }
-.main-type,
-.tag-disabled,
-.tag-pregnant {
+
+.memberType,
+.tagDisabled,
+.tagPregnant {
   display: inline-block;
-  padding: 2px 8px;
-  font-size: 12px;
-  border-radius: var(--radius-s);
-  color: #fff;
+  padding: 0.35rem 0.7rem;
+  border-radius: 9999px; /* pill shape */
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1;
+  color: white;
+  margin-right: 0.5rem;
 }
-.main-type {
-  background: var(--brand-yellow-darker);
-  color: #263238;
+
+/* 각 태그 컬러 */
+.memberType {
+  background-color: #1976d2; /* 파랑 */
 }
-.tag-disabled {
-  background: #64b5f6;
+
+.tagDisabled {
+  background-color: #9c27b0; /* 보라 */
 }
-.tag-pregnant {
-  background: #ffb74d;
+
+.tagPregnant {
+  background-color: #f06292; /* 핑크 */
 }
 
 /* ---------- 탭 ---------- */
@@ -245,6 +344,40 @@ button {
   background: #fffde7;
 }
 
+.radioGroup,
+.checkboxGroup {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap; /* ✅ 줄바꿈 대응 */
+}
+
+.checkboxGroup {
+  margin-left: 2rem;  /* ✅ 이 간격이 라디오 그룹과 체크박스 그룹 사이 */
+}
+
+.radioGroup label,
+.checkboxGroup label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--gray-800);
+}
+
+/* 체크 색상 */
+input[type="radio"],
+input[type="checkbox"] {
+  accent-color: #ffd54f; /* ✅ 노란색 체크 */
+}
+
+input[type="checkbox"],
+input[type="radio"]:focus {
+  outline: none;
+  box-shadow: none;
+}
+
 /* ---------- 반응형 ---------- */
 @media (max-width: 768px) {
   .basicInfo > div {
@@ -264,3 +397,4 @@ button {
     flex-wrap: wrap;
   }
 }
+

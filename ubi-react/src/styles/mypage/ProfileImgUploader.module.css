@@ -12,10 +12,52 @@
   height: 150px;
   cursor: pointer;
   border-radius: 50%;
-  overflow: visible;
+  overflow: hidden; /* ✅ 핵심 포인트 */
   pointer-events: auto;
 }
 
+.blurMask {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;      /* ✅ 블러만 안쪽으로 제한 */
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+}
+
+.profileImageBorder,
+.profileImageBlur {
+  display: block; /* 👈 이거 꼭 필요함 */
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.profileImageBorder {
+  z-index: 1;
+  position: relative; /* 얘는 relative로 두고 */
+}
+
+.profileImageBlur {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(4px) brightness(0.7);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.profileImageBlur.active {
+  opacity: 1;
+}
+
+/* 원본 이미지 */
 .profileImageBorder {
   width: 100%;
   height: 100%;
@@ -23,24 +65,20 @@
   border-radius: 50%;
   position: relative;
   z-index: 1;
+  display: block;
 }
 
-.profileImageBlur {
+/* X 버튼 등 추가 요소 */
+.deleteBtn {
   position: absolute;
-  top: 5px;
-  left: 5px;
-  width: calc(100% - 10px);
-  height: calc(100% - 10px);
-  object-fit: cover;
+  top: -5px;
+  right: -5px;
+  z-index: 3;
+  background: red;
+  color: white;
   border-radius: 50%;
-  filter: blur(4px) brightness(0.7);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: 2;
-}
-
-.active {
-  opacity: 1;
+  border: none;
+  cursor: pointer;
 }
 
 .buttonsContainer {

@@ -516,7 +516,6 @@ console.log("채팅방 목록 : ", rooms);
                 ))}
                 <div ref={messagesEndRef}></div>
               </div>
-
               <div className="chat-input">
                 <input
                   type="text"
