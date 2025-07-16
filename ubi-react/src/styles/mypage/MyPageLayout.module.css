@@ -1,40 +1,76 @@
-.layoutWrapper {
+/* 레이아웃 전체 */
+
+/* 1) 최상위: 브라우저 전체 폭 */
+.pageWrap {
+  min-height: 100vh;
+  background: #fff;
+}
+
+/* 2) 가운데 묶음 (여기에 ‘공통 마진’만 주면 모든 탭에서 공유) */
+.inner {
+  /* 원하는 양쪽 여백 */
+  margin: 0 auto;        /* 가운데 정렬 */
+  padding: 30px 100px 20% ;    /* ← 여기만 조정하면 사이드바+본문 둘 다 같이 밀림 */
+  max-width: 1280px;     /* 필요하면 */
   display: flex;
 }
 
+.layoutWrapper {
+  display: flex;
+  min-height: 100vh;
+  background: #fdfdfd;
+}
+
+/* ── 사이드바 ───────────────────────── */
 .sidebar {
-  width: 200px;
-  border-right: 1px solid #eee;
-  padding: 20px;
+  width: 220px;
+  padding: 2rem 1rem;
+  background: #fff;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.04);
 }
 
 .sidebarTitle {
-  font-weight: bold;
-  margin-bottom: 20px;
+  margin: 0 0 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
+/* 메뉴 목록 */
 .menuList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   list-style: none;
+  margin: 0;
   padding: 0;
 }
 
+/* 모든 링크 기본 스타일 */
 .menuList a {
-  text-decoration: none;
-  color: black;
   display: block;
-  padding: 8px;
+  padding: 0.6rem 1rem;
+  border-radius: 0.4rem;
+  color: #444;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: background 0.2s ease;
 }
 
+/* hover */
 .menuList a:hover {
-  background-color: #f5f5f5;
+  background: #e7ecf3;
 }
 
-.active {
-  background-color: #ffe664;
-  font-weight: bold;
+/* 현재 페이지(= active) 링크
+   NavLink 가 aria-current="page" 를 달아 준다 */
+.menuList a[aria-current="page"] {
+  background: #ffd54f;
+  color: #fff;
+  font-weight: 600;
 }
 
+/* ── 본문 영역 ──────────────────────── */
 .contentArea {
   flex: 1;
-  padding: 20px;
+  padding: 2rem 3rem;
 }
