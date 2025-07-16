@@ -77,6 +77,14 @@ axios
   }, [boardNo, navigate, token]);
 
   useEffect(() => {
+  if (board && Array.isArray(board.imageList)) {
+    uploadedImagesRef.current = board.imageList.map(img => {
+      return `${img.imagePath.replace(/^\/+/, '')}/${img.imageName}`;
+    });
+  }
+}, [board]);
+
+  useEffect(() => {
     if (!boardContent) return;
 
     if (isInitialSet.current) {
@@ -136,16 +144,34 @@ axios
       alert("내용을 입력하세요.");
       return;
     }
+    // 1. summernote에 삽입된 <img> 순서 기준으로 정렬
+const imgTags = Array.from(tempDiv.querySelectorAll("img"));
+const sortedImageUrls = imgTags.map((img) => img.getAttribute("src"));
 
-    const imageList = uploadedImagesRef.current.map((url, index) => {
-      const segments = url.split("/");
+const imageList = sortedImageUrls
+  .map((src) => {
+    try {
+      // src가 절대 URL이면 URL 객체에서 pathname 추출
+      const url = new URL(src, window.location.origin);
+      const pathParts = url.pathname.split("/").filter(Boolean); // ["images", "board", "파일명"]
+      const imageName = pathParts.pop(); // 마지막 요소가 파일명
+      const imagePath = "/" + pathParts.join("/"); // 나머지를 경로로
+
       return {
-        imagePath: "/" + segments.slice(0, -1).join("/"),
-        imageName: segments[segments.length - 1],
-        imageOrder: index,
+        imagePath,
+        imageName,
       };
-    });
-
+    } catch (e) {
+      console.warn("⚠️ 이미지 URL 파싱 실패:", src);
+      return null; // 유효하지 않으면 제외
+    }
+  })
+  .filter(Boolean) // null 제거
+  .map((img, index) => ({
+    ...img,
+    imageOrder: index, // 순서대로 번호 부여 (썸네일 = 0번)
+  }));
+  
     const hashtagList = hashtags
       .split(" ")
       .map((tag) => tag.replace("#", "").trim())

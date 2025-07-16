@@ -119,13 +119,15 @@ export default function ProfileImgUploader({ onSave }) {
           alt="프로필"
           className={styles.profileImageBorder}
         />
-        <img
-          src={imageSrc}
-          alt="프로필 흐림"
-          className={`${styles.profileImageBlur} ${
-            isHovered ? styles.active : ""
-          }`}
-        />
+        <div className={styles.blurMask}>
+          <img
+            src={imageSrc}
+            alt="프로필 흐림"
+            className={`${styles.profileImageBlur} ${
+              isHovered ? styles.active : ""
+            }`}
+          />
+        </div>
         <div
           className={`${styles.buttonsContainer} ${
             isHovered ? styles.visible : ""
