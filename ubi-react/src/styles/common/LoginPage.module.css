@@ -1,0 +1,144 @@
+/* 공통 */
+.loginPageContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 200px); /* 헤더/푸터 제외 */
+  background-color: #fff;
+}
+
+.loginMainContent {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.imageBox {
+  width: 400px;
+}
+
+.imageBox img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* 로그인 / 찾기 공통 박스 */
+.formContainer {
+  width: 420px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  padding: 50px 40px;
+  box-sizing: border-box;
+
+  /* [추가] Flexbox 레이아웃 및 최소 높이 설정 */
+  display: flex;
+  flex-direction: column;
+  min-height: 520px; /* 컨테이너 최소 높이 고정 */
+}
+
+.formContent {
+  flex-grow: 1; /* 이 영역이 남은 공간을 모두 차지하도록 설정 */
+}
+
+.formContainer h3 {
+  font-size: 20px;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* 인풋 */
+.formContainer input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+/* 버튼 */
+.loginBtn {
+  width: 100%;
+  background: #7464f0;
+  color: #fff;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+.kakaoBtn {
+  width: 100%;
+  background: #fee500;
+  color: #333;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+/* 찾기 링크 */
+.findAccountLink {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.findAccountLink button {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 13px;
+  text-decoration: underline;
+}
+
+/* 비밀번호 재설정 완료 */
+.resetCompleteBox {
+  text-align: center;
+}
+
+.resetCompleteBox img {
+  width: 120px;
+  margin-top: 20px;
+}
+
+/* 아이디/비밀번호 찾기용 */
+.authBtn {
+  background: #7464f0;
+  color: #fff;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.confirmBtn {
+  width: 100%;
+  background: #7464f0;
+  color: #fff;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #f44336; /* 빨간색 */
+  padding: 0 10px;
+  font-weight: bold;
+  flex-shrink: 0; /* 너비가 줄어들지 않도록 설정 */
+}
