@@ -1,72 +1,266 @@
-.memberStandardView {
-  margin-bottom: 16px;
+/* MypageProfile.module.css */
+
+/* ---------- 공통 ---------- */
+:root {
+  --brand-yellow: #ffd54f;
+  --brand-yellow-darker: #fbc02d;
+  --gray-100: #fafafa;
+  --gray-200: #f5f5f5;
+  --gray-300: #e0e0e0;
+  --gray-400: #bdbdbd;
+  --gray-600: #757575;
+  --gray-800: #424242;
+  --radius-s: 4px;
+  --radius-m: 8px;
+  --radius-l: 12px;
+  --transition: 0.2s ease;
+  font-family: "Pretendard", sans-serif;
 }
 
-.memberStandardLabels {
+/* 텍스트 선택·드래그 시 기본 노란색 배경 제거 */
+*:focus-visible {
+  outline: 2px solid var(--brand-yellow);
+  outline-offset: 2px;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* ---------- 레이아웃 ---------- */
+
+/* ---------- 기본 정보 ---------- */
+.basicInfo {
+  margin-bottom: 48px;
+}
+
+.basicInfo > div {
   display: flex;
-  gap: 8px;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+/* 왼쪽(프로필 이미지) */
+.profileLeft {
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.profileLeft img {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--brand-yellow);
+}
+
+/* 오른쪽(텍스트/폼) */
+.profileRight {
+  flex: 1;
+}
+
+.profileRight ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+}
+
+.profileRight li {
+  display: flex;
   flex-wrap: wrap;
-  margin-top: 4px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--gray-800);
 }
 
-.memberStandardLabels span {
+.profileRight li strong {
+  width: 96px;          /* 라벨 너비 고정 */
+  font-weight: 600;
+}
+
+.profileRight input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-s);
+  font-size: 14px;
+}
+
+/* 수정/저장 버튼 */
+.profileRight > button {
   display: inline-block;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.9em;
+  padding: 8px 28px;
+  border: 1px solid var(--brand-yellow-darker);
+  background: var(--brand-yellow);
+  border-radius: var(--radius-m);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.profileRight > button:hover {
+  background: var(--brand-yellow-darker);
 }
 
-.mainType {
-  background-color: #f0f0f0;
-  color: #333;
-  font-weight: 500;
+/* 회원 유형 뱃지 */
+.member-standard-labels {
+  display: inline-flex;
+  gap: 6px;
+}
+.main-type,
+.tag-disabled,
+.tag-pregnant {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 12px;
+  border-radius: var(--radius-s);
+  color: #fff;
+}
+.main-type {
+  background: var(--brand-yellow-darker);
+  color: #263238;
+}
+.tag-disabled {
+  background: #64b5f6;
+}
+.tag-pregnant {
+  background: #ffb74d;
 }
 
-.tagDisabled {
-  background-color: #d0e6ff;
-  color: #0057b7;
-}
-
-.tagPregnant {
-  background-color: #ffe1e1;
-  color: #b70000;
-}
-
-.descriptionPreview {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.5em;
-  max-height: 3em;
-}
-
+/* ---------- 탭 ---------- */
 .categoryTabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 1rem;
+  display: inline-flex;
+  gap: 8px;
+  margin-bottom: 24px;
 }
-
 .categoryTabs button {
-  padding: 0.5rem 1rem;
-  border: none;
-  background: #eee;
+  padding: 6px 18px;
+  font-size: 14px;
+  border: 1px solid var(--gray-300);
+  background: var(--gray-200);
+  border-radius: 20px;
   cursor: pointer;
-  border-radius: 8px;
-  font-weight: 500;
+  transition: var(--transition);
 }
-
+.categoryTabs button:hover {
+  background: var(--gray-100);
+}
 .categoryTabs .active {
-  background: #3478f6;
-  color: white;
+  background: var(--brand-yellow);
+  border-color: var(--brand-yellow-darker);
+  font-weight: 600;
 }
 
-.clickableRow {
+/* ---------- 혜택 카드 ---------- */
+.benefitCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+.benefitCard,
+.postList .clickableRow {
   cursor: pointer;
-  transition: background-color 0.2s ease;
+}
+.benefitCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-l);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+.benefitCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
 }
 
+.badgeRow {
+  margin-bottom: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand-yellow-darker);
+}
+
+.badge {
+  padding: 2px 6px;
+  border-radius: var(--radius-s);
+  color: #fff;
+}
+.신청혜택 {
+  background: #ff7043;
+}
+.기본혜택 {
+  background: #9e9e9e;
+}
+
+.benefitTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gray-800);
+  margin-bottom: 2px;
+}
+
+.benefitAgency,
+.benefitField,
+.benefitRequirement,
+.benefitKind {
+  font-size: 14px;
+  color: var(--gray-600);
+}
+
+.benefitDescription {
+  font-size: 13px;
+  color: var(--gray-600);
+  flex-grow: 1;
+}
+
+.benefitDate {
+  font-size: 12px;
+  color: var(--gray-400);
+}
+
+/* ---------- 게시글/댓글 테이블 ---------- */
+.postTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 14px;
+}
+.postTable thead th {
+  background: var(--gray-100);
+  font-weight: 600;
+}
+.postTable th,
+.postTable td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--gray-300);
+  text-align: left;
+}
 .clickableRow:hover {
-  background-color: #f0f0f0;
+  background: #fffde7;
+}
+
+/* ---------- 반응형 ---------- */
+@media (max-width: 768px) {
+  .basicInfo > div {
+    flex-direction: column;
+  }
+  .profileLeft {
+    margin: 0 auto;
+  }
+  .profileRight li strong {
+    width: 100%;
+  }
+  .profileRight li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .categoryTabs {
+    flex-wrap: wrap;
+  }
 }
