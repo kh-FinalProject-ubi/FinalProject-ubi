@@ -670,4 +670,23 @@
       AND B.BOARD_DEL_FL = 'N'
     ORDER BY B.BOARD_DATE DESC
 </select>
+
+
+<!--  인기해시태그  -->
+<select id="selectPopularTags" resultType="string">
+  <![CDATA[
+    SELECT HASHTAG_NAME
+    FROM (
+      SELECT H.HASHTAG_NAME, COUNT(*) AS CNT, MAX(B.BOARD_DATE) AS LATEST_DATE
+      FROM BOARD_HASHTAG H
+      JOIN BOARD B ON H.BOARD_NO = B.BOARD_NO
+      WHERE B.BOARD_DEL_FL = 'N'
+      GROUP BY H.HASHTAG_NAME
+      ORDER BY CNT DESC, LATEST_DATE DESC
+    )
+    WHERE ROWNUM <= 5
+  ]]>
+</select>
+
+
 </mapper>

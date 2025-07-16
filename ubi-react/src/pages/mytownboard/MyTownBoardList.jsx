@@ -18,7 +18,19 @@ function MyTownBoard() {
   const [pagination, setPagination] = useState(null);
   const [selectedTags, setSelectedTags] = useState([]);
 
-  const popularTags = ["만족후기", "비추천", "우리 동네", "질문", "자랑"];
+  
+    // ✅ 여기에 popularTags 선언
+  const [popularTags, setPopularTags] = useState([]);
+
+  // ✅ 인기 해시태그 불러오기 useEffect
+  useEffect(() => {
+    fetch("/api/board/popular-tags")
+      .then((res) => res.json())
+      .then((tags) => {
+        setPopularTags(tags);
+      })
+      .catch((err) => console.error("인기 태그 불러오기 실패:", err));
+  }, []);
 
   const [searchType, setSearchType] = useState("titleContent"); // 기본은 제목+내용 검색
   const [searchTypeOpen, setSearchTypeOpen] = useState(false); // 토글 열기 여부
@@ -29,6 +41,7 @@ function MyTownBoard() {
     return doc.body.textContent || "";
   };
 
+  
   useEffect(() => {
     const queryParams = new URLSearchParams({
       page: currentPage,
@@ -54,24 +67,29 @@ function MyTownBoard() {
         setPagination(data.pagination);
       })
       .catch((err) => console.error("Error:", err));
-  }, [
-    currentPage,
-    postTypeCheck,
+  }, [ currentPage,
+ postTypeCheck,
     selectedCity,
     selectedDistrict,
     searchKeyword,
     selectedTags,
   ]);
 
-  const handleTagClick = (tag) => {
-    setSelectedTags(
-      (prevTags) =>
-        prevTags.includes(tag)
-          ? prevTags.filter((t) => t !== tag)
-          : [...prevTags, tag.replace(/^#/, "")] // # 제거
-    );
+const handleTagClick = (tag) => {
+  const normalizedTag = tag.replace(/^#/, ""); // # 제거
+  const isSelected = selectedTags.includes(normalizedTag);
 
-    setCurrentPage(1);
+
+ if (isSelected) { // 선택된 태그를 다시 누르면 해제
+    setSelectedTags([]);
+    setSearchKeyword("");
+  } else {
+  setSearchType("hashtag"); // 검색 타입을 해시태그로 전환
+  setSearchKeyword(normalizedTag); // 키워드 입력값을 해당 태그로 설정
+  setSelectedTags([normalizedTag]); // 선택된 태그 업데이트 (중복 방지용)
+    }
+
+  setCurrentPage(1);
   };
 
   return (
@@ -88,23 +106,24 @@ function MyTownBoard() {
             {searchType === "titleContent" ? "제목+내용" : "해시태그"}
           </button>
 
-          {searchTypeOpen && (
-            <div>
-              <button
-                className={styles.sortButton}
-                onClick={() => {
-                  setSearchType("titleContent");
-                  setSearchTypeOpen(false);
-                }}
-              >
-                제목+내용
-              </button>
-              <button
-                className={styles.sortButton}
-                onClick={() => {
-                  setSearchType("hashtag");
-                  setSearchTypeOpen(false);
-                }}
+         {searchTypeOpen && (
+      <div
+      >
+        <button
+          className={styles.sortButton}
+          onClick={() => {
+            setSearchType("titleContent");
+            setSearchTypeOpen(false);
+          }}
+        >
+          제목+내용
+        </button>
+        <button
+          className={styles.sortButton}
+          onClick={() => {
+            setSearchType("hashtag");
+            setSearchTypeOpen(false);
+          }}
               >
                 해시태그
               </button>
