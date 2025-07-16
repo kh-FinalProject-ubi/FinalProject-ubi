@@ -18,6 +18,7 @@ const KakaoCallback = () => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        credentials: "include", // 추가!
       })
         .then((res) => {
           if (!res.ok) throw new Error("사용자 정보 조회 실패");
