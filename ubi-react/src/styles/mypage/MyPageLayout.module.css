@@ -13,6 +13,7 @@
   padding: 30px 100px 20% ;    /* ← 여기만 조정하면 사이드바+본문 둘 다 같이 밀림 */
   max-width: 1280px;     /* 필요하면 */
   display: flex;
+  flex-direction: column;
 }
 
 .layoutWrapper {
@@ -74,3 +75,4 @@
   flex: 1;
   padding: 2rem 3rem;
 }
+

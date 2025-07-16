@@ -401,249 +401,250 @@ const Profile = () => {
 
       {member && (
         <section className={styles.basicInfo}>
-          <div style={{ position: "relative" }}>
+          <div style ={{ position: "relative" }}>
             {loading && <LoadingOverlay />}
-            <h3>기본 정보</h3>
-            <div className={styles.profileLeft}>
-              <ProfileImgUploader member={member} onSave={onProfileSave} />
-            </div>
-            <div className={styles.profileRight}>
-              <ul>
-                {editMode ? (
-                  <>
-                    <li>
-                      <strong>아이디</strong>
-                      <input
-                        type="text"
-                        value={member.memberId}
-                        onChange={(e) =>
-                          setMember({ ...member, memberId: e.target.value })
-                        }
-                      />
-                    </li>
-                    <li>
-                      <strong>카카오 아이디</strong>
-                      <p>{member.kakaoId ? "연동 가능" : "없음"}</p>
-                    </li>
-                    <li>
-                      <strong>닉네임</strong>
-                      <input
-                        type="text"
-                        value={member.memberNickname}
-                        onChange={(e) =>
-                          setMember({
-                            ...member,
-                            memberNickname: e.target.value,
-                          })
-                        }
-                      />
-                    </li>
-                    <li>
-                      <strong>전화번호</strong>
-                      <input
-                        type="text"
-                        value={member.memberTel}
-                        onChange={(e) =>
-                          setMember({ ...member, memberTel: e.target.value })
-                        }
-                      />
-                    </li>
-                    <li>
-                      <strong>이메일</strong>
-                      <input
-                        type="text"
-                        value={member.memberEmail}
-                        onChange={(e) =>
-                          setMember({ ...member, memberEmail: e.target.value })
-                        }
-                      />
-                    </li>
-                    <li>
-                      <strong>회원 유형</strong>
-                      {/* 라디오 버튼 */}
-                      <div>
-                        {["일반", "노인", "청년", "아동"].map((type) => (
-                          <label key={type}>
+            <div className={styles.basicInfoHeader}>
+              <h3>기본 정보</h3>
+                  {editMode ? (
+                    <button calssName = {styles.save} onClick={saveMemberData}>저장</button>
+                  ) : (
+                    <button calssName = {styles.edit} onClick={handleEdit}>수정</button>
+                  )}
+              </div>
+            <div className={styles.line}/>
+            <div className={styles.profileRow}>
+              <div className={styles.profileLeft}>
+                <ProfileImgUploader member={member} onSave={onProfileSave} />
+              </div>
+              <div className={styles.profileRight}>
+                <ul>
+                  {editMode ? (
+                    <>
+                      <li>
+                        <strong>아이디</strong>
+                        <input
+                          type="text"
+                          value={member.memberId}
+                          onChange={(e) =>
+                            setMember({ ...member, memberId: e.target.value })
+                          }
+                        />
+                        <p>{member.kakaoId ? "카카오 연동됨" : null}</p>
+                      </li>
+                      <li>
+                        <strong>닉네임</strong>
+                        <input
+                          type="text"
+                          value={member.memberNickname}
+                          onChange={(e) =>
+                            setMember({
+                              ...member,
+                              memberNickname: e.target.value,
+                            })
+                          }
+                        />
+                      </li>
+                      <li>
+                        <strong>전화번호</strong>
+                        <input
+                          type="text"
+                          value={member.memberTel}
+                          onChange={(e) =>
+                            setMember({ ...member, memberTel: e.target.value })
+                          }
+                        />
+                      </li>
+                      <li>
+                        <strong>이메일</strong>
+                        <input
+                          type="text"
+                          value={member.memberEmail}
+                          onChange={(e) =>
+                            setMember({ ...member, memberEmail: e.target.value })
+                          }
+                        />
+                      </li>
+                      <li>
+                        <strong>회원 유형</strong>
+                        <div className={styles.radioGroup}>
+                          {["일반", "노인", "청년", "아동"].map((type) => (
+                            <label key={type}>
+                              <input
+                                type="radio"
+                                name="mainType"
+                                value={type}
+                                checked={mainType === type}
+                                onChange={() => setMainType(type)}
+                              />
+                              {type}
+                            </label>
+                          ))}
+                        </div>
+
+                        <div className={styles.checkboxGroup}>
+                          <label>
                             <input
-                              type="radio"
-                              name="mainType"
-                              value={type}
-                              checked={mainType === type}
-                              onChange={() => setMainType(type)}
+                              type="checkbox"
+                              checked={disabled}
+                              onChange={(e) => setDisabled(e.target.checked)}
                             />
-                            {type}
+                            장애인
                           </label>
-                        ))}
-                      </div>
+                          <label>
+                            <input
+                              type="checkbox"
+                              checked={pregnant}
+                              onChange={(e) => setPregnant(e.target.checked)}
+                            />
+                            임산부
+                          </label>
+                        </div>
+                      </li>
+                      <li>
+                        <strong>가입일</strong>
+                        <input
+                          type="text"
+                          value={member.enrollDate}
+                          readOnly
+                        />
+                      </li>
+                      <li>
+                        <strong>주소</strong>
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              openPostcodePopup("main");
+                            }}
+                          >
+                            우편번호 검색
+                          </button>
 
-                      {/* 체크박스 */}
-                      <div>
-                        <label>
                           <input
-                            type="checkbox"
-                            checked={disabled}
-                            onChange={(e) => setDisabled(e.target.checked)}
+                            value={zipcode}
+                            placeholder="우편번호"
+                            readOnly
+                            style={{
+                              backgroundColor: "#f1f1f1",
+                              cursor: "default",
+                            }}
                           />
-                          장애인
-                        </label>
-                        <label>
+
                           <input
-                            type="checkbox"
-                            checked={pregnant}
-                            onChange={(e) => setPregnant(e.target.checked)}
+                            value={baseAddress}
+                            placeholder="기본 주소"
+                            readOnly
+                            style={{
+                              backgroundColor: "#f1f1f1",
+                              cursor: "default",
+                            }}
                           />
-                          임산부
-                        </label>
-                      </div>
-                    </li>
-                    <li>
-                      <strong>가입일</strong>
-                      <input
-                        type="text"
-                        value={member.enrollDate}
-                        onChange={(e) =>
-                          setMember({ ...member, enrollDate: e.target.value })
-                        }
-                      />
-                    </li>
-                    <li>
-                      <strong>주소</strong>
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            openPostcodePopup("main");
-                          }}
-                        >
-                          우편번호 검색
-                        </button>
 
-                        <input
-                          value={zipcode}
-                          placeholder="우편번호"
-                          readOnly
-                          style={{
-                            backgroundColor: "#f1f1f1",
-                            cursor: "default",
-                          }}
-                        />
+                          <input
+                            ref={detailAddressRef}
+                            value={detailAddress}
+                            onChange={(e) => setDetailAddress(e.target.value)}
+                            placeholder="상세 주소"
+                          />
+                        </>
+                      </li>
 
-                        <input
-                          value={baseAddress}
-                          placeholder="기본 주소"
-                          readOnly
-                          style={{
-                            backgroundColor: "#f1f1f1",
-                            cursor: "default",
-                          }}
-                        />
+                      <li>
+                        <strong>임시주소</strong>
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              openPostcodePopup("temp");
+                            }}
+                          >
+                            우편번호 검색
+                          </button>
 
-                        <input
-                          ref={detailAddressRef}
-                          value={detailAddress}
-                          onChange={(e) => setDetailAddress(e.target.value)}
-                          placeholder="상세 주소"
-                        />
-                      </>
-                    </li>
+                          <input
+                            value={zipcode2}
+                            placeholder="우편번호"
+                            readOnly
+                            style={{
+                              backgroundColor: "#f1f1f1",
+                              cursor: "default",
+                            }}
+                          />
 
-                    <li>
-                      <strong>임시주소</strong>
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            openPostcodePopup("temp");
-                          }}
-                        >
-                          우편번호 검색
-                        </button>
+                          <input
+                            value={baseAddress2}
+                            placeholder="기본 주소"
+                            readOnly
+                            style={{
+                              backgroundColor: "#f1f1f1",
+                              cursor: "default",
+                            }}
+                          />
 
-                        <input
-                          value={zipcode2}
-                          placeholder="우편번호"
-                          readOnly
-                          style={{
-                            backgroundColor: "#f1f1f1",
-                            cursor: "default",
-                          }}
-                        />
+                          <input
+                            ref={detailAddressRef}
+                            value={detailAddress2}
+                            onChange={(e) => setDetailAddress2(e.target.value)}
+                            placeholder="상세 주소"
+                          />
+                        </>
+                      </li>
+                    </>
+                  ) : (
+                    <>
+                      <li>
+                        <strong>아이디</strong> {member.memberId}
+                        <p className={styles.kako}>{member.kakaoId ? "카카오 연동됨 : " + member.kakaoId : null}</p>
+                      </li>
+                      <li>
+                        <strong>닉네임</strong> {member.memberNickname}
+                      </li>
+                      <li>
+                        <strong>전화번호</strong> {member.memberTel}
+                      </li>
+                      <li>
+                        <strong>이메일</strong> {member.memberEmail}
+                      </li>
+                      <li className={styles.memberStandardView}>
+                        <strong>회원유형</strong>
+                        <div className={styles.memberStandardLbels}>
+                          <span className={styles.memberType}>{mainType || "일반"}</span>
+                          {disabled && (
+                            <span className={styles.tagDisabled}>장애인</span>
+                          )}
+                          {pregnant && (
+                            <span className={styles.tagPregnant}>임산부</span>
+                          )}
+                        </div>
+                      </li>
+                      <li>
+                        <strong>가입일</strong> {member.enrollDate}
+                      </li>
+                      <li className={styles.address}>
+                        <div className={styles.addressHeader}>
+                          <strong>내 주소</strong>
+                          <div className={styles.addressBody}>
+                            <p className={styles.zipcode}>{`[${zipcode}]`}</p>
+                            <p>{baseAddress} , {detailAddress}</p>
+                          </div>
+                        </div>
+                      </li>
+                      <li className={styles.address}>
+                        <div className={styles.addressHeader}>
+                          <strong>임시 주소</strong>
+                          <div className={styles.addressBody}>
+                            <p className={styles.zipcode}>{`[${zipcode2 ? zipcode2 : "없음"}]`}</p>
+                            <p>{baseAddress2 ? baseAddress2 : "없음"} , 
+                               {detailAddress2 ? detailAddress2 : "없음"}</p>
+                          </div>
+                        </div>
+                      </li>
+                    </>
+                  )}
+                </ul>
 
-                        <input
-                          value={baseAddress2}
-                          placeholder="기본 주소"
-                          readOnly
-                          style={{
-                            backgroundColor: "#f1f1f1",
-                            cursor: "default",
-                          }}
-                        />
 
-                        <input
-                          ref={detailAddressRef}
-                          value={detailAddress2}
-                          onChange={(e) => setDetailAddress2(e.target.value)}
-                          placeholder="상세 주소"
-                        />
-                      </>
-                    </li>
-                  </>
-                ) : (
-                  <>
-                    <li>
-                      <strong>아이디</strong> {member.memberId}
-                    </li>
-                    <li>
-                      <strong>카카오아이디</strong>{" "}
-                      {member.kakaoId ? "연동 가능" : "없음"}
-                    </li>
-                    <li>
-                      <strong>닉네임</strong> {member.memberNickname}
-                    </li>
-                    <li>
-                      <strong>전화번호</strong> {member.memberTel}
-                    </li>
-                    <li>
-                      <strong>이메일</strong> {member.memberEmail}
-                    </li>
-                    <li className="member-standard-view">
-                      <strong>회원유형</strong>
-                      <div className="member-standard-labels">
-                        <span className="main-type">{mainType || "일반"}</span>
-                        {disabled && (
-                          <span className="tag-disabled">장애인</span>
-                        )}
-                        {pregnant && (
-                          <span className="tag-pregnant">임산부</span>
-                        )}
-                      </div>
-                    </li>
-                    <li>
-                      <strong>가입일</strong> {member.enrollDate}
-                    </li>
-                    <li>
-                      <strong>주소</strong>
-                      <p>우편번호 : {zipcode}</p>
-                      <p>주소 : {baseAddress}</p>
-                      <p>상세주소 : {detailAddress}</p>
-                    </li>
-                    <li>
-                      <strong>임시 주소</strong>
-                      <p>우편번호 : {zipcode2 ? zipcode2 : "없음"}</p>
-                      <p>주소 : {baseAddress2 ? baseAddress2 : "없음"}</p>
-                      <p>
-                        상세주소 : {detailAddress2 ? detailAddress2 : "없음"}
-                      </p>
-                    </li>
-                  </>
-                )}
-              </ul>
-
-              {editMode ? (
-                <button onClick={saveMemberData}>저장</button>
-              ) : (
-                <button onClick={handleEdit}>수정</button>
-              )}
+              </div>
             </div>
           </div>
         </section>
