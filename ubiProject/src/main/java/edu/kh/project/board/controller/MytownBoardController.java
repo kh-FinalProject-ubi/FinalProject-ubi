@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -48,6 +49,17 @@ public class MytownBoardController {
 	    paramMap.put("keyword", keyword);
 	    paramMap.put("tagList", tags != null && !tags.isEmpty() ? List.of(tags.split(",")) : null);
 
+	 // tags를 List<String>으로 변환
+	    if (tags != null && !tags.trim().isEmpty()) {
+	        List<String> tagList = Arrays.stream(tags.split(","))
+	                                     .map(String::trim)
+	                                     .filter(tag -> !tag.isEmpty())
+	                                     .collect(Collectors.toList());
+	        paramMap.put("tagList", tagList);
+	    } else {
+	        paramMap.put("tagList", null);
+	    }
+
 	    // 게시글 개수 조회
 	    int listCount = service.getFilteredBoardCount(paramMap);
 
@@ -55,6 +67,8 @@ public class MytownBoardController {
 	    Pagination pagination = new Pagination(page, listCount);
 	    paramMap.put("startRow", (pagination.getCurrentPage() - 1) * pagination.getLimit());
 	    paramMap.put("limit", pagination.getLimit());
+	    
+	    
 
 	    // 게시글 목록 조회
 	    List<Board> boardList = service.getFilteredBoardList(paramMap);
