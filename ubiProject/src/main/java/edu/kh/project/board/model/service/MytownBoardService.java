@@ -2,6 +2,7 @@ package edu.kh.project.board.model.service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,9 +20,20 @@ public interface MytownBoardService {
 	 * @param i
 	 * @return
 	 */
-	List<Board> getLocalBoardList(int page);
+	//List<Board> getLocalBoardList(int page);
+	
+//	// 전체 게시글 수
+//	int getBoardLocalListCount();
+//
+//	// 일반 조회 (RowBounds 사용)
+//	List<Board> getLocalBoardList(Pagination pagination);
+//
+//	// 검색 필터 조회용
+//	int getFilteredBoardCount(Map<String, Object> paramMap);
+//	List<Board> getFilteredBoardList(Map<String, Object> paramMap);
+	int getFilteredBoardCount(Map<String, Object> paramMap);
+	List<Board> getFilteredBoardList(Map<String, Object> paramMap);
 
-	Pagination getPagination(int page);
 
 	/**
 	 * 상세조회
@@ -88,13 +100,14 @@ public interface MytownBoardService {
 
 	String checkBoardReportStatus(int boardNo, int memberNo);
 
-	/**
+	/** 복지 상세조회에서 후기 조회
 	 * 
 	 * @param serviceId
 	 * @return
 	 */
 	List<Board> getBoardListByFacilityServiceId(String facilityServiceId);
 
+	List<Board> getBoardListByWelfareServiceId(String apiServiceId);
 	
 
 	/**

@@ -25,9 +25,19 @@ public interface MytownBoardMapper {
 	 * @param regionCity
 	 * @return
 	 */
+//	List<Board> selectLocalBoardList(RowBounds rowBounds);
+//
+//	int getBoardLocalListCount();
+	
+	// 일반 목록 조회 (RowBounds)
 	List<Board> selectLocalBoardList(RowBounds rowBounds);
 
+	// 필터 목록 조회 (RowBounds)
+	List<Board> getFilteredBoardList(Map<String, Object> paramMap);
+
+	// 글 개수 조회
 	int getBoardLocalListCount();
+	int getFilteredBoardCount(Map<String, Object> paramMap);
 
 	/**
 	 * 상세조회
@@ -44,6 +54,7 @@ public interface MytownBoardMapper {
 	 * @return
 	 */
 	int increaseReadCount(int boardNo);
+	
 
 	// 게시글 작성
 	int insertBoard(Board dto);
@@ -97,7 +108,7 @@ public interface MytownBoardMapper {
 	 * @return
 	 */
 	int updateBoard(Board dto);
-
+	int updateImageOrder(BoardImage image);
 	/**
 	 * 이미지 처리
 	 * 
@@ -158,6 +169,10 @@ public interface MytownBoardMapper {
 	// 해당 게시글에서 이 회원이 이 게시글을 신고했어?
 	String selectReportStatus(@Param("boardNo") int boardNo, @Param("memberNo") int memberNo);
 
+	
+	// 복지 상세조회 
 	List<Board> selectBoardListByFacilityServiceId(String facilityServiceId);
+
+	List<Board> selectBoardListByWelfareServiceId(String apiServiceId);
 
 }

@@ -28,16 +28,16 @@ public interface ChattingService {
     int createChattingRoom(Map<String, Integer> map);
 
     /** 읽음 표시 업데이트
-     * @param paramMap
+     * @param chatRoomNo
      * @return
      */
-    int updateReadFlag(Map<String, Integer> paramMap);
+    int updateReadFlag(int chatRoomNo);
 
     /** 메세지 조회
      * @param paramMap
      * @return
      */
-    List<Message> selectMessageList( Map<String, Integer> paramMap );
+    List<Message> selectMessageList(Map<String, Integer> map);
 
 	/** 채팅 상대 검색
 	 * @param map 
@@ -50,6 +50,18 @@ public interface ChattingService {
      * @return
      */
     int insertMessage(Message msg);
+
+	/** 채팅방 나가기
+	 * @param map
+	 * @return
+	 */
+	int exitChatRoom(Map<String, Integer> map);
+
+	/** 채팅 삭제
+	 * @param map
+	 * @return
+	 */
+	int deleteMessage(Map<String, Integer> map);
 
 
 }

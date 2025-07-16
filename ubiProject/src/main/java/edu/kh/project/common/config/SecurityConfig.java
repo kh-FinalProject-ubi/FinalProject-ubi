@@ -9,8 +9,12 @@ import edu.kh.project.member.model.service.OAuth2SuccessHandler;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,6 +23,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -51,6 +58,7 @@ public class SecurityConfig {
     	    .headers(headers -> headers
     	            .frameOptions(frame -> frame.disable()))
     	    .cors(Customizer.withDefaults())
+    	    .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 변경
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
             // ✅ 인증/인가 실패 시 JSON 응답 반환
@@ -82,7 +90,9 @@ public class SecurityConfig {
             	    .requestMatchers("/myPage/profile/**").permitAll()
             	    // ✅ 나머지 찜 API는 인증 필요
             	    .requestMatchers("/api/welfare/like/**", "/api/welfare/my-likes").authenticated()
-
+            	    .requestMatchers(HttpMethod.GET, "/api/comments/**").permitAll() 
+            	    // 댓글 작성, 수정, 삭제는 인증된 사용자(로그인한 사용자)만 가능
+            	    .requestMatchers("/api/comments/**").authenticated() 
             	    .anyRequest().permitAll()
 
             	    
@@ -117,5 +127,26 @@ public class SecurityConfig {
                 "/queue/**",      // userQueue 등도 필요
                 "/user/**"        // 대상 유저 메시지 처리에 필요
             );
+    }
+    
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+
+        // 개발 클라이언트 주소
+        config.setAllowedOrigins(List.of("http://localhost:5173"));
+        // WebSocket‑XHR 폴백에 필요한 메서드
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Authorization 헤더도 허용
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        // 쿠키·Authorization 헤더를 WebSocket/XHR에 실어 보낼 수 있게
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // SockJS가 쓰는 모든 경로 (/ws-chat/**) 에 적용
+        source.registerCorsConfiguration("/ws-chat/**", config);
+        // 그밖에 REST 요청에도 동일 정책 적용하고 싶으면 ↓
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }

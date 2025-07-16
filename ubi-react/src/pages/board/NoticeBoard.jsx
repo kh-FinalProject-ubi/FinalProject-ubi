@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom"; // Link가 사용됩니다.
 import useAuthStore from "../../stores/useAuthStore";
-import styles from "../../styles/board/NoticeBoard.module.css"; // NoticeBoard용 CSS 모듈
+import styles from "../../styles/board/NoticeBoard.module.css";
+import { stripHtml } from "../mypage/striptHtml";
 
 const boardCodeMap = {
   "/noticeBoard": 1,
@@ -46,7 +47,6 @@ const NoticeBoard = () => {
       });
   }, [boardCode, navigate, currentPage]);
 
-  // --- 페이지네이션 로직 ---
   const pageNumbers = [];
   if (pagination) {
     const pageGroupSize = 10;
@@ -58,7 +58,6 @@ const NoticeBoard = () => {
       pageNumbers.push(i);
     }
   }
-  // --- 페이지네이션 로직 끝 ---
 
   if (!boardCode) return <p>존재하지 않는 게시판입니다.</p>;
   if (loading)
@@ -85,13 +84,25 @@ const NoticeBoard = () => {
         </thead>
         <tbody>
           {boardList.map((board, index) => (
-            <tr key={board.boardNo}>
+            <tr
+              key={board.boardNo}
+              onClick={() => navigate(`${path}/${board.boardNo}`)}
+              style={{ cursor: "pointer" }}
+            >
               <td>{index + 1 + (currentPage - 1) * pagination.limit}</td>
               <td>
                 <span className={styles.postTypeTag}>{board.postType}</span>
               </td>
-              <td className={styles.titleCell}>
-                <Link to={`${path}/${board.boardNo}`}>{board.boardTitle}</Link>
+              <td>
+                {(() => {
+                  const boardTitle = stripHtml(board.boardTitle);
+
+                  if (!boardTitle) return "내용 없음";
+
+                  return boardTitle.length > 20
+                    ? `${boardTitle.slice(0, 20)}...`
+                    : boardTitle;
+                })()}
               </td>
               <td>{board.memberNickname}</td>
               <td>{board.boardDate}</td>
@@ -112,7 +123,6 @@ const NoticeBoard = () => {
         )}
       </div>
 
-      {/* --- 페이지네이션 UI --- */}
       <div className={styles.paginationContainer}>
         {pagination && pagination.maxPage > 1 && (
           <>

@@ -1,5 +1,6 @@
 package edu.kh.project.board.controller;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,14 +33,41 @@ public class MytownBoardController {
 	private JwtUtil jwtUtil;
 
 	@GetMapping("/mytownBoard")
-	public ResponseEntity<Map<String, Object>> getLocalBoardList(
-			@RequestParam(value = "page", required = false, defaultValue = "1") int page) {
+	public ResponseEntity<?> getBoards(
+	    @RequestParam(name = "page") int page,
+	    @RequestParam(name = "postType", required = false) String postType,
+	    @RequestParam(name = "regionCity", required = false) String regionCity,
+	    @RequestParam(name = "regionDistrict", required = false) String regionDistrict,
+	    @RequestParam(name = "keyword", required = false) String keyword,
+	    @RequestParam(name = "tags", required = false) String tags
+	) {
+	    Map<String, Object> paramMap = new HashMap<>();
+	    paramMap.put("postType", postType);
+	    paramMap.put("regionCity", regionCity);
+	    paramMap.put("regionDistrict", regionDistrict);
+	    paramMap.put("keyword", keyword);
+	    paramMap.put("tagList", tags != null && !tags.isEmpty() ? List.of(tags.split(",")) : null);
 
-		List<Board> boardList = service.getLocalBoardList(page);
-		Pagination pagination = service.getPagination(page);
+	    // 게시글 개수 조회
+	    int listCount = service.getFilteredBoardCount(paramMap);
 
-		return ResponseEntity.ok().body(Map.of("boardList", boardList, "pagination", pagination));
+	    // 페이지네이션 객체 생성
+	    Pagination pagination = new Pagination(page, listCount);
+	    paramMap.put("startRow", (pagination.getCurrentPage() - 1) * pagination.getLimit());
+	    paramMap.put("limit", pagination.getLimit());
+
+	    // 게시글 목록 조회
+	    List<Board> boardList = service.getFilteredBoardList(paramMap);
+
+	    return ResponseEntity.ok(Map.of(
+	        "boardList", boardList,
+	        "pagination", pagination
+	    ));
 	}
+
+
+
+
 
 	@GetMapping("/mytownBoard/{boardNo}")
 	public ResponseEntity<Board> getLocalBoardDetail(
@@ -125,6 +153,11 @@ public class MytownBoardController {
 	@GetMapping("/mytownBoard/facility/{facilityServiceId}")
 	public List<Board> getPostsByFacility(@PathVariable("facilityServiceId") String facilityServiceId) {
 	    return service.getBoardListByFacilityServiceId(facilityServiceId);
+	}
+	
+	@GetMapping("/mytownBoard/welfare/{apiServiceId}")
+	public List<Board> getPostsByWelfare(@PathVariable("apiServiceId") String apiServiceId) {
+	    return service.getBoardListByWelfareServiceId(apiServiceId);
 	}
 
 }

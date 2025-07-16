@@ -14,12 +14,6 @@ import { Client } from '@stomp/stompjs';
 const Chat = () => {
   console.log("SockJS 타입:", typeof SockJS);
   console.log("SockJS 실제 객체:", SockJS); 
-  window.sock = new SockJS("/ws-chat");
-  window.sock.onopen = () => console.log("OPEN!");
-  window.sock.onclose = () => console.log("CLOSE!");
-  window.sock.onerror = (e) => console.log("ERROR", e);
-  window.sock.onmessage = (e) => console.log("MESSAGE", e.data);
-
 
   const { memberNo, memberName, token } = useAuthStore();
   const stompRef = useRef(null);
@@ -67,22 +61,52 @@ const Chat = () => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSelectRoom = (room) => {
-      setSelectedRoom(room);
-      setMessages([]); // 새로 초기화
-      // TODO: 필요하면 서버에서 메시지 목록 받아오기
+  // 채팅내역 조회
+  const fetchMessages = async (roomNo) => {
+    try {
+      const res = await axios.get(`/api/chatting/messages`, {
+        params: { chatRoomNo: roomNo },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.status === 200) return res.data;
+    } catch (err) {
+      console.error("메시지 조회 실패:", err);
+      return[];
+    }
+  };
+  
+  const handleSelectRoom = async (room) => {
+    // ① 방 선택 상태 업데이트
+    setSelectedRoom(room);
+    setMessages([]);               // 리스트 비우기(로딩 상태처럼)
+
+    try {
+      const list = await fetchMessages(room.chatRoomNo);
+      setMessages(list);
+    } catch (e) {
+      console.error("메시지 조회 실패:", e);
+    }
+
+    markAsRead(room.chatRoomNo);
   };
 
   useEffect(() => {
     console.log("[CHAT‑USEEFFECT] 실행됨", { token, memberNo });
     if (!token || !memberNo) return;
-
+      
     const client = new Client({
       webSocketFactory: () => {
         const sock = new SockJS("http://localhost:8080/ws-chat", null, {
-          transports: ["websocket", "xhr-streaming", "xhr-polling"], // ✅ fallback까지 허용
+          transports: ["websocket"], // ✅ fallback까지 허용
           timeout: 30000,
         });
+
+        sock.onopen = () => console.log("WebSocket 연결 성공");
+        sock.onclose = () => console.log("WebSocket 연결 종료");
+        sock.onerror = (e) => console.log("WebSocket 오류:", e);
+        sock.onmessage = (e) => console.log("WebSocket 메시지:", e.data);
+
+        console.log("SockJS readyState:", sock.readyState); // 연결 상태를 로그로 확인
 
         setTimeout(() => {
           const status = ["CONNECTING", "OPEN", "CLOSING", "CLOSED"];
@@ -110,16 +134,35 @@ const Chat = () => {
         client.subscribe(destination, (message) => {
           try {
             const body = JSON.parse(message.body);
-            console.log("📩 받은 메시지:", body);
 
             if (selectedRoom && body.chatRoomNo === selectedRoom.chatRoomNo) {
-              console.log("🎯 현재 선택된 방:", selectedRoom);
-              setMessages((prev) => [...prev, body]);
+              setMessages((prev) => {
+                const updated = [...prev];
+
+                const index = updated.findIndex(
+                  (msg) =>
+                    msg.chatContent === body.chatContent &&
+                    msg.senderNo === memberNo &&
+                    msg.chatNo && // 💡 보호 코드
+                    !msg.chatNo.toString().startsWith("srv_")
+                );
+
+                if (index !== -1) {
+                  updated[index] = {
+                    ...body,
+                    chatDelFl: 'N',
+                  };
+                  return updated;
+                }
+
+                return [...prev, { ...body, chatDelFl: 'N' }];
+              });
             }
           } catch (err) {
-            console.error("❌ 메시지 처리 중 오류:", err);
+            console.error("STOMP 메시지 처리 중 예외 발생:", err);
           }
         });
+
       },
 
       onStompError: (frame) => {
@@ -134,6 +177,9 @@ const Chat = () => {
 
       onWebSocketClose: (event) => {
         console.error("🔌 WebSocket Closed", event);
+        console.error("이유:", event.reason);  // 종료 사유 확인
+        console.error("코드:", event.code);    // 종료 코드 확인
+        console.error("정상 종료 여부:", event.wasClean);  // 정상 종료 여부 확인
       },
 
       onWebSocketError: (error) => {
@@ -176,9 +222,10 @@ const Chat = () => {
 
     // 낙관적 UI 업데이트
     setMessages(prev => [...prev, {
+      chatNo: Date.now(), // ✅ 임시 chatNo로 고유값
       senderNo: memberNo,
       chatContent: input,
-      sendTime: new Date().toISOString(),
+      chatSendDate: new Date().toISOString(),
       chatRoomNo: selectedRoom.chatRoomNo,
     }]);
 
@@ -255,6 +302,102 @@ const Chat = () => {
 
   if (!memberNo) return <div>로그인 정보가 없습니다.</div>;
   
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+  
+  // 채팅 읽음 표시
+  const markAsRead = async (roomNo) => {
+     // ✅ 메시지 UI 업데이트
+    setMessages(prev =>
+      (prev ?? []).map(msg =>
+        msg.senderNo !== memberNo && msg.chatReadFl === 'N'
+          ? { ...msg, chatReadFl: 'Y' }
+          : msg
+      )
+    );
+
+    setRooms(prev =>
+      (prev ?? []).map(room =>
+        room.chatRoomNo === roomNo
+          ? { ...room, notReadCount: 0 }
+          : room
+      )
+    );
+
+    // 2) 서버 PATCH
+    try {
+      await axios.post(
+        "/api/chatting/read",
+        null,
+        {
+          params: { chatRoomNo: roomNo },
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+    } catch (err) {
+      console.error("읽음 처리 실패:", err);
+      // 필요하면 롤백 로직 추가
+    }
+  };
+
+  // 채팅방 나가기
+  const handleExitRoom = async (roomNo) => {
+    const confirmed = window.confirm("이 채팅방을 나가시겠습니까?");
+    if (!confirmed) return;
+
+    try {
+      const res = await axios.post("/api/chatting/exit", null, {
+        params: { chatRoomNo: roomNo },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.status === 200) {
+        // ✅ 방 목록에서 제거
+        setRooms(prev => prev.filter(room => room.chatRoomNo !== roomNo));
+
+        // ✅ 선택되어 있던 방도 초기화
+        if (selectedRoom?.chatRoomNo === roomNo) {
+          setSelectedRoom(null);
+          setMessages([]);
+        }
+      }
+    } catch (error) {
+      console.error("채팅방 나가기 실패:", error);
+      alert("채팅방 나가기 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 채팅 삭제
+  const handleDeleteMessage = async (chatNo) => {
+    const confirmDelete = window.confirm("이 메시지를 삭제하시겠습니까?");
+    if (!confirmDelete) return;
+
+    console.log("chatNo : ", chatNo);
+
+    try {
+      await axios.post("/api/chatting/deleteMessage", null, {
+        params: { chatNo },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // 프론트에서 상태 업데이트 (soft delete 처리)
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.chatNo === chatNo ? { ...msg, chatDelFl: "Y" } : msg
+        )
+      );
+
+    } catch (err) {
+      console.error("메시지 삭제 실패:", err);
+      alert("삭제 실패!");
+    }
+  };
+
+
+
+
+
 console.log("채팅방 목록 : ", rooms);
   return (
     <div>
@@ -296,7 +439,7 @@ console.log("채팅방 목록 : ", rooms);
           {/* 채팅 목록 */}
           {Array.isArray(rooms) && rooms.map(room => (
             <div
-              key={room.chatRoomNo}                                          // ✔ 방 PK
+              key={room.chatRoomNo}                                        
               className={`chat-room-item ${
                 selectedRoom?.chatRoomNo === room.chatRoomNo ? "selected" : ""
               }`}
@@ -333,19 +476,42 @@ console.log("채팅방 목록 : ", rooms);
                 <h2>{selectedRoom.memberName}</h2>
               </div>
 
+              <div className="chat-header">
+                <h2>{selectedRoom?.targetNickname}</h2>
+                <button onClick={() => handleExitRoom(selectedRoom.chatRoomNo)}>방 나가기</button>
+              </div>
+
               <div className="chat-messages">
-                {messages.map((msg, index) => (
+                {messages.map((msg) => (
                   <div
-                    key={index}
+                    key={msg.chatNo}
                     className={`chat-message ${
-                      msg.sender === memberName ? "my-message" : "other-message"
+                      msg.senderNo === memberNo ? "my-message" : "other-message"
                     }`}
                   >
-                    <div className="message-sender">{msg.sender}</div>
-                    <div className="message-content">{msg.content}</div>
-                    <div className="message-timestamp">
-                      {new Date(msg.timestamp).toLocaleTimeString()}
+                    <div className="message-sender">
+                      {msg.senderNo === memberNo ? "나" : selectedRoom.targetNickname}
                     </div>
+                    <div className="message-content">
+                        {msg.chatDelFl === "Y" ? (
+                          <i className="deleted-message">삭제된 메시지입니다.</i>
+                        ) : (
+                          <>
+                            <span>{msg.chatContent}</span>
+                            {msg.senderNo === memberNo && (
+                              <button
+                                className="delete-button"
+                                onClick={() => {
+                                  console.log("삭제 시도:", msg);
+                                  handleDeleteMessage(msg.chatNo)}}
+                              >
+                                🗑️
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    <div className="message-timestamp">{msg.chatSendDate}</div>
                   </div>
                 ))}
                 <div ref={messagesEndRef}></div>

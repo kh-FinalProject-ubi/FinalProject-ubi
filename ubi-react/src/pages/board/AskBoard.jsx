@@ -3,6 +3,7 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import useAuthStore from "../../stores/useAuthStore";
 import styles from "../../styles/board/AskBoard.module.css"; // AskBoard용 CSS 모듈
+import { stripHtml } from "../mypage/striptHtml";
 
 const boardCodeMap = {
   "/noticeBoard": 1,
@@ -94,7 +95,17 @@ const AskBoard = () => {
               <td>
                 <span className={styles.postTypeTag}>{board.postType}</span>
               </td>
-              <td className={styles.titleCell}>{board.boardTitle}</td>
+              <td>
+                {(() => {
+                  const boardTitle = stripHtml(board.boardTitle);
+
+                  if (!boardTitle) return "내용 없음";
+
+                  return boardTitle.length > 20
+                    ? `${boardTitle.slice(0, 20)}...`
+                    : boardTitle;
+                })()}
+              </td>
               <td>{board.memberNickname}</td>
               <td>{board.boardDate}</td>
               <td>

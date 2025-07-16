@@ -3,7 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { generateTagList } from "../../utils/tagUtils";
 import axios from "axios";
 import useAuthStore from "../../stores/useAuthStore";
-import "../../styles/comment/Comment.css";
 import CommentModal from "./../comment/CommentModal";
 import CommentSection from "../comment/Comment";
 import { Navigate } from "react-router-dom";
@@ -127,6 +126,13 @@ function MyTownBoardDetail() {
           <>
             &nbsp;|&nbsp;복지시설: <strong>{board.facilityName}</strong>
           </>
+          
+        )}
+               {board.postType === "복지혜택후기" && board.welfareName && (
+          <>
+            &nbsp;|&nbsp;복지혜택: <strong>{board.welfareName}</strong>
+          </>
+          
         )}
       </p>
       <img

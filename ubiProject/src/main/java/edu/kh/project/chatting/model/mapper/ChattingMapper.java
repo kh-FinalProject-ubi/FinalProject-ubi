@@ -40,20 +40,31 @@ public interface ChattingMapper {
      * @param object
      * @return
      */
-    public List<Message> selectMessageList(Object object);
+    public List<Message> selectMessageList(Map<String, Integer> map);
  
     /** 읽음표시 업데이트
-     * @param paramMap
+     * @param chatRoomNo
      * @return
      */
-    public int updateReadFlag(Map<String, Integer> paramMap);
+    public int updateReadFlag(int chatRoomNo);
 
-    
     /** 채팅 입력
      * @param msg
      * @return
      */
     public int insertMessage(Message msg);
+
+	/** 채팅방 나가기
+	 * @param map
+	 * @return
+	 */
+	public int exitChatRoom(Map<String, Integer> map);
+
+	/** 채팅 삭제
+	 * @param map
+	 * @return
+	 */
+	public int deleteMessage(Map<String, Integer> map);
 
 	
 }

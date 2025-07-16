@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "../../styles/comment/Comment.css";
+import styles from "../../styles/comment/Comment.module.css";
 import CommentModal from "./CommentModal";
 
 const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
@@ -15,7 +15,8 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
   const [selectedMember, setSelectedMember] = useState(null);
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
 
-  // 로그인한 회원이 관리자인지 구분
+  const [expandedComments, setExpandedComments] = useState(new Set());
+
   const isAdmin = role === "ADMIN";
 
   useEffect(() => {
@@ -28,7 +29,6 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
       const res = await axios.get(`/api/comments/${boardCode}/${boardNo}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      console.log("서버에서 받은 댓글 데이터", res.data);
       setComments(res.data || []);
     } catch (err) {
       console.error("댓글 조회 실패", err);
@@ -182,50 +182,61 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
     return roots;
   };
 
+  const toggleExpand = (commentNo) => {
+    setExpandedComments((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(commentNo)) newSet.delete(commentNo);
+      else newSet.add(commentNo);
+      return newSet;
+    });
+  };
+
   const renderComment = (c, parentDeleted = false) => {
     const isDeleted = c.commentDelFl === "Y";
     const isMine = c.memberNo === loginMemberNo;
     const reportedByMe = (c.reportedByMe || 0) > 0;
     const isUser = c.memberNo !== null;
-    // 댓글 작성자가 관리자인 경우
+
     const memberRoleStr =
       c.memberRole === "2" ? "ADMIN" : c.memberRole === "1" ? "USER" : "GUEST";
     const isWriterAdmin = memberRoleStr === "ADMIN";
 
-    // 삭제된 댓글이고 자식도 없으면 표시하지 않음
-    if (isDeleted && c.children.length === 0) return null;
+    const isExpanded = expandedComments.has(c.commentNo);
+
+    if (isDeleted)
+      return (
+        <ul className={styles.replyList}>
+          {c.children.map((child) => renderComment(child, true))}
+        </ul>
+      );
 
     return (
       <li key={c.commentNo}>
-        <div className={`comment-item ${reportedByMe ? "reported" : ""}`}>
-          <div className="comment-content-area">
-            <div className="comment-header">
-              <div className="comment-author-info">
+        <div
+          className={`${styles.commentItem} ${
+            reportedByMe ? styles.reported : ""
+          }`}
+        >
+          <div className={styles.commentContentArea}>
+            <div className={styles.commentHeader}>
+              <div className={styles.commentAuthorInfo}>
                 <img
                   src={`http://localhost:8080${c.memberImg}` || "/default-profile.png"}
                   alt="프로필 사진"
-                  className="profile-img"
+                  className={styles.profileImg}
                   onClick={(e) => {
                     const modalWidth = 300;
                     const modalHeight = 200;
-
                     let x = e.clientX + 20;
                     let y = e.clientY + 20;
-
-                    // 화면 넘지 않게 조정
-                    if (x + modalWidth > window.innerWidth) {
+                    if (x + modalWidth > window.innerWidth)
                       x = window.innerWidth - modalWidth - 10;
-                    }
-
-                    if (y + modalHeight > window.innerHeight) {
+                    if (y + modalHeight > window.innerHeight)
                       y = window.innerHeight - modalHeight - 50;
-                    }
-
                     setSelectedMember({
                       memberNo: c.memberNo,
                       memberImg: c.memberImg,
                       memberNickname: c.memberNickname,
-                      memberNo: c.memberNo,
                       memberRole: c.memberRole,
                     });
                     setModalPosition({ x, y });
@@ -233,26 +244,22 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
                   }}
                 />
                 <strong>{c.memberNickname}</strong>
-                <span className="comment-date">{c.commentDate}</span>
-
-                {/* 신고/취소 버튼 */}
+                <span className={styles.commentDate}>{c.commentDate}</span>
                 {token &&
                   !isMine &&
                   isUser &&
                   !isWriterAdmin &&
                   boardCode !== 2 && (
                     <button
-                      className="report-btn"
+                      className={styles.reportBtn}
                       onClick={() => handleReport(c.commentNo)}
                     >
-                      <img src="/report.svg" alt="신고 아이콘" />
+                      <img src="/report.svg" alt="신고" />
                     </button>
                   )}
               </div>
-
-              {/* 수정/삭제 버튼 (본인 or 관리자) */}
               {(isAdmin || isMine) && editingCommentNo !== c.commentNo && (
-                <div className="comment-actions-right">
+                <div className={styles.commentActionsRight}>
                   <button
                     onClick={() => startEditing(c.commentNo, c.commentContent)}
                   >
@@ -266,12 +273,11 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
             </div>
 
             {parentDeleted && (
-              <div className="parent-deleted-notice">
+              <div className={styles.parentDeletedNotice}>
                 삭제된 댓글의 답글입니다.
               </div>
             )}
 
-            {/* 댓글 내용 */}
             {editingCommentNo === c.commentNo ? (
               <>
                 <textarea
@@ -286,32 +292,54 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
                 </div>
               </>
             ) : reportedByMe ? (
-              <p className="comment-text reported-comment-text">
-                신고한 댓글입니다.
-              </p>
+              <p className={styles.reportedCommentText}>신고한 댓글입니다.</p>
             ) : (
-              <p className="comment-text">{c.commentContent}</p>
+              <>
+                <p
+                  className={styles.commentText}
+                  style={
+                    isExpanded
+                      ? { display: "block" }
+                      : {
+                          display: "-webkit-box",
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }
+                  }
+                >
+                  {c.commentContent}
+                </p>
+                {c.commentContent.length > 100 && (
+                  <button
+                  className={styles.moreBtn}
+                  onClick={() => toggleExpand(c.commentNo)}
+                >
+                  {isExpanded ? "닫기" : "더보기"}
+                </button>
+                )}
+              </>
             )}
 
-            {/* 좋아요 / 답글 */}
             {token && !editingCommentNo && !reportedByMe && (
               <>
                 <button
-                  className={`comment-like-btn ${
-                    c.commentLiked ? "liked" : ""
+                  className={`${styles.commentLikeBtn} ${
+                    c.commentLiked ? styles.liked : ""
                   }`}
                   onClick={() => handleCommentLike(c.commentNo)}
                 >
-                  <img src="/commentLike.svg" alt="좋아요 아이콘" />
+                  <img src="/commentLike.svg" alt="좋아요" />
                 </button>
                 <span>{c.commentLike}</span>
                 <button onClick={() => handleReplyClick(c.commentNo)}>
                   답글
                 </button>
+                
               </>
             )}
 
-            {/* 답글 작성 폼 */}
             {token && replyTarget === c.commentNo && !reportedByMe && (
               <form
                 onSubmit={(e) => handleReplySubmit(e, c.commentNo)}
@@ -324,11 +352,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
                   placeholder="답글을 입력하세요."
                   style={{ width: "100%", resize: "vertical" }}
                 />
-                <button
-                  type="submit"
-                  className="btn-yellow"
-                  style={{ marginTop: "5px" }}
-                >
+                <button type="submit" style={{ marginTop: "5px" }}>
                   답글 작성
                 </button>
               </form>
@@ -336,32 +360,30 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
           </div>
         </div>
 
-        {/* 자식 댓글 렌더링 */}
         {c.children.length > 0 && (
-          <ul className="reply-list">
-            {c.children.map((child) => renderComment(child, isDeleted))}
+          <ul className={styles.replyList}>
+            {c.children.map((child) => renderComment(child, parentDeleted))}
           </ul>
         )}
       </li>
     );
   };
+
   const commentTree = buildCommentTree(comments);
 
   return (
-    <section className="comment-section">
+    <section className={styles.commentSection}>
       <h3>댓글 {comments.filter((c) => c.commentDelFl !== "Y").length}</h3>
 
       {token && (
-        <form onSubmit={handleCommentSubmit} className="comment-form">
+        <form onSubmit={handleCommentSubmit} className={styles.commentForm}>
           <textarea
             value={commentContent}
             onChange={(e) => setCommentContent(e.target.value)}
             rows={3}
             placeholder="댓글을 입력하세요."
           />
-          <button type="submit" className="btn-yellow">
-            댓글 작성
-          </button>
+          <button type="submit">댓글 작성</button>
         </form>
       )}
 

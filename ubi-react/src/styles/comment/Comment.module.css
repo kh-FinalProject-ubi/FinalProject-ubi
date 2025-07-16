@@ -1,0 +1,243 @@
+/* 전체 댓글 섹션 */
+.commentSection ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.commentItem {
+  display: flex;
+  align-items: flex-start;
+  padding: 15px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.commentContentArea {
+  flex-grow: 1;
+  position: relative;
+}
+
+.commentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.commentAuthorInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.commentAuthorNickname {
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+
+.commentDate {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.commentActionsRight button {
+  background: none;
+  border: none;
+  color: #5E60CE;
+  cursor: pointer;
+  font-size: 0.85rem;
+  margin-left: 8px;
+  padding: 2px 4px;
+}
+
+.commentActionsRight button:hover {
+  text-decoration: underline;
+}
+
+.commentTextWrapper {
+  position: relative;
+}
+
+.commentText {
+  margin: 8px 0 12px 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #333;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* 더보기 버튼 오른쪽 정렬 */
+.moreBtn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: none;
+  border: none;
+  color: #5E60CE;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.moreBtn:hover {
+  text-decoration: underline;
+}
+
+.commentLikeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.commentLikeBtn img {
+  width: 16px;
+  height: 16px;
+}
+
+.commentLikeBtn.liked img {
+  filter: brightness(0) saturate(100%) invert(32%) sepia(90%) saturate(747%) hue-rotate(227deg) brightness(92%) contrast(102%);
+}
+
+.commentSection form {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.commentSection form textarea {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  font-size: 0.95rem;
+}
+
+.commentSection form button {
+  white-space: nowrap;
+  height: 100%;
+  background-color: #ffd600;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* 자식 댓글 들여쓰기 */
+.replyList li .commentItem {
+  margin-left: 10%;
+  border-left: none; /* ✅ 회색 선 제거 */
+  padding-left: 0;
+}
+
+.parentDeletedNotice {
+  font-size: 0.9rem;
+  color: #777;
+  background-color: #f5f5f5;
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  display: inline-block;
+}
+
+.reportedCommentText {
+  color: #ff4444;
+  font-weight: bold;
+}
+
+.reportBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.reportBtn img {
+  width: 14px;
+  height: 14px;
+}
+
+.profileImg {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* 모달 */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 10px;
+  position: relative;
+  max-width: 300px;
+  text-align: center;
+}
+
+.modalClose {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.modalProfileImg {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.modalButtons button {
+  margin: 10px 5px;
+  padding: 8px 15px;
+  border: none;
+  cursor: pointer;
+}
+
+.btnChat {
+  background-color: #ffd600;
+}
+
+.btnReport {
+  background-color: #ff4d4f;
+  color: white;
+}
+
+/* 답글, 수정, 삭제, 더보기 버튼 공통 스타일 */
+.commentActionsBottom button,
+.moreBtn,
+.commentActionsRight button {
+  color: #5E60CE;
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.commentActionsBottom button:hover,
+.moreBtn:hover,
+.commentActionsRight button:hover {
+  text-decoration: underline;
+}

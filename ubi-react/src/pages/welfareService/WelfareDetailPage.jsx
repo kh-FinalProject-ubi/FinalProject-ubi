@@ -22,7 +22,11 @@ const WelfareDetailPage = () => {
     <BokjiroDetail servId={finalServId} data={stateData} />
   ) : (
     <GenericDetail data={stateData} />
+  
+  
   );
+
+  
 };
 
 export default WelfareDetailPage;
