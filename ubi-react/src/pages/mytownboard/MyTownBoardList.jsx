@@ -20,6 +20,9 @@ function MyTownBoard() {
 
   const popularTags = ["만족후기", "비추천", "우리 동네", "질문", "자랑"];
 
+  const [searchType, setSearchType] = useState("titleContent"); // 기본은 제목+내용 검색
+  const [searchTypeOpen, setSearchTypeOpen] = useState(false); // 토글 열기 여부
+
   const stripHtml = (html) => {
     if (!html) return "";
     const doc = new DOMParser().parseFromString(html, "text/html");
@@ -35,6 +38,14 @@ function MyTownBoard() {
       keyword: searchKeyword,
       tags: selectedTags.join(","),
     });
+
+    if (searchType === "titleContent") {
+      queryParams.set("keyword", searchKeyword);
+      queryParams.delete("tags");
+    } else if (searchType === "hashtag") {
+      queryParams.set("tags", searchKeyword);
+      queryParams.delete("keyword");
+    }
 
     fetch(`/api/board/mytownBoard?${queryParams.toString()}`)
       .then((res) => res.json())
@@ -53,11 +64,13 @@ function MyTownBoard() {
   ]);
 
   const handleTagClick = (tag) => {
-    setSelectedTags((prevTags) =>
-      prevTags.includes(tag)
-        ? prevTags.filter((t) => t !== tag)
-        : [...prevTags, tag]
+    setSelectedTags(
+      (prevTags) =>
+        prevTags.includes(tag)
+          ? prevTags.filter((t) => t !== tag)
+          : [...prevTags, tag.replace(/^#/, "")] // # 제거
     );
+
     setCurrentPage(1);
   };
 
@@ -67,7 +80,38 @@ function MyTownBoard() {
 
       {/* 검색창 */}
       <div className={styles.topSearchContainer}>
-        <button className={styles.sortButton}>정렬</button>
+        <div style={{ position: "relative" }}>
+          <button
+            className={styles.sortButton}
+            onClick={() => setSearchTypeOpen((prev) => !prev)}
+          >
+            {searchType === "titleContent" ? "제목+내용" : "해시태그"}
+          </button>
+
+          {searchTypeOpen && (
+            <div>
+              <button
+                className={styles.sortButton}
+                onClick={() => {
+                  setSearchType("titleContent");
+                  setSearchTypeOpen(false);
+                }}
+              >
+                제목+내용
+              </button>
+              <button
+                className={styles.sortButton}
+                onClick={() => {
+                  setSearchType("hashtag");
+                  setSearchTypeOpen(false);
+                }}
+              >
+                해시태그
+              </button>
+            </div>
+          )}
+        </div>
+
         <div className={styles.searchBar}>
           <svg className={styles.searchIcon} viewBox="0 0 24 24">
             <path
@@ -77,7 +121,9 @@ function MyTownBoard() {
           </svg>
           <input
             type="text"
-            placeholder="검색어를 입력하세요"
+            placeholder={
+              searchType === "titleContent" ? "제목+내용 검색" : "해시태그 검색"
+            }
             value={searchKeyword}
             onChange={(e) => {
               setSearchKeyword(e.target.value);

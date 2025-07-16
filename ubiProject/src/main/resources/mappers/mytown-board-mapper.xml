@@ -168,17 +168,16 @@
             OR B.BOARD_CONTENT LIKE '%' || #{keyword} || '%'
           )
         </if>
-        <if test="tagList != null and tagList.size() > 0">
-          AND EXISTS (
-            SELECT 1
-            FROM BOARD_HASHTAG H
-            WHERE H.BOARD_NO = B.BOARD_NO
-            AND H.HASHTAG_NAME IN
-            <foreach collection="tagList" item="tag" open="(" separator="," close=")">
-              #{tag}
-            </foreach>
-          )
-        </if>
+    <if test="tagList != null and tagList.size() > 0">
+  AND EXISTS (
+    SELECT 1 FROM BOARD_HASHTAG H
+    WHERE H.BOARD_NO = B.BOARD_NO
+    AND H.HASHTAG_NAME IN
+    <foreach collection="tagList" item="tag" open="(" separator="," close=")">
+      #{tag}
+    </foreach>
+  )
+</if>
       </where>
       ORDER BY B.BOARD_DATE DESC
     ) A
