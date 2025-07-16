@@ -1,0 +1,44 @@
+.findAccountContainer {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+}
+
+.findAccountContainer input {
+  width: 90%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.findAccountContainer button {
+  width: 95%;
+  padding: 10px;
+  margin-top: 10px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.findAccountContainer button:hover {
+  background-color: #357ab8;
+}
+
+.resultBox {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f0f4f8;
+  border-radius: 10px;
+}
+
+.success {
+  color: green;
+}
+
+.error {
+  color: red;
+}

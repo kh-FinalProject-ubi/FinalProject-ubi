@@ -221,7 +221,10 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
             <div className={styles.commentHeader}>
               <div className={styles.commentAuthorInfo}>
                 <img
-                  src={`http://localhost:8080${c.memberImg}` || "/default-profile.png"}
+                  src={
+                    `http://localhost:8080${c.memberImg}` ||
+                    "/default-profile.png"
+                  }
                   alt="프로필 사진"
                   className={styles.profileImg}
                   onClick={(e) => {
@@ -313,30 +316,39 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
                 </p>
                 {c.commentContent.length > 100 && (
                   <button
-                  className={styles.moreBtn}
-                  onClick={() => toggleExpand(c.commentNo)}
-                >
-                  {isExpanded ? "닫기" : "더보기"}
-                </button>
+                    className={styles.moreBtn}
+                    onClick={() => toggleExpand(c.commentNo)}
+                  >
+                    {isExpanded ? "닫기" : "더보기"}
+                  </button>
                 )}
               </>
             )}
 
-            {token && !editingCommentNo && !reportedByMe && (
+            {token && !reportedByMe && (
               <>
-                <button
-                  className={`${styles.commentLikeBtn} ${
-                    c.commentLiked ? styles.liked : ""
-                  }`}
-                  onClick={() => handleCommentLike(c.commentNo)}
-                >
-                  <img src="/commentLike.svg" alt="좋아요" />
-                </button>
+                {/* 좋아요는 수정 중일 때 숨김 */}
+                {editingCommentNo !== c.commentNo && (
+                  <button
+                    className={`${styles.commentLikeBtn} ${
+                      c.commentLiked ? styles.liked : ""
+                    }`}
+                    onClick={() => handleCommentLike(c.commentNo)}
+                  >
+                    <img src="/commentLike.svg" alt="좋아요" />
+                  </button>
+                )}
                 <span>{c.commentLike}</span>
-                <button onClick={() => handleReplyClick(c.commentNo)}>
+
+                {/* 답글 버튼은 항상 보이지만, 누르면 수정창 닫힘 */}
+                <button
+                  onClick={() => {
+                    cancelEdit(); // 수정모드 종료
+                    handleReplyClick(c.commentNo); // 답글 모드 진입
+                  }}
+                >
                   답글
                 </button>
-                
               </>
             )}
 
