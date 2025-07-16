@@ -120,7 +120,7 @@ function MyTownBoardDetail() {
   return (
     <div>
       <h2>{board.boardTitle}</h2>
-      <p>
+        <p>
         작성유형: {board.postType}
         {board.postType === "복지시설후기" && board.facilityName && (
           <>
@@ -136,9 +136,7 @@ function MyTownBoardDetail() {
         )}
       </p>
       <img
-        src={
-          `http://localhost:8080${board.memberImg}` || "/default-profile.png"
-        }
+        src={board.profileImgImg || "/default-profile.png"}
         alt="프로필 사진"
         className="profile-img"
         onClick={(e) => {
