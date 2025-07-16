@@ -57,39 +57,56 @@
   margin-bottom: 2rem;
 }
 
-.filterTitle {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
 
 .filterBox {
-  background-color: #fffbe6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* 그림자 효과 */
   border-radius: 12px;
-  padding: 20px 30px;
+    padding: 0px;
+}
+
+
+.filterTable {
+    margin: 0;
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: fixed;
 }
 
 .filterRow {
-  display: flex;
-  align-items: center;
-  padding: 15px 0;
-  border-bottom: 1px solid #f0e6c2;
+   vertical-align: top;
+
 }
 
 .filterRow:last-child {
   border-bottom: none;
 }
 
+
+
+/* ✅ th 설정: 왼쪽으로 완전히 붙고, 텍스트는 세로/가로 모두 가운데 정렬 */
 .filterLabel {
-  width: 120px;
-  font-weight: 500;
-  color: #333;
+  background-color: #ffe066;
+  padding: 20px 10px;
+  margin: 0;
+  border: none;
+  width: 100px;
+  text-align: center;
+  vertical-align: middle;
+  font-weight: bold;
+  color: #5c3c00;
+  box-sizing: border-box;
 }
 
+
+/* ✅ td: 여백 최소화 및 정렬 */
 .filterContent {
+  padding: 10px 0 10px 12px;
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
+  align-items: center;
+  gap: 10px 15px;
+  margin: 0;
 }
 
 .radioLabel {
@@ -99,6 +116,17 @@
   cursor: pointer;
 }
 
+/* 📌 라디오 버튼 대신 버튼형 선택지 */
+.radioButton {
+  padding: 8px 14px;
+  background-color: #ffe066;
+  color: #5c3c00;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
 .regionButton {
   background: none;
   border: none;
@@ -112,7 +140,7 @@
   border: 1px solid transparent;
   cursor: pointer;
   font-weight: 500;
-  background-color: #fff2b2;
+  background-color: #ffe066;
   color: #5c3c00;
 }
 
@@ -130,7 +158,7 @@
 
 .writeButton {
   padding: 0.7em 1.8em;
-  background-color: #ffc107;
+  background-color:#ffe56d;
   color: #333;
   border: none;
   border-radius: 8px;
