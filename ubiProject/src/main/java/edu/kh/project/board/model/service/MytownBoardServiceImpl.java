@@ -47,24 +47,42 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 	 * @param regionCity
 	 * @return
 	 */
+//	@Override
+//	public int getBoardLocalListCount() {
+//	    return mapper.getBoardLocalListCount();
+//	}
+//
+//	@Override
+//	public List<Board> getLocalBoardList(Pagination pagination) {
+//	    int offset = (pagination.getCurrentPage() - 1) * pagination.getLimit();
+//	    RowBounds rowBounds = new RowBounds(offset, pagination.getLimit());
+//	    return mapper.selectLocalBoardList(rowBounds);
+//	}
+//
+//	@Override
+//	public int getFilteredBoardCount(Map<String, Object> paramMap) {
+//	    return mapper.getFilteredBoardCount(paramMap);
+//	}
+//
+//	@Override
+//	public List<Board> getFilteredBoardList(Map<String, Object> paramMap) {
+//	    int offset = (int) paramMap.getOrDefault("startRow", 0);
+//	    int limit = (int) paramMap.getOrDefault("limit", 12);
+//	    RowBounds rowBounds = new RowBounds(offset, limit);
+//	    return mapper.getFilteredBoardList(paramMap, rowBounds);
+//	}
+	
 	@Override
-	public List<Board> getLocalBoardList(int page) {
-		int listCount = mapper.getBoardLocalListCount(); // 전체 게시글 수 조회
-		Pagination pagination = new Pagination(page, listCount);
-
-		int offset = (page - 1) * pagination.getLimit(); // 시작 위치
-		int limit = pagination.getLimit(); // 가져올 개수
-
-		RowBounds rowBounds = new RowBounds(offset, limit);
-
-		return mapper.selectLocalBoardList(rowBounds);
+	public int getFilteredBoardCount(Map<String, Object> paramMap) {
+	    return mapper.getFilteredBoardCount(paramMap);
 	}
 
 	@Override
-	public Pagination getPagination(int page) {
-		int listCount = mapper.getBoardLocalListCount();
-		return new Pagination(page, listCount);
+	public List<Board> getFilteredBoardList(Map<String, Object> paramMap) {
+	    return mapper.getFilteredBoardList(paramMap);
 	}
+
+
 
 	/**
 	 * 상세조회
