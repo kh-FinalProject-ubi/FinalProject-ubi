@@ -15,7 +15,7 @@
 			keyProperty="boardNo">
 			SELECT SEQ_BOARD_NO.NEXTVAL FROM DUAL
 		</selectKey>
-
+ 
 		INSERT INTO "BOARD"
 		VALUES(
 		#{boardNo},
