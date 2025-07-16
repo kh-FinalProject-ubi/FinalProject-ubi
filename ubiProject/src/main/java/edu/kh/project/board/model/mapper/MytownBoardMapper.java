@@ -175,4 +175,7 @@ public interface MytownBoardMapper {
 
 	List<Board> selectBoardListByWelfareServiceId(String apiServiceId);
 
+	// 인기 해시태그 
+	List<String> selectPopularTags();
+
 }

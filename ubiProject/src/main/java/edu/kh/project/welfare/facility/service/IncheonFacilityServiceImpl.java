@@ -45,6 +45,7 @@ public class IncheonFacilityServiceImpl implements IncheonFacilityService {
 			entry("중구|여성복지", 
 					List.of("https://api.odcloud.kr/api/15067056/v1/uddi:fe9221c6-ff29-4b1f-b31a-a3abd54cee9c")),
 			entry("중구|장애인복지",
+
 					List.of("https://api.odcloud.kr/api/3079646/v1/uddi:d2d90b19-c5bf-4a4c-981c-d651239861cf")),
 			entry("중구|재가노인복지",
 					List.of("https://api.odcloud.kr/api/15072262/v1/uddi:80f4e422-58df-418e-a5e5-95c940ab49a7")),
@@ -66,6 +67,12 @@ public class IncheonFacilityServiceImpl implements IncheonFacilityService {
 					List.of("https://api.odcloud.kr/api/15070559/v1/uddi:eae3eb26-6d5c-427a-9d96-acd687b9bee7")),
 			entry("미추홀구|지역아동",
 					List.of("https://api.odcloud.kr/api/15011892/v1/uddi:7624e013-b8e9-49af-8976-b2449672f51d"))
+
+					List.of("https://api.odcloud.kr/api/3079646/v1/uddi:d2d90b19-c5bf-4a4c-981c-d651239861cf"))
+//			,
+//			entry("중구|장애인복지",
+//					List.of("https://api.odcloud.kr/api/3079646/v1/uddi:d2d90b19-c5bf-4a4c-981c-d651239861cf"))
+
 			);
 
 	@Async

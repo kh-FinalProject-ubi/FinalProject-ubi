@@ -103,6 +103,26 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 	}
 
 	/**
+	 * 게시글 좋아요
+	 * 
+	 */
+	@Override
+	public int checkBoardLike(int boardNo, int memberNo) {
+		return mapper.checkBoardLike(boardNo, memberNo);
+	}
+
+	@Override
+	public int insertBoardLike(int boardNo, int memberNo) {
+		return mapper.insertBoardLike(boardNo, memberNo);
+	}
+
+	@Override
+	public int deleteBoardLike(int boardNo, int memberNo) {
+		return mapper.deleteBoardLike(boardNo, memberNo);
+	}
+
+	
+	/**
 	 * 
 	 * @param dto
 	 * @return
@@ -172,32 +192,20 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 		mapper.insertHashtag(boardNo, tag);
 	}
 
+	/** 이미지 저장
+	 * 
+	 */
 	@Override
 	public String saveBoardImage(MultipartFile uploadFile) throws IOException {
 		String fileName = UUID.randomUUID().toString() + "_" + uploadFile.getOriginalFilename();
 		File file = new File(folderPath + fileName);
 		uploadFile.transferTo(file);
-		return (webPath + "/" + fileName).replaceAll("/+", "/"); // 슬래시 2번 이상 → 1번
+		String url = webPath.endsWith("/") ? webPath : webPath + "/";
+		String imageUrl = (url + fileName).replaceAll("(?<!:)//+", "/");
+		return imageUrl;
+
 	}
 
-	/**
-	 * 게시글 좋아요
-	 * 
-	 */
-	@Override
-	public int checkBoardLike(int boardNo, int memberNo) {
-		return mapper.checkBoardLike(boardNo, memberNo);
-	}
-
-	@Override
-	public int insertBoardLike(int boardNo, int memberNo) {
-		return mapper.insertBoardLike(boardNo, memberNo);
-	}
-
-	@Override
-	public int deleteBoardLike(int boardNo, int memberNo) {
-		return mapper.deleteBoardLike(boardNo, memberNo);
-	}
 
 	/**
 	 * 삭제하기
@@ -227,36 +235,29 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 
 	    // 3. 이미지 처리
 	    List<BoardImage> newImageList = dto.getImageList();
-
-	    if (dto.getImageList() != null && !dto.getImageList().isEmpty()) {
-	        // 새 이미지가 있을 경우에만 기존 삭제 및 재삽입
+	    // ✅ 새 이미지 목록이 null이 아니고 실제 이미지가 존재할 때만 처리
+	    if (newImageList != null && !newImageList.isEmpty()) {
+	        // 기존 이미지 전체 삭제
 	        mapper.deleteImagesByBoardNo(dto.getBoardNo());
 
-	        for (int i = 0; i < dto.getImageList().size(); i++) {
-	            BoardImage img = dto.getImageList().get(i);
+	        // 새 이미지 삽입
+	        for (int i = 0; i < newImageList.size(); i++) {
+	            BoardImage img = newImageList.get(i);
 	            img.setBoardNo(dto.getBoardNo());
 	            img.setImageOrder(i);
 	            mapper.insertBoardImage(img);
 	        }
-	    } else {
-	        // 이미지 수정이 없으면 기존 이미지 유지, 썸네일 보장
-	        List<BoardImage> originList = mapper.selectBoardImageList(dto.getBoardNo());
-
-	        if (!originList.isEmpty()) {
-	            boolean hasThumbnail = originList.stream().anyMatch(img -> img.getImageOrder() == 0);
-
-	            if (!hasThumbnail) {
-	                for (int i = 0; i < originList.size(); i++) {
-	                    BoardImage img = originList.get(i);
-	                    img.setImageOrder(i);
-	                    mapper.updateImageOrder(img);
-	                }
-	            }
-	        }
+	    } else if (newImageList != null && newImageList.isEmpty()) {
+	        // ✅ 이미지 리스트가 명시적으로 비어 있으면 → 기존 이미지 삭제
+	        mapper.deleteImagesByBoardNo(dto.getBoardNo());
 	    }
+	    // ✅ imageList가 null인 경우: 아무 작업도 하지 않음 → 기존 이미지 유지
 
 	    return result;
-	}
+	    }
+
+
+	
 	
 	/**
 	 * 
@@ -430,5 +431,13 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 	  @Override
 	  public List<Board> getBoardListByWelfareServiceId(String apiServiceId) {
 	      return mapper.selectBoardListByWelfareServiceId(apiServiceId);
+	  }
+	  
+	  /**
+	   * 
+	   */
+	  @Override
+	  public List<String> getPopularTags() {
+	      return mapper.selectPopularTags();
 	  }
 }

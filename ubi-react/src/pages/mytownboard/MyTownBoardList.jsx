@@ -18,7 +18,19 @@ function MyTownBoard() {
   const [pagination, setPagination] = useState(null);
   const [selectedTags, setSelectedTags] = useState([]);
 
-  const popularTags = ["만족후기", "비추천", "우리 동네", "질문", "자랑"];
+  
+    // ✅ 여기에 popularTags 선언
+  const [popularTags, setPopularTags] = useState([]);
+
+  // ✅ 인기 해시태그 불러오기 useEffect
+  useEffect(() => {
+    fetch("/api/board/popular-tags")
+      .then((res) => res.json())
+      .then((tags) => {
+        setPopularTags(tags);
+      })
+      .catch((err) => console.error("인기 태그 불러오기 실패:", err));
+  }, []);
 
   const [searchType, setSearchType] = useState("titleContent"); // 기본은 제목+내용 검색
   const [searchTypeOpen, setSearchTypeOpen] = useState(false); // 토글 열기 여부
@@ -29,6 +41,7 @@ function MyTownBoard() {
     return doc.body.textContent || "";
   };
 
+  
   useEffect(() => {
     const queryParams = new URLSearchParams({
       page: currentPage,
@@ -54,24 +67,29 @@ function MyTownBoard() {
         setPagination(data.pagination);
       })
       .catch((err) => console.error("Error:", err));
-  }, [
-    currentPage,
-    postTypeCheck,
+  }, [ currentPage,
+ postTypeCheck,
     selectedCity,
     selectedDistrict,
     searchKeyword,
     selectedTags,
   ]);
 
-  const handleTagClick = (tag) => {
-    setSelectedTags(
-      (prevTags) =>
-        prevTags.includes(tag)
-          ? prevTags.filter((t) => t !== tag)
-          : [...prevTags, tag.replace(/^#/, "")] // # 제거
-    );
+const handleTagClick = (tag) => {
+  const normalizedTag = tag.replace(/^#/, ""); // # 제거
+  const isSelected = selectedTags.includes(normalizedTag);
 
-    setCurrentPage(1);
+
+ if (isSelected) { // 선택된 태그를 다시 누르면 해제
+    setSelectedTags([]);
+    setSearchKeyword("");
+  } else {
+  setSearchType("hashtag"); // 검색 타입을 해시태그로 전환
+  setSearchKeyword(normalizedTag); // 키워드 입력값을 해당 태그로 설정
+  setSelectedTags([normalizedTag]); // 선택된 태그 업데이트 (중복 방지용)
+    }
+
+  setCurrentPage(1);
   };
 
   return (
@@ -88,23 +106,24 @@ function MyTownBoard() {
             {searchType === "titleContent" ? "제목+내용" : "해시태그"}
           </button>
 
-          {searchTypeOpen && (
-            <div>
-              <button
-                className={styles.sortButton}
-                onClick={() => {
-                  setSearchType("titleContent");
-                  setSearchTypeOpen(false);
-                }}
-              >
-                제목+내용
-              </button>
-              <button
-                className={styles.sortButton}
-                onClick={() => {
-                  setSearchType("hashtag");
-                  setSearchTypeOpen(false);
-                }}
+         {searchTypeOpen && (
+      <div
+      >
+        <button
+          className={styles.sortButton}
+          onClick={() => {
+            setSearchType("titleContent");
+            setSearchTypeOpen(false);
+          }}
+        >
+          제목+내용
+        </button>
+        <button
+          className={styles.sortButton}
+          onClick={() => {
+            setSearchType("hashtag");
+            setSearchTypeOpen(false);
+          }}
               >
                 해시태그
               </button>
@@ -134,92 +153,102 @@ function MyTownBoard() {
       </div>
 
       {/* 필터 */}
-      <div className={styles.filterContainer}>
-        <h3 className={styles.filterTitle}>검색 필터</h3>
-        <div className={styles.filterBox}>
-          <div className={styles.filterRow}>
-            <div className={styles.filterLabel}>게시판 유형</div>
-            <div className={styles.filterContent}>
-              {["자유", "자랑", "복지혜택후기", "복지시설후기"].map((type) => (
-                <label key={type} className={styles.radioLabel}>
-                  <input
-                    type="radio"
-                    name="postTypeCheck"
-                    value={type}
-                    checked={postTypeCheck === type}
-                    onChange={(e) => {
-                      setPostTypeCheck(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                    onClick={() => {
-                      if (postTypeCheck === type) setPostTypeCheck("");
-                    }}
-                  />
-                  {type === "자랑"
-                    ? "우리 동네 자랑"
-                    : type === "복지혜택후기"
-                    ? "복지 혜택 후기"
-                    : type === "복지시설후기"
-                    ? "복지 시설 후기"
-                    : type}
-                </label>
+ <div className={styles.filterContainer}>
+  <h3 className={styles.filterTitle}>검색 필터</h3>
+  <div className={styles.filterBox}>
+    <table className={styles.filterTable}>
+      <tbody>
+        {/* 게시판 유형 */}
+        <tr className={styles.filterRow}>
+          <th className={styles.filterLabel}>게시판 유형</th>
+          <td className={styles.filterContent}>
+            {["자유", "자랑", "복지혜택후기", "복지시설후기"].map((type) => (
+              <label key={type} className={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="postTypeCheck"
+                  value={type}
+                  checked={postTypeCheck === type}
+                  onChange={(e) => {
+                    setPostTypeCheck(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  onClick={() => {
+                    if (postTypeCheck === type) setPostTypeCheck("");
+                  }}
+                />
+                {type === "자랑"
+                  ? "우리 동네 자랑"
+                  : type === "복지혜택후기"
+                  ? "복지 혜택 후기"
+                  : type === "복지시설후기"
+                  ? "복지 시설 후기"
+                  : type}
+              </label>
+            ))}
+          </td>
+        </tr>
+
+        {/* 작성지역 */}
+        <tr className={styles.filterRow}>
+          <th className={styles.filterLabel}>작성지역</th>
+          <td className={styles.filterContent}>
+            <select
+              value={selectedCity}
+              onChange={(e) => {
+                setSelectedCity(e.target.value);
+                setSelectedDistrict("");
+                setCurrentPage(1);
+              }}
+            >
+              <option value="">시/도 선택</option>
+              {Object.keys(cityDistrictMap).map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
               ))}
-            </div>
-          </div>
-          <div className={styles.filterRow}>
-            <div className={styles.filterLabel}>작성지역</div>
-            <div className={styles.filterContent}>
-              <select
-                value={selectedCity}
-                onChange={(e) => {
-                  setSelectedCity(e.target.value);
-                  setSelectedDistrict("");
-                  setCurrentPage(1);
-                }}
-              >
-                <option value="">시/도 선택</option>
-                {Object.keys(cityDistrictMap).map((city) => (
-                  <option key={city} value={city}>
-                    {city}
+            </select>
+            <select
+              value={selectedDistrict}
+              onChange={(e) => {
+                setSelectedDistrict(e.target.value);
+                setCurrentPage(1);
+              }}
+              disabled={!selectedCity}
+            >
+              <option value="">시/군/구 선택</option>
+              {selectedCity &&
+                cityDistrictMap[selectedCity].map((district) => (
+                  <option key={district} value={district}>
+                    {district}
                   </option>
                 ))}
-              </select>
-              <select
-                value={selectedDistrict}
-                onChange={(e) => {
-                  setSelectedDistrict(e.target.value);
-                  setCurrentPage(1);
-                }}
-                disabled={!selectedCity}
+            </select>
+          </td>
+        </tr>
+
+        {/* 해시태그 */}
+        <tr className={styles.filterRow}>
+          <th className={styles.filterLabel}>해시태그</th>
+          <td className={styles.filterContent}>
+            {popularTags.map((tag) => (
+              <button
+                key={tag}
+                onClick={() => handleTagClick(tag)}
+                className={`${styles.tagButton} ${
+                  selectedTags.includes(tag) ? styles.tagSelected : ""
+                }`}
               >
-                <option value="">시/군/구 선택</option>
-                {selectedCity &&
-                  cityDistrictMap[selectedCity].map((district) => (
-                    <option key={district} value={district}>
-                      {district}
-                    </option>
-                  ))}
-              </select>
-            </div>
-          </div>
-          <div className={styles.filterRow}>
-            <div className={styles.filterLabel}>해시태그</div>
-            <div className={styles.filterContent}>
-              {popularTags.map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => handleTagClick(tag)}
-                  className={`${styles.tagButton} ${
-                    selectedTags.includes(tag) ? styles.tagSelected : ""
-                  }`}
-                >
-                  # {tag}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+                # {tag}
+              </button>
+            ))}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
 
       {/* 글쓰기 버튼 */}
       {memberNo && (
@@ -284,7 +313,7 @@ function MyTownBoard() {
                 <div className={styles.userInfo}>
                   <img
                     className={styles.profileImg}
-                    src={board.memberImg || "/default-profile.png"}
+                    src={board.profileImgImg || "/default-profile.png"}
                     alt="프로필"
                   />
                   <span>{board.memberNickname}</span>
