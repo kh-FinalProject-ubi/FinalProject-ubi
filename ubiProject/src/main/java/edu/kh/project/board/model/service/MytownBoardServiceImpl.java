@@ -431,4 +431,12 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 	  public List<Board> getBoardListByWelfareServiceId(String apiServiceId) {
 	      return mapper.selectBoardListByWelfareServiceId(apiServiceId);
 	  }
+	  
+	  /**
+	   * 
+	   */
+	  @Override
+	  public List<String> getPopularTags() {
+	      return mapper.selectPopularTags();
+	  }
 }

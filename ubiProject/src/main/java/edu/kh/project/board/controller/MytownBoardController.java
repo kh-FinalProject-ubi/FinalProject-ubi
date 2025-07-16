@@ -173,5 +173,12 @@ public class MytownBoardController {
 	public List<Board> getPostsByWelfare(@PathVariable("apiServiceId") String apiServiceId) {
 	    return service.getBoardListByWelfareServiceId(apiServiceId);
 	}
+	
+	
+	@GetMapping("/popular-tags")
+	public ResponseEntity<?> getPopularTags() {
+	    List<String> tags = service.getPopularTags();
+	    return ResponseEntity.ok(tags);
+	}
 
 }

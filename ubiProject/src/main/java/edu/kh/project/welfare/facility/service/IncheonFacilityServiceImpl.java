@@ -45,9 +45,10 @@ public class IncheonFacilityServiceImpl implements IncheonFacilityService {
 			entry("중구|여성복지", 
 					List.of("https://api.odcloud.kr/api/15067056/v1/uddi:fe9221c6-ff29-4b1f-b31a-a3abd54cee9c")),
 			entry("중구|장애인복지",
-					List.of("https://api.odcloud.kr/api/3079646/v1/uddi:d2d90b19-c5bf-4a4c-981c-d651239861cf")),
-			entry("중구|장애인복지",
 					List.of("https://api.odcloud.kr/api/3079646/v1/uddi:d2d90b19-c5bf-4a4c-981c-d651239861cf"))
+//			,
+//			entry("중구|장애인복지",
+//					List.of("https://api.odcloud.kr/api/3079646/v1/uddi:d2d90b19-c5bf-4a4c-981c-d651239861cf"))
 			);
 
 	@Async

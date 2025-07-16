@@ -110,13 +110,11 @@ public interface MytownBoardService {
 	List<Board> getBoardListByWelfareServiceId(String apiServiceId);
 	
 
-	/**
-	 * 이미지
-	 * 
-	 * @param boardNo
-	 * @return
-	 */
-//	    int deleteImagesByBoardNo(int boardNo); // 이미지 삭제용
-//	    int insertBoardImage(BoardImage image); // 이미지 삽입용
-//	    
+
+/** 인기 해시태그  
+ * 
+ * @return
+ */
+	List<String> getPopularTags();
+	
 }
