@@ -9,7 +9,7 @@
   --gray-800: #2e2e2e;
 
   /* 여백 규칙 */
-  --margin-side: 15%; /* 페이지 양쪽 */
+  --margin-side: 5%; /* 페이지 양쪽 */
   --gap-block: 60px; /* 섹션 사이 */
   --gap-tight: 30px; /* “조금 띄우기” */
 }

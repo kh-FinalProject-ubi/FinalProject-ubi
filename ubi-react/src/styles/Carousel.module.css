@@ -16,6 +16,7 @@
   padding: 1rem;
 }
 
+/* 🟡 뱃지 */
 .badge {
   display: inline-block;
   background: var(--yellow, #ffe56d);
@@ -26,6 +27,7 @@
   margin-bottom: 6px;
 }
 
+/* 🟣 버튼 */
 .btnPrimary {
   width: 100%;
   padding: 8px 0;
@@ -43,6 +45,7 @@
   background: #494ac1;
 }
 
+/* 📸 게시글 카드 특화 스타일 */
 .postCard {
   padding: 0;
 }
@@ -68,4 +71,41 @@
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+/* ✅ 반응형 미디어 쿼리 */
+@media (max-width: 1024px) {
+  .carouselWrapper {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .carouselWrapper {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .carouselWrapper {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .carouselCard {
+    padding: 0.75rem;
+  }
+
+  .postThumb {
+    height: 140px;
+  }
+
+  .postTitle {
+    font-size: 0.95rem;
+  }
+
+  .postMeta {
+    padding: 0 12px 12px;
+  }
 }
