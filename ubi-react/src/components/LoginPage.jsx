@@ -1,22 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import useAuthStore from "../stores/useAuthStore";
-import { useSearchParams } from "react-router-dom";
 import styles from "../styles/common/LoginPage.module.css";
 
-// 이메일 유효성 검사 헬퍼 함수
-const validateEmail = (email) => {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(String(email).toLowerCase());
-};
+// 이메일 유효성 검사
+const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-// 시간 포맷팅 헬퍼 함수 (MM:SS)
+// 시간 포맷팅
 const formatTime = (seconds) => {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${String(minutes).padStart(2, "0")}:${String(
-    remainingSeconds
-  ).padStart(2, "0")}`;
+  const m = String(Math.floor(seconds / 60)).padStart(2, "0");
+  const s = String(seconds % 60).padStart(2, "0");
+  return `${m}:${s}`;
 };
 
 const handleKakaoLogin = () => {
@@ -25,14 +19,10 @@ const handleKakaoLogin = () => {
 
 const LoginPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-
   const mode = searchParams.get("mode") || "login";
   const [resetInfo, setResetInfo] = useState({ memberId: "", email: "" });
 
-  // 모드 변경 함수
-  const goToMode = (targetMode) => {
-    setSearchParams({ mode: targetMode });
-  };
+  const goToMode = (targetMode) => setSearchParams({ mode: targetMode });
 
   return (
     <div className={styles.loginPageContainer}>
@@ -40,7 +30,6 @@ const LoginPage = () => {
         <div className={styles.imageBox}>
           <img src="/default-thumbnail.png" alt="login" />
         </div>
-
         <div className={styles.formContainer}>
           {mode === "login" && <LoginForm setMode={goToMode} />}
           {mode === "find-id" && <FindIdForm setMode={goToMode} />}
@@ -69,15 +58,23 @@ const LoginForm = ({ setMode }) => {
   const [memberId, setMemberId] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [saveId, setSaveId] = useState(false);
   const { setAuth } = useAuthStore();
   const navigate = useNavigate();
 
+  // 이미 기존의 아이디 저장된 거 찾아오기
+  useEffect(() => {
+    const savedMemberId = localStorage.getItem("savedMemberId");
+    if (savedMemberId) {
+      setMemberId(savedMemberId);
+      setSaveId(true);
+    }
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!memberId || !password) {
-      alert("아이디와 비밀번호를 모두 입력해주세요.");
-      return;
-    }
+    if (!memberId || !password)
+      return alert("아이디와 비밀번호를 입력해주세요.");
     setIsLoading(true);
     try {
       const res = await fetch("/api/member/login", {
@@ -87,14 +84,19 @@ const LoginForm = ({ setMode }) => {
       });
       const data = await res.json();
       if (res.ok) {
-        setAuth(data); // Zustand 스토어 업데이트
+        // 로그인 성공 시 '아이디 저장' 옵션에 따라 localStorage에 저장/삭제
+        if (saveId) {
+          localStorage.setItem("savedMemberId", memberId);
+        } else {
+          localStorage.removeItem("savedMemberId");
+        }
+        setAuth(data);
         navigate("/");
       } else {
-        alert(data.message || "로그인에 실패했습니다.");
+        alert(data.message || "로그인 실패");
       }
-    } catch (err) {
-      console.error("로그인 오류", err);
-      alert("로그인 중 오류가 발생했습니다.");
+    } catch {
+      alert("오류 발생");
     } finally {
       setIsLoading(false);
     }
@@ -105,7 +107,7 @@ const LoginForm = ({ setMode }) => {
       <div className={styles.formContent}>
         <h3 className={styles.formTitle}>Login</h3>
         <form onSubmit={handleLogin}>
-          <div className={styles.inputWrapper}>
+          <div className={`${styles.inputWrapper} ${styles.inputWrapperID}`}>
             <input
               type="text"
               placeholder="아이디"
@@ -113,7 +115,7 @@ const LoginForm = ({ setMode }) => {
               onChange={(e) => setMemberId(e.target.value)}
             />
           </div>
-          <div className={styles.inputWrapper}>
+          <div className={`${styles.inputWrapper} ${styles.inputWrapperPW}`}>
             <input
               type="password"
               placeholder="비밀번호"
@@ -121,6 +123,35 @@ const LoginForm = ({ setMode }) => {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
+          {/* 아이디 저장 체크박스 추가 */}
+          <div className={styles.saveIdWrapper}>
+            <div>
+              <input
+                type="checkbox"
+                id="save-id"
+                checked={saveId}
+                onChange={(e) => setSaveId(e.target.checked)}
+              />
+              <label htmlFor="save-id">아이디 저장</label>
+            </div>
+
+            <div className={styles.findAccountLink}>
+              <button type="button" onClick={() => setMode("find-id")}>
+                ID
+              </button>
+              <span>/</span>
+              <button type="button" onClick={() => setMode("find-pw")}>
+                PW찾기
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.bulletWrapper}>
+            <span className={`${styles.bullet} ${styles.bullet1}`}>•</span>
+            <span className={`${styles.bullet} ${styles.bullet2}`}>•</span>
+            <span className={`${styles.bullet} ${styles.bullet1}`}>•</span>
+          </div>
+
           <button
             type="submit"
             className={styles.confirmBtn}
@@ -133,11 +164,9 @@ const LoginForm = ({ setMode }) => {
           카카오로 로그인하기
         </button>
       </div>
-      <div className={styles.findAccountLink}>
-        <button onClick={() => setMode("find-id")}>아이디 찾기</button>
-        <span>|</span>
-        <button onClick={() => setMode("find-pw")}>비밀번호 찾기</button>
-      </div>
+      <Link to="/signup" className={styles.signupLink}>
+        회원가입
+      </Link>
     </>
   );
 };
@@ -275,7 +304,7 @@ const FindIdForm = ({ setMode }) => {
     <>
       <div className={styles.formContent}>
         <h3 className={styles.formTitle}>ID 찾기</h3>
-        <div className={styles.inputWrapper}>
+        <div className={`${styles.inputWrapper} ${styles.inputWrapperID}`}>
           <input
             placeholder="이름 입력"
             value={name}
@@ -286,15 +315,16 @@ const FindIdForm = ({ setMode }) => {
             <span className={styles.errorMessage}>{errors.name}</span>
           )}
         </div>
-        <div className={styles.inputWrapper}>
-          <div className={styles.emailGroup}>
+
+        {/* 수정된 이메일 입력 그룹 */}
+        <div className={`${styles.inputWrapper} ${styles.inputWrapperPw}`}>
+          <div className={styles.inputGroup}>
             <input
               placeholder="가입한 이메일 입력"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isCodeSent}
             />
-            <div className={styles.emailSpacer}></div>
             <button
               onClick={handleSendCode}
               className={styles.authBtn}
@@ -314,58 +344,66 @@ const FindIdForm = ({ setMode }) => {
               {errors.email}
             </span>
           )}
+          <div className={styles.bulletWrapper}>
+            <span className={`${styles.bullet} ${styles.bullet1}`}>•</span>
+            <span className={`${styles.bullet} ${styles.bullet2}`}>•</span>
+            <span className={`${styles.bullet} ${styles.bullet1}`}>•</span>
+          </div>
         </div>
+
         {isCodeSent && !foundId && (
           <>
-            <div className={styles.inputWrapper}>
-              <div className={styles.inputGroup}>
-                <div className={styles.inlineInputs}>
-                  <input
-                    placeholder="인증번호 입력"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    disabled={isCodeVerified}
-                  />
-                  {isTimerActive && (
-                    <span className={styles.timer}>{formatTime(timer)}</span>
-                  )}
-                  {!isCodeVerified && (
-                    <button
-                      onClick={handleInlineVerify}
-                      className={styles.authBtn}
-                    >
-                      인증확인
-                    </button>
-                  )}
-                </div>
-                {errors.code && (
-                  <span className={styles.errorMessage}>{errors.code}</span>
+            {/* 수정된 인증번호 입력 그룹 */}
+            <div className={`${styles.inputWrapper} ${styles.inputWrapper3}`}>
+              <div className={styles.verificationGroup}>
+                <input
+                  placeholder="인증번호 입력"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  disabled={isCodeVerified}
+                />
+                {isTimerActive && (
+                  <span className={styles.timer}>{formatTime(timer)}</span>
                 )}
-                {successMsg && (
-                  <span className={styles.successMessage}>{successMsg}</span>
+                {!isCodeVerified && (
+                  <button
+                    onClick={handleInlineVerify}
+                    className={styles.authBtn}
+                  >
+                    인증확인
+                  </button>
                 )}
               </div>
+              {errors.code && (
+                <span className={styles.errorMessage}>{errors.code}</span>
+              )}
+              {successMsg && (
+                <span className={styles.successMessage}>{successMsg}</span>
+              )}
             </div>
+
             <button
               onClick={handleFinalFindId}
               className={styles.confirmBtn}
               disabled={!isCodeVerified}
             >
-              아이디 찾기
+              확인
             </button>
           </>
         )}
+
         {foundId && (
           <div className={styles.resultBox}>
             <p>회원님의 아이디입니다.</p>
             <strong>{foundId}</strong>
           </div>
         )}
-        <div className={styles.findAccountLink}>
-          <button onClick={() => setMode("find-pw")}>비밀번호 찾기</button>
+
+        <div className={`${styles.findAccountLink} ${styles.findAccountLogin}`}>
+          <button onClick={() => setMode("login")}>로그인 하러가기</button>
         </div>
         <div className={styles.findAccountLink}>
-          <button onClick={() => setMode("login")}>로그인 하러가기</button>
+          <button onClick={() => setMode("find-pw")}>비밀번호 찾기</button>
         </div>
       </div>
     </>
@@ -517,7 +555,7 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
           )}
         </div>
         <div className={styles.inputWrapper}>
-          <div className={styles.emailGroup}>
+          <div className={styles.inputGroup}>
             <input
               placeholder="가입한 이메일 입력"
               value={email}
@@ -556,9 +594,6 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
                     onChange={(e) => setCode(e.target.value)}
                     disabled={isCodeVerified}
                   />
-                  {isTimerActive && (
-                    <span className={styles.timer}>{formatTime(timer)}</span>
-                  )}
                   {!isCodeVerified && (
                     <button
                       onClick={handleInlineVerify}
@@ -566,6 +601,9 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
                     >
                       인증확인
                     </button>
+                  )}
+                  {isTimerActive && (
+                    <span className={styles.timer}>{formatTime(timer)}</span>
                   )}
                 </div>
                 {errors.code && (
@@ -588,7 +626,7 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
         <div className={styles.findAccountLink}>
           <button onClick={() => setMode("find-id")}>아아디 찾기</button>
         </div>
-        <div className={styles.findAccountLink}>
+        <div className={styles.findAccountLink1}>
           <button onClick={() => setMode("login")}>로그인 하러가기</button>
         </div>
       </div>

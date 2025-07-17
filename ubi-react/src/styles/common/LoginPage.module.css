@@ -1,101 +1,315 @@
-/* 공통 */
+/* 레이아웃      */
+/* ================= */
 .loginPageContainer {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: calc(100vh - 200px); /* 헤더/푸터 제외 */
-  background-color: #fff;
+  width: 100%;
+  min-height: 70vh;
+
+  padding: 2rem 0;
 }
 
 .loginMainContent {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  width: 100%;
+  max-width: 900px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 .imageBox {
-  width: 400px;
+  flex: 1;
+  display: none; /* 모바일에서는 숨김 */
+}
+
+/* 점 시리즈 */
+.bulletWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+}
+
+.bullet {
+  font-size: 2rem;
+}
+
+.bullet1 {
+  color: #5e60ce;
+}
+
+.bullet2 {
+  color: #ffe56d;
+  font-size: 3rem;
+  margin-bottom: 2px;
+}
+
+@media (min-width: 768px) {
+  .imageBox {
+    display: block;
+  }
 }
 
 .imageBox img {
   width: 100%;
-  height: auto;
-  object-fit: contain;
+  height: 100%;
+  object-fit: cover;
 }
 
-/* 로그인 / 찾기 공통 박스 */
 .formContainer {
-  width: 420px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  padding: 50px 40px;
-  box-sizing: border-box;
-
-  /* [추가] Flexbox 레이아웃 및 최소 높이 설정 */
+  flex: 1;
+  padding: 2.5rem;
+  background-color: #ffffff;
   display: flex;
   flex-direction: column;
-  min-height: 520px; /* 컨테이너 최소 높이 고정 */
+  justify-content: start;
 }
 
 .formContent {
-  flex-grow: 1; /* 이 영역이 남은 공간을 모두 차지하도록 설정 */
+  width: 100%;
 }
 
-.formContainer h3 {
-  font-size: 20px;
+.formTitle {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 2rem;
   text-align: center;
-  margin-bottom: 30px;
+  color: #2d3748;
 }
 
-/* 인풋 */
-.formContainer input {
+/* ================= */
+/* 입력 필드      */
+/* ================= */
+
+/* 각 입력 필드(인풋 + 메시지)를 묶는 Wrapper */
+.inputWrapper {
+  position: relative; /* 메시지, 타이머 등의 위치 기준 */
+}
+
+/* 기본 인풋 스타일 */
+.inputWrapper input {
   width: 100%;
   padding: 12px 15px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  font-size: 14px;
+  border: 1px solid #6c6c6c;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
 }
 
-/* 버튼 */
-.loginBtn {
+.inputWrapperID {
+  margin-bottom: 30px; /* 예시 */
+}
+
+.inputWrapperPW {
+  margin-bottom: 5px; /* 예시 */
+}
+
+.inputWrapper3 {
+  margin-top: 8px; /* 예시 */
+}
+
+.inputWrapper input:focus {
+  outline: none;
+  border-color: #ffe56d;
+  box-shadow: 0 0 0 1px #ffe56d;
+}
+
+.inputWrapper input::placeholder {
+  color: #a3a2a7;
+  font-weight: 200;
+}
+
+/* ================= */
+/* 메시지 & 타이머   */
+/* ================= */
+
+/* 에러/성공 메시지 공통 */
+.errorMessage,
+.successMessage {
+  display: block;
+  /* 인풋창 하단에서 5px 떨어져 출력 */
+  margin-top: 5px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.errorMessage {
+  color: #e53e3e;
+}
+
+.successMessage {
+  color: #38a169;
+}
+
+/* 타이머: 인풋창 내부 좌측 하단에 위치 */
+.timer {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  font-size: 0.9rem;
+  color: #e53e3e;
+  background-color: white;
+  padding: 0 4px; /* 글자가 인풋 테두리와 겹치지 않도록 */
+}
+
+/* ================= */
+/* 인라인 그룹 (Flex) */
+/* ================= */
+
+/* 이메일 + 인증요청 버튼 그룹 */
+.inputGroup {
+  display: flex;
+  align-items: center;
+}
+
+.inputGroup input {
+  flex: 1; /* 인풋이 남는 공간 모두 차지 */
+}
+
+/* 인증번호 + 인증확인 버튼 그룹 */
+.verificationGroup {
+  position: relative; /* 타이머 위치 기준 */
+  display: flex;
+  align-items: center;
+}
+
+.verificationGroup input {
+  flex: 1;
+}
+
+/* ================= */
+/* 버튼       */
+/* ================= */
+
+/* 기본 버튼 */
+.confirmBtn {
   width: 100%;
-  background: #5e60ce;
-  color: #fff;
-  padding: 12px;
+  padding: 14px;
   border: none;
-  border-radius: 8px;
-  font-size: 15px;
+  border-radius: 1000px;
+  background-color: #5e60ce;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 200;
   cursor: pointer;
-  margin-bottom: 15px;
+  transition: background-color 0.2s;
 }
 
+/* 예비 호버용 코드 */
+/* .confirmBtn:hover {
+  background-color: #2b6cb0;
+} */
+
+/* .kakaoBtn:hover {
+  background-color: #f7d600;
+} */
+
+.confirmBtn:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+}
+
+/* 카카오 로그인 버튼 */
 .kakaoBtn {
   width: 100%;
-  background: #ffe56d;
-  color: #333;
-  padding: 12px;
+  padding: 14px;
+  margin-top: 1rem;
   border: none;
-  border-radius: 8px;
-  font-size: 15px;
+  border-radius: 1000px;
+  background-color: #fee500;
+  color: #191919;
+  font-size: 1.1rem;
+  font-weight: 200;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
-/* 찾기 링크 */
+/* 인증 요청/확인 버튼 */
+.authBtn {
+  padding: 12px 16px;
+  margin-left: 10px; /* 인풋과의 간격 */
+  border: 1px solid #e2e8f0;
+  background-color: #fee500;
+  border-radius: 1000px;
+  white-space: nowrap; /* 버튼 글자 줄바꿈 방지 */
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+/* .authBtn:hover {
+  background-color: #e2e8f0;
+} */
+
+.authBtn:disabled {
+  background-color: #f7fafc;
+  color: #a0aec0;
+  cursor: not-allowed;
+}
+
+/* ================= */
+/* 기타 스타일     */
+/* ================= */
+
+/* 아이디/비밀번호 찾기 링크 */
 .findAccountLink {
   display: flex;
-  justify-content: end;
-  margin-top: 15px;
+  align-items: center;
+  gap: 5px; /* ID / PW 사이 간격 */
 }
 
-.findAccountLink button {
-  background: none;
+.findAccountLogin button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 1rem;
   border: none;
-  color: #666;
+  border-radius: 1000px;
+  background-color: #fee500;
+  color: #191919;
+  font-size: 1.1rem;
+  font-weight: 200;
   cursor: pointer;
-  font-size: 13px;
+  transition: background-color 0.2s;
+}
+
+.findAccountLogin button {
+  background: #fee500;
+  border: none;
+  border-radius: 1000px;
+  color: #5e60ce;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.findAccountLink button:hover {
   text-decoration: underline;
+}
+
+.findAccountLink span {
+  color: #a0aec0;
+}
+/* 아이디 찾기 결과 박스 */
+.resultBox {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  text-align: center;
+  background-color: #f7fafc;
+  border-radius: 8px;
+}
+
+.resultBox p {
+  margin: 0;
+  /* color: #4a5568; */
+}
+
+.resultBox strong {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 1.5rem;
+  color: #2d3748;
 }
 
 /* 비밀번호 재설정 완료 */
@@ -103,115 +317,42 @@
   text-align: center;
 }
 
-.resetCompleteBox img {
-  width: 120px;
-  margin-top: 20px;
+.completeImage {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 1.5rem;
 }
 
-/* 아이디/비밀번호 찾기용 */
-.authBtn {
-  background: #ffe56d;
-  color: #fff;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 8px;
-  font-size: 13px;
-  cursor: pointer;
-  margin-left: 10px;
+.resetCompleteBox p {
+  margin-top: 1rem;
+  line-height: 1.6;
+  color: #4a5568;
 }
-
-.confirmBtn {
-  width: 100%;
-  background: #5e60ce;
-  color: #fff;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  font-size: 15px;
-  cursor: pointer;
-  margin-top: 10px;
-}
-
-.timer {
+.saveIdWrapper {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: start;
-  font-size: 14px;
-  color: #f44336; /* 빨간색 */
-
-  font-weight: 400;
-  flex-shrink: 0; /* 너비가 줄어들지 않도록 설정 */
+  margin-top: 5px; /* 인풋 하단에서 5px 떨어짐 */
 }
 
-.inputGroup {
-  display: flex;
-  flex-direction: column; /* 세로 정렬 */
-  width: 100%;
+.saveIdWrapper input[type="checkbox"] {
+  margin-right: 5px; /* 체크박스와 라벨 간격 */
 }
 
-.inlineInputs {
-  display: flex;
-  align-items: center; /* 높이 맞추기 */
-  width: 100%;
+.saveIdWrapper label {
+  font-size: 0.9rem;
+  color: #4a5568;
 }
 
-.inlineInputs input {
-  flex: 1;
+.signupLink {
+  display: block;
+  margin: 1rem auto 0 auto; /* 위 여백 주고 가운데로 */
+  text-align: center;
+  color: #5e60ce;
+  font-size: 0.9rem;
+  text-decoration: none;
 }
 
-.inlineInputs .timer {
-  margin-left: 10px;
-}
-
-.inlineInputs .authBtn {
-  margin-left: 10px;
-}
-
-/* 메시지 스타일 */
-.errorMessage {
-  color: #f44336;
-  font-size: 12px;
-  margin-top: 5px;
-}
-
-.successMessage {
-  color: #4caf50;
-  font-size: 12px;
-  margin-top: 5px;
-}
-.emailGroup {
-  display: flex;
-  align-items: flex-start; /* 상단 기준 정렬 */
-  width: 100%;
-}
-
-.emailGroup input {
-  width: 75%;
-  padding: 12px 15px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 14px;
-  box-sizing: border-box;
-  height: 44px; /* 버튼과 높이 맞추기 */
-}
-
-.emailSpacer {
-  width: 5%;
-}
-
-.emailGroup .authBtn {
-  width: 20%;
-  height: 44px; /* input과 동일 */
-  background: #ffe56d;
-  color: #333;
-  padding: 0; /* 내부 padding 제거 */
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-
-  display: flex;
-  align-items: center; /* 텍스트 수직 가운데 */
-  justify-content: center; /* 텍스트 가로 가운데 */
-  box-sizing: border-box;
+.signupLink:hover {
+  text-decoration: underline;
 }
