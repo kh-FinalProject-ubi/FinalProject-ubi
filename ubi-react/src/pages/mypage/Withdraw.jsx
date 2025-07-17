@@ -105,22 +105,10 @@ const Withdraw = () => {
     <div className={styles.withdrawContainer}>
       <h2>회원 탈퇴</h2>
 
-      {/* ✅ 단계 1 : 비밀번호 + 약관 동의 */}
+      {/* ── ① 약관 확인 + 비밀번호 입력 ───────────────── */}
       {!completed && (
         <form onSubmit={handleWithdraw}>
-          {/* 비밀번호 입력 */}
-          <label>비밀번호 확인</label>
-          <input
-            type="password"
-            value={form.currentPw}
-            placeholder="비밀번호를 입력해주세요."
-            onChange={handleChange}
-          />
-          {validationErrors.currentPw && (
-            <p className={styles.error}>{validationErrors.currentPw}</p>
-          )}
-
-          {/* 약관 요약 */}
+          {/* 약관 안내 & 동의 */}
           <div className={styles.termsBox}>
             <h3>회원 탈퇴 전 반드시 아래 내용을 확인해 주세요.</h3>
             <ul>
@@ -158,7 +146,6 @@ const Withdraw = () => {
                   style={{ overflow: "hidden" }}
                 >
                   <div className={styles.fullTerms}>
-
                     <h4>회원 탈퇴 안내 및 동의 약관</h4>
 
                     <p>
@@ -239,7 +226,6 @@ const Withdraw = () => {
                         제한 등)에 동의합니다.
                       </strong>
                     </p>
-
                   </div>
                 </motion.div>
               )}
@@ -255,7 +241,19 @@ const Withdraw = () => {
             </label>
           </div>
 
-          {/* 오류 메시지 */}
+          {/* 비밀번호 입력 */}
+          <label className={styles.pwLabel}>비밀번호 확인</label>
+          <input
+            type="password"
+            value={form.currentPw}
+            placeholder="비밀번호를 입력해주세요."
+            onChange={handleChange}
+            disabled={!agree} /* 동의 전엔 입력 잠금 */
+            className={styles.pwInput}
+          />
+          {validationErrors.currentPw && (
+            <p className={styles.error}>{validationErrors.currentPw}</p>
+          )}
           {error && <p className={styles.error}>{error}</p>}
 
           {/* 탈퇴 버튼 */}
@@ -269,7 +267,7 @@ const Withdraw = () => {
         </form>
       )}
 
-      {/* ✅ 단계 2 : 완료 화면 */}
+      {/* ── ② 완료 화면 ──────────────────────────────── */}
       {completed && (
         <div className={styles.completeStep}>
           <p>
