@@ -24,8 +24,10 @@ const AlertModal = () => {
 };
 
 const Header = () => {
-  const { token, memberImg, clearAuth, memberNo, memberNickname } =
+
+  const { token, memberImg, clearAuth, memberNo, memberNickname, memberName, authority } =
     useAuthStore();
+
   const isLogin = !!token;
   const { selectedCity, selectedDistrict } = useSelectedRegionStore();
   const navigate = useNavigate();
@@ -154,12 +156,11 @@ const Header = () => {
       <header className={styles.siteHeader}>
         <div className={styles.topRow}>
           <h2>
-            <a href="/">
+            <Link to="/">
               <img className={styles.logo} src="/ubi.svg" alt="로고" />
               UBI
-            </a>
+            </Link>
           </h2>
-
           <div className={styles.headerRight}>
             {isLogin ? (
               <>
@@ -173,7 +174,6 @@ const Header = () => {
                 >
                   <img src="/alarm.svg" alt="알림 아이콘" />
                   {hasNewAlert && <span className="new-badge">NEW</span>}{" "}
-                  {/* ✅ 조건도 수정 */}
                 </button>
 
                 {showDropdown && (
@@ -230,7 +230,7 @@ const Header = () => {
               <>
                 <button
                   className={styles.loginBtn}
-                  onClick={() => navigate("/login")}
+                  onClick={() => navigate("/login?mode=login")}
                 >
                   로그인
                 </button>
