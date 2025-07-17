@@ -43,9 +43,8 @@ export function useFacilities(
           url = "/api/busan-facility";
         } else if (city === "제주특별자치도") {
           url = "/api/jeju-facility";
-          if (category && category !== "전체") {
-            params.category = category;
-          }
+        } else if (city === "인천광역시") {
+          url = "/api/incheon-facility";
         }
 
         const res = await axios.get(url, { params });
@@ -187,7 +186,7 @@ export const getFilteredFacilities = ({
       f["SVC_TYPE"] ||
       f["category"] ||
       f["OPEN_FACLT_TYPE_DIV_NM"] ||
-            f["typeCategory"] ||
+      f["typeCategory"] ||
       "";
 
     const matchesKeyword = keyword === "" || name.includes(keyword);
