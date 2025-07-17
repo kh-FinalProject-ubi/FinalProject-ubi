@@ -7,7 +7,7 @@ import {
   getFilteredFacilities,
 } from "../../utils/welfarefacilityMap";
 import { normalizeRegion } from "../../utils/regionUtils"; // ✅ 추가
-import "../../styles/welfarefacility/FacilitySearchPage.css";
+import styles from "../../styles/welfarefacility/FacilitySearchPage.module.css";
 
 export default function WelfareFacilityModal({
   city,
@@ -58,41 +58,36 @@ export default function WelfareFacilityModal({
     }
   }, [city, district]);
 
-  
-
   return (
-    <div className="modal-overlay">
+    <div className={styles["modal-overlay"]}>
       <div
-        className="modal-content"
+        className={styles["modal-content"]}
         style={{ maxHeight: "80vh", overflowY: "auto", padding: "20px" }}
       >
-        <h2>
+        <h2 className={styles["modal-title"]}>
           복지시설 선택 (작성자 지역: {normCity} {normDistrict})
         </h2>
-        <button
-          onClick={onClose}
-          style={{ float: "right", fontWeight: "bold" }}
-        >
+        <button onClick={onClose} className={styles["modal-close-btn"]}>
           ✖
         </button>
 
         {/* 필터바 */}
-        <div className="filter-bar">
+        <div className={styles["filter-bar"]}>
           <input
             type="text"
             placeholder="시설명 검색"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
-            className="search-input"
+            className={styles["search-input"]}
           />
 
-          <div className="service-type-filter">
+          <div className={styles["service-type-filter"]}>
             {["전체", "노인", "청소년", "아동", "장애인"].map((type) => (
               <button
                 key={type}
                 onClick={() => setServiceType(type)}
-                className={`service-btn ${
-                  serviceType === type ? "selected" : ""
+                className={`${styles["service-btn"]} ${
+                  serviceType === type ? styles["selected"] : ""
                 }`}
               >
                 {type}
@@ -100,14 +95,14 @@ export default function WelfareFacilityModal({
             ))}
           </div>
 
-          <div className="category-filter">
+          <div className={styles["category-filter"]}>
             {["전체", "체육시설", "요양시설", "의료시설", "행정시설"].map(
               (cat) => (
                 <button
                   key={cat}
                   onClick={() => setCategory(cat)}
-                  className={`service-btn ${
-                    category === cat ? "selected" : ""
+                  className={`${styles["service-btn"]} ${
+                    category === cat ? styles["selected"] : ""
                   }`}
                 >
                   {cat}
@@ -118,17 +113,17 @@ export default function WelfareFacilityModal({
         </div>
 
         {/* 결과 */}
-        {loading && <p>불러오는 중...</p>}
+        {loading && <p className={styles["loading-text"]}>불러오는 중...</p>}
         {error && (
-          <p style={{ color: "red" }}>
+          <p className={styles["error-text"]}>
             시설 데이터를 불러오는 데 실패했습니다.
           </p>
         )}
         {!loading && filteredFacilities.length === 0 && (
-          <p>조건에 맞는 시설이 없습니다.</p>
+          <p className={styles["empty-text"]}>조건에 맞는 시설이 없습니다.</p>
         )}
 
-        <ul style={{ listStyle: "none", padding: 0 }}>
+        <ul className={styles["facility-list"]}>
           {filteredFacilities.map((facility, idx) => {
             const name =
               facility["FACLT_NM"] ||
@@ -165,11 +160,7 @@ export default function WelfareFacilityModal({
             return (
               <li
                 key={`${name}-${id}-${idx}`}
-                style={{
-                  padding: "10px",
-                  borderBottom: "1px solid #ddd",
-                  cursor: "pointer",
-                }}
+                className={styles["facility-item"]}
                 onClick={() => {
                   onSelect({ name, id, category, address });
                   onClose();

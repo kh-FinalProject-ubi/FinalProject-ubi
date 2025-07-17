@@ -1,0 +1,212 @@
+.facility-search-container {
+  width: 100%;
+  padding: 2rem 20%;
+  box-sizing: border-box;
+}
+
+.region-source-buttons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.region-source-buttons button {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  background-color: white;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.region-select-row {
+  position: relative;
+}
+
+.search-wrapper {
+  position: relative;
+  flex: 1; /* ✅ 남은 공간 전체 차지 */
+  width: 100%;
+  max-width: 600px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: #999;
+  pointer-events: none;
+}
+
+.search-wrapper input {
+  width: 100%;
+  padding: 12px 12px 12px 45px;
+  border: 1px solid #ddd;
+  border-radius: 25px;
+  font-size: 1rem;
+}
+
+/* 전체 필터 바 영역 */
+.filter-bar {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* 필터 항목 줄 */
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* 지역 선택 영역 */
+.region-select-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* 셀렉트 공통 스타일 */
+.region-select-row select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 10px 40px 10px 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #333;
+  background-color: #fff;
+
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+  cursor: pointer;
+  min-width: 140px;
+}
+
+.region-select-row select:focus {
+  border-color: #999;
+  outline: none;
+}
+
+/* ---------------------------------------------------------------*/
+
+.filterBox {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* 그림자 효과 */
+  border-radius: 12px;
+  padding: 0px;
+  overflow: hidden; /* ✅ 내부 테이블도 둥글게 맞추기 */
+}
+
+.filterTable {
+  margin: 0;
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+.filterRow {
+  vertical-align: top;
+}
+
+.filterRow:last-child {
+  border-bottom: none;
+}
+
+.filterLabel {
+  background-color: #ffe066;
+  padding: 32px 32px;
+  margin: 0;
+  border: none;
+  width: 150px;
+  text-align: center;
+  vertical-align: middle;
+  font-weight: bold;
+  color: #5c3c00;
+  box-sizing: border-box;
+}
+
+.filterContent {
+  padding: 32px 32px;
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 15px;
+  margin: 0;
+}
+
+/* ✅ 기본 radio 버튼 숨기고 커스텀 원형 표시 */
+.radioLabel input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #ffe066; /* 노란색 외곽선 */
+  background-color: #ffe066; /* ✅ 버튼 자체가 노란색 */
+  margin: 0;
+  position: relative;
+  cursor: pointer;
+  margin-right: 8px; /* ✅ 버튼과 텍스트 간 여백 */
+  transition: all 0.2s ease;
+  vertical-align: middle;
+}
+
+/* ✅ 선택됐을 때 안쪽 점 표시 */
+.radioLabel input[type="radio"]::before {
+  content: "";
+  display: block;
+  width: 12px;
+  height: 12px;
+  border: 3px solid #5e60ce; /* 노란색 외곽선 */
+  background-color: #5e60ce; /* 보라색 안쪽 점 */
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.2s ease;
+}
+
+/* ✅ 체크됐을 때 점 보이게 */
+.radioLabel input[type="radio"]:checked::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* 아래 3개는 기존 그대로 두고 */
+.loading-text,
+.error-text,
+.empty-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgb(242, 111, 18);
+}
+
+.error-text {
+  color: red;
+}
+
+.facility-status {
+  min-height: 30px; /* 고정 여백 확보 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+.facility-card-list {
+  display: grid;
+  /* ✅ 로딩 중일 때와 유사한 높이로 설정 */
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
