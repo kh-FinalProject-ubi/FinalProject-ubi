@@ -61,10 +61,10 @@ export default function useLoginMember() {
           token,
           address: res.data.address,
           memberImg: res.data.memberImg,
-          memberName: res.data.memberName,
           memberStandard: res.data.memberStandard,
           memberNo: res.data.memberNo,
           authority: res.data.authority,
+          memberNickname: res.data.memberNickname || res.data.memberName,
           role: res.data.authority === "2" ? "ADMIN" : "USER",
           regionCity, // ✅ 추출된 시/도
           regionDistrict, // ✅ 추출된 시/군/구
