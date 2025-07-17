@@ -138,6 +138,7 @@ public class IncheonFacilityServiceImpl implements IncheonFacilityService {
 					List.of("https://api.odcloud.kr/api/15063137/v1/uddi:4415613e-f190-4387-b50c-ae22d7f94d6f")),
 			entry("서구|요양원",
 					List.of("https://api.odcloud.kr/api/15040126/v1/uddi:a5022b97-7d3e-45ce-9c58-b68109130315"))
+
 			);
 
 	@Async
