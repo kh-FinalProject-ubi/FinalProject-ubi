@@ -28,6 +28,7 @@ const Chat = () => {
   const messagesEndRef = useRef(null);
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [currentTab, setCurrentTab] = useState("list");   // ← 추가
 
   // ✅ 채팅방 목록 불러오기
   const showChat = async () => {
@@ -437,7 +438,17 @@ console.log("채팅방 목록 : ", rooms);
           )}
 
           {/* 채팅 목록 */}
+          <div className="chat-search-top">
+            <input
+              type="text"
+              placeholder="Search"
+              value={searchNickname}
+              onChange={(e)=>setSearchNickname(e.target.value)}
+              onKeyDown={(e)=> e.key==="Enter" && handleSearchMember()}
+            />
+          </div>
           {Array.isArray(rooms) && rooms.map(room => (
+            
             <div
               key={room.chatRoomNo}                                        
               className={`chat-room-item ${
@@ -472,48 +483,67 @@ console.log("채팅방 목록 : ", rooms);
         <div className="chat-container">
           {selectedRoom ? (
             <>
-              <div className="chat-header">
-                <h2>{selectedRoom.memberName}</h2>
-              </div>
 
-              <div className="chat-header">
-                <h2>{selectedRoom?.targetNickname}</h2>
-                <button onClick={() => handleExitRoom(selectedRoom.chatRoomNo)}>방 나가기</button>
+            {/* 탭바 + 나가기 */}
+              <div className="chat-topbar">
+                <div className="tab active">채팅 내역</div>
+                <div className="tab">{selectedRoom?.targetNickname || "대화 상대"}</div>
+                <button
+                  className="leave-btn"
+                  onClick={() => handleExitRoom(selectedRoom?.chatRoomNo)}
+                >
+                  ↩ 채팅 나가기
+                </button>
               </div>
 
               <div className="chat-messages">
-                {messages.map((msg) => (
-                  <div
-                    key={msg.chatNo}
-                    className={`chat-message ${
-                      msg.senderNo === memberNo ? "my-message" : "other-message"
-                    }`}
-                  >
-                    <div className="message-sender">
-                      {msg.senderNo === memberNo ? "나" : selectedRoom.targetNickname}
-                    </div>
-                    <div className="message-content">
-                        {msg.chatDelFl === "Y" ? (
-                          <i className="deleted-message">삭제된 메시지입니다.</i>
-                        ) : (
-                          <>
-                            <span>{msg.chatContent}</span>
-                            {msg.senderNo === memberNo && (
-                              <button
-                                className="delete-button"
-                                onClick={() => {
-                                  console.log("삭제 시도:", msg);
-                                  handleDeleteMessage(msg.chatNo)}}
-                              >
-                                🗑️
-                              </button>
-                            )}
-                          </>
-                        )}
+                {messages.map(msg => {
+                  const isMe = msg.senderNo === memberNo;
+
+                  // 아바타 이미지 경로
+                  const avatarSrc = isMe
+                    ? null
+                    : (msg.senderProfile     // 백엔드에서 senderProfile 내려주면 사용
+                        ? `http://localhost:8080${msg.senderProfile}`
+                        : (selectedRoom?.targetProfile
+                            ? `http://localhost:8080${selectedRoom.targetProfile}`
+                            : "/default-profile.png"));
+
+                  // 닉네임 (메시지 객체에 있으면 우선, 없으면 현재 방 상대 닉네임)
+                  const nick = msg.senderNickname || selectedRoom?.targetNickname || "상대";
+
+                  return (
+                    /* ▶ 그룹 래퍼 (닉네임 + 본문) */
+                    <div key={msg.chatNo} className={isMe ? "my" : "other"}>
+                      {/* ── 닉네임: 내 메시지는 표시 X ── */}
+                      {!isMe && <div className="sender-name">{nick}</div>}
+
+                      {/* ── 1줄(아바타 + 말풍선) ── */}
+                      <div className={`chat-line ${isMe ? "my" : "other"}`}>
+                        {!isMe && <img src={avatarSrc} alt="" className="avatar" />}
+
+                        <div className={`chat-message ${isMe ? "my-message" : "other-message"}`}>
+                          {msg.chatDelFl === "Y" ? (
+                            <i className="deleted-message">삭제된 메시지입니다.</i>
+                          ) : (
+                            <>
+                              <span>{msg.chatContent}</span>
+                              {isMe && (
+                                <button
+                                  className="delete-button"
+                                  onClick={() => handleDeleteMessage(msg.chatNo)}
+                                >
+                                  🗑️
+                                </button>
+                              )}
+                            </>
+                          )}
+                          <div className="message-timestamp">{msg.chatSendDate}</div>
+                        </div>
                       </div>
-                    <div className="message-timestamp">{msg.chatSendDate}</div>
-                  </div>
-                ))}
+                    </div>
+                  );
+                })}
                 <div ref={messagesEndRef}></div>
               </div>
               <div className="chat-input">
