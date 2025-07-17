@@ -65,7 +65,7 @@ public class IncheonFacilityServiceImpl implements IncheonFacilityService {
 			entry("미추홀구|노인복지",
 					List.of("https://api.odcloud.kr/api/15070559/v1/uddi:eae3eb26-6d5c-427a-9d96-acd687b9bee7")),
 			entry("미추홀구|지역아동",
-					List.of("https://api.odcloud.kr/api/15011892/v1/uddi:7624e013-b8e9-49af-8976-b2449672f51d")),
+            List.of("https://api.odcloud.kr/api/15011892/v1/uddi:7624e013-b8e9-49af-8976-b2449672f51d")),
 			entry("미추홀구|행정복지",
 					List.of("https://api.odcloud.kr/api/15081949/v1/uddi:c5c91d21-1434-44c9-bc89-98cec45cddb2")),
 			entry("미추홀구|한부모복지",
@@ -138,7 +138,6 @@ public class IncheonFacilityServiceImpl implements IncheonFacilityService {
 					List.of("https://api.odcloud.kr/api/15063137/v1/uddi:4415613e-f190-4387-b50c-ae22d7f94d6f")),
 			entry("서구|요양원",
 					List.of("https://api.odcloud.kr/api/15040126/v1/uddi:a5022b97-7d3e-45ce-9c58-b68109130315"))
-
 			);
 
 	@Async

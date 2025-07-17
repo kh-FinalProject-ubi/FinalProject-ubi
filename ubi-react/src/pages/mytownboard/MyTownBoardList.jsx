@@ -98,7 +98,8 @@ const handleTagClick = (tag) => {
 
       {/* 검색창 */}
       <div className={styles.topSearchContainer}>
-        <div style={{ position: "relative" }}>
+  {/* ✅ 드롭다운 기준을 잡기 위한 Wrapper */}
+  <div className={styles.sortDropdownWrapper}>
           <button
             className={styles.sortButton}
             onClick={() => setSearchTypeOpen((prev) => !prev)}
@@ -107,10 +108,10 @@ const handleTagClick = (tag) => {
           </button>
 
          {searchTypeOpen && (
-      <div
+      <div className={styles.sortDropdown}
       >
         <button
-          className={styles.sortButton}
+          className={styles.sortDropdownItem}
           onClick={() => {
             setSearchType("titleContent");
             setSearchTypeOpen(false);
@@ -119,7 +120,7 @@ const handleTagClick = (tag) => {
           제목+내용
         </button>
         <button
-          className={styles.sortButton}
+         className={styles.sortDropdownItem}
           onClick={() => {
             setSearchType("hashtag");
             setSearchTypeOpen(false);

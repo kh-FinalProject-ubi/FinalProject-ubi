@@ -11,16 +11,25 @@
   margin-bottom: 2rem;
 }
 
-/* --- 상단 검색바 & 정렬 --- */
+/* --- 상단 검색바 & 검색유형 선택 --- */
 .topSearchContainer {
   display: flex;
-  justify-content: space-between;
+justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
   align-items: center;
   margin-bottom: 2rem;
+    gap: 20px; /* ✅ 버튼과 검색창 사이 간격 유지 */
+  position: relative;
+
+  }
+  .sortDropdownWrapper {
+  position: relative;
+  width: 120px;     /* ✅ 버튼/드롭다운 너비 고정 */
+  flex-shrink: 0;   /* ✅ 줄어들지 않게 */
 }
 
 .searchBar {
   position: relative;
+   flex: 1;             /* ✅ 남은 공간 전체 차지 */
   width: 100%;
   max-width: 600px;
 }
@@ -43,6 +52,15 @@
   font-size: 1rem;
 }
 
+/* ✅ 버튼, 드롭다운 너비 동일화 */
+.sortButton,
+.sortDropdown {
+  width: 120px;  /* 통일된 너비 */
+  min-width: 120px;
+}
+
+
+/* ✅ 검색 옵션 버튼 */
 .sortButton {
   padding: 10px 20px;
   border: 1px solid #ddd;
@@ -50,17 +68,56 @@
   background-color: #fff;
   cursor: pointer;
   white-space: nowrap;
+  position: relative;
+  z-index: 2;
 }
+
+/* ✅ 드롭다운을 버튼 아래에 떠 있도록 */
+.sortDropdownWrapper {
+  position: relative;
+}
+
+/* ✅ 토글 메뉴는 절대 위치로 떠야 검색창을 밀지 않음 */
+.sortDropdown {
+  position: absolute;
+  top: 110%; /* 버튼 바로 아래 */
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+}
+
+
+.sortDropdownItem {
+  padding: 10px 15px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease;
+}
+
 
 /* --- 검색 필터 --- */
 .filterContainer {
   margin-bottom: 2rem;
+}
+.filterTitle {
+
+
+  font-weight: bold;
+  margin-bottom: 1rem; /* ✅ 제목과 테이블 간 간격 */
 }
 
 .filterBox {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* 그림자 효과 */
   border-radius: 12px;
   padding: 0px;
+  overflow: hidden;    /* ✅ 내부 테이블도 둥글게 맞추기 */
 }
 
 .filterTable {
@@ -79,13 +136,14 @@
   border-bottom: none;
 }
 
+
 /* ✅ th 설정: 왼쪽으로 완전히 붙고, 텍스트는 세로/가로 모두 가운데 정렬 */
 .filterLabel {
   background-color: #ffe066;
-  padding: 20px 10px;
+  padding: 32px 32px;
   margin: 0;
   border: none;
-  width: 100px;
+  width: 150px;
   text-align: center;
   vertical-align: middle;
   font-weight: bold;
@@ -95,7 +153,8 @@
 
 /* ✅ td: 여백 최소화 및 정렬 */
 .filterContent {
-  padding: 10px 0 10px 12px;
+   padding: 32px 32px;
+    height: 100%;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -103,24 +162,64 @@
   margin: 0;
 }
 
-.radioLabel {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+
+
+/* ✅ 기본 radio 버튼 숨기고 커스텀 원형 표시 */
+.radioLabel input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+ width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #ffe066; /* 노란색 외곽선 */
+   background-color: #ffe066; /* ✅ 버튼 자체가 노란색 */
+  margin: 0;
+  position: relative;
   cursor: pointer;
+    margin-right: 8px;  /* ✅ 버튼과 텍스트 간 여백 */
+  transition: all 0.2s ease;
+  vertical-align: middle;
 }
 
-/* 📌 라디오 버튼 대신 버튼형 선택지 */
-.radioButton {
-  padding: 8px 14px;
-  background-color: #ffe066;
-  color: #5c3c00;
-  border: 1px solid transparent;
-  border-radius: 20px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
+/* ✅ 선택됐을 때 안쪽 점 표시 */
+.radioLabel input[type="radio"]::before {
+  content: '';
+  display: block;
+  width: 12px;
+  height: 12px;
+   border: 3px solid #5e60ce; /* 노란색 외곽선 */
+  background-color: #5e60ce; /* 보라색 안쪽 점 */
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.2s ease;
 }
+
+/* ✅ 체크됐을 때 점 보이게 */
+.radioLabel input[type="radio"]:checked::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* ✅ 작성지역 select 박스 스타일 */
+.filterContent select {
+  padding: 8px 12px;
+  font-size: 0.95rem;
+ border: none;     
+  background-color: white;
+  color: #333;
+  cursor: pointer;
+  box-shadow: none;
+  transition: border-color 0.2s ease;
+}
+
+/* ✅ 포커스(선택) 시에도 노란색 테두리 제거 */
+.filterContent select:focus {
+  border-color: #999;             /* ✅ 보라/노란 테두리 제거하고 일반색 */
+  outline: none;
+}
+
 .regionButton {
   background: none;
   border: none;
@@ -142,6 +241,7 @@
   background-color: #5e60ce;
   color: white;
 }
+
 
 /* --- 글쓰기 버튼 --- */
 .writeButtonContainer {
