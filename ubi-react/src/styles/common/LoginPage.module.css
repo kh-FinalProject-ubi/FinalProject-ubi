@@ -1,12 +1,10 @@
-/* 레이아웃      */
-/* ================= */
+/* 레이아웃 */
 .loginPageContainer {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
   min-height: 70vh;
-
   padding: 2rem 0;
 }
 
@@ -23,28 +21,6 @@
 .imageBox {
   flex: 1;
   display: none; /* 모바일에서는 숨김 */
-}
-
-/* 점 시리즈 */
-.bulletWrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 3px;
-}
-
-.bullet {
-  font-size: 2rem;
-}
-
-.bullet1 {
-  color: #5e60ce;
-}
-
-.bullet2 {
-  color: #ffe56d;
-  font-size: 3rem;
-  margin-bottom: 2px;
 }
 
 @media (min-width: 768px) {
@@ -80,16 +56,11 @@
   color: #2d3748;
 }
 
-/* ================= */
-/* 입력 필드      */
-/* ================= */
-
-/* 각 입력 필드(인풋 + 메시지)를 묶는 Wrapper */
+/* 입력 필드 */
 .inputWrapper {
-  position: relative; /* 메시지, 타이머 등의 위치 기준 */
+  margin-bottom: 30px;
 }
 
-/* 기본 인풋 스타일 */
 .inputWrapper input {
   width: 100%;
   padding: 12px 15px;
@@ -97,18 +68,6 @@
   border-radius: 6px;
   font-size: 1rem;
   transition: border-color 0.2s;
-}
-
-.inputWrapperID {
-  margin-bottom: 30px; /* 예시 */
-}
-
-.inputWrapperPW {
-  margin-bottom: 5px; /* 예시 */
-}
-
-.inputWrapper3 {
-  margin-top: 8px; /* 예시 */
 }
 
 .inputWrapper input:focus {
@@ -122,16 +81,18 @@
   font-weight: 200;
 }
 
-/* ================= */
-/* 메시지 & 타이머   */
-/* ================= */
+.inputWrapper .errorMessage,
+.inputWrapper .successMessage {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.85rem;
+}
 
-/* 에러/성공 메시지 공통 */
+/* 메시지 & 타이머 */
 .errorMessage,
 .successMessage {
   display: block;
-  /* 인풋창 하단에서 5px 떨어져 출력 */
-  margin-top: 5px;
+  margin-top: 30px;
   font-size: 0.85rem;
   font-weight: 500;
 }
@@ -144,47 +105,35 @@
   color: #38a169;
 }
 
-/* 타이머: 인풋창 내부 좌측 하단에 위치 */
 .timer {
-  position: absolute;
-  bottom: 10px;
-  left: 12px;
-  font-size: 0.9rem;
+  display: block;
+  margin-top: 5px;
+  font-size: 0.85rem;
   color: #e53e3e;
-  background-color: white;
-  padding: 0 4px; /* 글자가 인풋 테두리와 겹치지 않도록 */
 }
 
-/* ================= */
-/* 인라인 그룹 (Flex) */
-/* ================= */
-
-/* 이메일 + 인증요청 버튼 그룹 */
+/* 인라인 그룹 */
 .inputGroup {
   display: flex;
   align-items: center;
 }
 
 .inputGroup input {
-  flex: 1; /* 인풋이 남는 공간 모두 차지 */
+  flex: 1;
 }
 
-/* 인증번호 + 인증확인 버튼 그룹 */
 .verificationGroup {
-  position: relative; /* 타이머 위치 기준 */
   display: flex;
   align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
 }
 
 .verificationGroup input {
   flex: 1;
 }
 
-/* ================= */
-/* 버튼       */
-/* ================= */
-
-/* 기본 버튼 */
+/* 버튼 */
 .confirmBtn {
   width: 100%;
   padding: 14px;
@@ -198,21 +147,11 @@
   transition: background-color 0.2s;
 }
 
-/* 예비 호버용 코드 */
-/* .confirmBtn:hover {
-  background-color: #2b6cb0;
-} */
-
-/* .kakaoBtn:hover {
-  background-color: #f7d600;
-} */
-
 .confirmBtn:disabled {
   background-color: #a0aec0;
   cursor: not-allowed;
 }
 
-/* 카카오 로그인 버튼 */
 .kakaoBtn {
   width: 100%;
   padding: 14px;
@@ -227,21 +166,16 @@
   transition: background-color 0.2s;
 }
 
-/* 인증 요청/확인 버튼 */
 .authBtn {
   padding: 12px 16px;
-  margin-left: 10px; /* 인풋과의 간격 */
+  margin-left: 10px;
   border: 1px solid #e2e8f0;
   background-color: #fee500;
   border-radius: 1000px;
-  white-space: nowrap; /* 버튼 글자 줄바꿈 방지 */
+  white-space: nowrap;
   cursor: pointer;
   transition: background-color 0.2s;
 }
-
-/* .authBtn:hover {
-  background-color: #e2e8f0;
-} */
 
 .authBtn:disabled {
   background-color: #f7fafc;
@@ -249,39 +183,19 @@
   cursor: not-allowed;
 }
 
-/* ================= */
-/* 기타 스타일     */
-/* ================= */
-
-/* 아이디/비밀번호 찾기 링크 */
+/* 기타 스타일 */
 .findAccountLink {
   display: flex;
   align-items: center;
-  gap: 5px; /* ID / PW 사이 간격 */
 }
 
-.findAccountLogin button {
-  width: 100%;
-  padding: 14px;
-  margin-top: 1rem;
-  border: none;
-  border-radius: 1000px;
-  background-color: #fee500;
-  color: #191919;
-  font-size: 1.1rem;
-  font-weight: 200;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.findAccountLogin button {
-  background: #fee500;
+.findAccountLink button {
+  background: none;
   border: none;
   border-radius: 1000px;
   color: #5e60ce;
   font-size: 0.85rem;
   cursor: pointer;
-  padding: 0;
 }
 
 .findAccountLink button:hover {
@@ -291,18 +205,13 @@
 .findAccountLink span {
   color: #a0aec0;
 }
-/* 아이디 찾기 결과 박스 */
+
 .resultBox {
   margin-top: 2rem;
   padding: 1.5rem;
   text-align: center;
   background-color: #f7fafc;
   border-radius: 8px;
-}
-
-.resultBox p {
-  margin: 0;
-  /* color: #4a5568; */
 }
 
 .resultBox strong {
@@ -312,7 +221,6 @@
   color: #2d3748;
 }
 
-/* 비밀번호 재설정 완료 */
 .resetCompleteBox {
   text-align: center;
 }
@@ -328,15 +236,16 @@
   line-height: 1.6;
   color: #4a5568;
 }
+
 .saveIdWrapper {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 5px; /* 인풋 하단에서 5px 떨어짐 */
+  margin-top: 5px;
 }
 
 .saveIdWrapper input[type="checkbox"] {
-  margin-right: 5px; /* 체크박스와 라벨 간격 */
+  margin-right: 5px;
 }
 
 .saveIdWrapper label {
@@ -346,7 +255,7 @@
 
 .signupLink {
   display: block;
-  margin: 1rem auto 0 auto; /* 위 여백 주고 가운데로 */
+  margin: 1rem auto 0 auto;
   text-align: center;
   color: #5e60ce;
   font-size: 0.9rem;
@@ -355,4 +264,26 @@
 
 .signupLink:hover {
   text-decoration: underline;
+}
+
+/* 점 시리즈 (필요한 경우 유지) */
+.bulletWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+}
+
+.bullet {
+  font-size: 2rem;
+}
+
+.bullet1 {
+  color: #5e60ce;
+}
+
+.bullet2 {
+  color: #ffe56d;
+  font-size: 3rem;
+  margin-bottom: 2px;
 }

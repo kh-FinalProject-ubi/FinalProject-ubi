@@ -344,11 +344,6 @@ const FindIdForm = ({ setMode }) => {
               {errors.email}
             </span>
           )}
-          <div className={styles.bulletWrapper}>
-            <span className={`${styles.bullet} ${styles.bullet1}`}>•</span>
-            <span className={`${styles.bullet} ${styles.bullet2}`}>•</span>
-            <span className={`${styles.bullet} ${styles.bullet1}`}>•</span>
-          </div>
         </div>
 
         {isCodeSent && !foundId && (
@@ -362,9 +357,7 @@ const FindIdForm = ({ setMode }) => {
                   onChange={(e) => setCode(e.target.value)}
                   disabled={isCodeVerified}
                 />
-                {isTimerActive && (
-                  <span className={styles.timer}>{formatTime(timer)}</span>
-                )}
+
                 {!isCodeVerified && (
                   <button
                     onClick={handleInlineVerify}
@@ -372,6 +365,10 @@ const FindIdForm = ({ setMode }) => {
                   >
                     인증확인
                   </button>
+                )}
+
+                {isTimerActive && (
+                  <span className={styles.timer}>{formatTime(timer)}</span>
                 )}
               </div>
               {errors.code && (
@@ -399,7 +396,7 @@ const FindIdForm = ({ setMode }) => {
           </div>
         )}
 
-        <div className={`${styles.findAccountLink} ${styles.findAccountLogin}`}>
+        <div className={styles.kakaoBtn}>
           <button onClick={() => setMode("login")}>로그인 하러가기</button>
         </div>
         <div className={styles.findAccountLink}>
