@@ -45,6 +45,14 @@ public class IncheonFacility {
     private String autoFireDetection;
     private String autoFireAlert;
     private String smokeAlarm;
+    
+    private String director;
+    
+    private String maleCount;
+    private String femaleCount;
+    private String currentUsers;
+
+    private String homepage;
 
 
 }

@@ -1,7 +1,7 @@
 /* --- 전체 레이아웃 --- */
 .container {
   width: 100%;
-  padding: 2rem 15%;
+  padding: 2rem 20%;
   box-sizing: border-box;
 }
 
@@ -108,6 +108,7 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
 }
 .filterTitle {
 
+
   font-weight: bold;
   margin-bottom: 1rem; /* ✅ 제목과 테이블 간 간격 */
 }
@@ -119,17 +120,21 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
   overflow: hidden;    /* ✅ 내부 테이블도 둥글게 맞추기 */
 }
 
-
 .filterTable {
-    margin: 0;
+  margin: 0;
   width: 100%;
   border-collapse: collapse;
   border-spacing: 0;
   table-layout: fixed;
 }
 
+.filterRow {
+  vertical-align: top;
+}
 
-
+.filterRow:last-child {
+  border-bottom: none;
+}
 
 
 /* ✅ th 설정: 왼쪽으로 완전히 붙고, 텍스트는 세로/가로 모두 가운데 정렬 */
@@ -145,7 +150,6 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
   color: #5c3c00;
   box-sizing: border-box;
 }
-
 
 /* ✅ td: 여백 최소화 및 정렬 */
 .filterContent {
@@ -248,7 +252,7 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
 
 .writeButton {
   padding: 0.7em 1.8em;
-  background-color:#ffe56d;
+  background-color: #ffe56d;
   color: #333;
   border: none;
   border-radius: 8px;
