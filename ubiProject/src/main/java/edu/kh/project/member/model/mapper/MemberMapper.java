@@ -128,4 +128,9 @@ public interface MemberMapper {
 
 	Integer selectMemberAuthority(int memberNo);
 
+	Integer existsByNameAndEmail(@Param("name") String name, @Param("email") String email);
+
+	Integer existsByNameAndMemberIdAndEmail(
+			@Param("name") String name,@Param("memberId") String memberId,@Param("email") String email);
+
 }

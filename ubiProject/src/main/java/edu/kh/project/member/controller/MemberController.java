@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import edu.kh.project.common.util.JwtUtil;
 import edu.kh.project.email.model.service.EmailService;
 import edu.kh.project.member.model.dto.Member;
+import edu.kh.project.member.model.dto.SendCodeRequest;
 import edu.kh.project.member.model.mapper.MemberMapper;
 import edu.kh.project.member.model.service.MemberService;
 
@@ -513,15 +515,34 @@ public class MemberController {
 		return ResponseEntity.ok().build();
 	}
 
-	@GetMapping("/sendCode")
-	public ResponseEntity<?> sendCode(  @RequestParam(name = "email") String email,
-		    @RequestParam(name = "type") String type) {
+	@PostMapping("/sendCode")
+	public ResponseEntity<?> sendCode(@RequestBody SendCodeRequest req) {
 	    try {
+	        String email = req.getEmail();
+	        String type = req.getType();
+
+	        // 아이디 찾기 (name + email)
+	        if ("id".equals(type)) {
+	            Integer exists = service.existsByNameAndEmail(req.getName(), email);
+	            if (Objects.isNull(exists) || exists == 0) {
+	                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+	                        .body(Map.of("message", "입력하신 정보와 일치하는 사용자가 없습니다."));
+	            }
+	        } 
+	        // 비밀번호 찾기 (name + memberId + email)
+	        else if ("pw".equals(type)) {
+	            Integer exists = service.existsByNameAndMemberIdAndEmail(req.getName(), req.getMemberId(), email);
+	            if (Objects.isNull(exists) || exists == 0) {
+	                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+	                        .body(Map.of("message", "입력하신 정보와 일치하는 사용자가 없습니다."));
+	            }
+	        }
+
+	        // 인증 코드 전송
 	        String code = emailService.sendEmail(type, email);
 
 	        if (code != null) {
 	            return ResponseEntity.ok(Map.of("code", code));
-	            // 또는 Map<String, String> 으로 명시
 	        } else {
 	            return ResponseEntity.status(500).body(Map.of("message", "이메일 전송 실패"));
 	        }

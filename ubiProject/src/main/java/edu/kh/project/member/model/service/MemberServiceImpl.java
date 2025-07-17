@@ -311,4 +311,15 @@ public class MemberServiceImpl implements MemberService {
 	private String generateTempPassword() {
 	    return UUID.randomUUID().toString().substring(0, 10);
 	}
+	
+	@Override
+	public Integer existsByNameAndEmail(String name, String email) {
+		return mapper.existsByNameAndEmail(name, email);
+	}
+	
+	@Override
+	public Integer existsByNameAndMemberIdAndEmail(String name, String memberId, String email) {
+		
+		return mapper.existsByNameAndMemberIdAndEmail(name, memberId, email);
+	}
 }
