@@ -38,12 +38,7 @@ const LoginPage = () => {
     <div className={styles.loginPageContainer}>
       <main className={styles.loginMainContent}>
         <div className={styles.imageBox}>
-          {mode === "login" && (
-            <img src="/images/login-bear-surprised.png" alt="login" />
-          )}
-          {mode !== "login" && (
-            <img src="/images/default-thumbnail.png" alt="login" />
-          )}
+          <img src="/default-thumbnail.png" alt="login" />
         </div>
 
         <div className={styles.formContainer}>
@@ -286,10 +281,10 @@ const FindIdForm = ({ setMode }) => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             disabled={isCodeSent}
+            {...(errors.name && (
+              <span className={styles.errorMessage}>{errors.name}</span>
+            ))}
           />
-          {errors.name && (
-            <span className={styles.errorMessage}>{errors.name}</span>
-          )}
         </div>
         <div className={styles.inputWrapper}>
           <div className={styles.inputGroup}>
@@ -308,18 +303,18 @@ const FindIdForm = ({ setMode }) => {
                 {isLoading ? "로딩중..." : "인증요청"}
               </button>
             )}
+            {errors.email && (
+              <span
+                className={
+                  validateEmail(email)
+                    ? styles.successMessage
+                    : styles.errorMessage
+                }
+              >
+                {errors.email}
+              </span>
+            )}
           </div>
-          {errors.email && (
-            <span
-              className={
-                validateEmail(email)
-                  ? styles.successMessage
-                  : styles.errorMessage
-              }
-            >
-              {errors.email}
-            </span>
-          )}
         </div>
         {isCodeSent && !foundId && (
           <>
@@ -365,9 +360,12 @@ const FindIdForm = ({ setMode }) => {
             <strong>{foundId}</strong>
           </div>
         )}
-      </div>
-      <div className={styles.findAccountLink}>
-        <button onClick={() => setMode("login")}>로그인 하러가기</button>
+        <div className={styles.findAccountLink}>
+          <button onClick={() => setMode("find-pw")}>비밀번호 찾기</button>
+        </div>
+        <div className={styles.findAccountLink}>
+          <button onClick={() => setMode("login")}>로그인 하러가기</button>
+        </div>
       </div>
     </>
   );
@@ -585,9 +583,12 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
             </button>
           </>
         )}
-      </div>
-      <div className={styles.findAccountLink}>
-        <button onClick={() => setMode("login")}>로그인 하러가기</button>
+        <div className={styles.findAccountLink}>
+          <button onClick={() => setMode("find-id")}>아아디 찾기</button>
+        </div>
+        <div className={styles.findAccountLink}>
+          <button onClick={() => setMode("login")}>로그인 하러가기</button>
+        </div>
       </div>
     </>
   );
@@ -656,9 +657,6 @@ const ResetPwForm = ({ setMode, memberId, email }) => {
           <br />
           새로운 비밀번호로 로그인해주세요.
         </p>
-        <button onClick={() => setMode("login")} className={styles.confirmBtn}>
-          로그인 하러가기
-        </button>
       </div>
     );
   }

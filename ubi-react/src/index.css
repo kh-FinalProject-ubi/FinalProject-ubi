@@ -31,9 +31,9 @@ body {
 
 .main-container {
   width: 100%;
-  /* 좌우에 15%씩 내부 여백(padding)을 줍니다. */
+
   padding: 0 15%;
-  box-sizing: border-box; /* padding이 너비에 포함되도록 설정 */
+  box-sizing: border-box;
 }
 
 h1 {
