@@ -1,18 +1,22 @@
-/* 전체 컨테이너 */
 .container {
   width: 100%;
+  /* 최소 너비와 높이를 지정하여 레이아웃 깨짐 및 울컥거림 방지 */
+  min-width: 800px;
+  min-height: 100vh;
   padding: 2rem 20%;
   box-sizing: border-box;
 }
 
-/* 게시판 제목 */
+/* Board title */
 .boardTitle {
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 15px;
+
+  text-align: left; /* 추가 */
 }
 
-/* 게시판 테이블 스타일 */
+/* Board table styles */
 .boardTable {
   width: 100%;
   border-collapse: collapse;
@@ -29,32 +33,23 @@
 .boardTable th {
   font-weight: 500;
   color: #333;
-  background-color: #ffe56d; /* 공지게시판 테마 색상 */
+  background-color: #ffe56d; /* Yellow header background */
 }
 
-/* 클릭 가능한 행 스타일 */
+/* Clickable row style */
 .clickableRow:hover {
   background-color: #f8f8f8;
   cursor: pointer;
 }
 
+/* Left-aligned title cell */
 .titleCell {
   text-align: left;
-}
-
-/* 참조 스타일에 맞춰 a태그의 기본 스타일만 유지 */
-.titleCell a {
+  min-width: 16rem;
   color: #333;
-  text-decoration: none;
-
-  /* ✅ 제목이 길어지면 ...으로 표시하기 위한 스타일 */
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-/* '분류' 태그 스타일 (AskBoard와 동일) */
+/* 'Category' tag style */
 .postTypeTag {
   display: inline-block;
   padding: 3px 8px;
@@ -65,16 +60,17 @@
   font-weight: 500;
 }
 
-/* 글쓰기 버튼 컨테이너 */
+/* Container for the write button */
 .bottomContainer {
   display: flex;
   justify-content: flex-end;
   margin-top: 60px;
 }
 
+/* Write button style */
 .writeButton {
   padding: 0.6em 1.5em;
-  background-color: #ffe56d; /* 공지게시판 테마 색상 */
+  background-color: #ffe56d;
   color: #333;
   border: none;
   border-radius: 4px;
@@ -83,7 +79,11 @@
   transition: background-color 0.2s;
 }
 
-/* --- 페이지네이션 스타일 --- */
+.writeButton:hover {
+  filter: brightness(0.95);
+}
+
+/* --- Pagination Styles --- */
 .paginationContainer {
   display: flex;
   justify-content: center;
@@ -108,12 +108,12 @@
   cursor: not-allowed;
 }
 
-/* 일반 페이지 숫자 버튼 */
+/* Normal page number button */
 .pageNumber {
   color: #888;
 }
 
-/* 활성화된 페이지 숫자 버튼 */
+/* Active page number button */
 .activePage {
   color: #5e60ce;
   font-weight: bold;
