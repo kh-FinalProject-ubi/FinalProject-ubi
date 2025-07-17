@@ -251,17 +251,7 @@ const handleTagClick = (tag) => {
 </div>
 
 
-      {/* 글쓰기 버튼 */}
-      {memberNo && (
-        <div className={styles.writeButtonContainer}>
-          <button
-            onClick={() => navigate("/mytownBoard/write")}
-            className={styles.writeButton}
-          >
-            글쓰기
-          </button>
-        </div>
-      )}
+
 
       {/* 게시글 목록 */}
       {boardList.length > 0 ? (
@@ -285,52 +275,66 @@ const handleTagClick = (tag) => {
                 <h3 className={styles.cardTitle}>{board.boardTitle}</h3>
                 <div className={styles.tagContainer}>
                   {generateTagList(board).map((tag, idx) => (
-                    <span key={idx} className={styles.tag}>
-                      #{tag}
-                    </span>
+                       <span
+      key={idx}
+      className={`${styles.tag} ${
+        idx === 0
+          ? styles.tagYellow
+          : idx === 1
+          ? styles.tagPurple
+          : styles.tagWhite
+      }`}
+    >
+      #{tag}
+    </span>
                   ))}
                 </div>
                 <p className={styles.cardText}>
                   {stripHtml(board.boardContent)}
                 </p>
-                <div className={styles.ratingRow}>
-                  {/* 후기 유형일 경우에만 별점 표시 */}
-                  {(board.postType === "복지혜택후기" ||
-                    board.postType === "복지시설후기") &&
-                    [1, 2, 3, 4, 5].map((i) => (
-                      <span
-                        key={i}
-                        style={{
-                          color: i <= board.starCount ? "orange" : "#ddd",
-                        }}
-                      >
-                        ★
-                      </span>
-                    ))}
-
-                  {/* 작성일은 항상 표시 */}
-                  <span className={styles.dateText}>{board.boardDate}</span>
-                </div>
-                <div className={styles.userInfo}>
-                  <img
-                    className={styles.profileImg}
-                    src={board.profileImgImg || "/default-profile.png"}
-                    alt="프로필"
-                  />
-                  <span>{board.memberNickname}</span>
-                </div>
-                <div className={styles.iconInfo}>
-                  <span>❤️ {board.likeCount}</span>
-                  <span style={{ marginLeft: "8px" }}>
-                    조회 {board.boardReadCount}
-                  </span>
-                </div>
+  <div className={styles.ratingRow}>
+  <div className={styles.stars}>
+    {(board.postType === "복지혜택후기" || board.postType === "복지시설후기") &&
+      [1, 2, 3, 4, 5].map((i) => (
+        <span key={i} style={{ color: i <= board.starCount ? "orange" : "#ddd" }}>
+          ★
+        </span>
+      ))}
+  </div>
+  <span className={styles.dateText}>{board.boardDate}</span>
+</div>
+             <div className={styles.metaRow}>
+  <div className={styles.userInfo}>
+    <img
+      className={styles.profileImg}
+      src={board.profileImgImg || "/default-profile.png"}
+      alt="프로필"
+    />
+    <span>{board.memberNickname}</span>
+  </div>
+  <div className={styles.iconInfo}>
+    <span>❤️ {board.likeCount}</span>
+    <span>조회 {board.boardReadCount}</span>
+  </div>
+</div>
               </div>
             </Link>
           ))}
         </div>
       ) : (
         <p className={styles.noResults}>😥 해당하는 게시물이 없습니다.</p>
+      )}
+
+            {/* 글쓰기 버튼 */}
+      {memberNo && (
+        <div className={styles.writeButtonContainer}>
+          <button
+            onClick={() => navigate("/mytownBoard/write")}
+            className={styles.writeButton}
+          >
+            글쓰기
+          </button>
+        </div>
       )}
 
       {/* 페이지네이션 */}
