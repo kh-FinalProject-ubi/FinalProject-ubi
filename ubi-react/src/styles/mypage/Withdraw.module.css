@@ -16,13 +16,13 @@
 }
 
 /* ---------- 폼 & 입력 ---------- */
-form {
+.withdrawContainer form {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
 }
 
-input[type="password"] {
+.withdrawContainer input[type="password"] {
   width: 100%;
   padding: 0.75rem 1rem;
   border: 1px solid #d5d7da;
@@ -31,14 +31,14 @@ input[type="password"] {
   transition: border-color 0.15s ease;
 }
 
-input[type="password"]:focus {
+.withdrawContainer input[type="password"]:focus {
   outline: none;
   border-color: #ffe56d;
   box-shadow: 0 0 0 3px rgba(255, 229, 109, 0.25);
 }
 
 /* ---------- 버튼 ---------- */
-button {
+.withdrawContainer button {
   align-self: flex-end;
   background: #ffe56d;
   border: none;
@@ -50,8 +50,8 @@ button {
   transition: background 0.15s ease, transform 0.15s ease;
 }
 
-button:hover      { background: #ffdf4c; }
-button:active     { transform: scale(0.97); }
+.withdrawContainer button:hover      { background: #ffdf4c; }
+.withdrawContainer button:active     { transform: scale(0.97); }
 
 .activeBtn {
   background: #ffe56d;          /* 브랜드 옐로우 */
