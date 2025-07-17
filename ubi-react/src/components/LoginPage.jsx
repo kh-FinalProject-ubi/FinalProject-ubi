@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../stores/useAuthStore";
+import { useSearchParams } from "react-router-dom";
 import styles from "../styles/common/LoginPage.module.css";
 
 // 이메일 유효성 검사 헬퍼 함수
@@ -22,15 +23,16 @@ const handleKakaoLogin = () => {
   window.location.href = "http://localhost:8080/oauth2/authorization/kakao";
 };
 
-const goToMode = (mode) => {
-  setLoginMode(mode);
-  setMode(mode);
-};
-
 const LoginPage = () => {
-  const [mode, setMode] = useState("login"); // login | find-id | find-pw | reset-pw
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const mode = searchParams.get("mode") || "login";
   const [resetInfo, setResetInfo] = useState({ memberId: "", email: "" });
-  const navigate = useNavigate();
+
+  // 모드 변경 함수
+  const goToMode = (targetMode) => {
+    setSearchParams({ mode: targetMode });
+  };
 
   return (
     <div className={styles.loginPageContainer}>
@@ -45,14 +47,14 @@ const LoginPage = () => {
         </div>
 
         <div className={styles.formContainer}>
-          {mode === "login" && <LoginForm setMode={setMode} />}
-          {mode === "find-id" && <FindIdForm setMode={setMode} />}
+          {mode === "login" && <LoginForm setMode={goToMode} />}
+          {mode === "find-id" && <FindIdForm setMode={goToMode} />}
           {mode === "find-pw" && (
-            <FindPwForm setMode={setMode} setResetInfo={setResetInfo} />
+            <FindPwForm setMode={goToMode} setResetInfo={setResetInfo} />
           )}
           {mode === "reset-pw" && (
             <ResetPwForm
-              setMode={setMode}
+              setMode={goToMode}
               memberId={resetInfo.memberId}
               email={resetInfo.email}
             />

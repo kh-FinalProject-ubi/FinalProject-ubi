@@ -26,9 +26,18 @@ import WelfareDetailPage from "./pages/welfareService/WelfareDetailPage";
 import SeoulWelfareDetailPage from "./pages/welfareService/SeoulWelfareDetailPage";
 import FacilityJobDetailPage from "./pages/welfareService/FacilityJobDetailPage";
 import LoginPage from "./components/LoginPage";
+import React, { useEffect } from "react";
+import useAuthStore from "./stores/useAuthStore";
 
 initAuthFromToken(); // ✅ 렌더 이전에 동기적으로 실행!
 function App() {
+  const setAuth = useAuthStore((state) => state.setAuth);
+
+  useEffect(() => {
+    // 토큰에서 사용자 정보 초기화 함수 호출
+    initAuthFromToken(setAuth);
+  }, [setAuth]);
+
   return (
     <Router>
       <Routes>

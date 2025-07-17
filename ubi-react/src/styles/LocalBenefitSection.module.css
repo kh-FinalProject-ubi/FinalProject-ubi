@@ -1,5 +1,5 @@
 .section {
-  padding: 3rem 20%;
+  padding: 2rem 20%;
 }
 
 @media (max-width: 768px) {
@@ -9,8 +9,8 @@
 }
 
 .title {
-  font-size: 1.8rem;
-  margin-bottom: 1.5rem;
+  font-size: 24px;
+  margin-bottom: 15px;
   font-weight: 700;
   color: #2e2e2e;
 }

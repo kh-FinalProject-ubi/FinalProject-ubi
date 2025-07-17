@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link, useLocation, useNavigate } from "react-router-dom"; // Link가 사용됩니다.
+import { useLocation, useNavigate } from "react-router-dom";
 import useAuthStore from "../../stores/useAuthStore";
 import styles from "../../styles/board/NoticeBoard.module.css";
 import { stripHtml } from "../mypage/striptHtml";
@@ -19,10 +19,10 @@ const NoticeBoard = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { token, role } = useAuthStore();
+  const { token, role, authority } = useAuthStore();
   const path = location.pathname;
   const boardCode = boardCodeMap[path];
-  const isAdmin = role === "ADMIN";
+  const isAdmin = authority === "2";
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -79,6 +79,7 @@ const NoticeBoard = () => {
             <th>제목</th>
             <th>작성자</th>
             <th>작성일</th>
+            <th>좋아요</th>
             <th>조회수</th>
           </tr>
         </thead>
@@ -86,14 +87,15 @@ const NoticeBoard = () => {
           {boardList.map((board, index) => (
             <tr
               key={board.boardNo}
+              className={styles.clickableRow}
               onClick={() => navigate(`${path}/${board.boardNo}`)}
-              style={{ cursor: "pointer" }}
             >
               <td>{index + 1 + (currentPage - 1) * pagination.limit}</td>
               <td>
                 <span className={styles.postTypeTag}>{board.postType}</span>
               </td>
-              <td>
+
+              <td className={styles.titleCell}>
                 {(() => {
                   const boardTitle = stripHtml(board.boardTitle);
 
@@ -106,6 +108,7 @@ const NoticeBoard = () => {
               </td>
               <td>{board.memberNickname}</td>
               <td>{board.boardDate}</td>
+              <td>{board.likeCount}</td>
               <td>{board.boardReadCount}</td>
             </tr>
           ))}
