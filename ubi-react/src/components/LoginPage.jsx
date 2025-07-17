@@ -281,69 +281,70 @@ const FindIdForm = ({ setMode }) => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             disabled={isCodeSent}
-            {...(errors.name && (
-              <span className={styles.errorMessage}>{errors.name}</span>
-            ))}
           />
+          {errors.name && (
+            <span className={styles.errorMessage}>{errors.name}</span>
+          )}
         </div>
         <div className={styles.inputWrapper}>
-          <div className={styles.inputGroup}>
+          <div className={styles.emailGroup}>
             <input
               placeholder="가입한 이메일 입력"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isCodeSent}
             />
-            {!isCodeSent && (
-              <button
-                onClick={handleSendCode}
-                className={styles.authBtn}
-                disabled={isLoading}
-              >
-                {isLoading ? "로딩중..." : "인증요청"}
-              </button>
-            )}
-            {errors.email && (
-              <span
-                className={
-                  validateEmail(email)
-                    ? styles.successMessage
-                    : styles.errorMessage
-                }
-              >
-                {errors.email}
-              </span>
-            )}
+            <div className={styles.emailSpacer}></div>
+            <button
+              onClick={handleSendCode}
+              className={styles.authBtn}
+              disabled={isLoading || isCodeSent}
+            >
+              {isLoading ? "로딩중..." : "인증요청"}
+            </button>
           </div>
+          {errors.email && (
+            <span
+              className={
+                validateEmail(email)
+                  ? styles.successMessage
+                  : styles.errorMessage
+              }
+            >
+              {errors.email}
+            </span>
+          )}
         </div>
         {isCodeSent && !foundId && (
           <>
             <div className={styles.inputWrapper}>
               <div className={styles.inputGroup}>
-                <input
-                  placeholder="인증번호 입력"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  disabled={isCodeVerified}
-                />
-                {isTimerActive && (
-                  <span className={styles.timer}>{formatTime(timer)}</span>
+                <div className={styles.inlineInputs}>
+                  <input
+                    placeholder="인증번호 입력"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    disabled={isCodeVerified}
+                  />
+                  {isTimerActive && (
+                    <span className={styles.timer}>{formatTime(timer)}</span>
+                  )}
+                  {!isCodeVerified && (
+                    <button
+                      onClick={handleInlineVerify}
+                      className={styles.authBtn}
+                    >
+                      인증확인
+                    </button>
+                  )}
+                </div>
+                {errors.code && (
+                  <span className={styles.errorMessage}>{errors.code}</span>
                 )}
-                {!isCodeVerified && (
-                  <button
-                    onClick={handleInlineVerify}
-                    className={styles.authBtn}
-                  >
-                    인증확인
-                  </button>
+                {successMsg && (
+                  <span className={styles.successMessage}>{successMsg}</span>
                 )}
               </div>
-              {errors.code && (
-                <span className={styles.errorMessage}>{errors.code}</span>
-              )}
-              {successMsg && (
-                <span className={styles.successMessage}>{successMsg}</span>
-              )}
             </div>
             <button
               onClick={handleFinalFindId}
@@ -516,22 +517,21 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
           )}
         </div>
         <div className={styles.inputWrapper}>
-          <div className={styles.inputGroup}>
+          <div className={styles.emailGroup}>
             <input
               placeholder="가입한 이메일 입력"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isCodeSent}
             />
-            {!isCodeSent && (
-              <button
-                onClick={handleSendCode}
-                className={styles.authBtn}
-                disabled={isLoading}
-              >
-                {isLoading ? "로딩중..." : "인증요청"}
-              </button>
-            )}
+            <div className={styles.emailSpacer}></div>
+            <button
+              onClick={handleSendCode}
+              className={styles.authBtn}
+              disabled={isLoading || isCodeSent}
+            >
+              {isLoading ? "로딩중..." : "인증요청"}
+            </button>
           </div>
           {errors.email && (
             <span
@@ -549,30 +549,32 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
           <>
             <div className={styles.inputWrapper}>
               <div className={styles.inputGroup}>
-                <input
-                  placeholder="인증번호 입력"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  disabled={isCodeVerified}
-                />
-                {isTimerActive && (
-                  <span className={styles.timer}>{formatTime(timer)}</span>
+                <div className={styles.inlineInputs}>
+                  <input
+                    placeholder="인증번호 입력"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    disabled={isCodeVerified}
+                  />
+                  {isTimerActive && (
+                    <span className={styles.timer}>{formatTime(timer)}</span>
+                  )}
+                  {!isCodeVerified && (
+                    <button
+                      onClick={handleInlineVerify}
+                      className={styles.authBtn}
+                    >
+                      인증확인
+                    </button>
+                  )}
+                </div>
+                {errors.code && (
+                  <span className={styles.errorMessage}>{errors.code}</span>
                 )}
-                {!isCodeVerified && (
-                  <button
-                    onClick={handleInlineVerify}
-                    className={styles.authBtn}
-                  >
-                    인증확인
-                  </button>
+                {successMsg && (
+                  <span className={styles.successMessage}>{successMsg}</span>
                 )}
               </div>
-              {errors.code && (
-                <span className={styles.errorMessage}>{errors.code}</span>
-              )}
-              {successMsg && (
-                <span className={styles.successMessage}>{successMsg}</span>
-              )}
             </div>
             <button
               onClick={handleFinalVerify}
