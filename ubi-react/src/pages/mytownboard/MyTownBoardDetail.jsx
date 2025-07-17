@@ -12,16 +12,16 @@ function MyTownBoardDetail() {
   const [board, setBoard] = useState(null);
   const [likeCount, setLikeCount] = useState(0); // 초기값 0
   const [liked, setLiked] = useState(false); // 초기값 false
-  const [boardCode, setBoardCode] = useState(3); // boardCode 가 3이면 우리지역 게시판
+  const [boardCode] = useState(3); // boardCode 가 3이면 우리지역 게시판
   const [modalVisible, setModalVisible] = useState(false); // 모달 보이게 할지 말지
   const [selectedMember, setSelectedMember] = useState(null); // 신고할 대상 선택하기
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 }); // 모달창이 어디가 뜨게 할지 기본값
   const [reportedByMe, setReportedByMe] = useState(false); // 게시글이 신고됐을 때 신고상태 보여주기
-  const [showDetail, setShowDetail] = useState(true);
+  // const [showDetail, setShowDetail] = useState(true);
 
   // const {regionCity, regionDistrict } = useAuthStore();
   const writerNo = board?.memberNo; // 게시글 작성자 번호
-  const { token, role, authority, memberNo: loginMemberNo } = useAuthStore(); // 로그인한 사용자 번호
+  const { token, role,  memberNo: loginMemberNo } = useAuthStore(); // 로그인한 사용자 번호
   const navigate = useNavigate();
 
   const handleLike = async () => {
@@ -120,7 +120,7 @@ function MyTownBoardDetail() {
   return (
     <div>
       <h2>{board.boardTitle}</h2>
-      <p>
+        <p>
         작성유형: {board.postType}
         {board.postType === "복지시설후기" && board.facilityName && (
           <>
@@ -136,9 +136,7 @@ function MyTownBoardDetail() {
         )}
       </p>
       <img
-        src={
-          `http://localhost:8080${board.memberImg}` || "/default-profile.png"
-        }
+        src={board.profileImgImg || "/default-profile.png"}
         alt="프로필 사진"
         className="profile-img"
         onClick={(e) => {
@@ -146,7 +144,6 @@ function MyTownBoardDetail() {
             memberNo: board.memberNo,
             memberImg: board.memberImg,
             memberNickname: board.memberNickname,
-            memberNo: board.memberNo,
             role: board.authority === "2" ? "ADMIN" : "USER",
           });
           setModalPosition({ x: e.clientX + 50, y: e.clientY });

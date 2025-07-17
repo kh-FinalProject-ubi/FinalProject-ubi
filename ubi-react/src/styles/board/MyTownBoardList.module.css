@@ -1,7 +1,7 @@
 /* --- 전체 레이아웃 --- */
 .container {
   width: 100%;
-  padding: 2rem 15%;
+  padding: 2rem 20%;
   box-sizing: border-box;
 }
 
@@ -11,16 +11,25 @@
   margin-bottom: 2rem;
 }
 
-/* --- 상단 검색바 & 정렬 --- */
+/* --- 상단 검색바 & 검색유형 선택 --- */
 .topSearchContainer {
   display: flex;
-  justify-content: space-between;
+justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
   align-items: center;
   margin-bottom: 2rem;
+    gap: 20px; /* ✅ 버튼과 검색창 사이 간격 유지 */
+  position: relative;
+
+  }
+  .sortDropdownWrapper {
+  position: relative;
+  width: 120px;     /* ✅ 버튼/드롭다운 너비 고정 */
+  flex-shrink: 0;   /* ✅ 줄어들지 않게 */
 }
 
 .searchBar {
   position: relative;
+   flex: 1;             /* ✅ 남은 공간 전체 차지 */
   width: 100%;
   max-width: 600px;
 }
@@ -43,6 +52,15 @@
   font-size: 1rem;
 }
 
+/* ✅ 버튼, 드롭다운 너비 동일화 */
+.sortButton,
+.sortDropdown {
+  width: 120px;  /* 통일된 너비 */
+  min-width: 120px;
+}
+
+
+/* ✅ 검색 옵션 버튼 */
 .sortButton {
   padding: 10px 20px;
   border: 1px solid #ddd;
@@ -50,53 +68,158 @@
   background-color: #fff;
   cursor: pointer;
   white-space: nowrap;
+  position: relative;
+  z-index: 2;
 }
+
+/* ✅ 드롭다운을 버튼 아래에 떠 있도록 */
+.sortDropdownWrapper {
+  position: relative;
+}
+
+/* ✅ 토글 메뉴는 절대 위치로 떠야 검색창을 밀지 않음 */
+.sortDropdown {
+  position: absolute;
+  top: 110%; /* 버튼 바로 아래 */
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+}
+
+
+.sortDropdownItem {
+  padding: 10px 15px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: center;       /* ✅ 텍스트 가운데 정렬 */
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease;
+  width: 100%;              /* ✅ 버튼 전체 너비 사용 */
+}
+
 
 /* --- 검색 필터 --- */
 .filterContainer {
   margin-bottom: 2rem;
 }
-
 .filterTitle {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
+
+
+  font-weight: bold;
+  margin-bottom: 1rem; /* ✅ 제목과 테이블 간 간격 */
 }
 
 .filterBox {
-  background-color: #fffbe6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* 그림자 효과 */
   border-radius: 12px;
-  padding: 20px 30px;
+  padding: 0px;
+  overflow: hidden;    /* ✅ 내부 테이블도 둥글게 맞추기 */
+}
+
+.filterTable {
+  margin: 0;
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: fixed;
 }
 
 .filterRow {
-  display: flex;
-  align-items: center;
-  padding: 15px 0;
-  border-bottom: 1px solid #f0e6c2;
+  vertical-align: top;
 }
 
 .filterRow:last-child {
   border-bottom: none;
 }
 
+
+/* ✅ th 설정: 왼쪽으로 완전히 붙고, 텍스트는 세로/가로 모두 가운데 정렬 */
 .filterLabel {
-  width: 120px;
-  font-weight: 500;
-  color: #333;
+  background-color: #ffe066;
+  padding: 32px 32px;
+  margin: 0;
+  border: none;
+  width: 150px;
+  text-align: center;
+  vertical-align: middle;
+  font-weight: bold;
+  color: #5c3c00;
+  box-sizing: border-box;
 }
 
+/* ✅ td: 여백 최소화 및 정렬 */
 .filterContent {
+   padding: 32px 32px;
+    height: 100%;
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
+  align-items: center;
+  gap: 10px 15px;
+  margin: 0;
 }
 
-.radioLabel {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+
+
+/* ✅ 기본 radio 버튼 숨기고 커스텀 원형 표시 */
+.radioLabel input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+ width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #ffe066; /* 노란색 외곽선 */
+   background-color: #ffe066; /* ✅ 버튼 자체가 노란색 */
+  margin: 0;
+  position: relative;
   cursor: pointer;
+    margin-right: 8px;  /* ✅ 버튼과 텍스트 간 여백 */
+  transition: all 0.2s ease;
+  vertical-align: middle;
+}
+
+/* ✅ 선택됐을 때 안쪽 점 표시 */
+.radioLabel input[type="radio"]::before {
+  content: '';
+  display: block;
+  width: 12px;
+  height: 12px;
+   border: 3px solid #5e60ce; /* 노란색 외곽선 */
+  background-color: #5e60ce; /* 보라색 안쪽 점 */
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.2s ease;
+}
+
+/* ✅ 체크됐을 때 점 보이게 */
+.radioLabel input[type="radio"]:checked::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* ✅ 작성지역 select 박스 스타일 */
+.filterContent select {
+  padding: 8px 12px;
+  font-size: 0.95rem;
+ border: none;     
+  background-color: white;
+  color: #333;
+  cursor: pointer;
+  box-shadow: none;
+  transition: border-color 0.2s ease;
+}
+
+/* ✅ 포커스(선택) 시에도 노란색 테두리 제거 */
+.filterContent select:focus {
+  border-color: #999;             /* ✅ 보라/노란 테두리 제거하고 일반색 */
+  outline: none;
 }
 
 .regionButton {
@@ -112,7 +235,7 @@
   border: 1px solid transparent;
   cursor: pointer;
   font-weight: 500;
-  background-color: #fff2b2;
+  background-color: #ffe066;
   color: #5c3c00;
 }
 
@@ -120,6 +243,7 @@
   background-color: #5e60ce;
   color: white;
 }
+
 
 /* --- 글쓰기 버튼 --- */
 .writeButtonContainer {
@@ -130,7 +254,7 @@
 
 .writeButton {
   padding: 0.7em 1.8em;
-  background-color: #ffc107;
+  background-color: #ffe56d;
   color: #333;
   border: none;
   border-radius: 8px;
@@ -161,6 +285,7 @@
   width: 100%;
   height: 150px;
   object-fit: cover;
+  background-color: #f4f4f4; /* 빈 썸네일 대비 배경 처리 */
 }
 
 .cardContent {
@@ -168,9 +293,13 @@
 }
 
 .cardTitle {
-  font-size: 1.1rem;
+    font-size: 1.1rem;
   font-weight: 600;
-  margin: 0 0 8px 0;
+  height: 32px;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;       /* ✅ 한 줄로 자르고 ... */
 }
 
 .cardText {
@@ -178,23 +307,93 @@
   color: #666;
   height: 3.6em;
   overflow: hidden;
+    height: 40px;             /* ✅ 고정 높이 (3줄) */
+  white-space: nowrap;       /* ✅ 한 줄로 자르고 ... */
+  }
+
+/*첫줄 요소 */
+.ratingRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  height: 20px;             /* ✅ 고정 */
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.dateText {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.metaRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  margin-top: 12px;
+    height: 32px;             /* ✅ 고정 */
+  border-top: 1px solid #f0f0f0;
+  font-size: 0.85rem;
 }
 
 .userInfo {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.85rem;
-  padding-top: 15px;
-  margin-top: 15px;
-  border-top: 1px solid #f0f0f0;
 }
+
+.iconInfo {
+  display: flex;
+  gap: 12px;
+  color: #555;
+}
+
 
 .profileImg {
   width: 24px;
   height: 24px;
   border-radius: 50%;
 }
+
+.tagContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+    max-height: 48px;               /* ✅ 2~3줄에 해당하는 고정 높이 */
+}
+
+.tag {
+  padding: 2px 12px;          /* ✅ 높이 줄임 */
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  border: 1px solid #ddd;
+  
+}
+
+/* --- 카드 색깔  --- */
+.tagYellow {
+  background-color: #ffe066;
+  color: #5c3c00;
+}
+
+.tagPurple {
+  background-color: #5e60ce;
+  color: #fff;
+}
+
+.tagWhite {
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+
 
 /* --- 기타 (기존과 유사) --- */
 .noResults,

@@ -19,11 +19,24 @@ const AskBoard = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { token, role } = useAuthStore();
+  const { token, role, memberNo, authority } = useAuthStore();
   const path = location.pathname;
   const boardCode = boardCodeMap[path];
-  const isAdmin = role === "ADMIN";
-  const isUser = role === "USER";
+  const isAdmin = authority === "2";
+  const isUser = authority === "1";
+
+  const handleRowClick = (board) => {
+    if (!token || !memberNo) {
+      alert("로그인 후 조회할 수 있습니다.");
+      return;
+    }
+
+    if (isAdmin || memberNo === board.memberNo) {
+      navigate(`${path}/${board.boardNo}`);
+    } else {
+      alert("관리자 또는 작성자 본인만 조회할 수 있습니다.");
+    }
+  };
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -48,7 +61,7 @@ const AskBoard = () => {
       });
   }, [boardCode, navigate, currentPage]);
 
-  // --- 페이지네이션 로직 ---
+  // --- Pagination Logic ---
   const pageNumbers = [];
   if (pagination) {
     const pageGroupSize = 10;
@@ -89,13 +102,14 @@ const AskBoard = () => {
             <tr
               key={board.boardNo}
               className={styles.clickableRow}
-              onClick={() => navigate(`${path}/${board.boardNo}`)}
+              onClick={() => handleRowClick(board)}
             >
               <td>{index + 1 + (currentPage - 1) * pagination.limit}</td>
               <td>
                 <span className={styles.postTypeTag}>{board.postType}</span>
               </td>
-              <td>
+
+              <td className={styles.titleCell}>
                 {(() => {
                   const boardTitle = stripHtml(board.boardTitle);
 

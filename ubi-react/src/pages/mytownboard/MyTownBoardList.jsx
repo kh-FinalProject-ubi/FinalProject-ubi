@@ -98,7 +98,8 @@ const handleTagClick = (tag) => {
 
       {/* 검색창 */}
       <div className={styles.topSearchContainer}>
-        <div style={{ position: "relative" }}>
+  {/* ✅ 드롭다운 기준을 잡기 위한 Wrapper */}
+  <div className={styles.sortDropdownWrapper}>
           <button
             className={styles.sortButton}
             onClick={() => setSearchTypeOpen((prev) => !prev)}
@@ -107,10 +108,10 @@ const handleTagClick = (tag) => {
           </button>
 
          {searchTypeOpen && (
-      <div
+      <div className={styles.sortDropdown}
       >
         <button
-          className={styles.sortButton}
+          className={styles.sortDropdownItem}
           onClick={() => {
             setSearchType("titleContent");
             setSearchTypeOpen(false);
@@ -119,7 +120,7 @@ const handleTagClick = (tag) => {
           제목+내용
         </button>
         <button
-          className={styles.sortButton}
+         className={styles.sortDropdownItem}
           onClick={() => {
             setSearchType("hashtag");
             setSearchTypeOpen(false);
@@ -153,104 +154,104 @@ const handleTagClick = (tag) => {
       </div>
 
       {/* 필터 */}
-      <div className={styles.filterContainer}>
-        <h3 className={styles.filterTitle}>검색 필터</h3>
-        <div className={styles.filterBox}>
-          <div className={styles.filterRow}>
-            <div className={styles.filterLabel}>게시판 유형</div>
-            <div className={styles.filterContent}>
-              {["자유", "자랑", "복지혜택후기", "복지시설후기"].map((type) => (
-                <label key={type} className={styles.radioLabel}>
-                  <input
-                    type="radio"
-                    name="postTypeCheck"
-                    value={type}
-                    checked={postTypeCheck === type}
-                    onChange={(e) => {
-                      setPostTypeCheck(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                    onClick={() => {
-                      if (postTypeCheck === type) setPostTypeCheck("");
-                    }}
-                  />
-                  {type === "자랑"
-                    ? "우리 동네 자랑"
-                    : type === "복지혜택후기"
-                    ? "복지 혜택 후기"
-                    : type === "복지시설후기"
-                    ? "복지 시설 후기"
-                    : type}
-                </label>
+ <div className={styles.filterContainer}>
+  <h3 className={styles.filterTitle}>검색 필터</h3>
+  <div className={styles.filterBox}>
+    <table className={styles.filterTable}>
+      <tbody>
+        {/* 게시판 유형 */}
+        <tr className={styles.filterRow}>
+          <th className={styles.filterLabel}>게시판 유형</th>
+          <td className={styles.filterContent}>
+            {["자유", "자랑", "복지혜택후기", "복지시설후기"].map((type) => (
+              <label key={type} className={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="postTypeCheck"
+                  value={type}
+                  checked={postTypeCheck === type}
+                  onChange={(e) => {
+                    setPostTypeCheck(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  onClick={() => {
+                    if (postTypeCheck === type) setPostTypeCheck("");
+                  }}
+                />
+                {type === "자랑"
+                  ? "우리 동네 자랑"
+                  : type === "복지혜택후기"
+                  ? "복지 혜택 후기"
+                  : type === "복지시설후기"
+                  ? "복지 시설 후기"
+                  : type}
+              </label>
+            ))}
+          </td>
+        </tr>
+
+        {/* 작성지역 */}
+        <tr className={styles.filterRow}>
+          <th className={styles.filterLabel}>작성지역</th>
+          <td className={styles.filterContent}>
+            <select
+              value={selectedCity}
+              onChange={(e) => {
+                setSelectedCity(e.target.value);
+                setSelectedDistrict("");
+                setCurrentPage(1);
+              }}
+            >
+              <option value="">시/도 선택</option>
+              {Object.keys(cityDistrictMap).map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
               ))}
-            </div>
-          </div>
-          <div className={styles.filterRow}>
-            <div className={styles.filterLabel}>작성지역</div>
-            <div className={styles.filterContent}>
-              <select
-                value={selectedCity}
-                onChange={(e) => {
-                  setSelectedCity(e.target.value);
-                  setSelectedDistrict("");
-                  setCurrentPage(1);
-                }}
-              >
-                <option value="">시/도 선택</option>
-                {Object.keys(cityDistrictMap).map((city) => (
-                  <option key={city} value={city}>
-                    {city}
+            </select>
+            <select
+              value={selectedDistrict}
+              onChange={(e) => {
+                setSelectedDistrict(e.target.value);
+                setCurrentPage(1);
+              }}
+              disabled={!selectedCity}
+            >
+              <option value="">시/군/구 선택</option>
+              {selectedCity &&
+                cityDistrictMap[selectedCity].map((district) => (
+                  <option key={district} value={district}>
+                    {district}
                   </option>
                 ))}
-              </select>
-              <select
-                value={selectedDistrict}
-                onChange={(e) => {
-                  setSelectedDistrict(e.target.value);
-                  setCurrentPage(1);
-                }}
-                disabled={!selectedCity}
-              >
-                <option value="">시/군/구 선택</option>
-                {selectedCity &&
-                  cityDistrictMap[selectedCity].map((district) => (
-                    <option key={district} value={district}>
-                      {district}
-                    </option>
-                  ))}
-              </select>
-            </div>
-          </div>
-          <div className={styles.filterRow}>
-            <div className={styles.filterLabel}>해시태그</div>
-            <div className={styles.filterContent}>
-              {popularTags.map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => handleTagClick(tag)}
-                  className={`${styles.tagButton} ${
-                    selectedTags.includes(tag) ? styles.tagSelected : ""
-                  }`}
-                >
-                  # {tag}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+            </select>
+          </td>
+        </tr>
 
-      {/* 글쓰기 버튼 */}
-      {memberNo && (
-        <div className={styles.writeButtonContainer}>
-          <button
-            onClick={() => navigate("/mytownBoard/write")}
-            className={styles.writeButton}
-          >
-            글쓰기
-          </button>
-        </div>
-      )}
+        {/* 해시태그 */}
+        <tr className={styles.filterRow}>
+          <th className={styles.filterLabel}>해시태그</th>
+          <td className={styles.filterContent}>
+            {popularTags.map((tag) => (
+              <button
+                key={tag}
+                onClick={() => handleTagClick(tag)}
+                className={`${styles.tagButton} ${
+                  selectedTags.includes(tag) ? styles.tagSelected : ""
+                }`}
+              >
+                # {tag}
+              </button>
+            ))}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
 
       {/* 게시글 목록 */}
       {boardList.length > 0 ? (
@@ -274,52 +275,66 @@ const handleTagClick = (tag) => {
                 <h3 className={styles.cardTitle}>{board.boardTitle}</h3>
                 <div className={styles.tagContainer}>
                   {generateTagList(board).map((tag, idx) => (
-                    <span key={idx} className={styles.tag}>
-                      #{tag}
-                    </span>
+                       <span
+      key={idx}
+      className={`${styles.tag} ${
+        idx === 0
+          ? styles.tagYellow
+          : idx === 1
+          ? styles.tagPurple
+          : styles.tagWhite
+      }`}
+    >
+      #{tag}
+    </span>
                   ))}
                 </div>
                 <p className={styles.cardText}>
                   {stripHtml(board.boardContent)}
                 </p>
-                <div className={styles.ratingRow}>
-                  {/* 후기 유형일 경우에만 별점 표시 */}
-                  {(board.postType === "복지혜택후기" ||
-                    board.postType === "복지시설후기") &&
-                    [1, 2, 3, 4, 5].map((i) => (
-                      <span
-                        key={i}
-                        style={{
-                          color: i <= board.starCount ? "orange" : "#ddd",
-                        }}
-                      >
-                        ★
-                      </span>
-                    ))}
-
-                  {/* 작성일은 항상 표시 */}
-                  <span className={styles.dateText}>{board.boardDate}</span>
-                </div>
-                <div className={styles.userInfo}>
-                  <img
-                    className={styles.profileImg}
-                    src={board.memberImg || "/default-profile.png"}
-                    alt="프로필"
-                  />
-                  <span>{board.memberNickname}</span>
-                </div>
-                <div className={styles.iconInfo}>
-                  <span>❤️ {board.likeCount}</span>
-                  <span style={{ marginLeft: "8px" }}>
-                    조회 {board.boardReadCount}
-                  </span>
-                </div>
+  <div className={styles.ratingRow}>
+  <div className={styles.stars}>
+    {(board.postType === "복지혜택후기" || board.postType === "복지시설후기") &&
+      [1, 2, 3, 4, 5].map((i) => (
+        <span key={i} style={{ color: i <= board.starCount ? "orange" : "#ddd" }}>
+          ★
+        </span>
+      ))}
+  </div>
+  <span className={styles.dateText}>{board.boardDate}</span>
+</div>
+             <div className={styles.metaRow}>
+  <div className={styles.userInfo}>
+    <img
+      className={styles.profileImg}
+      src={board.profileImgImg || "/default-profile.png"}
+      alt="프로필"
+    />
+    <span>{board.memberNickname}</span>
+  </div>
+  <div className={styles.iconInfo}>
+    <span>❤️ {board.likeCount}</span>
+    <span>조회 {board.boardReadCount}</span>
+  </div>
+</div>
               </div>
             </Link>
           ))}
         </div>
       ) : (
         <p className={styles.noResults}>😥 해당하는 게시물이 없습니다.</p>
+      )}
+
+            {/* 글쓰기 버튼 */}
+      {memberNo && (
+        <div className={styles.writeButtonContainer}>
+          <button
+            onClick={() => navigate("/mytownBoard/write")}
+            className={styles.writeButton}
+          >
+            글쓰기
+          </button>
+        </div>
       )}
 
       {/* 페이지네이션 */}

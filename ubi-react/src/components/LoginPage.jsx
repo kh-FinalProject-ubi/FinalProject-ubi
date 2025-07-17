@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../stores/useAuthStore";
+import { useSearchParams } from "react-router-dom";
 import styles from "../styles/common/LoginPage.module.css";
 
 // 이메일 유효성 검사 헬퍼 함수
@@ -22,37 +23,33 @@ const handleKakaoLogin = () => {
   window.location.href = "http://localhost:8080/oauth2/authorization/kakao";
 };
 
-const goToMode = (mode) => {
-  setLoginMode(mode);
-  setMode(mode);
-};
-
 const LoginPage = () => {
-  const [mode, setMode] = useState("login"); // login | find-id | find-pw | reset-pw
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const mode = searchParams.get("mode") || "login";
   const [resetInfo, setResetInfo] = useState({ memberId: "", email: "" });
-  const navigate = useNavigate();
+
+  // 모드 변경 함수
+  const goToMode = (targetMode) => {
+    setSearchParams({ mode: targetMode });
+  };
 
   return (
     <div className={styles.loginPageContainer}>
       <main className={styles.loginMainContent}>
         <div className={styles.imageBox}>
-          {mode === "login" && (
-            <img src="/images/login-bear-surprised.png" alt="login" />
-          )}
-          {mode !== "login" && (
-            <img src="/images/default-thumbnail.png" alt="login" />
-          )}
+          <img src="/default-thumbnail.png" alt="login" />
         </div>
 
         <div className={styles.formContainer}>
-          {mode === "login" && <LoginForm setMode={setMode} />}
-          {mode === "find-id" && <FindIdForm setMode={setMode} />}
+          {mode === "login" && <LoginForm setMode={goToMode} />}
+          {mode === "find-id" && <FindIdForm setMode={goToMode} />}
           {mode === "find-pw" && (
-            <FindPwForm setMode={setMode} setResetInfo={setResetInfo} />
+            <FindPwForm setMode={goToMode} setResetInfo={setResetInfo} />
           )}
           {mode === "reset-pw" && (
             <ResetPwForm
-              setMode={setMode}
+              setMode={goToMode}
               memberId={resetInfo.memberId}
               email={resetInfo.email}
             />
@@ -284,10 +281,10 @@ const FindIdForm = ({ setMode }) => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             disabled={isCodeSent}
+            {...(errors.name && (
+              <span className={styles.errorMessage}>{errors.name}</span>
+            ))}
           />
-          {errors.name && (
-            <span className={styles.errorMessage}>{errors.name}</span>
-          )}
         </div>
         <div className={styles.inputWrapper}>
           <div className={styles.inputGroup}>
@@ -306,18 +303,18 @@ const FindIdForm = ({ setMode }) => {
                 {isLoading ? "로딩중..." : "인증요청"}
               </button>
             )}
+            {errors.email && (
+              <span
+                className={
+                  validateEmail(email)
+                    ? styles.successMessage
+                    : styles.errorMessage
+                }
+              >
+                {errors.email}
+              </span>
+            )}
           </div>
-          {errors.email && (
-            <span
-              className={
-                validateEmail(email)
-                  ? styles.successMessage
-                  : styles.errorMessage
-              }
-            >
-              {errors.email}
-            </span>
-          )}
         </div>
         {isCodeSent && !foundId && (
           <>
@@ -363,9 +360,12 @@ const FindIdForm = ({ setMode }) => {
             <strong>{foundId}</strong>
           </div>
         )}
-      </div>
-      <div className={styles.findAccountLink}>
-        <button onClick={() => setMode("login")}>로그인 하러가기</button>
+        <div className={styles.findAccountLink}>
+          <button onClick={() => setMode("find-pw")}>비밀번호 찾기</button>
+        </div>
+        <div className={styles.findAccountLink}>
+          <button onClick={() => setMode("login")}>로그인 하러가기</button>
+        </div>
       </div>
     </>
   );
@@ -583,9 +583,12 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
             </button>
           </>
         )}
-      </div>
-      <div className={styles.findAccountLink}>
-        <button onClick={() => setMode("login")}>로그인 하러가기</button>
+        <div className={styles.findAccountLink}>
+          <button onClick={() => setMode("find-id")}>아아디 찾기</button>
+        </div>
+        <div className={styles.findAccountLink}>
+          <button onClick={() => setMode("login")}>로그인 하러가기</button>
+        </div>
       </div>
     </>
   );
@@ -654,9 +657,6 @@ const ResetPwForm = ({ setMode, memberId, email }) => {
           <br />
           새로운 비밀번호로 로그인해주세요.
         </p>
-        <button onClick={() => setMode("login")} className={styles.confirmBtn}>
-          로그인 하러가기
-        </button>
       </div>
     );
   }

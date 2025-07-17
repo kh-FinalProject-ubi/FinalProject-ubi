@@ -1,8 +1,6 @@
 .facility-search-container {
-  max-width: 1280px; /* 화면 최대 너비 설정 */
-  margin-left: auto; /* 좌우 중앙 정렬 */
-  margin-right: auto;
-  padding: 40px 20px; /* 좌우 여백 */
+  width: 100%;
+  padding: 2rem 20%;
   box-sizing: border-box;
 }
 

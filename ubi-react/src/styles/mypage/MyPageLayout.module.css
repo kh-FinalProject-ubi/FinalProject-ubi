@@ -19,7 +19,7 @@
 .layoutWrapper {
   display: flex;
   min-height: 100vh;
-  background: #fdfdfd;
+  background: #fff;
 }
 
 /* ── 사이드바 ───────────────────────── */
