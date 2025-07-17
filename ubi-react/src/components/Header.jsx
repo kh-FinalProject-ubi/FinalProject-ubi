@@ -24,8 +24,9 @@ const AlertModal = () => {
 };
 
 const Header = () => {
-  const { token, memberImg, clearAuth, memberNo, memberNickname } =
+  const { token, memberImg, clearAuth, memberNo, memberNickname, memberName } =
     useAuthStore();
+
   const isLogin = !!token;
   const { selectedCity, selectedDistrict } = useSelectedRegionStore();
   const navigate = useNavigate();
