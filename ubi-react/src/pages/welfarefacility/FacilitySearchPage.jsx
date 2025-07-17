@@ -5,7 +5,8 @@ import FacilityCard from "../../components/welfarefacility/FacilityCard";
 import { useFacilities } from "../../hook/welfarefacility/useFacilities";
 import useSelectedRegionStore from "../../hook/welfarefacility/useSelectedRegionStore";
 import useLoginMember from "../../hook/login/useLoginMember";
-import "../../styles/welfarefacility/FacilitySearchPage.css";
+import styles from "../../styles/welfarefacility/FacilitySearchPage.module.css";
+
 import { useSportsFacilities } from "../../hook/welfarefacility/useSportsFacilities";
 import Pagination from "../../components/Pagination";
 import { extractRegionFromTaddress } from "../../utils/extractRegionFromTaddress";
@@ -154,27 +155,27 @@ export default function FacilitySearchPage() {
   );
 
   return (
-    <div className="facility-search-container">
-      <h2 className="facility-title">지역 복지시설</h2>
+    <div className={styles["facility-search-container"]}>
+      <h2 className={styles["facility-title"]}>지역 복지시설</h2>
 
-      <div className="region-source-buttons">
+      <div className={styles["region-source-buttons"]}>
         <button
           onClick={() => handleRegionSourceChange("my")}
-          className={regionSource === "my" ? "selected" : ""}
+          className={regionSource === "my" ? styles.selected : ""}
         >
           내 주소
         </button>
         <button
           onClick={() => handleRegionSourceChange("bookmark")}
-          className={regionSource === "bookmark" ? "selected" : ""}
+          className={regionSource === "bookmark" ? styles.selected : ""}
         >
           즐겨찾기 주소
         </button>
       </div>
 
-      <div className="filter-bar">
-        <div className="filter-row">
-          <div className="region-select-row">
+      <div className={styles["filter-bar"]}>
+        <div className={styles["filter-row"]}>
+          <div className={styles["region-select-row"]}>
             <select
               value={selectedCity}
               onChange={(e) => {
@@ -205,53 +206,97 @@ export default function FacilitySearchPage() {
             </select>
           </div>
 
-          <input
-            type="text"
-            placeholder="시설명 검색"
-            className="search-input"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-          />
+          <div className={styles["search-wrapper"]}>
+            <svg className={styles["search-icon"]} viewBox="0 0 24 24">
+              <path
+                fill="currentColor"
+                d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3Z"
+              />
+            </svg>
+            <input
+              type="text"
+              placeholder="시설명 검색"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+            />
+          </div>
         </div>
 
-        <div className="service-type-filter">
-          {["전체", "노인", "청소년", "아동", "장애인"].map((type) => (
-            <button
-              key={type}
-              onClick={() => setServiceType(type)}
-              className={`service-btn ${
-                serviceType === type ? "selected" : ""
-              }`}
-            >
-              {type}
-            </button>
-          ))}
-        </div>
+        <div className={styles.filterContainer}>
+          <h3 className={styles.filterTitle}>검색 필터</h3>
+          <div className={styles.filterBox}>
+            <table className={styles.filterTable}>
+              <tbody>
+                {/* 서비스 대상 필터 */}
+                <tr className={styles.filterRow}>
+                  <th className={styles.filterLabel}>서비스 대상</th>
+                  <td className={styles.filterContent}>
+                    {["전체", "노인", "청소년", "아동", "장애인"].map(
+                      (type) => (
+                        <label key={type} className={styles.radioLabel}>
+                          <input
+                            type="radio"
+                            name="serviceType"
+                            value={type}
+                            checked={serviceType === type}
+                            onChange={(e) => setServiceType(e.target.value)}
+                          />
+                          <span className={styles.customRadio}></span>
+                          <span className={styles.radioText}>{type}</span>
+                        </label>
+                      )
+                    )}
+                  </td>
+                </tr>
 
-        <div className="category-filter">
-          {["전체", "체육시설", "요양시설", "의료시설", "행정시설"].map(
-            (cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={`service-btn ${category === cat ? "selected" : ""}`}
-              >
-                {cat}
-              </button>
-            )
-          )}
+                {/* 시설 종류 필터 */}
+                <tr className={styles.filterRow}>
+                  <th className={styles.filterLabel}>시설 종류</th>
+                  <td className={styles.filterContent}>
+                    {[
+                      "전체",
+                      "체육시설",
+                      "요양시설",
+                      "의료시설",
+                      "행정시설",
+                    ].map((cat) => (
+                      <label key={cat} className={styles.radioLabel}>
+                        <input
+                          type="radio"
+                          name="category"
+                          value={cat}
+                          checked={category === cat}
+                          onChange={(e) => setCategory(e.target.value)}
+                        />
+                        <span className={styles.customRadio}></span>
+                        <span className={styles.radioText}>{cat}</span>
+                      </label>
+                    ))}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      {loading && <p>불러오는 중...</p>}
-      {error && (
-        <p className="error-text">시설 정보를 가져오는 데 실패했습니다.</p>
-      )}
-      {!loading && filteredFacilities.length === 0 && (
-        <p>해당 조건의 복지시설이 없습니다.</p>
-      )}
+      <div className={styles["facility-status"]}>
+        {loading && <p className={styles["loading-text"]}>불러오는 중...</p>}
 
-      <div className="facility-card-list">
+        {error && (
+          <p className={styles["error-text"]}>
+            시설 정보를 가져오는 데 실패했습니다.
+          </p>
+        )}
+
+        {!loading && !error && filteredFacilities.length === 0 && (
+          <p className={styles["empty-text"]}>
+            해당 조건의 복지시설이 없습니다.
+          </p>
+        )}
+      </div>
+
+      <div className={styles["facility-card-list"]}>
         {currentItems.map((facility, idx) => {
           const name =
             facility["facilityName"] ||

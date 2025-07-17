@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from "react";
 import useLocalBenefitData from "../../hook/welfareService/useLocalBenefitData";
 import useAuthStore from "../../stores/useAuthStore";
-import "../../styles/welfarefacility/FacilitySearchPage.css"; // 복지시설 스타일 재사용
 
 const LocalBenefitModal = ({ onSelect, onClose }) => {
   const { data: benefits, loading, error } = useLocalBenefitData();
@@ -91,14 +90,14 @@ const LocalBenefitModal = ({ onSelect, onClose }) => {
                   onClose();
                 }}
               >
-               <strong>
-  {item.title} (
-    {item.regionDistrict
-      ? item.regionDistrict
-      : `${item.regionCity} 공통`}
-  )
-</strong>
-<br />
+                <strong>
+                  {item.title} (
+                  {item.regionDistrict
+                    ? item.regionDistrict
+                    : `${item.regionCity} 공통`}
+                  )
+                </strong>
+                <br />
                 <small>카테고리: {item.category || "기타"}</small> <br />
                 <small>ID: {displayId}</small>
               </li>
