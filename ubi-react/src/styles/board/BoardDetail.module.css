@@ -198,6 +198,15 @@
   color: #333;
 }
 
+/* 별점 */
+.starRating {
+  margin-top: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 3px;
+}
+
 /* --- 댓글 섹션 --- */
 .commentSection {
   margin-top: 3rem;
