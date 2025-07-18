@@ -19,6 +19,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.*;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -32,59 +33,68 @@ public class WelfareProxyController {
     private final XmlMapper xmlMapper = new XmlMapper();
     
     @GetMapping("/welfare-list/all")
-    public Map<String, Object> getAllWelfareData() {
-        List<Map<String, Object>> allItems = new ArrayList<>();
-        int pageNo = 1;
-        int totalPage = 1;
+    public Map<String, Object> getAllWelfareDataParallel() {
+        long start = System.currentTimeMillis(); // ⏱ 시작 시간
+
+        List<Map<String, Object>> allItems = Collections.synchronizedList(new ArrayList<>());
         int numOfRows = 100;
 
-        XmlMapper xmlMapper = new XmlMapper();
-
         try {
-            while (pageNo <= totalPage) {
-                String urlStr = UriComponentsBuilder
+            // 1. 먼저 1페이지 호출해서 전체 페이지 수 알아냄
+            String firstUrl = UriComponentsBuilder
                     .fromHttpUrl("https://apis.data.go.kr/B554287/LocalGovernmentWelfareInformations/LcgvWelfarelist")
                     .queryParam("serviceKey", serviceKey)
-                    .queryParam("pageNo", pageNo)
+                    .queryParam("pageNo", 1)
                     .queryParam("numOfRows", numOfRows)
                     .build(false)
                     .toUriString();
 
-                HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
-                conn.setRequestMethod("GET");
-                conn.setRequestProperty("Accept", "application/xml");
+            String firstResponse = fetchXml(firstUrl);
+            JsonNode root = xmlMapper.readTree(firstResponse);
+            int totalCount = root.path("totalCount").asInt();
+            int totalPage = (int) Math.ceil((double) totalCount / numOfRows);
 
-                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-                StringBuilder responseStrBuilder = new StringBuilder();
-                String line;
-                while ((line = in.readLine()) != null) responseStrBuilder.append(line);
-                in.close();
+            // 2. 병렬로 요청
+            ExecutorService executor = Executors.newFixedThreadPool(10); // 병렬 개수 조절 가능
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-                String responseStr = responseStrBuilder.toString();
-                JsonNode root = xmlMapper.readTree(responseStr);
+            for (int page = 1; page <= totalPage; page++) {
+                int finalPage = page;
+                futures.add(CompletableFuture.runAsync(() -> {
+                    try {
+                        String pageUrl = UriComponentsBuilder
+                                .fromHttpUrl("https://apis.data.go.kr/B554287/LocalGovernmentWelfareInformations/LcgvWelfarelist")
+                                .queryParam("serviceKey", serviceKey)
+                                .queryParam("pageNo", finalPage)
+                                .queryParam("numOfRows", numOfRows)
+                                .build(false)
+                                .toUriString();
 
-                // 페이지 수 계산
-                if (pageNo == 1) {
-                    int totalCount = root.path("totalCount").asInt();
-                    totalPage = (int) Math.ceil((double) totalCount / numOfRows);
-                    System.out.println("전체 개수: " + totalCount + " / 총 페이지: " + totalPage);
-                }
+                        String xml = fetchXml(pageUrl);
+                        JsonNode pageRoot = xmlMapper.readTree(xml);
+                        JsonNode list = pageRoot.path("servList");
 
-                // servList 파싱 (단일 or 복수 대응)
-                JsonNode servListNode = root.path("servList");
-                if (servListNode.isArray()) {
-                    for (JsonNode node : servListNode) {
-                        Map<String, Object> item = xmlMapper.convertValue(node, new TypeReference<>() {});
-                        allItems.add(item);
+                        if (list.isArray()) {
+                            for (JsonNode node : list) {
+                                allItems.add(xmlMapper.convertValue(node, new TypeReference<>() {}));
+                            }
+                        } else if (!list.isMissingNode()) {
+                            allItems.add(xmlMapper.convertValue(list, new TypeReference<>() {}));
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                } else if (!servListNode.isMissingNode()) {
-                    Map<String, Object> item = xmlMapper.convertValue(servListNode, new TypeReference<>() {});
-                    allItems.add(item);
-                }
-
-                pageNo++;
-                Thread.sleep(100);
+                }, executor));
             }
+
+            // 3. 모든 요청 완료될 때까지 대기
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            executor.shutdown();
+            
+            long end = System.currentTimeMillis(); // ⏱ 끝 시간
+            double durationSec = (end - start) / 1000.0;
+            System.out.println("⏱ 전체 응답 시간: " + durationSec + "초");
+
 
             return Map.of("servList", allItems);
 
@@ -94,6 +104,20 @@ public class WelfareProxyController {
         }
     }
 
+    private String fetchXml(String urlStr) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Accept", "application/xml");
+
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = in.readLine()) != null) {
+                response.append(line);
+            }
+            return response.toString();
+        }
+    }
     
     @GetMapping("/reverse-geocode")
     public ResponseEntity<String> reverseGeocode(
