@@ -110,7 +110,7 @@ const LoginForm = ({ setMode }) => {
       <div className={styles.formContent}>
         <h3 className={styles.formTitle}>Login</h3>
         <form onSubmit={handleLogin}>
-          <div className={`${styles.inputWrapper} ${styles.inputWrapperID}`}>
+          <div className={styles.inputWrapper}>
             <input
               type="text"
               placeholder="아이디"
@@ -118,7 +118,7 @@ const LoginForm = ({ setMode }) => {
               onChange={(e) => setMemberId(e.target.value)}
             />
           </div>
-          <div className={`${styles.inputWrapper} ${styles.inputWrapperPW}`}>
+          <div className={styles.inputMessageWrapper}>
             <input
               type="password"
               placeholder="비밀번호"
@@ -140,11 +140,11 @@ const LoginForm = ({ setMode }) => {
 
             <div className={styles.findAccountLink}>
               <button type="button" onClick={() => setMode("find-id")}>
-                ID
+                ID{"  "}
               </button>
-              <span>/</span>
+              <span>|</span>
               <button type="button" onClick={() => setMode("find-pw")}>
-                PW찾기
+                PW찾기{"  "}
               </button>
             </div>
           </div>
@@ -192,14 +192,20 @@ const FindIdForm = ({ setMode }) => {
 
   useEffect(() => {
     if (email === "") {
-      setErrors((prev) => ({ ...prev, email: "" }));
+      // 이메일이 비었을 때는 메시지를 완전히 제거합니다.
+      setErrors((prev) => ({ ...prev, email: null }));
       return;
     }
+
+    const isValid = validateEmail(email);
     setErrors((prev) => ({
       ...prev,
-      email: validateEmail(email)
-        ? "사용 가능한 이메일 형식입니다."
-        : "이메일 형식이 올바르지 않습니다.",
+      email: {
+        text: isValid
+          ? "사용 가능한 이메일 형식입니다."
+          : "이메일 형식이 올바르지 않습니다.",
+        type: isValid ? "success" : "error", // 'success' 또는 'error' 타입을 추가합니다.
+      },
     }));
   }, [email]);
 
@@ -248,6 +254,7 @@ const FindIdForm = ({ setMode }) => {
         setIsCodeSent(true);
         setTimer(300);
         setIsTimerActive(true);
+        setErrors({});
       } else {
         const errorData = await res.json();
         alert(errorData.message || "인증번호 전송에 실패했습니다.");
@@ -338,7 +345,7 @@ const FindIdForm = ({ setMode }) => {
           )}
         </div>
 
-        <div className={`${styles.inputWrapper} ${styles.inputWrapperPw}`}>
+        <div className={styles.inputMessageWrapper}>
           <div className={styles.inputGroup}>
             <input
               placeholder="가입한 이메일 입력"
@@ -354,22 +361,29 @@ const FindIdForm = ({ setMode }) => {
               {isLoading ? "로딩중..." : "인증요청"}
             </button>
           </div>
-          {errors.email && (
-            <span className={styles.errorMessage}>{errors.email}</span>
+          {errors.email?.text && (
+            <span
+              className={
+                errors.email.type === "success"
+                  ? styles.successMessage
+                  : styles.errorMessage
+              }
+            >
+              {errors.email.text}
+            </span>
           )}
         </div>
         {isCodeSent && !foundId && (
           <>
-            {/* 수정된 인증번호 입력 그룹 */}
-            <div className={`${styles.inputWrapper} ${styles.inputWrapper3}`}>
-              <div className={styles.verificationGroup}>
+            <div className={styles.inputMessageWrapper}>
+              <div className={styles.inputGroup}>
                 <input
                   placeholder="인증번호 입력"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   disabled={isCodeVerified}
+                  style={{ width: "310px", marginTop: "10px" }}
                 />
-
                 {!isCodeVerified && (
                   <button
                     onClick={handleInlineVerify}
@@ -379,14 +393,22 @@ const FindIdForm = ({ setMode }) => {
                   </button>
                 )}
               </div>
+
+              {/* 3. 메시지들을 inputGroup과 같은 레벨로 이동 */}
               {errors.code && (
-                <span className={styles.errorMessage}>{errors.code}</span>
+                <span className={`${styles.message} ${styles.errorMessage}`}>
+                  {errors.code}
+                </span>
               )}
               {successMsg && (
-                <span className={styles.successMessage}>{successMsg}</span>
+                <span className={`${styles.message} ${styles.successMessage}`}>
+                  {successMsg}
+                </span>
               )}
               {isTimerActive && (
-                <span className={styles.timer}>{formatTime(timer)}</span>
+                <span className={`${styles.message} ${styles.timer}`}>
+                  {formatTime(timer)}
+                </span>
               )}
             </div>
 
@@ -394,6 +416,7 @@ const FindIdForm = ({ setMode }) => {
               onClick={handleFinalFindId}
               className={styles.confirmBtn}
               disabled={!isCodeVerified}
+              style={{ marginTop: "30px" }}
             >
               확인
             </button>
@@ -416,14 +439,14 @@ const FindIdForm = ({ setMode }) => {
           <button onClick={() => setMode("login")} className={styles.kakaoBtn}>
             로그인 하러가기
           </button>
-        </div>
-        <div className={styles.findAccountLink}>
-          <button
-            onClick={() => setMode("find-pw")}
-            className={styles.signupLink}
-          >
-            비밀번호 찾기
-          </button>
+          <div className={styles.findAccountLink}>
+            <button
+              onClick={() => setMode("find-pw")}
+              className={styles.signupLink}
+            >
+              비밀번호 찾기
+            </button>
+          </div>
         </div>
       </div>
     </>
@@ -592,7 +615,7 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
             <span className={styles.errorMessage}>{errors.memberId}</span>
           )}
         </div>
-        <div className={styles.inputWrapper}>
+        <div className={styles.inputMessageWrapper}>
           <div className={styles.inputGroup}>
             <input
               placeholder="가입한 이메일 입력"
@@ -631,6 +654,7 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                     disabled={isCodeVerified}
+                    style={{ width: "310px", marginTop: "20px" }}
                   />
                   {!isCodeVerified && (
                     <button
@@ -670,14 +694,14 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
           <button onClick={() => setMode("login")} className={styles.kakaoBtn}>
             로그인 하러가기
           </button>
-        </div>
-        <div className={styles.findAccountLink}>
-          <button
-            onClick={() => setMode("find-id")}
-            className={styles.signupLink}
-          >
-            아이디 찾기
-          </button>
+          <div className={styles.findAccountLink}>
+            <button
+              onClick={() => setMode("find-id")}
+              className={styles.signupLink}
+            >
+              아이디 찾기
+            </button>
+          </div>
         </div>
       </div>
     </>

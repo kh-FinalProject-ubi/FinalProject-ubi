@@ -69,30 +69,42 @@ body {
 }
 
 /* 지도 영역 */
-.mapSection {
+.mapHeaderRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.mapTitle {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0;
+  color: #2c3e50;
 }
 
 .mapToggle {
   display: flex;
-  gap: 12px;
-  margin-bottom: var(--gap-tight);
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .mapToggle button {
-  padding: 10px 18px;
-  border: 1px solid var(--gray-600);
-  background-color: white;
-  color: var(--gray-800);
-  border-radius: 8px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 100px;
+  background-color: #ffe56d;
+  color: #2e2e2e;
+  font-size: 0.9rem;
   cursor: pointer;
-  font-weight: 600;
-  transition: background 0.2s, color 0.2s;
+  transition: background-color 0.2s ease;
 }
 
-.mapToggle button.active {
-  background-color: var(--indigo);
-  color: white;
-  border-color: var(--indigo);
+.mapToggle .active {
+  background: var(--indigo);
+  color: #f9fbfd;
+  font-weight: 600;
 }
 
 /* 많이 찜한 혜택 / 많이 본 게시글 */
@@ -107,4 +119,70 @@ body {
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--gray-800);
+}
+
+/* 범죄 유형 버튼 + 체크박스 묶음 (왼쪽 중앙) */
+.crimeControlsInline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-grow: 1;
+}
+
+/* 범죄 유형 버튼 그룹 */
+.buttonGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* 버튼 스타일 그대로 사용 */
+.crimeButton {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 4px;
+  background-color: #95a5a6;
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.crimeButtonActive {
+  background-color: #2c3e50;
+}
+
+/* 체크박스 라벨 */
+.labelToggle {
+  font-weight: 500;
+  color: #333;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.buttonGroupBelow {
+  width: 100%;
+  margin-top: 2px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.titleAndCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 1;
+}
+
+.buttonAndToggleRow {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px; /* 버튼과 체크박스 사이 여백 */
 }

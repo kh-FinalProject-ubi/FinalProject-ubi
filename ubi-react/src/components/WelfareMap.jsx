@@ -153,7 +153,6 @@ const WelfareMap = () => {
 
   return (
     <div>
-      <h2 className={styles.mapTitle}>복지 지도</h2>
       <div className={styles.mapWrapper}>
         <div ref={mapElement} className={styles.mapCanvas} />
         <aside className={styles.benefitPanel}>

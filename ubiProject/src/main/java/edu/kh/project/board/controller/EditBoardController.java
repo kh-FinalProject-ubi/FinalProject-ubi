@@ -2,42 +2,32 @@ package edu.kh.project.board.controller;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import edu.kh.project.board.model.dto.Board;
-import edu.kh.project.board.model.dto.BoardImage;
 import edu.kh.project.board.model.service.BoardService;
 import edu.kh.project.board.model.service.EditBoardService;
 import edu.kh.project.common.util.JwtUtil;
-import edu.kh.project.member.model.dto.Member;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -58,6 +48,10 @@ public class EditBoardController {
 
 	@Autowired
 	private WebApplicationContext context;
+	
+	@Value("${my.board.upload-path}")
+	private String uploadPath;
+
 
 	// 게시글 작성 화면 전환
 	@GetMapping("{boardCode:[0-9]+}")
@@ -226,22 +220,22 @@ public class EditBoardController {
 	}
 
 	// 사진 업로드 메서드
-	@PostMapping("/image-upload")
-	public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
-		if (file.isEmpty()) {
-			return ResponseEntity.badRequest().body("파일이 없습니다.");
-		}
+	   @PostMapping("/image-upload")
+	    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
+	        if (file.isEmpty()) {
+	            return ResponseEntity.badRequest().body("파일이 없습니다.");
+	        }
 
-		// 파일 저장 처리
-		String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-		File dest = new File("C:/uploadFiles/board/" + fileName);
+	        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+	        File dest = new File(uploadPath + File.separator + fileName);
 
-		try {
-			file.transferTo(dest);
-			return ResponseEntity.ok(fileName);
-		} catch (IOException e) {
-			return ResponseEntity.status(500).body("파일 업로드 실패");
-		}
-	}
+	        try {
+	            file.transferTo(dest);
+	            return ResponseEntity.ok(fileName);
+	        } catch (IOException e) {
+	            return ResponseEntity.status(500).body("파일 업로드 실패");
+	        }
+	    }
+	
 
 }
