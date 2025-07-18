@@ -1,4 +1,4 @@
-:root {
+/* :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -51,9 +51,9 @@ button {
 }
 button:hover {
   border-color: #646cff;
-} 
+}
 
-/* button:focus,
+button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
@@ -69,4 +69,4 @@ button:focus-visible {
   button {
     background-color: #ffffff;
   }
-}
+} */

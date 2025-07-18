@@ -61,8 +61,8 @@ body {
 .mainWrapper {
   width: 100%;
   max-width: 1800px;
-  margin: 0 auto;
-  padding: var(--gap-block) 15%;
+  /* margin: 0 auto; */
+  padding: var(--gap-block) 10%;
   display: flex;
   flex-direction: column;
   gap: var(--gap-block);
