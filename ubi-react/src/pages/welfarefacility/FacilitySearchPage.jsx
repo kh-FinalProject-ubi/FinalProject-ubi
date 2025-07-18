@@ -315,7 +315,7 @@ export default function FacilitySearchPage() {
           totalPages={totalPages}
           onPageChange={(page) => {
             setCurrentPage(page);
-            window.scrollTo({ top: 0, behavior: "smooth" });
+            // window.scrollTo({ top: 0, behavior: "smooth" });
           }}
         />
       )}

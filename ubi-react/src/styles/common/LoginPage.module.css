@@ -93,17 +93,15 @@
 
 /* 에러/성공 메시지 */
 .errorMessage {
-  
+  margin-top: 5px;
   color: #e53e3e;
 }
 
 .successMessage {
-
   color: #38a169;
 }
 
 .hiddenMessage {
-
   visibility: hidden;
 }
 
