@@ -10,6 +10,7 @@
 
 .loginMainContent {
   display: flex;
+  align-items: flex-start;
   width: 100%;
   max-width: 900px;
   border-radius: 12px;
@@ -58,7 +59,7 @@
 /* 입력 필드 */
 .inputWrapper {
   position: relative;
-  margin-bottom: 30px; /* input 간 간격 일정하게 유지 */
+  margin-bottom: 30px;
 }
 
 .inputWrapper input {
@@ -77,6 +78,31 @@
 }
 
 .inputWrapper input::placeholder {
+  color: #a3a2a7;
+  font-weight: 200;
+}
+
+.inputMessageWrapper {
+  position: relative;
+}
+
+.inputMessageWrapper input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #6c6c6c;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  margin-bottom: 5px;
+}
+
+.inputMessageWrapper input:focus {
+  outline: none;
+  border-color: #ffe56d;
+  box-shadow: 0 0 0 1px #ffe56d;
+}
+
+.inputMessageWrapper input::placeholder {
   color: #a3a2a7;
   font-weight: 200;
 }
@@ -195,6 +221,8 @@
   border: none;
   border-radius: 1000px;
   justify-items: center;
+  padding-right: 8px;
+  padding-left: 8px;
   color: #5e60ce;
   font-size: 0.85rem;
   cursor: pointer;
