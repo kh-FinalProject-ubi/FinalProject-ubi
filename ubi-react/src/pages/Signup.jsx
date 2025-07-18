@@ -263,7 +263,7 @@ const Signup = () => {
           className={styles.input}
           type="text"
           value={memberId}
-          onChange={(e) => setMemberId(e.target.value)}
+          onChange={handleIdChange} // ✅ 변경
           placeholder="아이디"
           required
         />
