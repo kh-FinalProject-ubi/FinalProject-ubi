@@ -8,9 +8,12 @@ import LikeButton from "../welfareLike/LikeButton";
 import { useNavigate } from "react-router-dom";
 import { extractRegionFromTaddress } from "../../utils/extractRegionFromTaddress";
 import styles from "../../styles/LocalBenefitSection.module.css";
+import Pagination from "../Pagination";
 
 const LocalBenefitSection = () => {
   const { data: benefits, loading, error } = useLocalBenefitData();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 16;
   const navigate = useNavigate();
 
   // ✅ 상태 가져오기
@@ -92,6 +95,10 @@ const LocalBenefitSection = () => {
     showAll: false,
   });
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterOptions]);
+
   const authState = {
     token,
     memberStandard,
@@ -104,95 +111,115 @@ const LocalBenefitSection = () => {
     ? applyAllFilters(benefits, filterOptions, authState)
     : [];
 
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const currentItems = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
-    <section className={styles.section}>
-      <h2 className={styles.title}> 지역 복지 혜택 모음</h2>
+    <>
+      <section className={styles.section}>
+        <h2 className={styles.title}> 지역 복지 혜택 모음</h2>
 
-      {!token ? null : (
-        <div className={styles.addressTab}>
-          <button
-            className={addressSource === "token" ? styles.selected : ""}
-            onClick={() => setAddressSource("token")}
-          >
-            내 주소
-          </button>
-          <button
-            className={addressSource === "selected" ? styles.selected : ""}
-            onClick={() => setAddressSource("selected")}
-          >
-            선택한 주소
-          </button>
-          {tempRegionCity && tempRegionDistrict && (
+        {/* 주소 탭 */}
+        {!token ? null : (
+          <div className={styles.addressTab}>
             <button
-              className={addressSource === "temp" ? styles.selected : ""}
-              onClick={() => setAddressSource("temp")}
+              className={addressSource === "token" ? styles.selected : ""}
+              onClick={() => setAddressSource("token")}
             >
-              임시 주소
+              내 주소
             </button>
-          )}
-        </div>
-      )}
-
-      <WelfareSearchFilter
-        onFilterChange={setFilterOptions}
-        fixedRegion={region}
-        disabledRegionSelect={!!token}
-      />
-
-      {loading && <p>로딩 중...</p>}
-      {error && <p>데이터를 불러오는 데 실패했습니다.</p>}
-
-      <div className={styles.grid}>
-        {filteredData.length > 0
-          ? filteredData.map((item) => (
-              <div
-                className={styles.card}
-                key={item.id || item.title}
-                onClick={() =>
-                  navigate("/welfareService/detail", { state: { data: item } })
-                }
+            <button
+              className={addressSource === "selected" ? styles.selected : ""}
+              onClick={() => setAddressSource("selected")}
+            >
+              선택한 주소
+            </button>
+            {tempRegionCity && tempRegionDistrict && (
+              <button
+                className={addressSource === "temp" ? styles.selected : ""}
+                onClick={() => setAddressSource("temp")}
               >
-                <div className={styles.cardHeader}>
-                  <h3>{item.title}</h3>
-                  <span className={styles.category}>{item.category}</span>
-                </div>
-                {item.imageUrl && (
-                  <img
-                    src={item.imageUrl}
-                    alt="복지 이미지"
-                    className={styles.thumbnail}
-                  />
-                )}
-                <p className={styles.region}>{item.region}</p>
-                <p className={styles.description}>
-                  {item.description?.slice(0, 80)}...
-                </p>
+                임시 주소
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* 필터 */}
+        <WelfareSearchFilter
+          onFilterChange={setFilterOptions}
+          fixedRegion={region}
+          disabledRegionSelect={!!token}
+        />
+
+        {loading && <p>로딩 중...</p>}
+        {error && <p>데이터를 불러오는 데 실패했습니다.</p>}
+
+        {/* 카드 리스트 */}
+        <div className={styles.grid}>
+          {currentItems.length > 0
+            ? currentItems.map((item) => (
                 <div
-                  className={styles.footer}
-                  onClick={(e) => e.stopPropagation()}
+                  className={styles.card}
+                  key={item.id || item.title}
+                  onClick={() =>
+                    navigate("/welfareService/detail", {
+                      state: { data: item },
+                    })
+                  }
                 >
-                  <LikeButton
-                    token={token}
-                    apiServiceId={item.apiServiceId}
-                    serviceName={item.title}
-                    category={item.category}
-                    regionCity={item.regionCity}
-                    regionDistrict={item.regionDistrict}
-                    description={item.description}
-                    agency={item.agency}
-                    url={item.url}
-                    receptionStart={item.receptionStart}
-                    receptionEnd={item.receptionEnd}
-                    imageProfile={item.imageProfile}
-                    lat={item.lat}
-                    lng={item.lng}
-                  />
+                  <div className={styles.cardHeader}>
+                    <h3>{item.title}</h3>
+                    <span className={styles.category}>{item.category}</span>
+                  </div>
+                  {item.imageUrl && (
+                    <img
+                      src={item.imageUrl}
+                      alt="복지 이미지"
+                      className={styles.thumbnail}
+                    />
+                  )}
+                  <p className={styles.region}>{item.region}</p>
+                  <p className={styles.description}>
+                    {item.description?.slice(0, 80)}...
+                  </p>
+                  <div
+                    className={styles.footer}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <LikeButton
+                      token={token}
+                      apiServiceId={item.apiServiceId}
+                      serviceName={item.title}
+                      category={item.category}
+                      regionCity={item.regionCity}
+                      regionDistrict={item.regionDistrict}
+                      description={item.description}
+                      agency={item.agency}
+                      url={item.url}
+                      receptionStart={item.receptionStart}
+                      receptionEnd={item.receptionEnd}
+                      imageProfile={item.imageProfile}
+                      lat={item.lat}
+                      lng={item.lng}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))
-          : !loading && <p>조건에 맞는 복지 혜택이 없습니다.</p>}
-      </div>
-    </section>
+              ))
+            : !loading && <p>조건에 맞는 복지 혜택이 없습니다.</p>}
+        </div>
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        )}
+      </section>
+    </>
   );
 };
 

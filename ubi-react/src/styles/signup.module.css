@@ -1,246 +1,263 @@
-/* 🔲 전체 컨테이너 */
-.signupContainer {
-  max-width: 600px;
-  margin: 60px auto;
-  padding: 40px 32px;
-  background-color: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  font-family: "Pretendard";
+/* 회원가입.jpg 이미지 스타일에 맞춘 Signup.module.css */
+
+/* 🔲 전체 레이아웃 */
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: #f7f8fc; /* 이미지 배경색과 유사하게 */
+  font-family: "Pretendard", sans-serif;
 }
 
-.signupForm {
+/* 🖼️ 이미지 + 폼을 감싸는 박스 (이미지 참조) */
+.mainBox {
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+}
+
+/* 🖼️ 왼쪽 이미지 영역 (JSX에 imageBox 추가 필요) */
+.imageBox {
+  flex: 1;
+  display: none; /* 모바일에서는 숨김 */
+}
+@media (min-width: 768px) {
+  .imageBox {
+    display: block;
+  }
+}
+.imageBox img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 📝 오른쪽 폼 영역 */
+.form {
+  flex: 1;
+  padding: 2.5rem 3rem;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1.25rem; /* 20px */
 }
 
-/* 🟡 제목 */
-.title {
-  text-align: center;
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 32px;
-  color: #333;
+.form h2 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  color: #1a202c;
+  text-align: left;
 }
 
 /* 🔤 입력 필드 */
 .input {
   width: 100%;
-  padding: 12px 14px;
-  font-size: 15px;
-  border: 1px solid #ddd;
+  padding: 12px 16px;
+  font-size: 1rem;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  background-color: #fafafa;
-  transition: border 0.2s ease;
+  background-color: #fdfdff;
+  transition: all 0.2s ease;
 }
-
 .input:focus {
-  border-color: #ffe600;
   outline: none;
+  border-color: #5e60ce;
   background-color: #fff;
+  box-shadow: 0 0 0 2px rgba(94, 96, 206, 0.2);
+}
+.input[readonly] {
+  background-color: #f7f8fc;
 }
 
-.readonlyInput {
-  background-color: #f0f0f0;
-  color: #555;
-}
-
-/* 👥 한 줄 그룹 */
-.formRow {
+/* 👥 한 줄 그룹 (이메일 + 인증번호) */
+.row {
   display: flex;
-  gap: 8px;
-  align-items: center;
+  gap: 10px;
+}
+.row .input {
+  flex-grow: 1;
 }
 
-.formRow input {
-  flex: 1;
+/* ❗ 유효성 검사 메시지 & 타이머 */
+.statusMessage,
+.timerText,
+.valid,
+.invalid {
+  display: block;
+  margin: -12px 0 0px 5px; /* input 바로 아래에 위치 */
+  font-size: 0.8rem;
+  height: 16px;
 }
-
-/* 🔘 중복확인, 인증 버튼 */
-.checkButton {
-  padding: 10px 14px;
-  font-size: 14px;
-  background-color: transparent;
-  color: #333;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  cursor: pointer;
-  white-space: nowrap;
+.valid {
+  color: #38a169;
 }
-
-.checkButton:hover {
-  background-color: #f7f7f7;
+.invalid {
+  color: #e53e3e;
 }
-
-/* ⏰ 타이머 */
 .timerText {
-  font-size: 13px;
-  color: #666;
+  color: #e53e3e;
   text-align: right;
-  margin: -10px 0 10px;
+  margin-right: 5px;
 }
 
-/* 🟣 주요 CTA 버튼 (회원가입) */
-.submitButton {
-  padding: 14px 0;
-  font-size: 16px;
-  background-color: #5c4dff;
+/* 🔘 인증/주소찾기 버튼 */
+.checkButton,
+.addressBtn {
+  padding: 12px 16px;
+  border: none;
+  background-color: #4a5568;
   color: white;
-  font-weight: 600;
-  border: none;
-  border-radius: 10px;
+  border-radius: 8px;
+  white-space: nowrap;
   cursor: pointer;
-  transition: background-color 0.25s ease;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+.checkButton:hover,
+.addressBtn:hover {
+  background-color: #2d3748;
+}
+.checkButton:disabled {
+  background-color: #e2e8f0;
+  cursor: not-allowed;
 }
 
-.submitButton:hover {
-  background-color: #493acc;
+/* 🏠 주소 입력 블록 */
+.addressBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-/* 🟡 보조 버튼 */
-.secondaryButton {
-  padding: 14px 0;
-  font-size: 16px;
-  background-color: #ffe45e;
-  color: #222;
+/* 🙋‍♂️ 회원 유형 선택 */
+.form h4 {
   font-weight: 600;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background-color 0.25s ease;
+  margin: 1rem 0 0.5rem;
 }
-
-.secondaryButton:hover {
-  background-color: #fadc39;
-}
-
-/* 🔘 회원 유형 선택 */
 .memberTypeBlock {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin-bottom: 24px;
+  gap: 1rem;
 }
-
 .radioRow {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  padding: 8px 0;
 }
-
 .radioBox {
-  padding: 10px 18px;
-  border: 1px solid #ccc;
-  border-radius: 20px;
-  background-color: #f4f4f4;
-  color: #333;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  text-align: center;
   cursor: pointer;
-  font-size: 14px;
+  font-weight: 500;
   transition: all 0.2s ease;
   user-select: none;
 }
-
 .radioBox.selected {
   background-color: #5e60ce;
   color: white;
   border-color: #5e60ce;
-  font-weight: 600;
 }
-
 .radioBox input {
   display: none;
 }
-
-.toggleWrapper {
-  display: flex;
-  justify-content: center;
-}
-
 .toggleLabel {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  gap: 10px;
+  font-size: 0.95rem;
   cursor: pointer;
 }
-
+/* 토글 스위치 (이전 스타일 유지) */
 .toggleLabel input {
   display: none;
 }
-
 .toggleCustom {
-  width: 36px;
-  height: 20px;
-  border-radius: 10px;
-  background-color: #ccc;
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background-color: #d1d5db;
   position: relative;
   transition: background-color 0.25s ease;
 }
-
 .toggleCustom::before {
   content: "";
   position: absolute;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background-color: white;
   top: 2px;
   left: 2px;
   transition: transform 0.25s ease;
 }
-
 .toggleLabel input:checked + .toggleCustom {
   background-color: #5e60ce;
 }
-
 .toggleLabel input:checked + .toggleCustom::before {
-  transform: translateX(16px);
+  transform: translateX(18px);
 }
 
-/* 📜 약관 보기 */
-.terms {
+/* 📜 약관 동의 */
+.checkboxBlock {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-size: 14px;
 }
-
-.linkButton {
-  font-size: 13px;
-  color: #555;
-  border: 1px solid #ccc;
-  background-color: #fff;
-  border-radius: 6px;
-  padding: 6px 12px;
+.checkboxBlock input {
+  margin-right: 8px;
+  width: 16px;
+  height: 16px;
+}
+.checkboxBlock .link {
+  background: none;
+  border: none;
+  color: #6b7280;
+  text-decoration: underline;
   cursor: pointer;
-  transition: all 0.2s ease;
+  margin-left: auto;
+  font-size: 0.85rem;
 }
 
-.linkButton:hover {
-  background-color: #f9f9f9;
+/* 🟣 최종 제출 버튼 */
+.submitBtn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 1rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #5e60ce;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.submitBtn:disabled {
+  background-color: #cbd5e0;
+  cursor: not-allowed;
 }
 
-/* 📱 반응형 */
-@media (max-width: 480px) {
-  .formRow {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .terms {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-  }
-
-  .checkButton {
-    width: 100%;
-  }
-
-  .submitButton {
-    font-size: 15px;
-  }
+.secondaryBtn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #4a5568;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.secondaryBtn:hover {
+  background-color: #f7fafc;
 }

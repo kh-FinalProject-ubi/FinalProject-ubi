@@ -107,52 +107,50 @@ const CommentModal = ({ member, onClose, position, token, loadComments }) => {
   const reportForm = (
     <div className={styles.modalReportForm}>
       <h3>신고 사유 선택</h3>
-      <div>
-        <label>
-          <input
-            type="radio"
-            name="reason"
-            value="욕설 및 비방"
-            onChange={(e) => setReason(e.target.value)}
-          />
-          욕설 및 비방
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="reason"
-            value="채팅 문제"
-            onChange={(e) => setReason(e.target.value)}
-          />
-          채팅 문제
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="reason"
-            value="스팸 또는 홍보"
-            onChange={(e) => setReason(e.target.value)}
-          />
-          스팸 또는 홍보
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="reason"
-            value="기타"
-            onChange={(e) => setReason(e.target.value)}
-          />
-          기타
-        </label>
-        {reason === "기타" && (
-          <textarea
-            placeholder="기타 사유를 입력하세요"
-            value={etcReason}
-            onChange={(e) => setEtcReason(e.target.value)}
-          />
-        )}
-      </div>
-      <div className={styles.modalButtons}>
+      <label>
+        <input
+          type="radio"
+          name="reason"
+          value="욕설 및 비방"
+          onChange={(e) => setReason(e.target.value)}
+        />{" "}
+        욕설 및 비방
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="reason"
+          value="채팅 문제"
+          onChange={(e) => setReason(e.target.value)}
+        />{" "}
+        채팅 문제
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="reason"
+          value="스팸 또는 홍보"
+          onChange={(e) => setReason(e.target.value)}
+        />{" "}
+        스팸 또는 홍보
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="reason"
+          value="기타"
+          onChange={(e) => setReason(e.target.value)}
+        />{" "}
+        기타
+      </label>
+      {reason === "기타" && (
+        <textarea
+          placeholder="기타 사유를 입력하세요"
+          value={etcReason}
+          onChange={(e) => setEtcReason(e.target.value)}
+        />
+      )}
+      <div className={styles.modalButtonsRow}>
         <button onClick={handleSubmitReport} className={styles.btnSubmit}>
           신고 제출
         </button>
@@ -187,15 +185,16 @@ const CommentModal = ({ member, onClose, position, token, loadComments }) => {
           <>
             <img
               src={
-                `http://localhost:8080${member.memberImg}` ||
-                "/default-profile.png"
+                member.memberImg
+                  ? `http://localhost:8080${member.memberImg}`
+                  : "/default-profile.png"
               }
               alt="프로필"
               className={styles.modalProfileImg}
             />
             <h3>{member?.memberNickname}</h3>
             <div className={styles.modalButtons}>
-              <button className={styles.btnChat}>채팅하기</button>
+              <button className={styles.btnChat}>1:1 채팅하기</button>
               {hasReported ? (
                 <button
                   className={`${styles.btnReport} ${styles.cancel}`}
@@ -208,7 +207,7 @@ const CommentModal = ({ member, onClose, position, token, loadComments }) => {
                   className={styles.btnReport}
                   onClick={() => setIsReporting(true)}
                 >
-                  신고하기
+                  신고하기 <img src="/report.svg" alt="신고" />
                 </button>
               )}
             </div>

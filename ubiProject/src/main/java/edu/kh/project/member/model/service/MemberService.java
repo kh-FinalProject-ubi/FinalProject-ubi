@@ -42,4 +42,10 @@ public interface MemberService {
 	// 비밀번호 재설정
 	boolean resetPassword(String memberId, String email, String newPassword);
 
+	// 이름, 이메일이 db에 존재하는 지 확인하는 메소드
+	Integer existsByNameAndEmail(String name, String email);
+
+	// 이름, 아이디, 이메일이 db에 존재하는 지 확인하는 메소드
+	Integer existsByNameAndMemberIdAndEmail(String name, String memberId, String email);
+
 }

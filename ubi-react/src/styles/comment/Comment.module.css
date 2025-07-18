@@ -43,7 +43,7 @@
 .commentActionsRight button {
   background: none;
   border: none;
-  color: #5E60CE;
+  color: #5e60ce;
   cursor: pointer;
   font-size: 0.85rem;
   margin-left: 8px;
@@ -59,7 +59,7 @@
 }
 
 .commentText {
-  margin: 8px 0 12px 0;
+  margin: 8px 0 10px 0;
   font-size: 0.95rem;
   line-height: 1.6;
   color: #333;
@@ -74,7 +74,7 @@
   right: 0;
   background: none;
   border: none;
-  color: #5E60CE;
+  color: #5e60ce;
   cursor: pointer;
   font-size: 0.85rem;
 }
@@ -87,7 +87,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  margin-right: 5px;
+  margin-right: 3px;
 }
 
 .commentLikeBtn img {
@@ -95,14 +95,20 @@
   height: 16px;
 }
 
+.likeCount {
+  font-size: 0.85rem;
+  margin-right: 15px; /* 숫자와 답글 사이 */
+}
+
 .commentLikeBtn.liked img {
-  filter: brightness(0) saturate(100%) invert(32%) sepia(90%) saturate(747%) hue-rotate(227deg) brightness(92%) contrast(102%);
+  filter: brightness(0) saturate(100%) invert(32%) sepia(90%) saturate(747%)
+    hue-rotate(227deg) brightness(92%) contrast(102%);
 }
 
 .commentSection form {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 10px;
   margin-top: 10px;
 }
@@ -118,19 +124,36 @@
 
 .commentSection form button {
   white-space: nowrap;
-  height: 100%;
-  background-color: #ffd600;
   border: none;
   padding: 10px 20px;
-  font-weight: bold;
-  border-radius: 4px;
+  border-radius: 10px;
+  background-color: #ffe56d;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.replyBtn {
+  justify-items: start;
+  background: none;
+  border: none;
+  color: #5e60ce;
+  cursor: pointer;
+  font-size: 0.85rem;
+  letter-spacing: 1px; /* 자간 */
+
+  margin: 0;
+}
+
+.replyBtn:hover {
+  text-decoration: underline;
 }
 
 /* 자식 댓글 들여쓰기 */
 .replyList li .commentItem {
-  margin-left: 10%;
-  border-left: none; /* ✅ 회색 선 제거 */
+  margin-left: 7%;
+  border-left: none;
   padding-left: 0;
 }
 
@@ -146,7 +169,7 @@
 
 .reportedCommentText {
   color: #ff4444;
-  font-weight: bold;
+  font-weight: 400;
 }
 
 .reportBtn {
@@ -167,52 +190,16 @@
   object-fit: cover;
 }
 
-/* 모달 */
-.modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modalContent {
-  background: white;
-  padding: 20px 30px;
-  border-radius: 10px;
-  position: relative;
-  max-width: 300px;
-  text-align: center;
-}
-
-.modalClose {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  font-size: 20px;
-  border: none;
+.moreBtnBottom {
   background: none;
-  cursor: pointer;
-}
-
-.modalProfileImg {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-bottom: 10px;
-}
-
-.modalButtons button {
-  margin: 10px 5px;
-  padding: 8px 15px;
   border: none;
+  color: #5e60ce;
   cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.moreBtnBottom:hover {
+  text-decoration: underline;
 }
 
 .btnChat {
@@ -225,10 +212,21 @@
 }
 
 /* 답글, 수정, 삭제, 더보기 버튼 공통 스타일 */
+.commentActionsBottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.leftActions {
+  display: flex;
+  align-items: center;
+}
+
 .commentActionsBottom button,
 .moreBtn,
 .commentActionsRight button {
-  color: #5E60CE;
+  color: #5e60ce;
   background: none;
   border: none;
   font-size: 0.85rem;

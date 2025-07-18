@@ -307,27 +307,43 @@
 		UPDATE MEMBER
 		SET MEMBER_PW = #{encPw}
 		WHERE
-		MEMBER_ID = #{memberId}
+		MEMBER_ID =
+		#{memberId}
 	</update>
-	
-	 <!-- ✅ 로그인 회원의 REGION_CITY 조회 -->
-  <select id="selectMemberRegionCity" parameterType="int" resultType="string">
-    SELECT REGION_CITY
-    FROM MEMBER
-    WHERE MEMBER_NO = #{memberNo}
-  </select>
 
-  <!-- ✅ 로그인 회원의 REGION_DISTRICT 조회 -->
-  <select id="selectMemberRegionDistrict" parameterType="int" resultType="string">
-    SELECT REGION_DISTRICT
-    FROM MEMBER
-    WHERE MEMBER_NO = #{memberNo}
-  </select>
+	<!-- ✅ 로그인 회원의 REGION_CITY 조회 -->
+	<select id="selectMemberRegionCity" parameterType="int"
+		resultType="string">
+		SELECT REGION_CITY
+		FROM MEMBER
+		WHERE MEMBER_NO = #{memberNo}
+	</select>
+
+	<!-- ✅ 로그인 회원의 REGION_DISTRICT 조회 -->
+	<select id="selectMemberRegionDistrict" parameterType="int"
+		resultType="string">
+		SELECT REGION_DISTRICT
+		FROM MEMBER
+		WHERE MEMBER_NO =
+		#{memberNo}
+	</select>
 
 	<select id="selectMemberAuthority" resultType="int">
 		SELECT AUTHORITY
 		FROM MEMBER
 		WHERE MEMBER_NO = #{memberNo}
+	</select>
+
+	<select id="existsByNameAndEmail">
+		SELECT * FROM "MEMBER"
+		WHERE MEMBER_NAME = #{name}
+		AND MEMBER_EMAIL = #{email}
+	</select>
+	<select id="existsByNameAndMemberIdAndEmail">
+		SELECT * FROM "MEMBER"
+		WHERE MEMBER_NAME = #{name}
+		AND MEMBER_ID = #{memberId}
+		AND MEMBER_EMAIL = #{email}
 	</select>
 
 </mapper>

@@ -1,0 +1,35 @@
+/* --- 페이지네이션 스타일 --- */
+.paginationContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.2rem;
+  margin-top: 2.5rem;
+}
+
+.paginationContainer button {
+  font-family: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.2rem 0.4rem;
+  font-weight: normal;
+}
+
+.paginationContainer button:disabled {
+  color: #ddd;
+  cursor: not-allowed;
+}
+
+/* 일반 페이지 숫자 버튼 */
+.pageNumber {
+  color: #888;
+}
+
+/* 활성화된 페이지 숫자 버튼 */
+.activePage {
+  color: #5e60ce;
+  font-weight: bold;
+  cursor: default;
+}

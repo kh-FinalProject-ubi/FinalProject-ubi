@@ -254,7 +254,10 @@ const Signup = () => {
 
   return (
     <div className={styles.container}>
-      <h2>회원가입</h2>
+      <div className={styles.imageBox}>
+        <img src="/default-thumbnail.png" alt="login" />
+      </div>
+
       <form className={styles.form} onSubmit={handleSubmit}>
         <input
           className={styles.input}

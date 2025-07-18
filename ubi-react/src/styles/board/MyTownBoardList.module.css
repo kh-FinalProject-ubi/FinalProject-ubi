@@ -14,22 +14,21 @@
 /* --- 상단 검색바 & 검색유형 선택 --- */
 .topSearchContainer {
   display: flex;
-justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
+  justify-content: flex-start; /* ✅ 왼쪽 정렬로 고정 */
   align-items: center;
   margin-bottom: 2rem;
-    gap: 20px; /* ✅ 버튼과 검색창 사이 간격 유지 */
+  gap: 20px; /* ✅ 버튼과 검색창 사이 간격 유지 */
   position: relative;
-
-  }
-  .sortDropdownWrapper {
+}
+.sortDropdownWrapper {
   position: relative;
-  width: 120px;     /* ✅ 버튼/드롭다운 너비 고정 */
-  flex-shrink: 0;   /* ✅ 줄어들지 않게 */
+  width: 120px; /* ✅ 버튼/드롭다운 너비 고정 */
+  flex-shrink: 0; /* ✅ 줄어들지 않게 */
 }
 
 .searchBar {
   position: relative;
-   flex: 1;             /* ✅ 남은 공간 전체 차지 */
+  flex: 1; /* ✅ 남은 공간 전체 차지 */
   width: 100%;
   max-width: 600px;
 }
@@ -55,10 +54,9 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
 /* ✅ 버튼, 드롭다운 너비 동일화 */
 .sortButton,
 .sortDropdown {
-  width: 120px;  /* 통일된 너비 */
+  width: 120px; /* 통일된 너비 */
   min-width: 120px;
 }
-
 
 /* ✅ 검색 옵션 버튼 */
 .sortButton {
@@ -91,26 +89,22 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
   min-width: 120px;
 }
 
-
 .sortDropdownItem {
   padding: 10px 15px;
   background: none;
   border: none;
   cursor: pointer;
-  text-align: center;       /* ✅ 텍스트 가운데 정렬 */
+  text-align: center; /* ✅ 텍스트 가운데 정렬 */
   font-size: 0.95rem;
   transition: background-color 0.2s ease;
-  width: 100%;              /* ✅ 버튼 전체 너비 사용 */
+  width: 100%; /* ✅ 버튼 전체 너비 사용 */
 }
-
 
 /* --- 검색 필터 --- */
 .filterContainer {
   margin-bottom: 2rem;
 }
 .filterTitle {
-
-
   font-weight: bold;
   margin-bottom: 1rem; /* ✅ 제목과 테이블 간 간격 */
 }
@@ -119,7 +113,7 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* 그림자 효과 */
   border-radius: 12px;
   padding: 0px;
-  overflow: hidden;    /* ✅ 내부 테이블도 둥글게 맞추기 */
+  overflow: hidden; /* ✅ 내부 테이블도 둥글게 맞추기 */
 }
 
 .filterTable {
@@ -138,7 +132,6 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
   border-bottom: none;
 }
 
-
 /* ✅ th 설정: 왼쪽으로 완전히 붙고, 텍스트는 세로/가로 모두 가운데 정렬 */
 .filterLabel {
   background-color: #ffe066;
@@ -155,8 +148,8 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
 
 /* ✅ td: 여백 최소화 및 정렬 */
 .filterContent {
-   padding: 32px 32px;
-    height: 100%;
+  padding: 32px 32px;
+  height: 100%;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -164,32 +157,30 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
   margin: 0;
 }
 
-
-
 /* ✅ 기본 radio 버튼 숨기고 커스텀 원형 표시 */
 .radioLabel input[type="radio"] {
   appearance: none;
   -webkit-appearance: none;
- width: 12px;
+  width: 12px;
   height: 12px;
   border-radius: 50%;
   border: 2px solid #ffe066; /* 노란색 외곽선 */
-   background-color: #ffe066; /* ✅ 버튼 자체가 노란색 */
+  background-color: #ffe066; /* ✅ 버튼 자체가 노란색 */
   margin: 0;
   position: relative;
   cursor: pointer;
-    margin-right: 8px;  /* ✅ 버튼과 텍스트 간 여백 */
+  margin-right: 8px; /* ✅ 버튼과 텍스트 간 여백 */
   transition: all 0.2s ease;
   vertical-align: middle;
 }
 
 /* ✅ 선택됐을 때 안쪽 점 표시 */
 .radioLabel input[type="radio"]::before {
-  content: '';
+  content: "";
   display: block;
   width: 12px;
   height: 12px;
-   border: 3px solid #5e60ce; /* 노란색 외곽선 */
+  border: 3px solid #5e60ce; /* 노란색 외곽선 */
   background-color: #5e60ce; /* 보라색 안쪽 점 */
   border-radius: 50%;
   position: absolute;
@@ -208,7 +199,7 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
 .filterContent select {
   padding: 8px 12px;
   font-size: 0.95rem;
- border: none;     
+  border: none;
   background-color: white;
   color: #333;
   cursor: pointer;
@@ -218,7 +209,7 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
 
 /* ✅ 포커스(선택) 시에도 노란색 테두리 제거 */
 .filterContent select:focus {
-  border-color: #999;             /* ✅ 보라/노란 테두리 제거하고 일반색 */
+  border-color: #999; /* ✅ 보라/노란 테두리 제거하고 일반색 */
   outline: none;
 }
 
@@ -243,7 +234,6 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
   background-color: #5e60ce;
   color: white;
 }
-
 
 /* --- 글쓰기 버튼 --- */
 .writeButtonContainer {
@@ -289,8 +279,8 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
 }
 
 .cardContent {
-    position: relative;           /* ✅ 기준 컨테이너로 지정 */
- display: flex;
+  position: relative; /* ✅ 기준 컨테이너로 지정 */
+  display: flex;
   flex-direction: column;
   justify-content: space-between;
   height: 260px; /* ✅ 카드 내 컨텐츠 전체 높이 고정 */
@@ -298,32 +288,32 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
 }
 
 .cardTitle {
-    font-size: 1.1rem;
+  font-size: 1.1rem;
   font-weight: 600;
   height: 32px;
   line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;       /* ✅ 한 줄로 자르고 ... */
+  white-space: nowrap; /* ✅ 한 줄로 자르고 ... */
 }
 
 .cardText {
   font-size: 0.9rem;
   color: #666;
   display: -webkit-box;
-  -webkit-line-clamp: 3;        /* ✅ 최대 3줄 표시 */
+  -webkit-line-clamp: 3; /* ✅ 최대 3줄 표시 */
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  height: calc(1.4em * 3);  /* ✅ 정확히 3줄 높이 확보 */
-  line-height: 1.4;             /* ✅ 줄 간격 */
-  max-height: calc(1.4em * 3);  /* ✅ 줄 수만큼 고정 높이 */
+  height: calc(1.4em * 3); /* ✅ 정확히 3줄 높이 확보 */
+  line-height: 1.4; /* ✅ 줄 간격 */
+  max-height: calc(1.4em * 3); /* ✅ 줄 수만큼 고정 높이 */
 }
 
 /* ✅ 별점 + 날짜 고정 배치 */
 .ratingRow {
   position: absolute;
-  bottom: 55px;                 /* ✅ 아래 여백 (metaRow 위로 올라오게) */
+  bottom: 55px; /* ✅ 아래 여백 (metaRow 위로 올라오게) */
   left: 15px;
   right: 15px;
   display: flex;
@@ -347,7 +337,7 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
   align-items: center;
   padding-top: 12px;
   margin-top: 12px;
-    height: 32px;             /* ✅ 고정 */
+  height: 32px; /* ✅ 고정 */
   border-top: 1px solid #f0f0f0;
   font-size: 0.85rem;
   margin-top: auto; /* ✅ 항상 가장 아래 고정 */
@@ -365,7 +355,6 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
   color: #555;
 }
 
-
 .profileImg {
   width: 24px;
   height: 24px;
@@ -376,7 +365,7 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
   display: flex;
   flex-wrap: wrap;
   gap: 0px;
-  max-height: 54px;   
+  max-height: 54px;
   overflow: hidden;
 }
 .tag {
@@ -391,7 +380,7 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-  max-width: 100px;               /* ✅ 너무 긴 태그 방지 */
+  max-width: 100px; /* ✅ 너무 긴 태그 방지 */
 }
 
 .tagEllipsis {
@@ -405,7 +394,6 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
   display: inline-block;
   white-space: nowrap;
 }
-
 
 /* --- 카드 색깔  --- */
 .tagYellow {
@@ -423,21 +411,44 @@ justify-content: flex-start;  /* ✅ 왼쪽 정렬로 고정 */
   color: #333;
 }
 
-
-
 /* --- 기타 (기존과 유사) --- */
-.noResults,
-.paginationContainer {
+.noResults {
   text-align: center;
   margin: 3rem 0;
 }
+
+/* --- 페이지네이션 스타일 --- */
+.paginationContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.2rem;
+  margin-top: 2.5rem;
+}
+
 .paginationContainer button {
+  font-family: inherit;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 5px 8px;
+  font-size: 0.9rem;
+  padding: 0.2rem 0.4rem;
+  font-weight: normal;
 }
-.paginationContainer .activePage {
+
+.paginationContainer button:disabled {
+  color: #ddd;
+  cursor: not-allowed;
+}
+
+/* 일반 페이지 숫자 버튼 */
+.pageNumber {
+  color: #888;
+}
+
+/* 활성화된 페이지 숫자 버튼 */
+.activePage {
   color: #5e60ce;
   font-weight: bold;
+  cursor: default;
 }

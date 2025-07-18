@@ -168,6 +168,21 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
     }
   };
 
+  const handleCommentChange = (e) => {
+    const value = e.target.value;
+    if (value.length <= 1500) setCommentContent(value);
+  };
+
+  const handleReplyChange = (e) => {
+    const value = e.target.value;
+    if (value.length <= 1500) setReplyContent(value);
+  };
+
+  const handleEditChange = (e) => {
+    const value = e.target.value;
+    if (value.length <= 1500) setEditingContent(value);
+  };
+
   const buildCommentTree = (comments) => {
     const map = {};
     const roots = [];
@@ -261,16 +276,29 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
                     </button>
                   )}
               </div>
-              {(isAdmin || isMine) && editingCommentNo !== c.commentNo && (
+              {(isAdmin || isMine) && (
                 <div className={styles.commentActionsRight}>
-                  <button
-                    onClick={() => startEditing(c.commentNo, c.commentContent)}
-                  >
-                    수정
-                  </button>
-                  <button onClick={() => handleCommentDelete(c.commentNo)}>
-                    삭제
-                  </button>
+                  {editingCommentNo === c.commentNo ? (
+                    <>
+                      <button onClick={() => saveEdit(c.commentNo)}>
+                        저장
+                      </button>
+                      <button onClick={cancelEdit}>취소</button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() =>
+                          startEditing(c.commentNo, c.commentContent)
+                        }
+                      >
+                        수정
+                      </button>
+                      <button onClick={() => handleCommentDelete(c.commentNo)}>
+                        삭제
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -285,14 +313,12 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
               <>
                 <textarea
                   value={editingContent}
-                  onChange={(e) => setEditingContent(e.target.value)}
+                  onChange={
+                    ((e) => setEditingContent(e.target.value), handleEditChange)
+                  }
                   rows={3}
                   style={{ width: "100%", resize: "vertical" }}
                 />
-                <div>
-                  <button onClick={() => saveEdit(c.commentNo)}>저장</button>
-                  <button onClick={cancelEdit}>취소</button>
-                </div>
               </>
             ) : reportedByMe ? (
               <p className={styles.reportedCommentText}>신고한 댓글입니다.</p>
@@ -314,58 +340,63 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
                 >
                   {c.commentContent}
                 </p>
+              </>
+            )}
+
+            {token && !reportedByMe && (
+              <div className={styles.commentActionsBottom}>
+                <div className={styles.leftActions}>
+                  {editingCommentNo !== c.commentNo && (
+                    <button
+                      className={`${styles.commentLikeBtn} ${
+                        c.commentLiked ? styles.liked : ""
+                      }`}
+                      onClick={() => handleCommentLike(c.commentNo)}
+                    >
+                      <img src="/commentLike.svg" alt="좋아요" />
+                    </button>
+                  )}
+                  <span className={styles.likeCount}>{c.commentLike}</span>
+
+                  <button
+                    className={styles.replyBtn}
+                    onClick={() => {
+                      cancelEdit();
+                      handleReplyClick(c.commentNo);
+                    }}
+                  >
+                    답글
+                  </button>
+                </div>
+
                 {c.commentContent.length > 100 && (
                   <button
-                    className={styles.moreBtn}
+                    className={styles.moreBtnBottom}
                     onClick={() => toggleExpand(c.commentNo)}
                   >
                     {isExpanded ? "닫기" : "더보기"}
                   </button>
                 )}
-              </>
-            )}
-
-            {token && !reportedByMe && (
-              <>
-                {/* 좋아요는 수정 중일 때 숨김 */}
-                {editingCommentNo !== c.commentNo && (
-                  <button
-                    className={`${styles.commentLikeBtn} ${
-                      c.commentLiked ? styles.liked : ""
-                    }`}
-                    onClick={() => handleCommentLike(c.commentNo)}
-                  >
-                    <img src="/commentLike.svg" alt="좋아요" />
-                  </button>
-                )}
-                <span>{c.commentLike}</span>
-
-                {/* 답글 버튼은 항상 보이지만, 누르면 수정창 닫힘 */}
-                <button
-                  onClick={() => {
-                    cancelEdit(); // 수정모드 종료
-                    handleReplyClick(c.commentNo); // 답글 모드 진입
-                  }}
-                >
-                  답글
-                </button>
-              </>
+              </div>
             )}
 
             {token && replyTarget === c.commentNo && !reportedByMe && (
               <form
                 onSubmit={(e) => handleReplySubmit(e, c.commentNo)}
-                style={{ marginTop: "10px" }}
+                className={styles.replyForm}
               >
                 <textarea
                   value={replyContent}
-                  onChange={(e) => setReplyContent(e.target.value)}
+                  onChange={
+                    ((e) => setReplyContent(e.target.value), handleReplyChange)
+                  }
                   rows={3}
                   placeholder="답글을 입력하세요."
                   style={{ width: "100%", resize: "vertical" }}
                 />
-                <button type="submit" style={{ marginTop: "5px" }}>
-                  답글 작성
+                <button type="submit">
+                  답글 <br />
+                  작성
                 </button>
               </form>
             )}
@@ -391,11 +422,16 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
         <form onSubmit={handleCommentSubmit} className={styles.commentForm}>
           <textarea
             value={commentContent}
-            onChange={(e) => setCommentContent(e.target.value)}
+            onChange={
+              ((e) => setCommentContent(e.target.value), handleCommentChange)
+            }
             rows={3}
             placeholder="댓글을 입력하세요."
           />
-          <button type="submit">댓글 작성</button>
+          <button type="submit">
+            댓글 <br />
+            작성
+          </button>
         </form>
       )}
 
@@ -418,6 +454,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
             position={modalPosition}
             token={token}
             onClose={() => setModalVisible(false)}
+            loadComments={loadComments}
           />
         )}
     </section>
