@@ -49,8 +49,8 @@ public class EditBoardController {
 	@Autowired
 	private WebApplicationContext context;
 	
-	@Value("${my.board.upload-path}")
-	private String uploadPath;
+//	@Value("${my.board.upload-path}")
+//	private String uploadPath;
 
 
 	// 게시글 작성 화면 전환
@@ -220,22 +220,22 @@ public class EditBoardController {
 	}
 
 	// 사진 업로드 메서드
-	   @PostMapping("/image-upload")
-	    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
-	        if (file.isEmpty()) {
-	            return ResponseEntity.badRequest().body("파일이 없습니다.");
-	        }
-
-	        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-	        File dest = new File(uploadPath + File.separator + fileName);
-
-	        try {
-	            file.transferTo(dest);
-	            return ResponseEntity.ok(fileName);
-	        } catch (IOException e) {
-	            return ResponseEntity.status(500).body("파일 업로드 실패");
-	        }
-	    }
-	
+//	   @PostMapping("/image-upload")
+//	    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
+//	        if (file.isEmpty()) {
+//	            return ResponseEntity.badRequest().body("파일이 없습니다.");
+//	        }
+//
+//	        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+//	        File dest = new File(uploadPath + File.separator + fileName);
+//
+//	        try {
+//	            file.transferTo(dest);
+//	            return ResponseEntity.ok(fileName);
+//	        } catch (IOException e) {
+//	            return ResponseEntity.status(500).body("파일 업로드 실패");
+//	        }
+//	    }
+//	
 
 }
