@@ -24,9 +24,15 @@ const AlertModal = () => {
 };
 
 const Header = () => {
-
-  const { token, memberImg, clearAuth, memberNo, memberNickname, memberName, authority } =
-    useAuthStore();
+  const {
+    token,
+    memberImg,
+    clearAuth,
+    memberNo,
+    memberNickname,
+    memberName,
+    authority,
+  } = useAuthStore();
 
   const isLogin = !!token;
   const { selectedCity, selectedDistrict } = useSelectedRegionStore();
@@ -161,50 +167,56 @@ const Header = () => {
               UBI
             </Link>
           </h2>
+
           <div className={styles.headerRight}>
             {isLogin ? (
               <>
-                {/* 알림 아이콘 */}
-                <button
-                  className={styles.alarmBtn}
-                  onClick={() => {
-                    setShowDropdown((prev) => !prev);
-                    setHasNewAlert(false); // ✅ 알림창 열면 NEW 뱃지 제거
-                  }}
-                >
-                  <img src="/alarm.svg" alt="알림 아이콘" />
-                  {hasNewAlert && <span className="new-badge">NEW</span>}{" "}
-                </button>
+                {/* ✅ 알림 아이콘 + 드롭다운을 감싸는 래퍼 */}
+                <div className={styles.alarmWrapper}>
+                  <button
+                    className={styles.alarmBtn}
+                    onClick={() => {
+                      setShowDropdown((prev) => !prev);
+                      setHasNewAlert(false);
+                    }}
+                  >
+                    <img src="/alarm.svg" alt="알림 아이콘" />
+                    {hasNewAlert && <span className="new-badge">NEW</span>}
+                  </button>
 
-                {showDropdown && (
-                  <div className={styles.alertDropdown} ref={dropdownRef}>
-                    {alerts.filter((a) => !a.isRead).length === 0 ? (
-                      <div className="alert-empty">안 읽은 알림이 없습니다</div>
-                    ) : (
-                      alerts
-                        .filter((a) => !a.isRead)
-                        .map((alert) => (
-                          <div
-                            key={alert.alertId}
-                            className="alert-item"
-                            onClick={() => handleAlertClick(alert)}
-                          >
-                            <p>
-                              {alert.type === "NOTICE" &&
-                                "새로운 공지사항이 등록되었습니다."}
-                              {alert.type === "COMMENT" &&
-                                "내 글에 댓글이 달렸습니다."}
-                              {alert.type === "QUESTION_REPLY" &&
-                                "문의글에 답변이 등록되었습니다."}
-                              {alert.type === "WELFARE_UPDATE" &&
-                                "찜한 복지 정보가 업데이트되었습니다."}
-                            </p>
-                          </div>
-                        ))
-                    )}
-                  </div>
-                )}
+                  {showDropdown && (
+                    <div className={styles.alertDropdown} ref={dropdownRef}>
+                      {alerts.filter((a) => !a.isRead).length === 0 ? (
+                        <div className="alert-empty">
+                          안 읽은 알림이 없습니다
+                        </div>
+                      ) : (
+                        alerts
+                          .filter((a) => !a.isRead)
+                          .map((alert) => (
+                            <div
+                              key={alert.alertId}
+                              className="alert-item"
+                              onClick={() => handleAlertClick(alert)}
+                            >
+                              <p>
+                                {alert.type === "NOTICE" &&
+                                  "새로운 공지사항이 등록되었습니다."}
+                                {alert.type === "COMMENT" &&
+                                  "내 글에 댓글이 달렸습니다."}
+                                {alert.type === "QUESTION_REPLY" &&
+                                  "문의글에 답변이 등록되었습니다."}
+                                {alert.type === "WELFARE_UPDATE" &&
+                                  "찜한 복지 정보가 업데이트되었습니다."}
+                              </p>
+                            </div>
+                          ))
+                      )}
+                    </div>
+                  )}
+                </div>
 
+                {/* ✅ 채팅 아이콘 */}
                 <button className={styles.alarmBtn}>
                   <img src="/chatting.svg" alt="채팅 아이콘" />
                 </button>

@@ -134,29 +134,53 @@
   cursor: pointer;
 }
 
-/* 추가적으로 필요한 클래스 */
+.alarmWrapper {
+  position: relative;
+}
+
 .alertDropdown {
   position: absolute;
   top: 40px;
-  right: 0;
-  background: white;
+  left: 50%;
+  width: 250px;
+  background: #fff;
   border: 1px solid #ddd;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-  width: 200px;
-  max-height: 300px;
-  overflow-y: auto;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  z-index: 100;
 }
 
-.alertItem {
-  padding: 10px;
-  cursor: pointer;
-  border-bottom: 1px solid #eee;
-}
-
-.alertEmpty {
-  padding: 20px;
+.alert-empty {
+  padding: 16px;
   text-align: center;
+  font-size: 14px;
   color: #888;
+}
+
+.alert-item {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.alert-item:hover {
+  background: #f9f9f9;
+}
+
+.alert-item p {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.alert-type-label {
+  font-weight: bold;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+  display: block;
 }
 
 .newBadge {

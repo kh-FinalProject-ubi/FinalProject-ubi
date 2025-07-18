@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "../../styles/welfarefacility/FacilityCard.css";
+import styles from "../../styles/welfarefacility/FacilityCard.module.css";
 /**
  * 시설 객체에서 다국어 키(FACLT_NM, 시설명 등)를 탐색해 값을 반환하는 함수
  */
@@ -84,16 +84,17 @@ export default function FacilityCard({ facility }) {
   const category = getCategory(facility);
 
   return (
-    <div className="facility-card p-3 border rounded-md shadow-sm hover:shadow-md transition duration-200 bg-white">
-      <div className="mb-2 text-sm text-white bg-blue-500 px-2 py-1 rounded w-fit">
-        {serviceTarget} {category}
+    <div className={styles.facilityCard}>
+      <div className={styles.facilityCardRow}>
+        <div className={styles.serviceTarget}>{serviceTarget}</div>
+        <div className={styles.category}>{category}</div>
       </div>
 
-      <h3 className="text-lg font-semibold text-blue-600 hover:underline text-center">
+      <div className={styles.facilityStatus}>
         <Link to={{ pathname: "/facility/detail" }} state={{ facility }}>
           {name}
         </Link>
-      </h3>
+      </div>
     </div>
   );
 }

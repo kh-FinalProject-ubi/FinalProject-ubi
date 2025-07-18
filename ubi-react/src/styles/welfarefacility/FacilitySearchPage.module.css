@@ -7,6 +7,7 @@
 .region-source-buttons {
   display: flex;
   gap: 12px;
+  margin-top: 15px;
   margin-bottom: 16px;
 }
 
@@ -96,6 +97,11 @@
 }
 
 /* ---------------------------------------------------------------*/
+
+.filterTitle {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
 
 .filterBox {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* 그림자 효과 */
