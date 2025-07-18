@@ -353,28 +353,6 @@ const Profile = () => {
     }
   }, [member]);
 
-  // const getMemberStandardLabel = (code) => {
-  //   const { main, isDisabled, isPregnant } = parseMemberStandardCode(code);
-
-  //   let labels = [];
-
-  //   if (main) {
-  //     labels.push(main);
-  //   } else {
-  //     labels.push("일반");
-  //   }
-
-  //   if (isDisabled) {
-  //     labels.push("장애인");
-  //   }
-
-  //   if (isPregnant) {
-  //     labels.push("임산부");
-  //   }
-
-  //   return labels.join(", ");
-  // };
-
   const location = useLocation();
 
   useEffect(() => {
@@ -728,9 +706,18 @@ const Profile = () => {
                           {isEvent ? benefit.eventTitle : benefit.facilityName}
                         </div>
                         <div className={styles.benefitKind}>
-                          {isEvent
+                          {(() => {
+                            const plainContent = stripHtml(benefit.eventContent);
+
+                            if (!plainContent) return "내용 없음";
+
+                            return plainContent.length > 20
+                              ? `${plainContent.slice(0, 20)}...`
+                              : plainContent;
+                          })()}
+                          {/* {isEvent
                             ? benefit.eventContent
-                            : benefit.facilityKindNM}
+                            : benefit.facilityKindNM} */}
                         </div>
                         {!isEvent && (
                           <div className={styles.benefitRequirement}>
@@ -776,7 +763,15 @@ const Profile = () => {
                           {benefit.agency}
                         </div>
                         <div className={styles.benefitDescription}>
-                          {benefit.description}
+                          {(() => {
+                            const plainContent = stripHtml(benefit.description);
+
+                            if (!plainContent) return "내용 없음";
+
+                            return plainContent.length > 40
+                              ? `${plainContent.slice(0, 40)}...`
+                              : plainContent;
+                          })()}
                         </div>
                         <p className={styles.benefit}>
                           {benefit.receptionStart && benefit.receptionEnd

@@ -114,12 +114,13 @@ export default function ProfileImgUploader({ onSave }) {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <img
-          src={imageSrc}
-          alt="프로필"
-          className={styles.profileImageBorder}
-        />
-        <div className={styles.blurMask}>
+        {/* ⬇ 이 div 가 ‘마스크’ 역할 */}
+        <div className={styles.imageMask}>
+          <img
+            src={imageSrc}
+            alt="프로필"
+            className={styles.profileImageBorder}
+          />
           <img
             src={imageSrc}
             alt="프로필 흐림"
@@ -128,6 +129,8 @@ export default function ProfileImgUploader({ onSave }) {
             }`}
           />
         </div>
+
+        {/* 버튼은 마스크 밖이라 잘리지 않음 */}
         <div
           className={`${styles.buttonsContainer} ${
             isHovered ? styles.visible : ""
