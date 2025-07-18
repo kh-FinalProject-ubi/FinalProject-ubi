@@ -1,0 +1,302 @@
+/* 레이아웃 */
+.loginPageContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 70vh;
+  padding: 2rem 0;
+}
+
+.loginMainContent {
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.imageBox {
+  flex: 1;
+  display: none; /* 모바일에서는 숨김 */
+}
+
+@media (min-width: 768px) {
+  .imageBox {
+    display: block;
+  }
+}
+
+.imageBox img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.formContainer {
+  flex: 1;
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+}
+
+.formContent {
+  width: 100%;
+}
+
+.formTitle {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  text-align: center;
+  color: #2d3748;
+}
+
+/* 입력 필드 */
+.inputWrapper {
+  position: relative;
+  margin-bottom: 30px; /* input 간 간격 일정하게 유지 */
+}
+
+.inputWrapper input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #6c6c6c;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.inputWrapper input:focus {
+  outline: none;
+  border-color: #ffe56d;
+  box-shadow: 0 0 0 1px #ffe56d;
+}
+
+.inputWrapper input::placeholder {
+  color: #a3a2a7;
+  font-weight: 200;
+}
+
+/* 메시지 공통 */
+.message {
+  position: absolute;
+  top: 100%;
+  margin-top: 5px;
+  font-size: 0.85rem;
+  height: 18px;
+  line-height: 18px;
+}
+
+/* 에러/성공 메시지 */
+.errorMessage {
+  margin-top: 5px;
+  color: #e53e3e;
+}
+
+.successMessage {
+  color: #38a169;
+}
+
+.hiddenMessage {
+  visibility: hidden;
+}
+
+/* 타이머 */
+.timer {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.85rem;
+  color: #e53e3e;
+}
+
+/* 인라인 그룹 */
+.inputGroup {
+  display: flex;
+  align-items: center;
+}
+
+.inputGroup input {
+  flex: 1;
+}
+
+.verificationGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.verificationGroup input {
+  flex: 1;
+}
+
+/* 버튼 */
+.confirmBtn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 1000px;
+  background-color: #5e60ce;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 200;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.confirmBtn:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.kakaoBtn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 1rem;
+  border: none;
+  border-radius: 1000px;
+  background-color: #fee500;
+  color: #191919;
+  font-size: 1.1rem;
+  font-weight: 200;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.authBtn {
+  padding: 12px 16px;
+  margin-left: 10px;
+  border: 1px solid #e2e8f0;
+  background-color: #fee500;
+  border-radius: 1000px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.authBtn:disabled {
+  background-color: #f7fafc;
+  color: #a0aec0;
+  cursor: not-allowed;
+}
+
+/* 기타 스타일 */
+.findAccountLink {
+  display: flex;
+  align-items: center;
+}
+
+.findAccountLink button {
+  background: none;
+  border: none;
+  border-radius: 1000px;
+  justify-items: center;
+  color: #5e60ce;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.findAccountLink button:hover {
+  text-decoration: underline;
+}
+
+.findAccountLink span {
+  color: #a0aec0;
+}
+
+.resultBox {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  text-align: center;
+  background-color: #f7fafc;
+  border-radius: 8px;
+}
+
+.resultBox strong {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 1.5rem;
+  color: #2d3748;
+}
+
+.resetCompleteBox {
+  text-align: center;
+}
+
+.completeImage {
+  width: 300px;
+  height: 300px;
+  margin: 0 auto 1.5rem;
+}
+
+.resetCompleteBox p {
+  margin-top: 1rem;
+  line-height: 1.6;
+  color: #4a5568;
+}
+
+.saveIdWrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 5px;
+}
+
+.saveIdWrapper input[type="checkbox"] {
+  margin-right: 5px;
+}
+
+.saveIdWrapper label {
+  font-size: 0.9rem;
+  color: #4a5568;
+}
+
+.signupLink {
+  display: block;
+  margin: 1rem auto 0 auto;
+  text-align: center;
+  color: #5e60ce;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.signupLink:hover {
+  text-decoration: underline;
+}
+
+/* 점 시리즈 */
+.bulletWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+}
+
+.bullet {
+  font-size: 2rem;
+}
+
+.bullet1 {
+  color: #5e60ce;
+}
+
+.bullet2 {
+  color: #ffe56d;
+  font-size: 3rem;
+  margin-bottom: 2px;
+}
+
+.findPwBtn {
+  display: block;
+  margin: 1rem auto;
+  padding: 12px 20px;
+  background-color: #5e60ce;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}

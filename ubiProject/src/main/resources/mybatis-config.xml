@@ -10,7 +10,7 @@
 			pstmt.set???? (?,null)
 		-->
 		<setting name="jdbcTypeForNull" value="NULL" />
-		
+
 		<!-- DB의 UnderScore(_) 표기법 사용 <-> Java의 CamelCase 가 서로 변환될 수 있도록 매핑
 			Java의 필드명(memberId)과 DB 컬럼명(MEMBER_ID)가 서로 연결될 수 있도록 함.
 		 -->

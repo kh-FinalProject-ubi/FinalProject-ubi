@@ -1,0 +1,190 @@
+.siteHeader {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* 상단과 하단 행의 공통 레이아웃 */
+.topRow,
+.bottomRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 20%;
+  box-sizing: border-box;
+}
+
+.topRow {
+  height: 64px; /* 상단 높이 지정 */
+}
+
+.bottomRow {
+  height: 48px; /* 하단 높이 지정 */
+  border-top: 1px solid #e0e0e0;
+}
+
+/* --- 로고 및 사용자 정보 --- */
+/* JSX 구조에 맞게 선택자를 수정했습니다 */
+.topRow h2 a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #222;
+  text-decoration: none;
+}
+
+.logo {
+  width: 32px;
+  height: 32px;
+}
+
+.headerRight {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.profileImg {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.nickname {
+  font-weight: bold;
+  color: #333;
+}
+
+.alarmBtn,
+.loginBtn,
+.logoutBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+}
+
+.signupLink {
+  text-decoration: none;
+  color: #555;
+}
+
+/* --- 메뉴 및 지역 선택 --- */
+.navMenu {
+  display: flex;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+.navMenu a,
+.navMenu span {
+  text-decoration: none;
+  color: #444;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* 활성화된 메뉴 밑줄 스타일 */
+.navMenu a.active {
+  color: #222;
+  font-weight: bold; /* 2px -> bold로 수정 */
+  position: relative;
+}
+
+.navMenu a.active::after {
+  content: "";
+  position: absolute;
+  bottom: -12px; /* 하단 경계선과 맞춤 */
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #ffc107; /* 노란색 */
+}
+
+.locationSelector {
+  color: #333;
+  font-weight: 500;
+}
+
+/* 알람 모달 */
+.alertModal {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff0f0;
+  border: 2px solid #ff8888;
+  padding: 20px;
+  border-radius: 10px;
+  z-index: 999;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+}
+
+.alertContent button {
+  padding: 5px 10px;
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.alarmWrapper {
+  position: relative;
+}
+
+.alertDropdown {
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  width: 250px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  z-index: 100;
+}
+
+.alert-empty {
+  padding: 16px;
+  text-align: center;
+  font-size: 14px;
+  color: #888;
+}
+
+.alert-item {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.alert-item:hover {
+  background: #f9f9f9;
+}
+
+.alert-item p {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.alert-type-label {
+  font-weight: bold;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.newBadge {
+  color: red;
+  font-size: 0.75rem;
+  margin-left: 4px;
+}

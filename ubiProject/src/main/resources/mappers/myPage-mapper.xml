@@ -2,15 +2,156 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="edu.kh.project.myPage.model.mapper.MyPageMapper">
 	
+	<!-- 내 기본 정보 조회 -->
+	<select id="info">
+		SELECT MEMBER_ID, MEMBER_NICKNAME, MEMBER_EMAIL, MEMBER_TEL, MEMBER_ADDRESS,
+			   ENROLL_DATE, MEMBER_TADDRESS, MEMBER_IMG, MEMBER_STANDARD, MEMBER_NO, MEMBER_NAME
+			   FROM MEMBER
+			   WHERE MEMBER_NO = #{memberNo}
+	</select>
+	
 	<!-- 회원 정보 수정 -->
 	<update id="updateInfo">
-	UPDATE "MEMBER" SET
-	MEMBER_NICKNAME = #{memberNickname},
-	MEMBER_TEL = #{memberTel},
-	MEMBER_ADDRESS = #{memberAddress}
-	WHERE MEMBER_NO = #{memberNo}
+		UPDATE "MEMBER" SET
+		MEMBER_NICKNAME = #{memberNickname},
+		MEMBER_TEL = #{memberTel},
+		MEMBER_ADDRESS = #{memberAddress},
+		MEMBER_TADDRESS = #{memberTaddress},
+		MEMBER_STANDARD = #{memberStandard},
+		MEMBER_EMAIL = #{memberEmail}
+		WHERE MEMBER_NO = #{memberNo}
 	</update>
-
+	
+	<!-- 내가 찜한 혜택 조회 -->
+	<select id="getWelfareBenefits">
+		SELECT SERVICE_NAME, AGENCY, DESCRIPTION, RECEPTION_START, RECEPTION_END, CATEGORY, SERVICE_NO, API_SERVICE_ID
+		FROM   WELFARE
+		WHERE  MEMBER_NO = #{memberNo}
+		ORDER BY JJ_TIME DESC
+	</select>
+	
+	<!-- 내가 찜한 채용 조회 -->
+	<select id="getRecruitBenefits">
+		SELECT JOB_TITLE, JOB_FACILITY_NAME, JOB_SALARY, JOB_POSITION, JOB_REQUIREMENT, JOB_CONTENT, RCPTBGNDT, RCPTENDDT
+		FROM   WELFARE_FACILITY_JOB
+		WHERE  MEMBER_NO = #{memberNo}
+		ORDER BY JJ_TIME
+	</select>
+	
+	<!-- 내가 찜한 시설 조회 -->
+	<select id="getFacilityBenefits">
+		SELECT FACILITY_NO, FACILITY_NAME, FACILITY_KIND_NM, EVENT_TITLE, EVENT_DATE_START, EVENT_DATE_END, 
+			   EVENT_CONTENT, REQUIREMENT, RCPTBGNDT, RCPTENDDT
+		FROM   WELFARE_FACILITY
+		WHERE  MEMBER_NO = #{memberNo}
+		ORDER BY JJ_TIME
+	</select>
+	
+	<!-- 작성글 조회 -->
+	<select id="board">
+		SELECT 
+		  B.BOARD_NO, 
+		  B.BOARD_TITLE, 
+		  B.BOARD_CONTENT, 
+		  B.BOARD_DATE, 
+		  B.BOARD_READ_COUNT, 
+		  M.MEMBER_NICKNAME,
+		  B.POST_TYPE,
+		  B.STAR_COUNT
+		FROM BOARD B
+		JOIN MEMBER M ON B.MEMBER_NO = M.MEMBER_NO
+		WHERE B.MEMBER_NO = #{memberNo}
+		AND BOARD_DEL_FL = 'N'
+	</select>
+	
+	<!-- 작성글에 포함된 해시태그 조회 -->
+	<select id="selectHashtagsByBoardNoList" resultType="map">
+	  <choose>
+	    <when test="boardNoList != null and boardNoList.size() > 0">
+	      SELECT BOARD_NO, HASHTAG_NAME
+	      FROM BOARD_HASHTAG
+	      WHERE BOARD_NO IN
+	      <foreach collection="boardNoList" item="boardNo" open="(" separator="," close=")">
+	        #{boardNo}
+	      </foreach>
+	    </when>
+	    <otherwise>
+	      SELECT BOARD_NO, HASHTAG_NAME
+	      FROM BOARD_HASHTAG
+	      WHERE 1 = 0
+	    </otherwise>
+	  </choose>
+	</select>
+	
+	<!-- 작성 댓글 조회 -->
+	<select id="Comment">
+		SELECT 
+		  C.COMMENT_NO,
+		  B.POST_TYPE, 
+		  B.BOARD_TITLE, 
+		  C.COMMENT_CONTENT, 
+		  C.COMMENT_DATE, 
+		  COUNT(CL.COMMENT_NO) AS LIKE_COUNT
+		FROM COMMENTS C
+		JOIN BOARD B ON C.BOARD_NO = B.BOARD_NO
+		LEFT JOIN COMMENT_LIKE CL ON C.COMMENT_NO = CL.COMMENT_NO
+		WHERE 
+		  C.MEMBER_NO = #{memberNo}
+		  AND C.COMMENT_DEL_FL = 'N'
+		  AND C.COMMENT_NO IS NOT NULL
+		GROUP BY 
+		  C.COMMENT_NO, 
+		  B.POST_TYPE, 
+		  B.BOARD_TITLE, 
+		  C.COMMENT_CONTENT, 
+		  C.COMMENT_DATE
+		ORDER BY C.COMMENT_DATE
+	</select>
+	
+	<!-- 내가 좋아요를 누른 게시글 조회 -->
+	<select id="like">
+		SELECT
+		  b.BOARD_NO,
+		  b.BOARD_TITLE,
+		  b.BOARD_CONTENT,
+		  b.BOARD_DATE,
+		  m.MEMBER_NICKNAME,
+		  b.POST_TYPE,
+		  LISTAGG(bh.HASHTAG_NAME, ', ') WITHIN GROUP (ORDER BY bh.HASHTAG_NAME) AS HASHTAG
+		FROM BOARD_LIKE bl
+		JOIN BOARD b ON bl.BOARD_NO = b.BOARD_NO
+		JOIN MEMBER m ON b.MEMBER_NO = m.MEMBER_NO
+		LEFT JOIN BOARD_HASHTAG bh ON b.BOARD_NO = bh.BOARD_NO
+		WHERE bl.MEMBER_NO = #{memberNo}
+		GROUP BY b.BOARD_NO, b.BOARD_TITLE, b.BOARD_CONTENT, 
+			     b.BOARD_DATE, m.MEMBER_NICKNAME, b.POST_TYPE
+	</select>
+	
+	<!-- 내가 좋아요를 누른 댓글 조회 -->
+	<select id="likeComment">
+		SELECT 
+		  C.COMMENT_NO,
+		  B.POST_TYPE, 
+		  B.BOARD_TITLE, 
+		  C.COMMENT_CONTENT, 
+		  C.COMMENT_DATE, 
+		  COUNT(CL2.COMMENT_NO) AS LIKE_COUNT  -- 전체 좋아요 수
+		FROM COMMENT_LIKE CL -- 내가 좋아요 누른 목록에서 시작
+		JOIN COMMENTS C ON CL.COMMENT_NO = C.COMMENT_NO
+		JOIN BOARD B ON C.BOARD_NO = B.BOARD_NO
+		LEFT JOIN COMMENT_LIKE CL2 ON C.COMMENT_NO = CL2.COMMENT_NO  -- 전체 좋아요 수 세기용
+		WHERE 
+		  CL.MEMBER_NO = #{memberNo}  -- 내가 좋아요 누른 댓글만
+		  AND C.COMMENT_DEL_FL = 'N'
+		GROUP BY 
+		  C.COMMENT_NO,
+		  B.POST_TYPE,
+		  B.BOARD_TITLE,
+		  C.COMMENT_CONTENT,
+		  C.COMMENT_DATE
+		ORDER BY C.COMMENT_DATE
+	</select>
+	
 	<!-- 회원의 비밀번호 조회 -->
 	<select id="selectPw">
 	SELECT MEMBER_PW
@@ -26,9 +167,23 @@
 	</update>
 	
 	<!-- 회원 탈퇴 -->
-	<update id="secession">
+	<update id="withdraw">
 	UPDATE "MEMBER" SET
 	MEMBER_DEL_FL = 'Y'
+	WHERE MEMBER_NO = #{memberNo}
+	</update>
+	
+	<!-- 프로필 이미지 변경 -->
+	<update id="profile">
+	UPDATE "MEMBER" SET
+	MEMBER_IMG = #{memberImg}
+	WHERE MEMBER_NO = #{memberNo}
+	</update>
+	
+	<!-- 프로필 이미지 초기화 -->
+	<update id="deleteProfile">
+	UPDATE "MEMBER" SET
+	MEMBER_IMG = NULL
 	WHERE MEMBER_NO = #{memberNo}
 	</update>
 	
@@ -48,12 +203,5 @@
 	WHERE "UPLOAD_FILE".MEMBER_NO = #{memberNo}
 	ORDER BY FILE_NO DESC		
 	</select>
-	
-	<!-- 프로필 이미지 변경 -->
-	<update id="profile">
-	UPDATE "MEMBER" SET
-	PROFILE_IMG = #{profileImg}
-	WHERE MEMBER_NO = #{memberNo}
-	
-	</update>
+
 </mapper>

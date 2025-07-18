@@ -1,0 +1,283 @@
+.container {
+  width: 100%;
+  min-width: 800px;
+  min-height: calc(100vh - 80px);
+  padding: 2rem 23%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.contentWrapper {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.loadingWrapper {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px; /* boardContent와 동일한 최소 높이 */
+}
+
+/* 로딩이 완료된 후에는 컨텐츠를 위쪽부터 표시하기 위한 스타일 */
+.contentWrapper.loaded {
+  justify-content: flex-start;
+}
+
+.pageTitle {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* --- 게시글 상단 정보 --- */
+.boardHeader {
+  margin-bottom: 15px;
+}
+
+.titleContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 15px;
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-grow: 1;
+}
+
+.boardTitle {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.pageHeaderContainer {
+  display: flex;
+  align-items: baseline; /* 텍스트 기준선에 맞춰 정렬 */
+  gap: 1rem;
+  margin-bottom: 15px;
+}
+/*작성 유형 */
+.tag {
+  background-color: #f1f1f1;
+  color: #555;
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+/*우리동네 태그*/
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px; /* ✅ 태그 간 간격 */
+  margin: 12px 0;
+}
+
+.tag {
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid #ddd;
+  white-space: nowrap;
+}
+
+/* ✅ 첫 번째 태그: 노란색 */
+.tagYellow {
+  background-color: #ffe066;
+  color: #5c3c00;
+}
+
+/* ✅ 두 번째 태그: 보라색 */
+.tagPurple {
+  background-color: #5e60ce;
+  color: #ffffff;
+}
+
+/* ✅ 나머지 태그: 하얀색 */
+.tagWhite {
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+.metaContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profileImg {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.authorInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.authorNickname {
+  font-weight: 600;
+}
+
+.boardDate {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.stats {
+  display: flex;
+  gap: 12px;
+  color: #555;
+  align-items: center;
+}
+
+.stats span {
+  position: relative;
+  top: 1px;
+}
+
+.stats button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
+.stats button:focus {
+  outline: none;
+}
+
+/* --- 게시글 본문 --- */
+.boardContent {
+  min-height: 400px;
+  padding: 40px 0;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  line-height: 1.8;
+  font-size: 1rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  overflow-x: auto; /* ✅ 가로 스크롤 허용 (필요 시) */
+  max-width: 100%; /* ✅ 부모 너비를 넘지 않도록 제한 */
+  box-sizing: border-box;
+}
+
+.boardContent :global(p) {
+  display: inline-block;
+  vertical-align: top;
+  margin: 0 5px 10px 0;
+  line-height: normal;
+}
+
+.boardContent :global(img) {
+  max-width: 100%;
+  height: auto !important;
+  border-radius: 8px;
+  display: block;
+}
+
+/* --- 버튼 --- */
+.buttonContainer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.bottomButtonContainer {
+  display: flex;
+  justify-content: flex-end; /* 👉 우측 정렬 */
+  margin-top: 2rem;
+}
+
+.listButton {
+  padding: 0.7rem 2.5rem;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+.listButton:hover {
+  background-color: #f8f8f8;
+}
+
+.editButton,
+.deleteButton {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.2rem;
+}
+.editButton:hover,
+.deleteButton:hover {
+  color: #333;
+}
+
+/* 별점 */
+
+.starContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 전체 가운데 정렬 */
+  margin: 2rem 0;
+}
+
+.starLabel {
+  font-weight: 500;
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 8px; /* 박스와의 간격 */
+}
+
+.starBox {
+  padding: 1rem 6rem;
+  border: 1px solid #cfd8dc;
+  border-radius: 12px;
+  background-color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.stars {
+  display: flex;
+  gap: 8px;
+}
+
+.iconStar {
+  width: 24px;
+  height: 24px;
+}
+
+/* --- 댓글 섹션 --- */
+.commentSection {
+  margin-top: 3rem;
+}
+
+.commentTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+}

@@ -1,0 +1,113 @@
+.section {
+  padding: 2rem 20%;
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 2rem 1rem;
+  }
+}
+
+.title {
+  font-size: 24px;
+  margin-bottom: 15px;
+  font-weight: 700;
+  color: #2e2e2e;
+}
+
+.addressTab {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.addressTab button {
+  background-color: #f1f3f5;
+  color: #333;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.addressTab button.selected {
+  background-color: #5e60ce;
+  color: white;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  padding: 1rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.cardHeader h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2e2e2e;
+  margin: 0;
+}
+
+.category {
+  font-size: 0.75rem;
+  background-color: #5e60ce;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 1rem;
+  white-space: nowrap;
+}
+
+.thumbnail {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.region {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.description {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #555;
+  margin-bottom: 1rem;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+}

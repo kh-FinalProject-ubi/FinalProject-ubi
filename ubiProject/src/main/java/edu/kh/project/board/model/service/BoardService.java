@@ -49,4 +49,13 @@ public interface BoardService {
 	 */
 	List<String> selectDBImageList();
 
+
+	int checkBoardLike(Map<String, Integer> map);
+
+	int selectLikeCount(int boardNo);
+
+
+
+
+
 }

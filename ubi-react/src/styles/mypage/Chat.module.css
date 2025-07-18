@@ -1,0 +1,272 @@
+:root {
+  --y-main: #FFE56D;
+  --y-light: #fff9db;
+  --blue: #0d47a1;
+  --danger: #d32f2f;
+  --radius: 12px;
+  --shadow: 0 2px 6px rgba(0, 0, 0, .05);
+  --ts: .2s ease;
+  --font: "Pretendard", sans-serif;
+}
+
+/* 레이아웃 */
+.chatWrapper {
+  display: flex;
+  height: calc(100vh - 60px);
+  font-family: var(--font);
+  background: #fff;
+}
+
+/* 왼쪽 방목록 */
+.chatRoomList {
+  width: 240px;
+  background: var(--y-main);
+  overflow-y: auto;
+}
+
+.chatRoomItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: var(--ts);
+}
+
+.chatRoomItem:hover,
+.selected {
+  background: rgba(0, 0, 0, .05);
+}
+
+.roomProfile {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: var(--shadow);
+}
+
+.roomInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.roomName {
+  font-weight: 600;
+}
+
+.roomLastMessage {
+  font-size: .82rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.roomMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: .72rem;
+}
+
+.roomUnread {
+  background: var(--danger);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 12px;
+  margin-top: 3px;
+}
+
+/* 오른쪽 채팅창 */
+.chatContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 상단 탭바 */
+.chatTopbar {
+  display: flex;
+  align-items: center;
+  background: var(--y-light);
+  border-radius: var(--radius) var(--radius) 0 0;
+  overflow: hidden;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.active {
+  background: var(--y-main);
+}
+
+.leaveBtn {
+  flex: 0 0 110px;
+  font-size: .78rem;
+  border: none;
+  cursor: pointer;
+  background: #fff;
+  border-left: 1px solid #eee;
+  height: 100%;
+}
+
+.leaveBtn:hover {
+  background: #f4f4f4;
+}
+
+/* 메시지 영역 */
+.chatMessages {
+  flex: 1;
+  padding: 20px 24px 32px;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  display: flex;
+}
+
+.chatMessage {
+  max-width: 70%;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  background: var(--y-main);
+  color: #000;
+  word-break: break-word;
+  box-shadow: var(--shadow);
+}
+
+.myMessage {
+  align-self: flex-end;
+  background: var(--y-main);
+  color: #000;
+}
+
+.otherMessage {
+  align-self: flex-start;
+  background: #fff;
+  color: #000;
+}
+
+.messageTimestamp {
+  font-size: .72rem;
+  color: #666;
+  margin-top: 4px;
+  text-align: right;
+}
+
+.deleteButton {
+  border: none;
+  background: none;
+  margin-left: 6px;
+  cursor: pointer;
+  opacity: .7;
+}
+
+.deleteButton:hover {
+  opacity: 1;
+}
+
+/* 입력창 */
+.chatInput {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 0;
+  border-top: 1px solid #ddd;
+}
+
+.chatInput input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: var(--radius);
+}
+
+.chatInput button {
+  width: 44px;
+  height: 44px;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius);
+  background: var(--blue) url("/icon-arrow-right.svg") center/18px no-repeat;
+}
+
+.chatInput button:hover {
+  filter: brightness(.9);
+}
+
+/* 검색 박스 */
+.chatSearchTop {
+  padding: 12px 14px;
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.chatSearchTop input {
+  width: 100%;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid #ccc;
+  border-radius: var(--radius);
+  font-size: .85rem;
+}
+
+/* 발신자 닉네임 */
+.senderName {
+  margin-left: 44px;
+  font-size: .8rem;
+  font-weight: 600;
+  color: #0d47a1;
+  margin-bottom: 2px;
+}
+
+/* 검색 결과 */
+.chatSearchBox {
+  padding: 10px;
+  background: #fff;
+}
+
+.searchResults {
+  margin-top: 10px;
+}
+
+.searchResultItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background var(--ts);
+}
+
+.searchResultItem:hover {
+  background: #f4f4f4;
+}
+
+/* 라인 */
+.chatLine {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: var(--shadow);
+}
+
+.my .chatLine {
+  justify-content: flex-end;
+}
+
+.my .avatar {
+  display: none;
+}

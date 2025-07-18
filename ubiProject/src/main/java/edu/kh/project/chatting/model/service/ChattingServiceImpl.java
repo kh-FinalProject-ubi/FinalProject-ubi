@@ -38,7 +38,7 @@ public class ChattingServiceImpl implements ChattingService{
     	int result = mapper.createChattingRoom(map);
     	
     	if(result > 0) {
-    		return (int)map.get("chattingRoomNo");
+    		return (int)map.get("chatRoomNo");
     	}
     	
         return 0;
@@ -46,21 +46,16 @@ public class ChattingServiceImpl implements ChattingService{
 
     // 읽음 표시 업데이트
     @Override
-    public int updateReadFlag(Map<String, Integer> paramMap) {
-        return mapper.updateReadFlag(paramMap);
+    public int updateReadFlag(int chatRoomNo) {
+        return mapper.updateReadFlag(chatRoomNo);
     }
     
 
     // 채팅 메세지 조회
     @Override
-    public List<Message> selectMessageList( Map<String, Integer> paramMap) {
+    public List<Message> selectMessageList( Map<String, Integer> map) {
         
-        List<Message> messageList = mapper.selectMessageList(  paramMap.get("chattingRoomNo") );
-        
-        if(!messageList.isEmpty()) { // 메시지 목록이 있다면
-            int result = mapper.updateReadFlag(paramMap);
-        }
-        return messageList;
+        return mapper.selectMessageList(map);
     }
 
     // 채팅 상대 검색
@@ -73,6 +68,18 @@ public class ChattingServiceImpl implements ChattingService{
 	@Override
 	public int insertMessage(Message msg) {
 		return mapper.insertMessage(msg);
+	}
+
+	// 채팅방 나가기
+	@Override
+	public int exitChatRoom(Map<String, Integer> map) {
+		return mapper.exitChatRoom(map);
+	}
+	
+	// 채팅 삭제
+	@Override
+	public int deleteMessage(Map<String, Integer> map) {
+		return mapper.deleteMessage(map);
 	}
 	
 

@@ -1,116 +1,325 @@
 package edu.kh.project.member.model.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import edu.kh.project.board.model.mapper.CommentMapper;
+import edu.kh.project.board.model.mapper.MytownBoardMapper;
 import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.member.model.mapper.MemberMapper;
 import lombok.extern.slf4j.Slf4j;
 
 @Transactional(rollbackFor = Exception.class)
-@Service // 비즈니스로직 처리 역할 명시 + Bean 등록
+@Service
 @Slf4j
 public class MemberServiceImpl implements MemberService {
 
-	// 등록된 Bean 중에서 MemberMapper와 같은 타입 or 상속관계인 Bean을 찾아
-	@Autowired // 의존성 주입(DI)
+	@Autowired
 	private MemberMapper mapper;
 
-	// Bcrypt 암호화 객체 의존성 주입(DI) - SecurityConfig 참고
+	@Autowired
+	private CommentMapper commentMapper;
+
+	@Autowired
+	private MytownBoardMapper boardMapper;
+
 	@Autowired
 	private BCryptPasswordEncoder bcrypt;
 
-	// 로그인 서비스
 	@Override
-	public Member login(Member inputMember) {
-
-		// 암호화 진행
-
-		// bcrypt.encode(문자열) : 문자열을 암호화하여 반환
-		 String bcryptPassword = bcrypt.encode(inputMember.getMemberPw());
-		log.debug("bcryptPassword : " + bcryptPassword);
-
-		// bcrypt.matches(평문, 암호화): 평문과 암호화가 일치하면 true, 아니면 false 반환
-
-		// 1. 이메일이 일치하면서 탈퇴하지 않은 회원 조회
-		Member loginMember = mapper.login(inputMember.getMemberEmail());
-
-		// 2. 만약에 일치하는 이메일이 없어서 조회 결과가 null 인 경우
-		if (loginMember == null)
+	public Member login(String memberId, String memberPw) {
+		Member m = mapper.login(memberId);
+		if (m == null)
 			return null;
 
-		// 3. 입력받은 비밀번호(평문 :inputMember.getMemberPw()) 와
-		// 암호화된 비밀번호(loginMember.getMemberPw())
-		// 두 비밀번호가 일치하는지 확인 (bcrypt.matches(평문, 암호화))
-		// 일치하지 않으면
-		if (!bcrypt.matches(inputMember.getMemberPw(), loginMember.getMemberPw())) {
+		boolean isMatch = bcrypt.matches(memberPw, m.getMemberPw());
+
+		if (!isMatch)
 			return null;
-		}
 
-		// 로그인 결과에서 비밀번호 제거.
-		loginMember.setMemberPw(null);
-
-		return loginMember;
+		m.setMemberPw(null);
+		return m;
 	}
 
-	// 이메일 중복 검사 서비스
+	@Override
+	public int signup(Member inputMember) {
+		// 비밀번호 암호화
+		String encryptedPw = bcrypt.encode(inputMember.getMemberPw());
+		inputMember.setMemberPw(encryptedPw);
+
+		// 회원가입 처리
+		return mapper.signup(inputMember);
+	}
+
 	@Override
 	public int checkEmail(String memberEmail) {
 		return mapper.checkEmail(memberEmail);
 	}
 
-	// 닉네임 중복 검사 서비스
 	@Override
 	public int checkNickname(String memberNickname) {
 		return mapper.checkNickname(memberNickname);
 	}
 
-	// 회원가입 서비스
 	@Override
-	public int signup(Member inputMember, String[] memberAddress) {
-
-		// 주소가 입력되지 않으면
-		// inputMember.getMemberAddress() -> ",,"
-		// memberAddress -> [,,]
-
-		// 주소가 입력된 경우
-		if (!inputMember.getMemberAddress().equals(",,")) {
-
-			// String.join("구분자", 배열)
-			// -> 배열의 모든 요소 사이에 "구분자"를 추가하여
-			// 하나의 문자열로 만들어 반환하는 메서드
-			String address = String.join("^^^", memberAddress);
-			// [12345, 서울시 중구 남대문로, 3층, E강의장]
-			// -> "12345^^^서울시 중구 남대문로^^^ 3층, E강의장"
-
-			// 구분자로 "^^^" 쓴 이유 :
-			// -> 주소, 상세주소에 안 쓰일 것 같은 특수문자 작성
-			// -> 나중에 마이페이지에서 주소 부분 수정 시
-			// -> DB에 저장된 기존 주소를 화면상에 출력
-			// -> 다시 3분할 해야 할 때 구분자로 ^^^ 이용할 예정
-			// -> 왜? 구분자가 기본형태인 , 작성되어있으면
-			// -> 주소, 상세 주소에 , 가 들어오는 경우
-			// -> 3분할이 아니라 N분할이 될 수 있기 때문에
-
-			// inputMember의 memberAddress로 합쳐진 주소를 세팅
-			inputMember.setMemberAddress(address);
-
-		} else {
-			// 주소가 입력되지 않은 경우
-			inputMember.setMemberAddress(null); // null로 저장
-		}
-
-		// 비밀번호 암호화 진행
-
-		// inputMember 안의 memberPw -> 평문
-		// 비밀번호를 암호화하여 inputMember 세팅
-		String encPw = bcrypt.encode(inputMember.getMemberPw());
-		inputMember.setMemberPw(encPw);
-
-		// 회원가입 mapper 메서드 호출
-		return mapper.signup(inputMember);
+	public String createRandomCode() {
+		int code = (int) (Math.random() * 900000) + 100000;
+		return String.valueOf(code);
 	}
 
+	@Override
+	public boolean sendAuthCodeToEmail(String email, String authCode) {
+		try {
+			SimpleMailMessage message = new SimpleMailMessage();
+			message.setTo(email);
+			message.setSubject("[UBI] 회원가입 인증번호 안내");
+			message.setText("인증번호: " + authCode + "\n입력창에 인증번호를 입력해주세요.");
+			message.setFrom("noreply@ubi.com");
+			mailSender.send(message);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	@Override
+	public Member kakaoLogin(String code) {
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+
+			// 1. 인가 코드로 액세스 토큰 요청
+			String tokenUrl = "https://kauth.kakao.com/oauth/token";
+			String clientId = "b62bbea46498a09baf12fedc0a9bc832"; // 카카오 앱 REST API 키
+			String redirectUri = "http://localhost:5174/oauth/kakao/callback";
+
+			String tokenResponse = restTemplate.postForObject(tokenUrl + "?grant_type=authorization_code"
+					+ "&client_id=" + clientId + "&redirect_uri=" + redirectUri + "&code=" + code, null, String.class);
+
+			// 2. 토큰 파싱
+			ObjectMapper objectMapper = new ObjectMapper();
+			Map<String, Object> tokenMap = objectMapper.readValue(tokenResponse, Map.class);
+			String accessToken = (String) tokenMap.get("access_token");
+
+			// 3. 액세스 토큰으로 사용자 정보 요청
+			HttpHeaders headers = new HttpHeaders();
+			headers.add("Authorization", "Bearer " + accessToken);
+			HttpEntity<String> entity = new HttpEntity<>(headers);
+
+			ResponseEntity<String> response = restTemplate.postForEntity("https://kapi.kakao.com/v2/user/me", entity,
+					String.class);
+
+			// 4. 사용자 정보 파싱
+			Map<String, Object> userMap = objectMapper.readValue(response.getBody(), Map.class);
+			String kakaoId = String.valueOf(userMap.get("id")); // 카카오 고유 ID
+
+			// 5. DB에서 카카오 ID로 사용자 조회
+			Member member = mapper.selectByKakaoId(kakaoId);
+			if (member == null) {
+				// 신규 사용자는 프론트에서 회원가입 유도
+				throw new RuntimeException("신규 사용자입니다. 회원가입이 필요합니다.");
+			}
+
+			return member;
+
+		} catch (Exception e) {
+			throw new RuntimeException("카카오 로그인 처리 중 오류 발생", e);
+		}
+	}
+
+	private final JavaMailSender mailSender;
+
+	public MemberServiceImpl(JavaMailSender mailSender) {
+		this.mailSender = mailSender;
+	}
+
+	// 아이디 중복 검사
+	@Override
+	public boolean checkIdAvailable(String memberId) {
+		return mapper.checkMemberId(memberId) == 0;
+	}
+
+	// 닉네임 중복 검사
+	@Override
+	public boolean checkNicknameAvailable(String memberNickname) {
+		return mapper.checkNickname(memberNickname) == 0;
+	}
+
+	@Override
+	public Member findByNo(Long memberNo) {
+		return mapper.selectByNo(memberNo);
+
+	}
+
+	// 신고하고 신고 취소하는 메서드
+	@Override
+	public boolean reportMember(int targetMemberNo, int reporterMemberNo, String reason) {
+
+		// 1. 기존 신고 상태 조회 (Y, N, null)
+		String status = mapper.checkReportStatus(targetMemberNo, reporterMemberNo);
+		System.out.println("신고 상태: " + status + " (null? " + (status == null) + ")");
+
+
+		// 2. 기존 멤버 신고 횟수 조회
+		int beforeCount = mapper.selectMemberReportCount(targetMemberNo);
+
+		try {
+			if (status == null) {
+				// 신규 신고 등록
+				mapper.insertReport(targetMemberNo, reporterMemberNo, reason);
+				mapper.increaseMemberReportCount(targetMemberNo);
+
+				int afterCount = beforeCount + 1;
+
+				Map<String, String> suspension = mapper.selectSuspension(targetMemberNo);
+				LocalDateTime now = LocalDateTime.now();
+
+				// 신고 5의 배수면 정지 신규 등록 또는 연장
+				if (afterCount % 5 == 0) {
+					LocalDateTime newEnd = now.plusMinutes(5); // 정지 기간 (임시 5분)
+					if (suspension == null) {
+						// 신규 정지 등록
+						mapper.insertSuspensionTest(targetMemberNo, now, newEnd);
+
+						// ▶ 정지 발생 시 신고당한 댓글, 게시글 숨김 처리(삭제)
+						List<Integer> reportedComments = commentMapper.selectAllReportComments(targetMemberNo);
+						for (int commentNo : reportedComments) {
+							commentMapper.delete(commentNo);
+						}
+
+						List<Integer> reportedBoards = boardMapper.selectAllReportBoards(targetMemberNo);
+						for (int boardNo : reportedBoards) {
+							// 게시글 작성자 번호 조회 필요
+							int boardWriterNo = boardMapper.selectBoardWriterNo(boardNo);
+							boardMapper.deleteBoard(boardNo, boardWriterNo);
+						}
+
+					} else {
+						// 정지 기간 연장
+						LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
+						LocalDateTime extendedEnd = originEnd.isAfter(now) ? originEnd.plusMinutes(5) : newEnd;
+						mapper.extendSuspensionEnd(targetMemberNo, extendedEnd);
+					}
+				}
+
+				return true;
+
+			} else if ("Y".equals(status)) {
+				// 신고 취소
+				mapper.updateReportStatus(targetMemberNo, reporterMemberNo, reason, "N");
+				mapper.decreaseMemberReportCount(targetMemberNo);
+
+				int afterCount = beforeCount - 1;
+
+				Map<String, String> suspension = mapper.selectSuspension(targetMemberNo);
+
+				// 신고 5의 배수 아래로 떨어졌으면 정지 해제
+				if (beforeCount % 5 == 0 && suspension != null && afterCount < beforeCount) {
+					mapper.deleteSuspension(targetMemberNo);
+
+					// ▶ 정지 해제 시 신고 취소로 복구 처리
+					List<Integer> reportedComments = commentMapper.selectAllReportComments(targetMemberNo);
+					for (int commentNo : reportedComments) {
+						commentMapper.recover(commentNo);
+					}
+
+					List<Integer> reportedBoards = boardMapper.selectAllReportBoards(targetMemberNo);
+					for (int boardNo : reportedBoards) {
+						boardMapper.recoverBoard(boardNo);
+					}
+				}
+
+				return false;
+
+			} else if ("N".equals(status)) {
+				// 신고 재활성화
+				mapper.updateReportStatus(targetMemberNo, reporterMemberNo, reason, "Y");
+				mapper.increaseMemberReportCount(targetMemberNo);
+
+				int afterCount = beforeCount + 1;
+
+				Map<String, String> suspension = mapper.selectSuspension(targetMemberNo);
+				LocalDateTime now = LocalDateTime.now();
+
+				// 신고 5의 배수면 정지 신규 등록 또는 연장
+				if (afterCount % 5 == 0) {
+					LocalDateTime end = now.plusMinutes(5);
+					if (suspension == null) {
+						mapper.insertSuspensionTest(targetMemberNo, now, end);
+
+						// ▶ 정지 발생 시 신고당한 댓글, 게시글 숨김 처리(삭제)
+						List<Integer> reportedComments = commentMapper.selectAllReportComments(targetMemberNo);
+						for (int commentNo : reportedComments) {
+							commentMapper.delete(commentNo);
+						}
+
+						List<Integer> reportedBoards = boardMapper.selectAllReportBoards(targetMemberNo);
+						for (int boardNo : reportedBoards) {
+							int boardWriterNo = boardMapper.selectBoardWriterNo(boardNo);
+							boardMapper.deleteBoard(boardNo, boardWriterNo);
+						}
+
+					} else {
+						LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
+						LocalDateTime extendedEnd = originEnd.isAfter(now) ? originEnd.plusMinutes(5) : end;
+						mapper.extendSuspensionEnd(targetMemberNo, extendedEnd);
+					}
+				}
+				return true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
+
+		return false;
+	}
+	
+	@Override
+	public String findIdByNameAndEmail(String name, String email) {
+		return mapper.selectMemberIdByNameAndEmail(name, email);
+	}
+
+	@Override
+	public boolean resetPassword(String memberId, String email, String newPassword) {
+		// 사용자 검증
+		int count = mapper.checkMemberIdAndEmail(memberId, email);
+		if (count == 0) return false;
+
+		// 비밀번호 암호화 후 업데이트
+		String encPw = bcrypt.encode(newPassword);
+		return mapper.updatePassword(memberId, encPw) > 0;
+	}
+
+	private String generateTempPassword() {
+	    return UUID.randomUUID().toString().substring(0, 10);
+	}
+	
+	@Override
+	public Integer existsByNameAndEmail(String name, String email) {
+		return mapper.existsByNameAndEmail(name, email);
+	}
+	
+	@Override
+	public Integer existsByNameAndMemberIdAndEmail(String name, String memberId, String email) {
+		
+		return mapper.existsByNameAndMemberIdAndEmail(name, memberId, email);
+	}
 }

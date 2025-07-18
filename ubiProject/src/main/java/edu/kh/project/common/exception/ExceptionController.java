@@ -1,8 +1,13 @@
 package edu.kh.project.common.exception;
 
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /*
@@ -18,44 +23,31 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
  * 	해당 클래스 내부에서 @ExceptionHandler 어노테이션 지닌 메서드를 작성 )
  * 
  * */
-
-@ControllerAdvice // 전역적 예외처리 활성화 어노테이션
+@RestControllerAdvice 
 public class ExceptionController {
 
 	// @ExceptionHandler(예외 종류) : 어떤 예외를 다룰건지 작성
-	
-	// 예외 종류 : 메서드별로 처리할 예외를 지정
-	// SQLException.class - SQL 관련 예외만 처리
-	// IOException.class - 입출력 관련 예외만 처리
-	// NoResourceFoundException.class - 요청한 주소를 찾을 수 없을때 예외처리
+	 /**
+     * 404 Not Found
+     * 요청한 리소스가 존재하지 않을 때 처리 (예: 잘못된 URL)
+     */
+    @ExceptionHandler(org.springframework.web.servlet.NoHandlerFoundException.class)
+    public ResponseEntity<?> handle404(Exception e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "요청하신 리소스를 찾을 수 없습니다."));
+    }
 
-	@ExceptionHandler(NoResourceFoundException.class)
-	public String notFound() {
-		return "error/404"; // 타임리프 forward 구문!
-	}
-	
-	// 프로젝트에서 발생하는 모든 종류의 예외를 잡아 처리하는 메서드
-	@ExceptionHandler(Exception.class)
-	public String allExceptionHandler(Exception e, Model model ) {
-		
-		e.printStackTrace();
-		model.addAttribute("e", e);
-		
-		return "error/500";
-	}
-	
+    /**
+     * 모든 예외 처리 (fallback)
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleException(Exception e) {
+        e.printStackTrace();  // 서버 콘솔에 로그 출력
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "error", "서버 내부 오류가 발생했습니다.",
+                    "detail", e.getMessage()
+                ));
+    }
 }
-
-/* HTTP 응답 상태 코드
- * 
- * 400 : 잘못된 요청(Bad Request)
- * 
- * 403 : 서버에서 외부 접근 거부 (Forbidden)
- * 
- * 404 : 요청 주소를 찾을 수 없음 (Not Found)
- * 
- * 405 : 허용되지 않는 메서드(요청방식) (Method Not Allowed)
- * 
- * 500 : 서버 내부 오류 (Internal Server Error)
- * 
- * */

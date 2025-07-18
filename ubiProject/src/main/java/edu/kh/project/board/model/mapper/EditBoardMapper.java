@@ -4,9 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import edu.kh.project.board.model.dto.Board;
-import edu.kh.project.board.model.dto.BoardImg;
+import edu.kh.project.board.model.dto.BoardImage;
 
 @Mapper
 public interface EditBoardMapper {
@@ -21,7 +22,7 @@ public interface EditBoardMapper {
 	 * @param uploadList
 	 * @return
 	 */
-	int insertUploadList(List<BoardImg> uploadList);
+	int insertUploadList(List<BoardImage> uploadList);
 
 	/** 게시글 부분(제목/내용) 수정
 	 * @param inputBoard
@@ -39,19 +40,21 @@ public interface EditBoardMapper {
 	 * @param img
 	 * @return
 	 */
-	int updateImage(BoardImg img);
+	int updateImage(BoardImage img);
 
 	/** 게시글 이미지 삽입
 	 * @param img
 	 * @return
 	 */
-	int insertImage(BoardImg img);
+	int insertImage(BoardImage img);
 
 	/** 게시글 삭제
 	 * @param map
 	 * @return
 	 */
-	int boardDelete(Map<String, Integer> map);
+	int boardDelete(Map<String, Object> map);
+
+	List<Long> selectAllMemberNoExceptAdmin();
 
 
 }

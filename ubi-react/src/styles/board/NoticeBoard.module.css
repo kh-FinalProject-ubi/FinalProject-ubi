@@ -1,0 +1,120 @@
+.container {
+  width: 100%;
+  /* 최소 너비와 높이를 지정하여 레이아웃 깨짐 및 울컥거림 방지 */
+  min-width: 800px;
+  min-height: 100vh;
+  padding: 2rem 20%;
+  box-sizing: border-box;
+}
+
+/* Board title */
+.boardTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+
+  text-align: left; /* 추가 */
+}
+
+/* Board table styles */
+.boardTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.boardTable th,
+.boardTable td {
+  padding: 14px 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.boardTable th {
+  font-weight: 500;
+  color: #333;
+  background-color: #ffe56d; /* Yellow header background */
+}
+
+/* Clickable row style */
+.clickableRow:hover {
+  background-color: #f8f8f8;
+  cursor: pointer;
+}
+
+/* Left-aligned title cell */
+.titleCell {
+  text-align: left;
+  min-width: 16rem;
+  color: #333;
+}
+
+/* 'Category' tag style */
+.postTypeTag {
+  display: inline-block;
+  padding: 3px 8px;
+  border: 1px solid #e53e3e;
+  color: #e53e3e;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Container for the write button */
+.bottomContainer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 60px;
+}
+
+/* Write button style */
+.writeButton {
+  padding: 0.6em 1.5em;
+  background-color: #ffe56d;
+  color: #333;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.writeButton:hover {
+  filter: brightness(0.95);
+}
+
+/* --- Pagination Styles --- */
+.paginationContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.2rem;
+  margin-top: 2.5rem;
+}
+
+.paginationContainer button {
+  font-family: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.2rem 0.4rem;
+  font-weight: normal;
+}
+
+.paginationContainer button:disabled {
+  color: #ddd;
+  cursor: not-allowed;
+}
+
+/* Normal page number button */
+.pageNumber {
+  color: #888;
+}
+
+/* Active page number button */
+.activePage {
+  color: #5e60ce;
+  font-weight: bold;
+  cursor: default;
+}

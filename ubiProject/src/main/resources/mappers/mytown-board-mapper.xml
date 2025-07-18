@@ -1,0 +1,692 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper
+	namespace="edu.kh.project.board.model.mapper.MytownBoardMapper">
+
+
+
+	<!-- 로그인된 회원과 동일한 시군구의 회원이 작성한 게시글 목록 조회 -->
+	<!-- BoardMapper.xml -->
+	<select id="selectLocalBoardList"
+		resultType="edu.kh.project.board.model.dto.Board">
+		SELECT
+		B.BOARD_NO,
+		B.BOARD_TITLE,
+		B.POST_TYPE,
+		SUBSTR(B.BOARD_CONTENT, 1,
+		100) AS BOARD_CONTENT,
+  <![CDATA[
+  CASE 
+    WHEN SYSDATE - B.BOARD_DATE < 1/24/60 THEN FLOOR((SYSDATE - B.BOARD_DATE)*24*60*60) || '초 전'
+    WHEN SYSDATE - B.BOARD_DATE < 1/24 THEN FLOOR((SYSDATE - B.BOARD_DATE)*24*60) || '분 전'
+    WHEN SYSDATE - B.BOARD_DATE < 1 THEN FLOOR((SYSDATE - B.BOARD_DATE)*24) || '시간 전'
+    WHEN SYSDATE - B.BOARD_DATE < 30 THEN FLOOR(SYSDATE - B.BOARD_DATE) || '일 전'
+    WHEN SYSDATE - B.BOARD_DATE < 365 THEN FLOOR((SYSDATE - B.BOARD_DATE)/30) || '달 전'
+    ELSE FLOOR((SYSDATE - B.BOARD_DATE)/365) || '년 전'
+  END AS BOARD_DATE
+]]>,
+		B.BOARD_READ_COUNT,
+		B.STAR_COUNT,
+		B.FACILITY_API_SERVICE_ID,
+		B.API_SERVICE_ID,
+		M.MEMBER_NICKNAME,
+		M.MEMBER_IMG,
+		M.REGION_CITY,
+		M.REGION_DISTRICT,
+
+
+		(SELECT COUNT(*) FROM BOARD_LIKE L WHERE L.BOARD_NO
+		= B.BOARD_NO) AS
+		LIKE_COUNT,
+
+
+		(SELECT I.IMAGE_PATH || '/' || I.IMAGE_NAME
+		FROM BOARD_IMAGE I
+		WHERE I.BOARD_NO = B.BOARD_NO AND I.IMAGE_ORDER = 0
+		AND ROWNUM = 1) AS
+		THUMBNAIL,
+
+
+
+		(SELECT LISTAGG(H.HASHTAG_NAME, ',')
+		WITHIN GROUP (ORDER BY H.HASHTAG_NAME)
+		FROM BOARD_HASHTAG H
+		WHERE
+		H.BOARD_NO = B.BOARD_NO) AS HASHTAGS,
+
+		LS.BOARD_TYPE,
+		LS.POST_TYPE
+
+		FROM
+		BOARD B
+		JOIN MEMBER M ON B.MEMBER_NO = M.MEMBER_NO
+		JOIN BOARD_TYPE BT ON
+		B.BOARD_TYPE = BT.BOARD_CODE
+		LEFT JOIN LOCAL_SUBCATEGORY LS ON
+		B.BOARD_TYPE = LS.BOARD_TYPE
+		AND B.POST_TYPE = LS.POST_TYPE
+		WHERE
+		B.BOARD_TYPE = 3
+		AND B.BOARD_DEL_FL = 'N'
+
+		ORDER BY B.BOARD_DATE DESC
+
+
+	</select>
+
+	<select id="getBoardLocalListCount" resultType="_int">
+		SELECT COUNT(*)
+		FROM BOARD WHERE BOARD_TYPE = 3 AND BOARD_DEL_FL = 'N'
+	</select>
+
+
+<!-- 필터 검색 -->
+<select id="getFilteredBoardCount" resultType="int">
+  SELECT COUNT(*)
+  FROM BOARD B
+  LEFT JOIN MEMBER M ON B.MEMBER_NO = M.MEMBER_NO
+  <where>
+    B.BOARD_TYPE = 3
+    AND B.BOARD_DEL_FL = 'N'
+    <if test="postType != null and postType != ''">
+      AND B.POST_TYPE = #{postType}
+    </if>
+<if test="regionCity != null and regionCity != ''">
+  AND M.REGION_CITY = #{regionCity}
+</if>
+<if test="regionDistrict != null and regionDistrict != ''">
+  AND M.REGION_DISTRICT = #{regionDistrict}
+</if>
+    <if test="keyword != null and keyword != ''">
+      AND (B.BOARD_TITLE LIKE '%' || #{keyword} || '%' OR B.BOARD_CONTENT LIKE '%' || #{keyword} || '%')
+    </if>
+<if test="tagList != null and tagList.size() > 0">
+  AND EXISTS (
+    SELECT 1 FROM BOARD_HASHTAG H
+    WHERE H.BOARD_NO = B.BOARD_NO
+    AND H.HASHTAG_NAME IN
+    <foreach collection="tagList" item="tag" open="(" separator="," close=")">
+      #{tag}
+    </foreach>
+  ) 
+</if>
+  </where>
+</select>
+
+<select id="getFilteredBoardList" resultType="edu.kh.project.board.model.dto.Board">
+  SELECT *
+  FROM (
+    SELECT ROWNUM RNUM, A.*
+    FROM (
+      SELECT
+        B.BOARD_NO,
+        B.BOARD_TITLE,
+        B.BOARD_CONTENT,
+        B.POST_TYPE,
+        B.BOARD_READ_COUNT,
+        B.STAR_COUNT,
+       <![CDATA[
+  CASE 
+    WHEN SYSDATE - B.BOARD_DATE < 1/24/60 THEN FLOOR((SYSDATE - B.BOARD_DATE)*24*60*60) || '초 전'
+    WHEN SYSDATE - B.BOARD_DATE < 1/24 THEN FLOOR((SYSDATE - B.BOARD_DATE)*24*60) || '분 전'
+    WHEN SYSDATE - B.BOARD_DATE < 1 THEN FLOOR((SYSDATE - B.BOARD_DATE)*24) || '시간 전'
+    WHEN SYSDATE - B.BOARD_DATE < 30 THEN FLOOR(SYSDATE - B.BOARD_DATE) || '일 전'
+    WHEN SYSDATE - B.BOARD_DATE < 365 THEN FLOOR((SYSDATE - B.BOARD_DATE)/30) || '달 전'
+    ELSE FLOOR((SYSDATE - B.BOARD_DATE)/365) || '년 전'
+  END AS BOARD_DATE
+]]>,
+        M.MEMBER_NICKNAME AS memberNickname,
+        M.MEMBER_IMG AS memberImg,
+        M.REGION_CITY AS regionCity,
+        M.REGION_DISTRICT AS regionDistrict,
+        B.API_SERVICE_ID AS apiServiceId,
+        B.FACILITY_API_SERVICE_ID AS facilityApiServiceId,
+        (SELECT I.IMAGE_PATH || '/' || I.IMAGE_NAME
+         FROM BOARD_IMAGE I
+         WHERE I.BOARD_NO = B.BOARD_NO AND I.IMAGE_ORDER = 0 AND ROWNUM = 1) AS thumbnail,
+        (SELECT LISTAGG(H.HASHTAG_NAME, ',')
+         FROM BOARD_HASHTAG H
+         WHERE H.BOARD_NO = B.BOARD_NO) AS hashtags,
+        (SELECT COUNT(*) FROM BOARD_LIKE L WHERE L.BOARD_NO = B.BOARD_NO) AS likeCount
+      FROM BOARD B
+      JOIN MEMBER M ON B.MEMBER_NO = M.MEMBER_NO
+      <where>
+        B.BOARD_TYPE = 3
+        AND B.BOARD_DEL_FL = 'N'
+        <if test="postType != null and postType != ''">
+          AND B.POST_TYPE = #{postType}
+        </if>
+        <if test="regionCity != null and regionCity != ''">
+          AND M.REGION_CITY = #{regionCity}
+        </if>
+        <if test="regionDistrict != null and regionDistrict != ''">
+          AND M.REGION_DISTRICT = #{regionDistrict}
+        </if>
+        <if test="keyword != null and keyword != ''">
+          AND (
+            B.BOARD_TITLE LIKE '%' || #{keyword} || '%'
+            OR B.BOARD_CONTENT LIKE '%' || #{keyword} || '%'
+          )
+        </if>
+    <if test="tagList != null and tagList.size() > 0">
+  AND EXISTS (
+    SELECT 1 FROM BOARD_HASHTAG H
+    WHERE H.BOARD_NO = B.BOARD_NO
+    AND H.HASHTAG_NAME IN
+    <foreach collection="tagList" item="tag" open="(" separator="," close=")">
+      #{tag}
+    </foreach>
+  )
+</if>
+      </where>
+      ORDER BY B.BOARD_DATE DESC
+    ) A
+  )
+  WHERE RNUM BETWEEN #{startRow} + 1 AND #{startRow} + #{limit}
+</select>
+
+
+
+	<!-- 복지시설 존재 여부 -->
+	<select id="existsFacilityById" resultType="int">
+		SELECT COUNT(*) FROM WELFARE_FACILITY WHERE FACILITY_API_SERVICE_ID = #{facilityServiceId}
+	</select>
+
+	<!-- 복지혜택 존재 여부 -->
+	<select id="existsWelfareById" resultType="int">
+		SELECT COUNT(*) FROM WELFARE WHERE API_SERVICE_ID = #{id}
+	</select>
+
+	<!-- 복지시설 INSERT -->
+	<insert id="insertFacilityFromBoard" parameterType="Board">
+		INSERT INTO WELFARE_FACILITY (
+		FACILITY_NO,
+		FACILITY_API_SERVICE_ID,
+		MEMBER_NO,
+		FACILITY_NAME,
+		FACILITY_KIND_CD,
+		FACILITY_ADDR,
+		REGION_CITY,
+		REGION_DISTRICT,
+		JJ_TIME,
+		JJ_DEL_FL,
+		ALARM_SENT_FL
+		) VALUES (
+		SYS_GUID(),
+		#{facilityApiServiceId},
+		#{memberNo},
+		#{facilityName},
+		#{facilityKindCd},  <!-- 여기 수정됨 -->
+		#{facilityName},<!-- 여기 수정됨 -->
+		#{regionCity},
+		#{regionDistrict},
+		SYSDATE,
+		'N',
+		'N'
+		)
+	</insert>
+
+	<!-- 복지혜택 INSERT -->
+	<insert id="insertWelfareFromBoard" parameterType="Board">
+  INSERT INTO WELFARE (
+    SERVICE_NO,
+    		MEMBER_NO,
+    		    category,        
+    region_city,         
+    region_district,     
+    API_SERVICE_ID,
+    SERVICE_NAME,
+    AGENCY,
+      JJ_TIME,
+      JJ_DEL_FL
+  )
+  VALUES (
+    WELFARE_SEQ.NEXTVAL,
+    	#{memberNo},
+    	    #{category},      
+    #{regionCity},        
+    #{regionDistrict},
+    #{apiServiceId},
+    #{welfareName},
+    #{welfareAgency},
+    SYSDATE,
+    'N'
+  )
+</insert>
+
+
+	<!-- 상세조회 -->
+	<select id="selectLocalBoardDetail"
+		resultType="edu.kh.project.board.model.dto.Board">
+		SELECT
+		B.BOARD_NO,
+		B.BOARD_TITLE,
+		B.BOARD_CONTENT,
+		B.BOARD_DATE,
+		B.BOARD_READ_COUNT,
+		B.POST_TYPE,
+		NVL(B.STAR_COUNT, 0) AS
+		STAR_COUNT,
+
+		NVL((
+		SELECT COUNT(*)
+		FROM BOARD_LIKE
+		WHERE BOARD_NO =
+		B.BOARD_NO
+		), 0) AS LIKE_COUNT,
+
+		M.MEMBER_NICKNAME,
+		M.AUTHORITY,
+
+		-- 해시태그 목록
+		(
+		SELECT LISTAGG(H.HASHTAG_NAME, ',')
+		FROM BOARD_HASHTAG H
+		WHERE
+		H.BOARD_NO = B.BOARD_NO
+		) AS HASHTAGS,
+
+		BT.BOARD_NAME,
+		M.MEMBER_NO,
+		M.REGION_CITY,
+		M.REGION_DISTRICT,
+		B.API_SERVICE_ID,
+		B.FACILITY_API_SERVICE_ID,
+		LS.BOARD_TYPE,
+		LS.POST_TYPE,
+		WF.FACILITY_NAME
+		AS facilityName,
+		W.SERVICE_NAME AS welfareName,
+		
+
+		-- ✅ 신고 여부
+		(
+		SELECT R.REPORT_STATUS
+		FROM REPORT R
+		WHERE
+		R.TARGET_TYPE =
+		'BOARD'
+		AND R.TARGET_ID = B.BOARD_NO
+		AND R.REPORTER_NO =
+		#{reporterNo}
+		FETCH FIRST 1 ROWS ONLY
+		) AS REPORTED_BY_ME
+
+		FROM BOARD B
+		JOIN MEMBER M ON
+		B.MEMBER_NO = M.MEMBER_NO
+		JOIN BOARD_TYPE BT ON
+		B.BOARD_TYPE =
+		BT.BOARD_CODE
+		LEFT JOIN LOCAL_SUBCATEGORY LS
+		ON
+		B.BOARD_TYPE =
+		LS.BOARD_TYPE
+		AND B.POST_TYPE = LS.POST_TYPE
+		LEFT JOIN WELFARE_FACILITY WF
+		ON B.FACILITY_API_SERVICE_ID = WF.FACILITY_API_SERVICE_ID
+		LEFT JOIN WELFARE W
+  ON B.API_SERVICE_ID = W.API_SERVICE_ID
+		WHERE
+		B.BOARD_NO =
+		#{boardNo}
+	</select>
+
+	<!-- 조회수 증가 -->
+	<update id="increaseReadCount">
+		UPDATE BOARD
+		SET BOARD_READ_COUNT = BOARD_READ_COUNT +
+		1
+		WHERE BOARD_NO = #{boardNo}
+	</update>
+
+	<!-- 게시글 작성 -->
+	<insert id="insertBoard"
+		parameterType="edu.kh.project.board.model.dto.Board">
+		INSERT INTO BOARD (
+		BOARD_NO,
+		BOARD_TYPE,
+		BOARD_TITLE,
+		BOARD_CONTENT,
+		MEMBER_NO,
+		BOARD_DATE,
+		BOARD_READ_COUNT,
+		STAR_COUNT,
+		POST_TYPE
+		<if test="postType == '복지혜택후기' or postType == '복지시설후기'">
+			,
+			<choose>
+				<when test="postType == '복지혜택후기'">API_SERVICE_ID</when>
+				<when test="postType == '복지시설후기'">FACILITY_API_SERVICE_ID</when>
+			</choose>
+		</if>
+		)
+		VALUES (
+		SEQ_BOARD_NO.NEXTVAL,
+		3,
+		#{boardTitle},
+		#{boardContent},
+		#{memberNo},
+		SYSDATE,
+		0,
+		#{starCount},
+		#{postType}
+		<if test="postType == '복지혜택후기' or postType == '복지시설후기'">
+			,
+			<choose>
+				<when test="postType == '복지혜택후기'">#{apiServiceId}</when>
+				<when test="postType == '복지시설후기'">#{facilityApiServiceId}</when>
+			</choose>
+		</if>
+		)
+	</insert>
+
+
+
+	<!-- 해시태그 입력 -->
+	<insert id="insertHashtag">
+		INSERT INTO BOARD_HASHTAG (BOARD_NO, HASHTAG_NAME)
+		VALUES (#{boardNo}, #{tag})
+	</insert>
+
+	<!-- 해시태그 확인 -->
+	<select id="checkHashtagExists" resultType="int">
+		SELECT COUNT(*) FROM
+		BOARD_HASHTAG
+		WHERE BOARD_NO = #{boardNo} AND HASHTAG_NAME = #{tag}
+	</select>
+
+	<!-- 기존 해시태그 삭제 -->
+	<delete id="deleteHashtags">
+		DELETE FROM BOARD_HASHTAG
+		WHERE BOARD_NO = #{boardNo}
+	</delete>
+
+
+	<select id="selectBoard"
+		resultType="edu.kh.project.board.model.dto.Board">
+		SELECT BOARD_NO, BOARD_TITLE, BOARD_CONTENT, MEMBER_NO,
+		TO_CHAR(BOARD_DATE,
+		'YYYY-MM-DD') AS BOARD_DATE
+		FROM BOARD
+		WHERE BOARD_NO
+		= #{boardNo}
+	</select>
+
+	<select id="getLastInsertedId" resultType="int">
+		SELECT
+		SEQ_BOARD_NO.CURRVAL FROM DUAL
+	</select>
+
+
+	<insert id="insertBoardImage"
+		parameterType="edu.kh.project.board.model.dto.BoardImage">
+		INSERT INTO BOARD_IMAGE (
+		IMAGE_NO, IMAGE_PATH,
+		IMAGE_ORDER, IMAGE_NAME, BOARD_NO
+		)
+		VALUES (
+		IMAGE_SEQ.NEXTVAL,
+		#{imagePath}, #{imageOrder}, #{imageName}, #{boardNo}
+		)
+	</insert>
+
+	<!-- 게시글 이미지 목록 조회 -->
+	<select id="selectBoardImageList"
+		resultType="edu.kh.project.board.model.dto.BoardImage">
+		SELECT *
+		FROM BOARD_IMAGE
+		WHERE BOARD_NO = #{boardNo}
+		ORDER BY
+		IMAGE_ORDER
+	</select>
+
+<update id="updateImageOrder" parameterType="edu.kh.project.board.model.dto.BoardImage">
+    UPDATE BOARD_IMAGE
+    SET IMAGE_ORDER = #{imageOrder}
+    WHERE BOARD_NO = #{boardNo} AND IMAGE_NAME = #{imageName}
+</update>
+
+	<select id="checkBoardLike" resultType="int">
+		SELECT COUNT(*) FROM
+		BOARD_LIKE
+		WHERE BOARD_NO = #{boardNo} AND MEMBER_NO = #{memberNo}
+	</select>
+
+	<insert id="insertBoardLike">
+		INSERT INTO BOARD_LIKE (BOARD_NO, MEMBER_NO)
+		VALUES
+		(#{boardNo}, #{memberNo})
+	</insert>
+
+	<delete id="deleteBoardLike">
+		DELETE FROM BOARD_LIKE
+		WHERE BOARD_NO = #{boardNo} AND
+		MEMBER_NO = #{memberNo}
+	</delete>
+
+
+	<!-- 게시글 삭제 -->
+	<update id="deleteBoard">
+		UPDATE BOARD
+		SET BOARD_DEL_FL = 'Y'
+		WHERE BOARD_NO =
+		#{boardNo}
+	</update>
+
+
+	<!-- 게시글 수정 -->
+	<update id="updateBoard"
+		parameterType="edu.kh.project.board.model.dto.Board">
+		UPDATE BOARD
+		SET BOARD_TITLE = #{boardTitle},
+		BOARD_CONTENT = #{boardContent},
+		STAR_COUNT = #{starCount},
+		POST_TYPE =
+		#{postType}
+		WHERE BOARD_NO = #{boardNo}
+	</update>
+
+
+	<!-- 기존 이미지 삭제 -->
+	<delete id="deleteImagesByBoardNo">
+		DELETE FROM BOARD_IMAGE
+		WHERE BOARD_NO = #{boardNo}
+	</delete>
+
+	<!-- 새 이미지 삽입 <insert id="insertBoardImage" parameterType="BoardImage"> 
+		INSERT INTO BOARD_IMAGE (IMAGE_NO, BOARD_NO, IMAGE_PATH, IMAGE_ORDER) VALUES 
+		(SEQ_BOARD_IMAGE_NO.NEXTVAL, #{boardNo}, #{imagePath}, #{imageOrder}) </insert> -->
+
+
+
+	<!-- 보드 신고를 위한 xml -->
+
+	<!-- 게시글 작성자 번호 가져오기 -->
+	<select id="selectBoardWriterNo" resultType="int">
+		SELECT MEMBER_NO
+		FROM BOARD
+		WHERE BOARD_NO = #{boardNo}
+	</select>
+
+	<!-- 내가 이 게시글을 신고했는가? -->
+	<select id="checkBoardReportCount" resultType="string">
+		SELECT
+		REPORT_STATUS
+		FROM REPORT
+		WHERE TARGET_TYPE = 'BOARD'
+		AND TARGET_ID =
+		#{boardNo}
+		AND REPORTER_NO = #{memberNo}
+	</select>
+
+	<!-- 해당 게시글 총 신고 수 -->
+	<select id="selectBoardReportTotalCount" resultType="int">
+		SELECT
+		COUNT(*)
+		FROM REPORT
+		WHERE TARGET_TYPE = 'BOARD'
+		AND TARGET_ID =
+		#{boardNo}
+		AND REPORT_STATUS = 'Y'
+	</select>
+
+	<!-- 게시글 신고 등록 -->
+	<insert id="insertBoardReport">
+		INSERT INTO REPORT (
+		TARGET_TYPE,
+		TARGET_ID,
+		REPORTER_NO,
+		REPORT_STATUS,
+		TARGET_MEMBER_NO,
+		REPORT_REASON
+		) VALUES (
+		'BOARD',
+		#{boardNo},
+		#{memberNo},
+		'Y',
+		#{targetMemberNo},
+		'게시글 신고'
+		)
+	</insert>
+
+	<!-- BOARD 테이블의 신고 수 +1 -->
+	<update id="updateBoardReportCount">
+		UPDATE BOARD
+		SET BOARD_REPORT_COUNT =
+		BOARD_REPORT_COUNT + 1
+		WHERE BOARD_NO = #{boardNo}
+	</update>
+
+	<!-- BOARD 테이블의 신고 수 -1 -->
+	<update id="decreaseBoardReportCount">
+		UPDATE BOARD
+		SET BOARD_REPORT_COUNT = CASE
+		WHEN
+		BOARD_REPORT_COUNT > 0 THEN BOARD_REPORT_COUNT - 1
+		ELSE 0
+		END
+		WHERE
+		BOARD_NO = #{boardNo}
+	</update>
+
+	<!-- 신고 취소 (soft delete) -->
+	<update id="deleteBoardReport">
+		UPDATE REPORT
+		SET REPORT_STATUS = 'N'
+		WHERE TARGET_TYPE
+		= 'BOARD'
+		AND TARGET_ID = #{boardNo}
+		AND REPORTER_NO = #{memberNo}
+	</update>
+
+	<!-- 신고 재활성화 -->
+	<update id="reactivateBoardReport">
+		UPDATE REPORT
+		SET REPORT_STATUS = 'Y'
+		WHERE TARGET_TYPE
+		= 'BOARD'
+		AND TARGET_ID = #{boardNo}
+		AND REPORTER_NO = #{memberNo}
+	</update>
+
+	<!-- 신고 누적으로 삭제된 게시글 전체 조회 -->
+	<select id="selectAllReportBoards" resultType="int">
+		SELECT BOARD_NO
+		FROM BOARD
+		WHERE MEMBER_NO = #{memberNo}
+		AND BOARD_REPORT_COUNT >= 3
+	</select>
+
+	<!-- 게시글 복구 -->
+	<update id="recoverBoard">
+		UPDATE BOARD
+		SET BOARD_DEL_FL = 'N'
+		WHERE BOARD_NO =
+		#{boardNo}
+	</update>
+
+	<select id="selectReportStatus" resultType="String">
+		SELECT
+		R.REPORT_STATUS
+		FROM REPORT R
+		WHERE R.TARGET_TYPE = 'BOARD'
+		AND
+		R.TARGET_ID = #{boardNo}
+		AND R.REPORTER_NO = #{memberNo}
+		FETCH FIRST 1
+		ROWS ONLY
+	</select>
+	
+<select id="selectBoardListByFacilityServiceId" resultType="edu.kh.project.board.model.dto.Board">
+  SELECT 
+    B.BOARD_NO,
+    B.BOARD_TITLE,
+    B.BOARD_CONTENT,
+    B.BOARD_DATE,
+    B.STAR_COUNT,
+    B.MEMBER_NO,
+    M.MEMBER_NICKNAME,
+    M.MEMBER_IMG AS PROFILE_IMAGE,
+
+    -- 첨부 이미지 목록
+    (SELECT LISTAGG(IMAGE_PATH || '/' || IMAGE_NAME, ',')
+     FROM BOARD_IMAGE 
+     WHERE BOARD_NO = B.BOARD_NO) AS IMAGE_PATHS
+
+  FROM BOARD B
+  JOIN MEMBER M ON B.MEMBER_NO = M.MEMBER_NO
+  WHERE B.FACILITY_API_SERVICE_ID = #{facilityServiceId}
+    AND B.BOARD_TYPE = 3
+    AND B.BOARD_DEL_FL = 'N'
+  ORDER BY B.BOARD_DATE DESC
+</select>
+
+<select id="selectBoardListByWelfareServiceId"
+        resultType="edu.kh.project.board.model.dto.Board">
+    SELECT 
+        B.BOARD_NO,
+        B.BOARD_TITLE,
+        B.BOARD_CONTENT,
+        B.BOARD_DATE,
+        B.BOARD_READ_COUNT,
+        B.STAR_COUNT,
+        B.POST_TYPE,
+        B.API_SERVICE_ID,
+        M.MEMBER_NICKNAME,
+        M.MEMBER_IMG AS profileImage,
+
+        (SELECT COUNT(*) FROM BOARD_LIKE L WHERE L.BOARD_NO = B.BOARD_NO) AS LIKE_COUNT,
+
+        (SELECT I.IMAGE_PATH || '/' || I.IMAGE_NAME
+         FROM BOARD_IMAGE I
+         WHERE I.BOARD_NO = B.BOARD_NO AND I.IMAGE_ORDER = 0
+         AND ROWNUM = 1) AS thumbnail
+
+    FROM BOARD B
+    JOIN MEMBER M ON B.MEMBER_NO = M.MEMBER_NO
+    WHERE B.API_SERVICE_ID = #{apiServiceId}
+      AND B.BOARD_TYPE = 3
+      AND B.BOARD_DEL_FL = 'N'
+    ORDER BY B.BOARD_DATE DESC
+</select>
+
+
+<!--  인기해시태그  -->
+<select id="selectPopularTags" resultType="string">
+  <![CDATA[
+    SELECT HASHTAG_NAME
+    FROM (
+      SELECT H.HASHTAG_NAME, COUNT(*) AS CNT, MAX(B.BOARD_DATE) AS LATEST_DATE
+      FROM BOARD_HASHTAG H
+      JOIN BOARD B ON H.BOARD_NO = B.BOARD_NO
+      WHERE B.BOARD_DEL_FL = 'N'
+      GROUP BY H.HASHTAG_NAME
+      ORDER BY CNT DESC, LATEST_DATE DESC
+    )
+    WHERE ROWNUM <= 5
+  ]]>
+</select>
+
+
+</mapper>

@@ -50,42 +50,22 @@ public class FileConfig implements WebMvcConfigurer {
 	
 	// 게시판 이미지 관련 경로
 	
-	@Value("${my.board.resource-handler}")
-	private String boardResourceHandler;   // /images/board/**
-	
-	@Value("${my.board.resource-location}")
-	private String boardResourceLocation;  // file:///C:/uploadFiles/board/
+    @Value("${my.board.folder-path}")
+    private String folderPath;
 
-	
-	// 요청 주소에 따라
-	// 서버 컴퓨터의 어떤 경로에 접근할지 설정
-	@Override
-	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+    @Value("${my.board.web-path}")
+    private String webPath;
 
-		// ResourceHandlerRegistry : 
-		// Spring MVC에서 정적 리소스(CSS, JS, 이미지 파일 등)의
-		// 요청을 처리하기 위해 사용하는 클래스
-		
-		// URL 요청 패턴을 서버의 실제 파일 경로와 연결하여
-		// 클라이언트가 특정 경로로 정적 파일에 접근할 수 있도록 설정
-		registry
-		.addResourceHandler("/myPage/file/**")  // 클라이언트 요청 주소 패턴
-		.addResourceLocations("file:///C:/uploadFiles/test/");  
-		// 요청을 연결해서 처리해줄 서버 실제 폴더 경로
-		
-		// -> 클라이언트가 /myPage/file/** 패턴으로 이미지를 요청할 때
-		// 서버폴더 경로 중 C:/uploadFiles/test/ 로 연결하겠다. (여기서 이미지 찾겠다.)
-	
-		registry
-		.addResourceHandler(profileResourceHandler)  // /myPage/profile/**
-		.addResourceLocations(profileResourceLocation); // file:///C:/uploadFiles/profile/
-		
-		registry
-		.addResourceHandler(boardResourceHandler)   // /images/board/**
-		.addResourceLocations(boardResourceLocation);   // file:///C:/uploadFiles/board/
-
-	
-	}
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+    	 registry
+         .addResourceHandler(webPath + "**") // ex: /images/board/**
+         .addResourceLocations("file:///" + folderPath); // ex: file:///C:/uploadFiles/board/
+    	 
+ 		registry
+ 		.addResourceHandler(profileResourceHandler)
+ 		.addResourceLocations(profileResourceLocation);
+    }
 	
 	// MultipartResolver 설정
 	@Bean

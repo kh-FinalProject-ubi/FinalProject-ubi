@@ -1,49 +1,349 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="edu.kh.project.member.model.mapper.MemberMapper">
-	
-	<!-- 로그인  -->
-	<select id="login">
-	SELECT MEMBER_NO, MEMBER_EMAIL, MEMBER_NICKNAME,
-	MEMBER_PW, MEMBER_TEL, MEMBER_ADDRESS, PROFILE_IMG,
-	AUTHORITY,
-	TO_CHAR(ENROLL_DATE, 'YYYY"년" MM"월" DD"일" HH24"시" MI"분" SS"초"')
-	ENROLL_DATE FROM "MEMBER"
-	WHERE MEMBER_EMAIL = #{memberEmail}
-	AND MEMBER_DEL_FL='N'
+<mapper
+	namespace="edu.kh.project.member.model.mapper.MemberMapper">
+
+	<!-- 로그인 -->
+	<select id="login" resultType="Member" parameterType="string">
+		SELECT
+		MEMBER_NO,
+		MEMBER_ID,
+		MEMBER_NICKNAME,
+		MEMBER_PW,
+		MEMBER_TEL,
+		MEMBER_ADDRESS,
+		MEMBER_TADDRESS, <!-- ✅ 이 줄 추가 -->
+		MEMBER_STANDARD, <!-- ✅ 추가 -->
+		MEMBER_IMG,
+		AUTHORITY,
+		REGION_CITY,         <!-- ✅ 추가 -->
+		REGION_DISTRICT,      <!-- ✅ 추가 -->
+		TO_CHAR(ENROLL_DATE, 'YYYY"년" MM"월" DD"일"') AS ENROLL_DATE
+		FROM MEMBER
+		WHERE MEMBER_ID = #{memberId}
+		AND MEMBER_DEL_FL = 'N'
 	</select>
 
 	<!-- 이메일 중복 검사 -->
 	<select id="checkEmail" resultType="_int">
-	SELECT COUNT(*)
-	FROM "MEMBER"
-	WHERE MEMBER_EMAIL = #{memberEmail}
-	AND MEMBER_DEL_FL = 'N'
+		SELECT COUNT(*)
+		FROM "MEMBER"
+		WHERE MEMBER_EMAIL = #{memberEmail}
+		AND MEMBER_DEL_FL = 'N'
 	</select>
-	
+
 	<!-- 닉네임 중복 검사 -->
 	<select id="checkNickname">
-	 SELECT COUNT(*)
-	 FROM "MEMBER"
-	 WHERE MEMBER_NICKNAME = #{memberNickname}
-	 AND MEMBER_DEL_FL = 'N'
+		SELECT COUNT(*)
+		FROM "MEMBER"
+		WHERE MEMBER_NICKNAME =
+		#{memberNickname}
+		AND MEMBER_DEL_FL = 'N'
 	</select>
 
-	<!-- 회원 가입 -->
-	<insert id="signup">
-	INSERT INTO "MEMBER"
-	VALUES(SEQ_MEMBER_NO.NEXTVAL, 
-			 #{memberEmail},
-			 #{memberPw},
-			 #{memberNickname},
-			 #{memberTel},
-			 #{memberAddress},
-			 NULL,
-			 DEFAULT,
-			 DEFAULT,
-			 DEFAULT
-	)
+	<insert id="signup" parameterType="Member">
+		<selectKey keyProperty="memberNo" resultType="int"
+			order="BEFORE">
+			SELECT SEQ_MEMBER_NO.NEXTVAL FROM DUAL
+		</selectKey>
+
+		INSERT INTO MEMBER (
+		MEMBER_NO, MEMBER_ID, MEMBER_PW, MEMBER_NICKNAME,
+		MEMBER_EMAIL, MEMBER_TEL, MEMBER_ADDRESS,
+		MEMBER_TADDRESS,
+		REGION_DISTRICT, REGION_CITY,
+		MEMBER_NAME, AUTHORITY, MEMBER_STANDARD,
+		KAKAO_ID, MEMBER_DEL_FL
+		)
+		VALUES (
+		#{memberNo}, #{memberId}, #{memberPw},
+		#{memberNickname},
+		#{memberEmail}, #{memberTel}, #{memberAddress},
+		#{memberTaddress}, #{regionDistrict}, #{regionCity},
+		#{memberName}, 1,
+		#{memberStandard}, #{kakaoId}, 'N'
+		)
 	</insert>
 
+	<!-- 아이디 중복 검사 -->
+	<select id="checkMemberId" resultType="int">
+		SELECT COUNT(*)
+		FROM MEMBER
+		WHERE MEMBER_ID = #{memberId}
+		AND MEMBER_DEL_FL = 'N'
+	</select>
+
+	<select id="selectByKakaoId" parameterType="string"
+		resultType="Member">
+		SELECT
+		MEMBER_NO,
+		MEMBER_ID,
+		MEMBER_NICKNAME,
+		MEMBER_PW,
+		MEMBER_TEL,
+		MEMBER_ADDRESS,
+		MEMBER_TADDRESS,     <!-- ✅ 추가 -->
+		MEMBER_STANDARD,
+		MEMBER_IMG,
+		KAKAO_ID,
+		AUTHORITY,
+		TO_CHAR(ENROLL_DATE,
+		'YYYY"년" MM"월" DD"일"') AS ENROLL_DATE
+		FROM MEMBER
+		WHERE KAKAO_ID =
+		#{kakaoId}
+		AND MEMBER_DEL_FL = 'N'
+	</select>
+
+	<select id="selectByNo" resultType="Member">
+		SELECT
+		MEMBER_NO,
+		MEMBER_ID,
+		MEMBER_NICKNAME,
+		MEMBER_PW,
+		MEMBER_TEL,
+		MEMBER_ADDRESS,
+		MEMBER_TADDRESS,     <!-- ✅ 추가 -->
+		MEMBER_STANDARD,
+		MEMBER_IMG,
+		KAKAO_ID,
+		AUTHORITY,
+		REGION_CITY,
+		REGION_DISTRICT,
+		TO_CHAR(ENROLL_DATE, 'YYYY"년" MM"월" DD"일"') AS
+		ENROLL_DATE
+		FROM MEMBER
+		WHERE MEMBER_NO = #{memberNo}
+		AND MEMBER_DEL_FL =
+		'N'
+	</select>
+
+	<!-- 댓글 신고가 3번 들어갔을 때 member 테이블에 숫자 +1 -1 해주는 메서드 -->
+	<update id="updateMemberReportCount">
+		UPDATE MEMBER
+		SET REPORT_COUNT = REPORT_COUNT +
+		#{delta}
+		WHERE MEMBER_NO = #{memberNo}
+	</update>
+
+	<!-- 멤버 신고하는 경우 -->
+
+	<!-- 1. 신고 상태 확인 ('Y', 'N' 또는 null) -->
+	<select id="checkReportStatus" resultType="String">
+		SELECT REPORT_STATUS
+		FROM REPORT
+		WHERE TARGET_TYPE = 'MEMBER'
+		AND TARGET_MEMBER_NO =
+		#{targetMemberNo}
+		AND REPORTER_NO = #{reporterMemberNo}
+	</select>
+
+	<!-- 2. 피신고자의 전체 유효 신고 수 -->
+	<select id="selectReportCount" resultType="int">
+		SELECT COUNT(*)
+		FROM
+		REPORT
+		WHERE TARGET_MEMBER_NO = #{targetMemberNo}
+		AND REPORT_STATUS =
+		'Y'
+	</select>
+
+	<!-- 2-1 정지를 위한 신고횟수 세기 테이블 -->
+	<select id="selectMemberReportCount" resultType="int">
+		SELECT
+		REPORT_COUNT
+		FROM
+		MEMBER
+		WHERE MEMBER_NO = #{targetMemberNo}
+	</select>
+
+
+	<!-- 3. 신고 등록 -->
+	<insert id="insertReport">
+		INSERT INTO REPORT (
+		REPORT_NO, TARGET_TYPE,
+		TARGET_ID, REPORT_REASON,
+		REPORT_STATUS, REPORT_DATE,
+		REPORTER_NO,
+		TARGET_MEMBER_NO
+		) VALUES (
+		SEQ_REPORT_NO.NEXTVAL, 'MEMBER',
+		#{targetMemberNo},
+		#{reason},
+		'Y', SYSDATE,
+		#{reporterMemberNo},
+		#{targetMemberNo}
+		)
+	</insert>
+
+	<!-- 4. 신고 상태 업데이트 ('Y' 또는 'N') -->
+	<update id="updateReportStatus">
+		UPDATE REPORT
+		SET REPORT_STATUS = #{status},
+		REPORT_REASON = #{reason}
+		WHERE TARGET_MEMBER_NO = #{targetMemberNo}
+		AND REPORTER_NO = #{reporterMemberNo}
+	</update>
+
+	<!-- 5. MEMBER 테이블 신고 횟수 증가 -->
+	<update id="increaseMemberReportCount">
+		UPDATE MEMBER
+		SET REPORT_COUNT = REPORT_COUNT + 1
+		WHERE MEMBER_NO = #{targetMemberNo}
+	</update>
+
+	<!-- 6. 신고 횟수 감소 -->
+	<update id="decreaseMemberReportCount">
+		UPDATE MEMBER
+		SET REPORT_COUNT = REPORT_COUNT - 1
+		WHERE MEMBER_NO = #{targetMemberNo}
+	</update>
+
+	<!-- 7. 로그인 정지 등록 -->
+	<insert id="insertSuspension">
+		INSERT INTO MEMBER_SUSPENSION (
+		SUSPENSION_NO,
+		SUSPEND_START, SUSPEND_END,
+		REASON, NOTIFIED, RELEASED, MEMBER_NO
+		)
+		VALUES (
+		SUSPENSION_SEQ.NEXTVAL, #{start}, #{end},
+		'신고 누적 정지', 'N', 'N',
+		#{targetMemberNo}
+		)
+	</insert>
+
+	<insert id="insertSuspensionTest">
+		INSERT INTO MEMBER_SUSPENSION (MEMBER_NO,
+		SUSPEND_START,
+		SUSPEND_END)
+		VALUES (#{targetMemberNo}, #{start}, #{end})
+	</insert>
+
+	<!-- 8. 로그인 정지 해제 (삭제) -->
+	<delete id="deleteSuspension">
+		DELETE FROM MEMBER_SUSPENSION
+		WHERE MEMBER_NO =
+		#{targetMemberNo}
+	</delete>
+
+	<!-- 9. 로그인 기능 정지 -->
+	<select id="selectSuspension" resultType="map"
+		parameterType="int">
+		SELECT
+		TO_CHAR(SUSPEND_START, 'YYYY-MM-DD HH24:MI:SS') AS
+		START_DATE,
+		TO_CHAR(SUSPEND_END, 'YYYY-MM-DD HH24:MI:SS') AS END_DATE,
+		NVL(NOTIFIED, 'N') AS NOTIFIED
+		FROM MEMBER_SUSPENSION
+		WHERE MEMBER_NO =
+		#{memberNo}
+	</select>
+
+	<!-- 알람 보냈으면 문자 -->
+	<update id="updateSuspensionNotified" parameterType="int">
+		UPDATE
+		MEMBER_SUSPENSION
+		SET NOTIFIED = 'Y'
+		WHERE MEMBER_NO = #{memberNo}
+	</update>
+
+	<!-- 신고 횟수 0으로 초기화 -->
+	<update id="resetReportCount" parameterType="int">
+		UPDATE MEMBER
+		SET
+		REPORT_COUNT = REPORT_COUNT % 5
+		WHERE MEMBER_NO = #{memberNo}
+	</update>
+
+
+	<select id="selectMemberByNo" parameterType="long"
+		resultType="edu.kh.project.member.model.dto.Member">
+		SELECT *
+		FROM MEMBER
+		WHERE MEMBER_NO = #{memberNo}
+	</select>
+
+	<!-- 정지 기간 연장 -->
+	<update id="extendSuspensionEnd" parameterType="map">
+		UPDATE
+		MEMBER_SUSPENSION
+		SET SUSPEND_END = #{end}
+		WHERE MEMBER_NO =
+		#{targetMemberNo}
+	</update>
+
+	<!-- 정지 종료 후 해당 회원을 대상으로 한 멤버 신고들을 N으로 바꾸기 -->
+	<update id="updateReportStatusSuspension" parameterType="int">
+		UPDATE
+		REPORT
+		SET REPORT_STATUS = 'N'
+		WHERE TARGET_TYPE = 'MEMBER'
+		AND
+		TARGET_MEMBER_NO = #{memberNo}
+		AND REPORT_STATUS = 'Y'
+	</update>
+
+	<!-- 아이디 찾기 -->
+	<select id="selectMemberIdByNameAndEmail" resultType="String">
+		SELECT
+		MEMBER_ID
+		FROM MEMBER
+		WHERE MEMBER_NAME = #{name}
+		AND MEMBER_EMAIL =
+		#{email}
+	</select>
+
+	<!-- 아이디 + 이메일 존재 확인 -->
+	<select id="checkMemberIdAndEmail" resultType="int">
+		SELECT COUNT(*)
+		FROM MEMBER
+		WHERE MEMBER_ID = #{memberId}
+		AND MEMBER_EMAIL = #{email}
+	</select>
+
+	<!-- 비밀번호 업데이트 -->
+	<update id="updatePassword">
+		UPDATE MEMBER
+		SET MEMBER_PW = #{encPw}
+		WHERE
+		MEMBER_ID =
+		#{memberId}
+	</update>
+
+	<!-- ✅ 로그인 회원의 REGION_CITY 조회 -->
+	<select id="selectMemberRegionCity" parameterType="int"
+		resultType="string">
+		SELECT REGION_CITY
+		FROM MEMBER
+		WHERE MEMBER_NO = #{memberNo}
+	</select>
+
+	<!-- ✅ 로그인 회원의 REGION_DISTRICT 조회 -->
+	<select id="selectMemberRegionDistrict" parameterType="int"
+		resultType="string">
+		SELECT REGION_DISTRICT
+		FROM MEMBER
+		WHERE MEMBER_NO =
+		#{memberNo}
+	</select>
+
+	<select id="selectMemberAuthority" resultType="int">
+		SELECT AUTHORITY
+		FROM MEMBER
+		WHERE MEMBER_NO = #{memberNo}
+	</select>
+
+	<select id="existsByNameAndEmail">
+		SELECT * FROM "MEMBER"
+		WHERE MEMBER_NAME = #{name}
+		AND MEMBER_EMAIL = #{email}
+	</select>
+	<select id="existsByNameAndMemberIdAndEmail">
+		SELECT * FROM "MEMBER"
+		WHERE MEMBER_NAME = #{name}
+		AND MEMBER_ID = #{memberId}
+		AND MEMBER_EMAIL = #{email}
+	</select>
 
 </mapper>

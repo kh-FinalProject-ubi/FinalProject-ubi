@@ -2,21 +2,37 @@ package edu.kh.project.myPage.model.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import edu.kh.project.board.model.dto.Board;
+import edu.kh.project.board.model.dto.Comment;
+import edu.kh.project.board.model.dto.BoardLike;
 import edu.kh.project.common.util.Utility;
 import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.myPage.model.dto.UploadFile;
 import edu.kh.project.myPage.model.mapper.MyPageMapper;
+import edu.kh.project.welfare.benefits.model.dto.Facility;
+import edu.kh.project.welfare.benefits.model.dto.FacilityJob;
+import edu.kh.project.welfare.benefits.model.dto.Welfare;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -35,27 +51,91 @@ public class MyPageServiceImpl implements MyPageService {
 
 	@Value("${my.profile.folder-path}")
 	private String profileFolderPath; // C:/uploadFiles/profile/
-
+	
+	// 내 기본 정보 조회
 	@Override
-	public int updateInfo(Member inputMember, String[] memberAddress) {
+	public Member info(int memberNo) {
+		return mapper.info(memberNo);
+	}
+	
+	// 회원 정보 수정
+	@Override
+	public int updateInfo(Member member) {
+		return mapper.updateInfo(member);
+	}
+	
+	// 내가 찜한 혜택 조회
+	@Override
+	public List<Welfare> getWelfareBenefits(int memberNo) {
+		return mapper.getWelfareBenefits(memberNo);
+	}
+	
+	// 내가 찜한 채용 조회
+	@Override
+	public List<FacilityJob> getRecruitBenefits(int memberNo) {
+		return mapper.getRecruitBenefits(memberNo);
+	}
+	
+	// 내가 찜한 시설 조회
+	@Override
+	public List<Facility> getFacilityBenefits(int memberNo) {
+		return mapper.getFacilityBenefits(memberNo);
+	}
+	
+	
+	// 작성글 조회
+	@Override
+	public List<Board> baord(int memberNo) {
+		
+		List<Board> board =  mapper.board(memberNo);
+		
+		List<Integer> boardNoList = board.stream()
+	            .map(Board::getBoardNo)
+	            .collect(Collectors.toList());
 
-		// 입력된 주소가 있을 경우
-		if (!inputMember.getMemberAddress().equals(",,")) {
+	        // 3. 게시글 번호로 해시태그 전부 조회 (resultType="map")
+	        List<Map<String, Object>> hashtagRows = mapper.selectHashtagsByBoardNoList(boardNoList);
 
-			String address = String.join("^^^", memberAddress);
-			inputMember.setMemberAddress(address);
+	        // 4. 게시글 번호 → 해시태그 리스트로 변환
+	        Map<Integer, List<String>> tagMap = new HashMap<>();
+	        for (Map<String, Object> row : hashtagRows) {
+	            Integer boardNo = ((Number) row.get("BOARD_NO")).intValue();
+	            String tag = (String) row.get("HASHTAG_NAME");
+	            tagMap.computeIfAbsent(boardNo, k -> new ArrayList<>()).add(tag);
+	        }
 
-		} else {
-			// 없을 경우
-			inputMember.setMemberAddress(null);
-		}
+	        // 5. 게시글에 쉼표로 연결된 해시태그 문자열 세팅
+	        for (Board b : board) {
+	            List<String> tags = tagMap.getOrDefault(b.getBoardNo(), Collections.emptyList());
+	            b.setHashtags(String.join(",", tags));
+	        }
 
-		return mapper.updateInfo(inputMember);
+	        return board;
+	    }
+	
+	// 작성 댓글 조회
+	@Override
+	public List<Comment> Comment(int memberNo) {
+		return mapper.Comment(memberNo);
+	}
+	
+	// 내가 좋아요를 누른 게시글 조회
+	@Override
+	public List<BoardLike> like (int memberNo) {
+		
+		return mapper.like(memberNo);
+	}
+	
+	
+	// 내가 좋아요를 누른 댓글 조회
+	@Override
+	public List<Comment> likeComment(int memberNo) {
+		return mapper.likeComment(memberNo);
 	}
 
-	// 비밀번호 변경 서비스
+	// 비밀번호 확인
 	@Override
-	public int changePw(Map<String, String> paramMap, int memberNo) {
+	public int selectPw(String currentPassword, int memberNo) {
 
 		// 1. 현재 비밀번호가 일치하는지 확인하기
 		// - 현재 로그인한 회원의 암호화된 비밀번호를 DB에서 조회
@@ -63,43 +143,45 @@ public class MyPageServiceImpl implements MyPageService {
 
 		// 입력 받은 현재 비밀번호와(평문)
 		// DB에서 조회한 비밀번호(암호화)를 비교
-		// -> bcrypt.matched(평문, 암호화비번) 사용
+		// -> bcrypt.matches(평문, 암호화비번) 사용
 
 		// 다를 경우 "asd123"
-		if (!bcrypt.matches(paramMap.get("currentPw"), originPw)) {
+		if (!bcrypt.matches(currentPassword, originPw)) {
 			return 0;
 		}
 
+		return 1;
+	}
+	
+	// 비밀번호 변경
+	@Override
+	public int changePw(String newPw, int memberNo) {
+		
 		// 2. 같을 경우
 
 		// 새 비밀번호를 암호화(bcrypt.encode(평문) > 암호화된 비밀번호 반환)
-		String encPw = bcrypt.encode(paramMap.get("newPw"));
+		String encPw = bcrypt.encode(newPw);
 
 		// DB에 업데이트
 		// SQL 전달 해야하는 데이터 2개 (암호화한 새 비번 encPw, 회원번호 memberNo)
 		// -> mapper에 전달할 수 있는 전달인자는 단 1개..
 		// -> 묶어서 전달 (paramMap 재활용)
 
-		paramMap.put("encPw", encPw);
+		Map<String, String> paramMap = new HashMap<>();
+				
 		paramMap.put("memberNo", memberNo + ""); // 1 + "" => 문자열
+		
+		paramMap.put("encPw", encPw );
 
 		return mapper.changePw(paramMap);
 	}
 
+	
 	// 회원 탈퇴 서비스
 	@Override
-	public int secession(String memberPw, int memberNo) {
+	public int withdraw(int memberNo) {
 
-		// 현재 로그인한 회원의 암호화된 비밀번호 DB 조회
-		String originPw = mapper.selectPw(memberNo);
-
-		// 다를 경우
-		if (!bcrypt.matches(memberPw, originPw)) {
-			return 0;
-		}
-
-		// 같은 경우
-		return mapper.secession(memberNo);
+		return mapper.withdraw(memberNo);
 	}
 
 	// 파일 업로드 테스트 1
@@ -233,7 +315,7 @@ public class MyPageServiceImpl implements MyPageService {
 
 	// 프로필 이미지 변경 서비스
 	@Override
-	public int profile(MultipartFile profileImg, Member loginMember) throws Exception {
+	public String profile(int memberNo, MultipartFile profileImg){
 
 		// 프로필 이미지 경로
 		String updatePath = null;
@@ -241,38 +323,52 @@ public class MyPageServiceImpl implements MyPageService {
 		// 변경명 저장
 		String rename = null;
 
-		// 업로드한 이미지가 있을 경우
-		// - 있을 경우 : 경로 조합 (클라이언트 접근 경로 + 리네임파일명)
 		if (!profileImg.isEmpty()) {
-			// 1. 파일명 변경
-			rename = Utility.fileRename(profileImg.getOriginalFilename());
+		    String folderPath = profileFolderPath;
+		    if (!folderPath.endsWith("/") && !folderPath.endsWith("\\")) {
+		        folderPath += File.separator;
+		    }
 
-			// 2. /myPage/profile/변경된 파일명
-			updatePath = profileWebPath + rename;
+		    File dir = new File(folderPath);
+		    if (!dir.exists()) {
+		        dir.mkdirs();
+		    }
 
+		    // 파일명 변경 및 저장
+		    rename = Utility.fileRename(profileImg.getOriginalFilename());
+		    File targetFile = new File(folderPath + rename);
+		    
+		    try {
+		    	
+				profileImg.transferTo(targetFile);
+				
+			} catch (IllegalStateException | IOException e) {
+				
+				e.printStackTrace();
+			}
+
+		    // 클라이언트가 접근할 수 있는 경로 설정 (예: /myPage/profile/파일명)
+		    updatePath = profileWebPath + rename;
 		}
 
 		// 수정된 프로필 이미지 경로 + 회원 번호를 저장할 DTO 객체
-		Member member = Member.builder().memberNo(loginMember.getMemberNo()).profileImg(updatePath).build();
+		Member member = Member.builder()
+		        .memberNo(memberNo)
+		        .memberImg(updatePath)
+		        .build();
 
 		int result = mapper.profile(member);
 
 		if (result > 0) {
-
-			// 프로필 이미지를 없애는 update 를 한 경우
-			// -> 업로드한 이미지가 있을 경우
-			if (!profileImg.isEmpty()) {
-				// 파일을 서버에 저장
-				profileImg.transferTo(new File(profileFolderPath + rename));
-				// C:/uploadFiles/profile/변경한 이름
-			}
-
-			// 세션에 저장된 loginMember의 프로필 이미지 경로를
-			// DB와 동기화
-			loginMember.setProfileImg(updatePath);
-
+		    return updatePath;
+		} else {
+		    return null;
 		}
-
-		return result;
+	}
+	
+	// 프로필 이미지 초기화
+	@Override
+	public int deleteProfile(int memberNo) {
+		return mapper.deleteProfile(memberNo);
 	}
 }

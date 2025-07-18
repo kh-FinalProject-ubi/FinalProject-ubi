@@ -1,26 +1,40 @@
 package edu.kh.project.myPage.controller;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttribute;
-import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import edu.kh.project.board.model.dto.Board;
+import edu.kh.project.board.model.dto.Comment;
+import edu.kh.project.common.util.JwtUtil;
+import edu.kh.project.board.model.dto.BoardLike;
 import edu.kh.project.member.model.dto.Member;
 import edu.kh.project.myPage.model.dto.UploadFile;
 import edu.kh.project.myPage.model.service.MyPageService;
+import edu.kh.project.welfare.benefits.model.dto.Facility;
+import edu.kh.project.welfare.benefits.model.dto.FacilityJob;
+import edu.kh.project.welfare.benefits.model.dto.Welfare;
 import lombok.extern.slf4j.Slf4j;
-import oracle.jdbc.clio.annotations.Debug;
 
 /*
  * @SessionAttributes 의 역할
@@ -31,196 +45,377 @@ import oracle.jdbc.clio.annotations.Debug;
  * - Session에 존재하는 값을 key로 얻어오는 역할
  * */
 
-@SessionAttributes({ "loginMember" })
-@Controller
-@RequestMapping("myPage")
+@RestController
+@CrossOrigin(origins="http://localhost:5173"/*, allowCredentials = "true"*/)
+//allowCredentials = "true" 클라이언트로부터 들어오는 쿠키 허용
+//@SessionAttributes({ "loginMember" })
+@RequestMapping("api/myPage")
 @Slf4j
 public class MyPageController {
 
 	@Autowired
 	private MyPageService service;
+	
+	@Autowired
+	private JwtUtil jwtU;
 
-	@GetMapping("info") // /myPage/info GET 방식 요청 매핑
-	public String info(@SessionAttribute("loginMember") Member loginMember, Model model) {
+	
+	// 내 기본 정보 조회
+	@GetMapping("info")
+    public ResponseEntity<Object> info(@RequestHeader("Authorization") String authorizationHeader) {
+        try {
+        	
+        	if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
+	        }
+		  
+		  String token = authorizationHeader.substring(7);
+			
+		  if (!jwtU.validateToken(token)) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
+	        }
 
-		// 현재 로그인한 회원의 주소를 꺼내옴
-		// 현재 로그인한 회원 정보 -> session에 등록된 상태(loginMember)
-
-		String memberAddress = loginMember.getMemberAddress();
-		// 13536^^^경기 성남시 분당구 판교역로 4^^^2555번지
-		// 주소가 없다면 null
-
-		// 주소가 있을 경우에만 동작
-		if (memberAddress != null) {
-
-			// 구분자 "^^^"를 기준으로
-			// memberAddress 값을 쪼개어 String[]로 반환
-			String[] arr = memberAddress.split("\\^\\^\\^");
-			// -> 13536^^^경기 성남시 분당구 판교역로 4^^^2555번지
-			// -> ['13536', '경기 성남시 분당구 판교역로 4', '2555번지']
-			// 0번 인덱스 1번 인덱스 2번 인덱스
-
-			model.addAttribute("postcode", arr[0]);
-			model.addAttribute("address", arr[1]);
-			model.addAttribute("detailAddress", arr[2]);
-
-		}
-
-		return "myPage/myPage-info";
-	}
-
-	// 프로필 이미지 변경 화면 이동
-	@GetMapping("profile") // /myPage/profile GET 요청 매핑
-	public String profile() {
-
-		return "myPage/myPage-profile";
-	}
-
-	// 비밀번호 변경 화면 이동
-	@GetMapping("changePw") // /myPage/changePw GET 요청 매핑
-	public String changePw() {
-
-		return "myPage/myPage-changePw";
-	}
-
-	// 회원 탈퇴 화면 이동
-	@GetMapping("secession") // /myPage/secession GET 요청 매핑
-	public String secession() {
-
-		return "myPage/myPage-secession";
-	}
-
-	// 파일 업로드 테스트 화면 이동
-	@GetMapping("fileTest") // /myPage/fileTest GET 요청 매핑
-	public String fileTest() {
-
-		return "myPage/myPage-fileTest";
-	}
-
-	/**
-	 * 회원 정보 수정
+	        // 3️⃣ 토큰에서 회원 번호 추출
+	        Long memberNoLong = jwtU.extractMemberNo(token);
+	        int memberNo = memberNoLong.intValue();
+        	
+        	
+            if (memberNo == 0) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+            }
+            
+            Member member = service.info(memberNo);
+            return ResponseEntity.status(HttpStatus.OK).body(member);
+            
+        } catch (Exception e) {
+            log.error("내 정보 조회 중 에러 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+	
+	 /** 회원 정보 수정
 	 * 
 	 * @param inputMember   : (@ModelAttribute가 생략된 상태) 제출된 수정된 회원 닉네임, 전화번호, 주소
 	 * @param loginMember   : 로그인한 회원 정보 (회원 번호 사용할 예정)
-	 * @param memberAddress : 주소만 따로 받은 String[] 구분자 ^^^ 변경 예정
-	 * @param ra
+	 * @param memberAddress 
 	 * @return
 	 */
-	@PostMapping("info")
-	public String updateInfo(Member inputMember, @SessionAttribute("loginMember") Member loginMember,
-			@RequestParam("memberAddress") String[] memberAddress, RedirectAttributes ra) {
+	@PostMapping("update")
+	public ResponseEntity<Object> updateInfo(@RequestBody Member member,
+											 @RequestHeader("Authorization") String authorizationHeader) {
 
-		String message = null;
+		try {
+			
+		  if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
+	        }
+		  
+		  String token = authorizationHeader.substring(7);
+			
+		  if (!jwtU.validateToken(token)) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
+	        }
 
-		// inputMember에 로그인한 회원 번호 추가
-		inputMember.setMemberNo(loginMember.getMemberNo());
-		// inputMember : 회원 번호, 회원 닉네임, 전화번호, 주소
+	        // 3️⃣ 토큰에서 회원 번호 추출
+	        Long memberNoLong = jwtU.extractMemberNo(token);
+	        int memberNo = memberNoLong.intValue();
+	        
+	        member.setMemberNo(memberNo);
+	       
+	        if (memberNo == 0) {
+               return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+	        }
+           
+	        int result = service.updateInfo(member);
+           
+	        if(result > 0) {
+        	   return ResponseEntity.status(HttpStatus.OK).body("회원 정보 수정을 완료했습니다!");        	   
+	        } else {
+	        	return ResponseEntity.badRequest().body("회원 정보 수정을 실패했습니다");	      	   
+	        }
+           
+       } catch (Exception e) {
+           log.error("내 정보 조회 중 에러 발생", e);
+           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+       }
+	}	
 
-		// 회원 정보 수정 서비스 호출
-		int result = service.updateInfo(inputMember, memberAddress);
+	
+	// 내가 찜한 혜택 조회
+	@GetMapping("service")
+    public ResponseEntity<Object> service(@RequestParam("memberNo") int memberNo,
+    									  @RequestParam("category") String category) {
+        try {
+            if (memberNo == 0) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+            }
+            
 
-		if (result > 0) { // 회원 정보 수정 성공
-
-			// loginMember 새로 세팅
-			// 우리가 방금 바꾼 값으로 세팅
-
-			// -> loginMember를 수정하면
-			// 세션에 저장된 로그인한 회원 정보가 수정된다.
-			// == 세션 데이터와 DB 데이터를 동기화
-
-			loginMember.setMemberNickname(inputMember.getMemberNickname());
-			loginMember.setMemberTel(inputMember.getMemberTel());
-			loginMember.setMemberAddress(inputMember.getMemberAddress());
-
-			message = "회원 정보 수정 성공!";
-
-		} else {
-
-			message = "회원 정보 수정 실패..";
+            switch (category) {
+                case "시설":
+                	List<Facility> facitiy = service.getFacilityBenefits(memberNo);
+                	 return ResponseEntity.status(HttpStatus.OK).body(facitiy);
+                case "채용":
+                	List<FacilityJob> facitiyJob = service.getRecruitBenefits(memberNo);
+                	 return ResponseEntity.status(HttpStatus.OK).body(facitiyJob);
+                case "혜택":
+                	List<Welfare> walfare = service.getWelfareBenefits(memberNo);
+                	 return ResponseEntity.status(HttpStatus.OK).body(walfare);
+                default:
+                	return ResponseEntity.badRequest().body("유효하지 않은 카테고리입니다.");
+                    
+            }
+           
+            
+        } catch (Exception e) {
+            log.error("내 혜택 조회 중 에러 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+	
+	// 작성글 조회
+	@GetMapping("board")
+	public ResponseEntity<Object> board(@RequestParam("memberNo") int memberNo,
+										@RequestParam("contentType") String contentType) {
+		try {
+			if (memberNo == 0) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+			}
+			
+			switch (contentType) {
+			
+			case "게시글" :
+				List<Board> board = service.baord(memberNo);
+				return ResponseEntity.status(HttpStatus.OK).body(board);
+				
+			case "댓글" :
+				List<Comment> comment = service.Comment(memberNo);
+				return ResponseEntity.status(HttpStatus.OK).body(comment);
+				
+			default:
+            	return ResponseEntity.badRequest().body("유효하지 않은 카테고리입니다.");	
+            	
+			}
+			
+		} catch (Exception e) {
+			log.error("내 정보 조회 중 에러 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
-
-		ra.addFlashAttribute("message", message);
-		return "redirect:info";
 	}
-
+	
+	// 내가 좋아요를 누른 게시글 조회
+	@GetMapping("like")
+	public ResponseEntity<Object> like(@RequestParam("memberNo") int memberNo,
+									   @RequestParam("contentType") String contentType) {
+		try {
+			
+			if (memberNo == 0) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+			}
+			
+			switch (contentType) {
+			
+			case "게시글" :
+				List<BoardLike> like = service.like(memberNo);
+				return ResponseEntity.status(HttpStatus.OK).body(like);
+				
+			case "댓글" :
+				List<Comment> likeComment = service.likeComment(memberNo);
+				return ResponseEntity.status(HttpStatus.OK).body(likeComment);
+				
+			default:
+            	return ResponseEntity.badRequest().body("유효하지 않은 카테고리입니다.");	
+            	
+			}
+			
+		} catch (Exception e) {
+			log.error("내 정보 조회 중 에러 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+	}
+	
 	/**
-	 * 비밀번호 변경
+	 * 비밀번호 확인
 	 * 
 	 * @param paramMap    : 모든 파라미터(요청 데이터)를 맵으로 저장
 	 * @param loginMember : 세션에 등록된 현재 로그인한 회원 정보
 	 * @param ra
 	 * @return
 	 */
-	@PostMapping("changePw") // /myPage/changePw POST 요청 매핑
-	public String changePw(@RequestParam Map<String, String> paramMap,
-			@SessionAttribute("loginMember") Member loginMember, RedirectAttributes ra) {
-		// paramMap = {currentPw=asd123, newPw=pass02!, newPwConfirm=pass02!}
+	@PostMapping("selectPw") // /myPage/changePw POST 요청 매핑
+	public ResponseEntity<Object> selectPw(@RequestBody Member request) {
+		
+		int memberNo = request.getMemberNo();
+		String currentPassword = request.getMemberPw();
+		
+		try {
+			if (memberNo == 0) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+			}
+			
+			// paramMap = {currentPw=asd123, newPw=pass02!, newPwConfirm=pass02!}
+	
+			// 현재 + 새 비번 + 새 비번 확인 (paramMap) + 회원번호(memberNo)를 서비스로 전달
+			int result = service.selectPw(currentPassword, memberNo);
 
-		// 로그인한 회원 번호
-		int memberNo = loginMember.getMemberNo();
+			return ResponseEntity.status(HttpStatus.OK).body(result);
 
-		// 현재 + 새 비번 + 새 비번 확인 (paramMap) + 회원번호(memberNo)를 서비스로 전달
-		int result = service.changePw(paramMap, memberNo);
+		} catch (Exception e) {
+				log.error("비밀번호 확인 중 오류 발생", e);
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+			}
 
-		String path = null;
-		String message = null;
-
-		if (result > 0) {
-			// 변경 성공 시
-			message = "비밀번호가 변경되었습니다!";
-			path = "/myPage/info";
-
-		} else {
-			// 변경 실패 시
-			message = "현재 비밀번호가 일치하지 않습니다.";
-			path = "/myPage/changePw";
-		}
-
-		ra.addFlashAttribute("message", message);
-
-		return "redirect:" + path;
 	}
-
-	/**
-	 * 회원 탈퇴
-	 * 
-	 * @param memberPw    : 입력받은 비밀번호
-	 * @param loginMember : 로그인한 회원 정보(세션)
-	 * @param status      : 세션 완료 용도의 객체 -> @SessionAttributes로 등록된 세션을 완료
+	
+	/** 비밀번호 변경
+	 * @param memberNo
+	 * @param currentPassword
 	 * @return
 	 */
-	@PostMapping("secession")
-	public String secession(@RequestParam("memberPw") String memberPw,
-			@SessionAttribute("loginMember") Member loginMember, RedirectAttributes ra, SessionStatus status) {
-
-		// 로그인한 회원의 회원번호 꺼내기
-		int memberNo = loginMember.getMemberNo();
-
-		// 서비스 호출 (입력받은 비밀번호, 로그인한 회원번호)
-		int result = service.secession(memberPw, memberNo);
-
-		String message = null;
-		String path = null;
-
-		if (result > 0) {
-			message = "탈퇴 되었습니다.";
-			path = "/";
-
-			status.setComplete(); // 세션 완료 시킴 > 로그아웃
-
+	@PostMapping("changePw")
+	public ResponseEntity<Object> changePw(@RequestBody Member request) {
+		
+		int memberNo = request.getMemberNo();
+		String newPw = request.getMemberPw(); 
+		
+		try {
+		if (memberNo == 0) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+		}
+		
+		
+		// 현재 + 새 비번 + 새 비번 확인 (paramMap) + 회원번호(memberNo)를 서비스로 전달
+		int result = service.changePw(newPw, memberNo);
+		
+		if(result > 0) {
+			return ResponseEntity.status(HttpStatus.OK).body("비밀번호가 변경되었습니다!");
 		} else {
-			message = "비밀번호가 일치하지 않습니다.";
-			path = "secession";
+			return ResponseEntity.badRequest().body("비밀번호가 변경에 실패했습니다!");	
+		}
+		
+		
+		} catch (Exception e) {
+			log.error("비밀번호 변경 중 오류 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+		
+		}
+	
+	/**
+	 * 회원탈퇴
+	 * 
+	 * @param paramMap    : 모든 파라미터(요청 데이터)를 맵으로 저장
+	 * @param loginMember : 세션에 등록된 현재 로그인한 회원 정보
+	 * @param ra
+	 * @return
+	 */
+	@PostMapping("withdraw") // /myPage/changePw POST 요청 매핑
+	public ResponseEntity<Object> withdraw(@RequestBody Member request) {
+		
+		int memberNo = request.getMemberNo();
+		
+		try {
+			if (memberNo == 0) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+			}
+			
+	
+//			 현재 + 새 비번 + 새 비번 확인 (paramMap) + 회원번호(memberNo)를 서비스로 전달
+			int result = service.withdraw(memberNo);
+
+			return ResponseEntity.status(HttpStatus.OK).body(result);
+
+		} catch (Exception e) {
+				log.error("비밀번호 확인 중 오류 발생", e);
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+			}
+
+	}
+
+	/** 프로필 이미지 변경
+	 * @param profileImage
+	 * @param memberNo
+	 * @return
+	 */
+	@PostMapping("profile")
+	public ResponseEntity<Object> profile(@RequestParam("profileImage") MultipartFile profileImage,
+										  @RequestHeader("Authorization") String authorizationHeader) {
+
+		try {
+			
+			if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+		        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
+		    }
+
+		    String token = authorizationHeader.substring(7);
+
+		    if (!jwtU.validateToken(token)) {
+		        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
+		    }
+
+		    Long memberNoLong = jwtU.extractMemberNo(token);
+		    int memberNo = memberNoLong.intValue();
+
+		    String result = service.profile(memberNo, profileImage);
+
+		    if (result != null) {
+		        return ResponseEntity.ok(result); // 🔹 새 경로 반환
+		    } else {
+		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("프로필 이미지 변경 실패");
+		    }
+			
+		} catch (Exception e) {
+			
+			log.error("프로필 이미지 변경 중 에러 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
 
-		ra.addFlashAttribute("message", message);
-
-		// 탈퇴 성공 -> redirect:/ (메인페이지)
-		// 탈퇴 실패 -> redirect:secession" (상대경로)
-		// -> /myPage/secession (현재경로 POST)
-		// -> /myPage/secession (GET 요청)
-		return "redirect:" + path;
+		
 	}
+	
+	/** 프로필 이미지 삭제
+	 * @param profileImage
+	 * @param memberNo
+	 * @return
+	 * @throws Exception
+	 */
+	@DeleteMapping("profile")
+	public ResponseEntity<Object> profile(@RequestHeader("Authorization") String authorizationHeader ){
+		
+		try {
+			
+			if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
+			}
+			
+			String token = authorizationHeader.substring(7);
+			
+			if (!jwtU.validateToken(token)) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
+			}
+			
+			Long memberNoLong = jwtU.extractMemberNo(token);
+			int memberNo = memberNoLong.intValue();
+			
+			int result = service.deleteProfile(memberNo);
+			
+			if (result > 0) {
+				return ResponseEntity.ok(result);
+			} else {
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("프로필 이미지 초기화 실패");
+			}
+			
+		} catch (Exception e) {
+			
+			log.error("프로필 이미지 초기화 중 에러 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+		
+		
+	}
+
+	
+	// ---------------------------------------------------------------------------------------------------------------------
 
 	/*
 	 * Spring에서 파일 업로드를 처리하는 방법
@@ -336,23 +531,6 @@ public class MyPageController {
 		
 		return "redirect:/myPage/fileTest";
 	}
-
-	@PostMapping("profile")
-	public String profile(@RequestParam("profileImg") MultipartFile profileImg,
-						  @SessionAttribute("loginMember") Member loginMember,
-						  RedirectAttributes ra ) throws Exception {
-		
-		// 업로드된 파일 정보를 DB에 INSERT 후 결과 행의 갯수 반환 받을 예정
-		int result = service.profile(profileImg, loginMember);
-		
-		String message = null;
-		
-		if(result > 0) message = "변경 성공";	
-		else 		   message = "변경 실패";
-		
-		ra.addFlashAttribute("message", message);
-		
-		return "redirect:profile";
-		
-	}
 }
+
+

@@ -1,0 +1,51 @@
+.facilityCard {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.facilityCard:hover {
+  transform: translateY(-5px);
+}
+
+.facilityStatus a:visited {
+  color: black;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.facilityStatus {
+  margin-top: 18px;
+}
+
+.facilityCardRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0px;
+  max-height: 54px;
+  overflow: hidden;
+}
+
+.serviceTarget {
+  padding: 6px 15px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  font-size: 0.7rem;
+  background-color: #ffe066;
+  color: black;
+  font-weight: 600;
+}
+
+.category {
+  padding: 6px 15px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  font-size: 0.7rem;
+  background-color: #5e60ce;
+  color: white;
+  font-weight: 600;
+}

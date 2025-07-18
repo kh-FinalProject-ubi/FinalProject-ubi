@@ -1,0 +1,340 @@
+.container {
+  width: 100%;
+  min-width: 800px;
+  min-height: calc(100vh - 80px);
+  padding: 2rem 23%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ✅ 페이지 제목 스타일 추가 */
+.pageTitle {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 15px; /* 요청하신 15px 여백 */
+}
+
+/* ============================ */
+/* ✅ 우리동네 제목  */
+/* ============================ */
+.pageHeaderContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* 왼쪽 정렬 유지 */
+  gap: 0.4rem;
+  margin-bottom: 1.5rem;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* 제목과 태그 간격 */
+}
+
+.pageTitle {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0;
+}
+.tagButton {
+  padding: 4px 10px; /* 상하 4px, 좌우 10px → 작아짐 */
+  font-size: 0.8rem; /* 글씨 크기 작게 */
+  line-height: 1; /* 줄간격 타이트하게 */
+  border-radius: 14px; /* 조금 더 둥글게 */
+}
+/*게시판 종류명*/
+.subText {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.inputGroup {
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.postTypeSelect {
+  padding: 12px 15px;
+  border: none;
+  border-right: 1px solid #ccc;
+  background-color: #f8f9fa;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.postTypeSelect:focus {
+  outline: none;
+}
+
+/* --- 추가된 스타일 --- */
+.postTypeInquiry {
+  background-color: #ffdd44 !important; /* 문의: 노란색 */
+}
+
+.postTypeReport {
+  background-color: #e53e3e !important; /* 신고: 빨간색 */
+  color: white;
+}
+/* --- --- */
+
+.titleInput {
+  flex: 1;
+  padding: 7px 15px;
+  border: none;
+  font-size: 1rem;
+}
+
+.titleInput::placeholder {
+  color: #999;
+}
+
+.titleInput:focus {
+  outline: none;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: flex-end; /* 버튼을 오른쪽으로 정렬 */
+  gap: 10px;
+  margin-top: 1rem;
+}
+
+.listButton,
+.submitButton {
+  padding: 0.7em 1.8em;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.listButton {
+  background-color: #fff;
+  color: #333;
+}
+
+.listButton:hover {
+  background-color: #f8f8f8;
+}
+
+.submitButton {
+  background-color: #ffdd44;
+  color: #333;
+  border-color: #ffdd44;
+}
+
+/* Summernote 에디터 스타일 오버라이드 */
+:global(.note-editor.note-frame) {
+  border-radius: 8px;
+  border-color: #ccc;
+}
+:global(.note-toolbar) {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ccc;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+/* Summernote 높이 지정 */
+:global(.note-editable) {
+  height: 510px !important;
+}
+
+/* ============================ */
+/* ✅ 필터 테이블 스타일 */
+/* ============================ */
+.postOptionBox {
+  margin-bottom: 2rem;
+}
+
+.filterContainer {
+  margin-bottom: 2rem;
+}
+
+.filterTitle {
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.filterBox {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.filterTable {
+  margin: 0;
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+.filterRow {
+  padding: 0; /* ✅ 기본 여백 제거 */
+  height: auto; /* ✅ 콘텐츠 높이에 따라 유동 */
+  max-height: 100%; /* ✅ 최대 높이 제한 X (콘텐츠에 맞게 늘어남) */
+  vertical-align: top; /* ✅ td들이 상단 정렬되도록 */
+}
+
+.filterRow:last-child {
+  border-bottom: none;
+}
+
+.filterLabel {
+  padding: 16px 20px; /* ✅ 기존보다 위아래 줄임 */
+  background-color: #ffe066;
+  width: 150px;
+  text-align: center;
+  vertical-align: middle;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+
+.filterContent {
+  padding: 16px 20px; /* ✅ 기존보다 위아래 줄임 */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start; /* 왼쪽 정렬 */
+  gap: 10px 15px;
+  margin: 0;
+}
+
+.radioLabel input[type="radio"] {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #ffe066;
+  background-color: #ffe066;
+  margin: 0 8px 0 0;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  vertical-align: middle;
+}
+
+.radioLabel input[type="radio"]::before {
+  content: "";
+  display: block;
+  width: 12px;
+  height: 12px;
+  background-color: #5e60ce;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.2s ease;
+}
+
+.radioLabel input[type="radio"]:checked::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.filterContent select {
+  padding: 8px 12px;
+  font-size: 0.95rem;
+  border: none;
+  background-color: white;
+  color: #333;
+  cursor: pointer;
+}
+
+.filterContent select:focus {
+  border-color: #999;
+  outline: none;
+}
+
+/* ✅ 해시태그 입력 input */
+.titleInput {
+  width: 100%; /* 폭을 최대로 */
+  padding: 10px 12px;
+  font-size: 1rem;
+  border: none; /* 테두리 제거 */
+  background-color: #fff;
+  box-sizing: border-box;
+  outline: none;
+}
+
+/* ✅ 해시태그 미리보기 영역 */
+.tagPreviewWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px; /* 태그 간 간격 */
+  margin-top: 10px;
+}
+
+/* ✅ 태그 버튼 기본 스타일 */
+.tagButton {
+  padding: 2px 8px; /* ✅ 더 낮은 높이 */
+  font-size: 0.75rem; /* ✅ 작은 글자 */
+  line-height: 1; /* ✅ 줄 간격 최소화 */
+  border-radius: 20px;
+  border: 1px solid transparent;
+  background-color: #ffe066;
+  color: #5c3c00;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ✅ 마지막 태그 보라색 적용 */
+.tagPurple {
+  background-color: #5e60ce;
+  color: white;
+}
+
+/* ✅ 삭제 버튼 (x 표시) */
+.tagRemoveBtn {
+  padding: 2px 8px; /* ✅ 더 낮은 높이 */
+  background: none;
+  border: none;
+  margin-left: 6px;
+  font-size: 0.9rem;
+  color: #888;
+  cursor: pointer;
+}
+
+/*지역정보 */
+.regionButton {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.tagButton {
+  padding: 6px 15px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 500;
+  background-color: #ffe066;
+  color: #5c3c00;
+}
+
+.tagSelected {
+  background-color: #5e60ce;
+  color: white;
+}
+
+/* ============================ */
+/* ✅ 별점 스타일 */
+/* ============================ */
+
+.stars {
+  display: flex;
+  gap: 8px;
+  height: 100%; /* 부모에 맞춤 */
+}
+
+.iconStar {
+  width: 28px;
+  height: 28px;
+}
