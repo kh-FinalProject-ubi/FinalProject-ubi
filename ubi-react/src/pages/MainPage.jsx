@@ -44,17 +44,6 @@ const MainPage = () => {
             <h2 className={styles.mapTitle}>
               {mapType === "welfare" ? "복지 혜택 지도" : "범죄지도 히트맵"}
             </h2>
-
-            {mapType === "safety" && (
-              <label className={styles.labelToggle}>
-                <input
-                  type="checkbox"
-                  checked={showHybrid}
-                  onChange={() => setShowHybrid((prev) => !prev)}
-                />
-                지명 표시
-              </label>
-            )}
           </div>
 
           {/* 오른쪽: 복지/치안 토글 버튼 */}
@@ -87,6 +76,17 @@ const MainPage = () => {
                   {crime}
                 </button>
               ))}
+
+              {mapType === "safety" && (
+                <label className={styles.labelToggle}>
+                  <input
+                    type="checkbox"
+                    checked={showHybrid}
+                    onChange={() => setShowHybrid((prev) => !prev)}
+                  />
+                  지명 표시
+                </label>
+              )}
             </div>
           )}
         </div>
