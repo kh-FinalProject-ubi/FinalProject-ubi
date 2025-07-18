@@ -193,6 +193,11 @@ button {
   background: var(--brand-yellow-darker);
 }
 
+.benefitList > div > h3 {
+  display: inline-block;
+  margin: 0 0 24px;
+}
+
 /* 회원 유형 뱃지 */
 .memberStandardLabels {
   display: flex;
@@ -227,78 +232,105 @@ button {
   background-color: #f06292; /* 핑크 */
 }
 
+.listHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
 /* ---------- 탭 ---------- */
 .categoryTabs {
+  float: right;                       /* 오른쪽 정렬 */
   display: inline-flex;
-  gap: 8px;
-  margin-bottom: 24px;
-}
-.categoryTabs button {
-  padding: 6px 18px;
-  font-size: 14px;
+  align-items: center;
+  gap: 0;
+  padding: 4px 8px;
   border: 1px solid var(--gray-300);
-  background: var(--gray-200);
-  border-radius: 20px;
-  cursor: pointer;
-  transition: var(--transition);
+  background: #fff;
+  border-radius: 999px;               /* pill */
 }
+
+.categoryTabs button {
+  border: none;
+  background: transparent;
+  padding: 4px 14px;
+  font-size: 14px;
+  color: var(--gray-600);
+  cursor: pointer;
+  position: relative;
+}
+
+.categoryTabs button:not(:last-child)::after {
+  content: "|";
+  position: absolute;
+  right: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray-400);
+}
+
 .categoryTabs button:hover {
   background: var(--gray-100);
 }
+
 .categoryTabs .active {
-  background: var(--brand-yellow);
-  border-color: var(--brand-yellow-darker);
+  color: var(--brand-yellow-darker);
   font-weight: 600;
 }
 
 /* ---------- 혜택 카드 ---------- */
 .benefitCards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(100px, 23%));
   gap: 20px;
 }
+
 .benefitCard,
 .postList .clickableRow {
   cursor: pointer;
 }
+
 .benefitCard {
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 20px;
+  padding: 36px 20px 20px 20px;
   background: #fff;
   border: 1px solid var(--gray-300);
   border-radius: var(--radius-l);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
   transition: box-shadow var(--transition), transform var(--transition);
 }
+
 .benefitCard:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
 }
 
 .badgeRow {
-  margin-bottom: 2px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--brand-yellow-darker);
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
 }
 
 .badge {
+  display: inline-block;
   padding: 2px 6px;
   border-radius: var(--radius-s);
+  font-size: 11.5px;
+  font-weight: 600;
   color: #fff;
 }
-.신청혜택 {
-  background: #ff7043;
-}
-.기본혜택 {
-  background: #9e9e9e;
-}
+
+.일반      { background: var(--brand-yellow); color: #000; }
+.보조금    { background: #4954a3; }    /* 남색 포인트 */
+.신청혜택  { background: #ff7043; }
+.기본혜택  { background: #9e9e9e; }
 
 .benefitTitle {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--gray-800);
   margin-bottom: 2px;
@@ -376,6 +408,39 @@ input[type="checkbox"],
 input[type="radio"]:focus {
   outline: none;
   box-shadow: none;
+}
+
+/* 별 버튼 기본 스타일 */
+.favoriteBtn {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--gray-400);          /* 기본은 회색 */
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+/* 호버 시 */
+.favoriteBtn:hover {
+  color: var(--brand-yellow);
+}
+
+/* 활성(찜) 상태 */
+.favoriteBtn.active {
+  color: var(--brand-yellow);
+}
+
+.paginationWrapper {
+  display: flex;
+  justify-content: center;   /* 가운데 정렬 */
+  margin-top: 24px;          /* 원하는 여백 */
+  margin-bottom: 60px;
 }
 
 /* ---------- 반응형 ---------- */
