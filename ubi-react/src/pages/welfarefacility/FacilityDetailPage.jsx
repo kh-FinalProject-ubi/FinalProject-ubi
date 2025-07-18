@@ -164,12 +164,13 @@ export default function FacilityDetailPage() {
         <KakaoMapView address={!lat ? address : null} lat={lat} lng={lng} />
       </section>
 
-      {relatedPosts.length > 0 && (
+
+
+      {/*복지시설 후기조회 */}
         <section className="facility-section">
-          <h3>📰 이 시설과 관련된 게시글</h3>
           <ReviewCarousel reviews={relatedPosts} />
         </section>
-      )}
+   
     </div>
   );
 }

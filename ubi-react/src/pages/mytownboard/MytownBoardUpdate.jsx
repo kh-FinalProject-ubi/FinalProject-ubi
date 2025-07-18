@@ -10,20 +10,83 @@ import styles from "../../styles/board/InsertBoard.module.css";
 function MytownBoardUpdate() {
   const { boardNo } = useParams();
   const { token } = useAuthStore();
-  const { memberNo, regionCity, regionDistrict } = useAuthStore();
+  const { regionCity, regionDistrict } = useAuthStore();
   const [board, setBoard] = useState(null);
   const [boardTitle, setBoardTitle] = useState("");
   const [boardContent, setBoardContent] = useState("");
   const uploadedImagesRef = useRef([]);
   const navigate = useNavigate();
   const isInitialSet = useRef(true);
+
+
   const [hashtags, setHashtags] = useState("");
+  const [parsedTags, setParsedTags] = useState([]);
+  const [tagLimitMessage, setTagLimitMessage] = useState("");;
+  const [initialParsed, setInitialParsed] = useState(false);
+
+  
+  // ✅ 기존 DB에서 불러온 해시태그를 parsedTags로만 세팅하고 input엔 안 보이게 유지
+  useEffect(() => {
+    if (!initialParsed && board) {
+      const tagsFromList = Array.isArray(board.hashtagList)
+        ? board.hashtagList
+        : typeof board.hashtags === "string"
+        ? board.hashtags.split(",").map((t) => t.trim())
+        : [];
+
+      if (tagsFromList.length > 0) {
+        setParsedTags(tagsFromList);
+        setInitialParsed(true);
+        setHashtags("");
+      }
+    }
+  }, [board, initialParsed]);
+
+
+  const handleHashtagChange = (e) => {
+    setHashtags(e.target.value);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const newTag = hashtags.trim().replace(/^#/, "");
+
+      if (!newTag) return;
+
+      if (newTag.length < 2) {
+        setTagLimitMessage("두 글자 이상 입력해주세요.");
+        return;
+      }
+
+
+      if (!newTag || parsedTags.includes(newTag) || newTag.length < 2) return;
+
+      if (parsedTags.length >= 5) {
+        setTagLimitMessage("해시태그는 최대 5개까지 입력할 수 있습니다.");
+        return;
+      }
+
+      const updatedTags = [...parsedTags, newTag];
+      setParsedTags(updatedTags);
+      setTagLimitMessage("");
+      setTimeout(() => {
+        setHashtags("");
+      }, 0);
+    }
+  };
+
+  const handleRemoveTag = (indexToRemove) => {
+    const newTags = parsedTags.filter((_, i) => i !== indexToRemove);
+    setParsedTags(newTags);
+    setHashtags(""); // ✅ 입력창에도 표시 안 되도록 바로 초기화
+    setTagLimitMessage("");
+  };
+
+
   const [postTypeCheck, setPostTypeCheck] = useState("");
   const [starRating, setStarRating] = useState(0);
 
-  const postTypeCheckOptions = ["자유", "자랑", "복지시설후기", "복지혜택후기"];
-  const [showFacilityModal, setShowFacilityModal] = useState(false);
-  const [showBenefitModal, setShowBenefitModal] = useState(false);
   const [selectedFacilityName, setSelectedFacilityName] = useState("");
   const [selectedFacilityId, setSelectedFacilityId] = useState("");
   const [selectedBenefitName, setSelectedBenefitName] = useState("");
@@ -174,10 +237,9 @@ function MytownBoardUpdate() {
         imageOrder: index, // 순서대로 번호 부여 (썸네일 = 0번)
       }));
 
-    const hashtagList = hashtags
-      .split(" ")
-      .map((tag) => tag.replace("#", "").trim())
-      .filter((tag) => tag.length > 0);
+
+
+    const hashtagList = parsedTags;
 
     const originHashtags =
       Array.isArray(board.hashtagList) && board.hashtagList.length > 0
@@ -250,44 +312,40 @@ function MytownBoardUpdate() {
           <span className={styles.tagButton}>{postTypeCheck}</span>
 
           {postTypeCheck === "복지시설후기" && selectedFacilityName && (
-            <span style={{ marginLeft: "10px" }}>
-              | 복지시설: {selectedFacilityName}
+           <span className={styles.tagButton}>
+             {selectedFacilityName}
             </span>
           )}
           {postTypeCheck === "복지혜택후기" && selectedBenefitName && (
-            <span style={{ marginLeft: "10px" }}>
-              | 복지혜택: {selectedBenefitName}
+         <span className={styles.tagButton}>
+         {selectedBenefitName}
             </span>
           )}
         </div>
       </div>
 
-      <h3></h3>
-
-      <table
-        border="1"
-        style={{ width: "100%", marginTop: "20px", borderCollapse: "collapse" }}
-      >
+      <div className={styles.filterBox}>
+  <table className={styles.filterTable}>
         <tbody>
           <>
             {(postTypeCheck === "복지시설후기" ||
               postTypeCheck === "복지혜택후기") && (
-              <tr>
-                <th>별점</th>
-                <td>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <span
-                      key={star}
-                      onClick={() => setStarRating(star)}
-                      style={{
-                        cursor: "pointer",
-                        color: starRating >= star ? "orange" : "lightgray",
-                        fontSize: "24px",
-                      }}
-                    >
-                      ★
-                    </span>
-                  ))}
+   <tr className={styles.filterRow}>
+         <th className={styles.filterLabel}>별점</th>
+   <td className={styles.filterContent}>
+                  {[1, 2, 3, 4, 5].map((i) => (
+                                     <img
+                                         key={i}
+                                         src={
+                                           i <= starRating
+                                             ? "/icons/boardstar.svg"
+                                             : "/icons/boardnostar.svg"
+                                         }
+                                         alt="별점"
+                                         className={styles.iconStar}
+                                         onClick={() => setStarRating(i)}
+                                       />
+                                     ))}
                   <span style={{ marginLeft: "10px" }}>
                     {starRating ? `${starRating}점` : "선택 안됨"}
                   </span>
@@ -296,39 +354,67 @@ function MytownBoardUpdate() {
             )}
           </>
 
-          <tr>
-            <th>해시태그</th>
-            <td>
-              <input
-                type="text"
-                placeholder="#해시태그를 샵(#)으로 구분해 입력"
-                value={hashtags}
-                onChange={(e) => setHashtags(e.target.value)}
-                style={{ width: "80%" }}
-              />
-            </td>
-          </tr>
+     <tr className={styles.filterRow}>
+  <th className={styles.filterLabel}>해시태그</th>
+  <td className={styles.filterContent}>
+    <div className={styles.tagInputWrapper}>
+  <input
+  type="text"
+  className={styles.titleInput}
+  placeholder="#해시태그 입력 후 Enter"
+  value={hashtags}
+  onChange={handleHashtagChange}
+  onKeyDown={handleKeyDown}
+/>
+      <div className={styles.tagPreviewWrapper}>
+        {parsedTags.map((tag, idx) => (
+          <span
+            key={idx}
+            className={`${styles.tagButton} ${
+              idx === parsedTags.length - 1 ? styles.tagPurple : ""
+            }`}
+          >
+            #{tag}
+            <button
+              type="button"
+              className={styles.tagRemoveBtn}
+              onClick={() => handleRemoveTag(idx)}
+            >
+              ×
+            </button>
+          </span>
+        ))}
+      </div>
+    </div>
+  </td>
+</tr>
+
         </tbody>
       </table>
+      </div>
+      {tagLimitMessage && <p className={styles.errorText}>{tagLimitMessage}</p>}
       <br />
+
+            {/* 제목 입력 */}
+            <div className={styles.inputGroup}>
       <input
         type="text"
         value={boardTitle}
         onChange={(e) => setBoardTitle(e.target.value)}
         placeholder="제목"
-        style={{ width: "100%", marginBottom: "10px", padding: "8px" }}
-      />
+                 className={styles.titleInput}
+      /></div>
 
       <div id="summernote"></div>
-
+ <div className={styles.buttonContainer}>
       <button
         onClick={handleUpdate}
-        className="submit-btn"
-        style={{ marginTop: "20px" }}
+      className={styles.submitButton}
       >
         수정 완료
       </button>
     </div>
+        </div>
   );
 }
 
