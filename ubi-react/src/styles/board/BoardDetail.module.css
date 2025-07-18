@@ -63,7 +63,7 @@
   gap: 1rem;
   margin-bottom: 15px;
 }
-
+/*작성 유형 */
 .tag {
   background-color: #f1f1f1;
   color: #555;
@@ -71,6 +71,40 @@
   border-radius: 15px;
   font-size: 0.85rem;
   flex-shrink: 0;
+}
+/*우리동네 태그*/
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px; /* ✅ 태그 간 간격 */
+  margin: 12px 0;
+}
+
+.tag {
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid #ddd;
+  white-space: nowrap;
+}
+
+/* ✅ 첫 번째 태그: 노란색 */
+.tagYellow {
+  background-color: #ffe066;
+  color: #5c3c00;
+}
+
+/* ✅ 두 번째 태그: 보라색 */
+.tagPurple {
+  background-color: #5e60ce;
+  color: #ffffff;
+}
+
+/* ✅ 나머지 태그: 하얀색 */
+.tagWhite {
+  background-color: #f9f9f9;
+  color: #333;
 }
 
 .metaContainer {
@@ -141,6 +175,9 @@
   font-size: 1rem;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  overflow-x: auto; /* ✅ 가로 스크롤 허용 (필요 시) */
+  max-width: 100%; /* ✅ 부모 너비를 넘지 않도록 제한 */
+  box-sizing: border-box;
 }
 
 .boardContent :global(p) {
@@ -166,7 +203,7 @@
 
 .bottomButtonContainer {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end; /* 👉 우측 정렬 */
   margin-top: 2rem;
 }
 
@@ -199,12 +236,39 @@
 }
 
 /* 별점 */
-.starRating {
-  margin-top: 30px;
+
+.starContainer {
   display: flex;
+  flex-direction: column;
+  align-items: center; /* 전체 가운데 정렬 */
+  margin: 2rem 0;
+}
+
+.starLabel {
+  font-weight: 500;
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 8px; /* 박스와의 간격 */
+}
+
+.starBox {
+  padding: 1rem 6rem;
+  border: 1px solid #cfd8dc;
+  border-radius: 12px;
+  background-color: #fff;
+  display: flex;
+  justify-content: center;
   align-items: center;
-  justify-content: flex-start;
-  gap: 3px;
+}
+
+.stars {
+  display: flex;
+  gap: 8px;
+}
+
+.iconStar {
+  width: 24px;
+  height: 24px;
 }
 
 /* --- 댓글 섹션 --- */

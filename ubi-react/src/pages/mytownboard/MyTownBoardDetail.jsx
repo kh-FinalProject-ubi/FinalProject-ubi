@@ -22,7 +22,7 @@ function MyTownBoardDetail() {
 
   // const {regionCity, regionDistrict } = useAuthStore();
   const writerNo = board?.memberNo; // 게시글 작성자 번호
-  const { token, role,  memberNo: loginMemberNo } = useAuthStore(); // 로그인한 사용자 번호
+  const { token, role, memberNo: loginMemberNo } = useAuthStore(); // 로그인한 사용자 번호
   const navigate = useNavigate();
 
   const handleLike = async () => {
@@ -119,189 +119,215 @@ function MyTownBoardDetail() {
 
   console.log("selectedMember:", selectedMember);
   return (
-<main className={styles.container}>
-  <div className={styles.contentWrapper}>
-    {/* ✅ 상단 제목 + 작성유형 */}
-    <div className={styles.pageHeaderContainer}>
-      <h2 className={styles.pageTitle}>우리 동네 좋아요</h2>
-      <span className={styles.tag}>{board.postType}</span>
-    </div>
+    <main className={styles.container}>
+      <div className={styles.contentWrapper}>
+        {/* ✅ 상단 제목 + 작성유형 */}
+        <div className={styles.pageHeaderContainer}>
+          <h2 className={styles.pageTitle}>우리 동네 좋아요</h2>
 
-    <section>
-      {/* ✅ 제목 + 수정/삭제 */}
-      <div className={styles.boardHeader}>
-        <div className={styles.titleContainer}>
-          <div className={styles.titleGroup}>
-            <h3 className={styles.boardTitle}>{board.boardTitle}</h3>
-            {board.postType === "복지시설후기" && board.facilityName && (
-              <span className={styles.pageTitle}>| 복지시설: {board.facilityName}</span>
-            )}
-            {board.postType === "복지혜택후기" && board.welfareName && (
-              <span className={styles.pageTitle}>| 복지혜택: {board.welfareName}</span>
-            )}
-          </div>
-
-           {(loginMemberNo === writerNo || role === "ADMIN") && (
-    <div className={styles.buttonContainer}>
-     <button
-  onClick={() => navigate(`/mytownBoard/update/${board.boardNo}`)}
-  className={styles.editButton}
->
-  수정
-</button>
-
-<button
-  onClick={async () => {
-    if (window.confirm("정말 삭제하시겠습니까?")) {
-      try {
-        await axios.delete(
-          `/api/editboard/mytown/${board.boardNo}/delete`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { memberNo: loginMemberNo },
-          }
-        );
-        alert("삭제가 완료되었습니다.");
-        navigate("/mytownBoard");
-      } catch (err) {
-        console.error(err);
-        alert("삭제에 실패했습니다.");
-      }
-    }
-  }}
-  className={styles.deleteButton}
->
-  삭제
-</button>
-    </div>
-  )}
-        </div>
-      </div>
-
-      {/* ✅ 작성자 + 좋아요 + 신고 + 조회 */}
-      <div className={styles.metaContainer}>
-        <div className={styles.userInfo}>
-          <img
-            src={board.profileImgImg || "/default-profile.png"}
-            alt="프로필"
-            className={styles.profileImg}
-            onClick={(e) => {
-              setSelectedMember({
-                memberNo: board.memberNo,
-                memberImg: board.memberImg,
-                memberNickname: board.memberNickname,
-                role: board.authority === "2" ? "ADMIN" : "USER",
-              });
-              setModalPosition({ x: e.clientX + 50, y: e.clientY });
-              setModalVisible(true);
-            }}
-          />
-          <div className={styles.authorInfo}>
-            <span className={styles.authorNickname}>{board.memberNickname}</span>
-            <span className={styles.boardDate}>{board.boardDate}</span>
-          </div>
-        </div>
-
-        <div className={styles.stats}>
-          <button onClick={handleLike} className={styles.likeButton}>
- <img src="/icons/boardlike.svg" alt="좋아요" className={styles.iconHeart} />
-            {likeCount}
-          </button>
-          <span>조회 {board.boardReadCount}</span>
-
-          {token && loginMemberNo !== writerNo && (
-            <button
-              className={styles.reportBtn}
-              onClick={() => handleReport(board.boardNo)}
-            >
-              <img
-                src={reportedByMe ? "/boardCancleReport.svg" : "/boardReport.svg"}
-                alt="신고 아이콘"
-              />
-            </button>
+          {/* {board.postType} | */}
+          {/* className={styles.pageTitle} */}
+          {board.postType === "복지시설후기" && board.facilityName && (
+            <span>
+              className={styles.tag} {board.facilityName}
+            </span>
+          )}
+          {board.postType === "복지혜택후기" && board.welfareName && (
+            <span>
+              className={styles.tag} {board.welfareName}
+            </span>
           )}
         </div>
-      </div>
 
-      {/* ✅ 태그 목록 */}
-      <div className={styles.tagList}>
-        {tagList.map((tag, idx) => (
-          <span
-            key={idx}
-            className={`${styles.tag} ${
-              idx === 0 ? styles.tagYellow : idx === 1 ? styles.tagPurple : styles.tagWhite
-            }`}
-          >
-            #{tag}
-          </span>
-        ))}
-      </div>
+        <section>
+          {/* ✅ 제목 + 수정/삭제 */}
+          <div className={styles.boardHeader}>
+            <div className={styles.titleContainer}>
+              <div className={styles.titleGroup}>
+                <h3 className={styles.boardTitle}>{board.boardTitle}</h3>
+              </div>
 
-      {/* ✅ 본문 */}
-      <div
-        className={styles.boardContent}
-        dangerouslySetInnerHTML={{ __html: contentWithImages }}
-      />
+              {(loginMemberNo === writerNo || role === "ADMIN") && (
+                <div className={styles.buttonContainer}>
+                  <button
+                    onClick={() =>
+                      navigate(`/mytownBoard/update/${board.boardNo}`)
+                    }
+                    className={styles.editButton}
+                  >
+                    수정
+                  </button>
 
-      {/* ✅ 별점 (후기 유형만 표시) */}
-     <div className={styles.stars}>
-         {(board.postType === "복지혜택후기" || board.postType === "복지시설후기") &&
-          [1, 2, 3, 4, 5].map((i) => (
-         <img
-           key={i}
-           src={
-             i <= board.starCount
-               ? "/icons/boardstar.svg"
-               : "/icons/boardnostar.svg"
-           }
-           alt="별점"
-           className={styles.iconStar}
-         />
-       ))
-           
-           }
-       </div>
+                  <button
+                    onClick={async () => {
+                      if (window.confirm("정말 삭제하시겠습니까?")) {
+                        try {
+                          await axios.delete(
+                            `/api/editboard/mytown/${board.boardNo}/delete`,
+                            {
+                              headers: { Authorization: `Bearer ${token}` },
+                              params: { memberNo: loginMemberNo },
+                            }
+                          );
+                          alert("삭제가 완료되었습니다.");
+                          navigate("/mytownBoard");
+                        } catch (err) {
+                          console.error(err);
+                          alert("삭제에 실패했습니다.");
+                        }
+                      }
+                    }}
+                    className={styles.deleteButton}
+                  >
+                    삭제
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+          {/* ✅ 태그 목록 */}
+          <div className={styles.tagList}>
+            {tagList.map((tag, idx) => (
+              <span
+                key={idx}
+                className={`${styles.tag} ${
+                  idx === 0
+                    ? styles.tagYellow
+                    : idx === 1
+                    ? styles.tagPurple
+                    : styles.tagWhite
+                }`}
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+          <div className={styles.metaContainer}>
+            {/* 작성자 정보 */}
+            <div className={styles.userInfo}>
+              <img
+                src={board.profileImgImg || "/default-profile.png"}
+                alt="프로필"
+                className={styles.profileImg}
+                onClick={(e) => {
+                  setSelectedMember({
+                    memberNo: board.memberNo,
+                    memberImg: board.memberImg,
+                    memberNickname: board.memberNickname,
+                    role: board.authority === "2" ? "ADMIN" : "USER",
+                  });
+                  setModalPosition({ x: e.clientX + 50, y: e.clientY });
+                  setModalVisible(true);
+                }}
+              />
+              <div className={styles.authorInfo}>
+                <span className={styles.authorNickname}>
+                  {board.memberNickname}
+                </span>
+                <span className={styles.boardDate}>{board.boardDate} 작성</span>
+              </div>
+            </div>
 
-      
+            {/* 좋아요 + 조회 + 신고 */}
+            <div className={styles.statColumn}>
+              {/* 신고 버튼만 위로 */}
+              {token && loginMemberNo !== writerNo && (
+                <button
+                  className={styles.reportBtn}
+                  onClick={() => handleReport(board.boardNo)}
+                >
+                  <img
+                    src={
+                      reportedByMe
+                        ? "/boardCancleReport.svg"
+                        : "/boardReport.svg"
+                    }
+                    alt="신고 아이콘"
+                  />
+                </button>
+              )}
 
-      {/* ✅ 목록으로 돌아가기 */}
-      <div className={styles.bottomButtonContainer}>
-        <button
-          className={styles.listButton}
-          onClick={() => navigate("/mytownBoard")}
-        >
-          목록으로 돌아가기
-        </button>
-      </div>
+              <div className={styles.stats}>
+                <button onClick={handleLike} className={styles.likeButton}>
+                  <img
+                    src="/icons/boardlike.svg"
+                    alt="좋아요"
+                    className={styles.iconHeart}
+                  />
+                  {likeCount}
+                </button>
+                <span>조회 {board.boardReadCount}</span>
+              </div>
+            </div>
+          </div>
 
-      {/* ✅ 댓글 영역 */}
-      <div className={styles.commentSection}>
-        <CommentSection
-          boardCode={boardCode}
-          boardNo={boardNo}
-          token={token}
-          loginMemberNo={loginMemberNo}
-          role={role}
-        />
-      </div>
-
-      {/* ✅ 유저 정보 모달 */}
-      {modalVisible &&
-        selectedMember &&
-        selectedMember.role !== "ADMIN" &&
-        selectedMember.memberNo !== loginMemberNo && (
-          <CommentModal
-            member={selectedMember}
-            token={token}
-            position={modalPosition}
-            onClose={() => setModalVisible(false)}
+          {/* ✅ 본문 */}
+          <div
+            className={styles.boardContent}
+            dangerouslySetInnerHTML={{ __html: contentWithImages }}
           />
-        )}
-    </section>
-  </div>
-</main>
 
+          {/* ✅ 별점 (후기 유형만 표시) */}
+          {/* 별점 라벨 + 별점 박스 */}
+          {(board.postType === "복지혜택후기" ||
+            board.postType === "복지시설후기") && (
+            <div className={styles.starContainer}>
+              <label className={styles.starLabel}>별점</label>
+              <div className={styles.starBox}>
+                <div className={styles.stars}>
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <img
+                      key={i}
+                      src={
+                        i <= board.starCount
+                          ? "/icons/boardstar.svg"
+                          : "/icons/boardnostar.svg"
+                      }
+                      alt="별점"
+                      className={styles.iconStar}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
+          {/* ✅ 목록으로 돌아가기 */}
+          <div className={styles.bottomButtonContainer}>
+            <button
+              className={styles.listButton}
+              onClick={() => navigate("/mytownBoard")}
+            >
+              목록
+            </button>
+          </div>
+
+          {/* ✅ 댓글 영역 */}
+          <div className={styles.commentSection}>
+            <CommentSection
+              boardCode={boardCode}
+              boardNo={boardNo}
+              token={token}
+              loginMemberNo={loginMemberNo}
+              role={role}
+            />
+          </div>
+
+          {/* ✅ 유저 정보 모달 */}
+          {modalVisible &&
+            selectedMember &&
+            selectedMember.role !== "ADMIN" &&
+            selectedMember.memberNo !== loginMemberNo && (
+              <CommentModal
+                member={selectedMember}
+                token={token}
+                position={modalPosition}
+                onClose={() => setModalVisible(false)}
+              />
+            )}
+        </section>
+      </div>
+    </main>
   );
 }
 
