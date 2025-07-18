@@ -122,22 +122,17 @@ function MyTownBoardDetail() {
     <main className={styles.container}>
       <div className={styles.contentWrapper}>
         {/* ✅ 상단 제목 + 작성유형 */}
-        <div className={styles.pageHeaderContainer}>
-          <h2 className={styles.pageTitle}>우리 동네 좋아요</h2>
+       <div className={styles.titleAndTagRow}>
+    <h2 className={styles.pageTitle}>우리 동네 좋아요</h2>
 
-          {/* {board.postType} | */}
-          {/* className={styles.pageTitle} */}
-          {board.postType === "복지시설후기" && board.facilityName && (
-            <span>
-              className={styles.tag} {board.facilityName}
-            </span>
-          )}
-          {board.postType === "복지혜택후기" && board.welfareName && (
-            <span>
-              className={styles.tag} {board.welfareName}
-            </span>
-          )}
-        </div>
+    {/* 오른쪽에 subtag */}
+    {board.postType === "복지시설후기" && board.facilityName && (
+      <span className={styles.subtag}>{board.facilityName}</span>
+    )}
+    {board.postType === "복지혜택후기" && board.welfareName && (
+      <span className={styles.subtag}>{board.welfareName}</span>
+    )}
+  </div>
 
         <section>
           {/* ✅ 제목 + 수정/삭제 */}

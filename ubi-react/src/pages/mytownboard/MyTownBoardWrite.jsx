@@ -14,32 +14,58 @@ const MyTownBoardWrite = () => {
   const [boardTitle, setTitle] = useState("");
   const [boardContent, setContent] = useState("");
   const navigate = useNavigate();
-  const [hashtags, setHashtags] = useState("");
+
   const [postTypeCheck, setPostTypeCheck] = useState("");
   const postTypeCheckOptions = ["자유", "자랑", "복지시설후기", "복지혜택후기"];
   const [starRating, setStarRating] = useState(0);
 
+    const [hashtags, setHashtags] = useState("");
   const [parsedTags, setParsedTags] = useState([]);
+  // 1. 상태 선언
+const [tagLimitMessage, setTagLimitMessage] = useState("");
 
-  const handleRemoveTag = (removeIndex) => {
-    const newTags = parsedTags.filter((_, idx) => idx !== removeIndex);
-    setParsedTags(newTags);
-    setHashtags(newTags.map((tag) => `#${tag}`).join(" "));
-  };
 
   const handleHashtagChange = (e) => {
-    const input = e.target.value;
-    setHashtags(input);
-    // '#' 기준으로 분할 후 공백/빈값 제거
-    const tags = input
-      .split("#")
-      .map((t) => t.trim())
-      .filter((t) => t.length > 0);
-
-    setParsedTags(tags);
-    console.log("parsedTags:", parsedTags);
-    console.log("idx:", idx, " / 마지막:", parsedTags.length - 1);
+    setHashtags(e.target.value);
   };
+
+const handleKeyDown = (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    const newTag = hashtags.trim().replace(/^#/, "");
+          if (!newTag) return;
+
+      if (newTag.length < 2) {
+        setTagLimitMessage("두 글자 이상 입력해주세요.");
+        return;
+      }
+
+    if (!newTag || parsedTags.includes(newTag)) return;
+
+    if (parsedTags.length >= 5) {
+      setTagLimitMessage("해시태그는 최대 5개까지 입력할 수 있습니다.");
+      return;
+    }
+
+    const updatedTags = [...parsedTags, newTag];
+    setParsedTags(updatedTags);
+    setTimeout(() => {
+      setHashtags(""); // ⭐ setParsedTags 후에 input 초기화 확정
+    }, 0);
+    setTagLimitMessage("");
+  }
+};
+
+
+  const handleRemoveTag = (indexToRemove) => {
+    const newTags = parsedTags.filter((_, i) => i !== indexToRemove);
+    setParsedTags(newTags);
+    setHashtags(""); // ✅ 입력창에도 표시 안 되도록 바로 초기화
+  };
+
+
+
+
 
   const [showFacilityModal, setShowFacilityModal] = useState(false);
   const [showBenefitModal, setShowBenefitModal] = useState(false);
@@ -92,10 +118,8 @@ const MyTownBoardWrite = () => {
       return;
     }
 
-    const hashtagList = hashtags
-      .split("#")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag !== "");
+
+    const hashtagList = parsedTags;
 
     const imageList = uploadedImagesRef.current.map((url, index) => {
       const segments = url.split("/");
@@ -301,13 +325,14 @@ const MyTownBoardWrite = () => {
               <th className={styles.filterLabel}>해시태그</th>
               <td className={styles.filterContent}>
                 <div className={styles.tagInputWrapper}>
-                  <input
-                    type="text"
-                    placeholder="#해시태그를 샵(#)으로 구분해 입력"
-                    value={hashtags}
-                    onChange={handleHashtagChange}
-                    className={styles.titleInput}
-                  />
+                 <input
+            type="text"
+            className={styles.titleInput}
+            placeholder="#해시태그 입력 후 Enter"
+            value={hashtags}
+            onChange={handleHashtagChange}
+            onKeyDown={handleKeyDown}
+          />
                   <div className={styles.tagPreviewWrapper}>
                     {parsedTags.map((tag, idx) => (
                       <span
@@ -333,8 +358,10 @@ const MyTownBoardWrite = () => {
           </tbody>
         </table>
       </div>
-
+{tagLimitMessage && <p className={styles.errorText}>{tagLimitMessage}</p>}
       <br />
+
+
       {/* 제목 입력 */}
       <div className={styles.inputGroup}>
         <input

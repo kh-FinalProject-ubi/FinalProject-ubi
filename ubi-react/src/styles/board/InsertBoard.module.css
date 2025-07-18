@@ -72,7 +72,7 @@
 
 /* --- 추가된 스타일 --- */
 .postTypeInquiry {
-  background-color: #ffdd44 !important; /* 문의: 노란색 */
+  background-color: #ffe56d !important; /* 문의: 노란색 */
 }
 
 .postTypeReport {
@@ -124,9 +124,9 @@
 }
 
 .submitButton {
-  background-color: #ffdd44;
+  background-color: #ffe56d;
   color: #333;
-  border-color: #ffdd44;
+  border-color: #ffe56d;
 }
 
 /* Summernote 에디터 스타일 오버라이드 */
@@ -189,7 +189,7 @@
 
 .filterLabel {
   padding: 16px 20px; /* ✅ 기존보다 위아래 줄임 */
-  background-color: #ffe066;
+  background-color: #ffe56d;
   width: 150px;
   text-align: center;
   vertical-align: middle;
@@ -211,8 +211,8 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  border: 2px solid #ffe066;
-  background-color: #ffe066;
+  border: 2px solid #ffe56d;
+  background-color: #ffe56d;
   margin: 0 8px 0 0;
   position: relative;
   cursor: pointer;
@@ -278,7 +278,7 @@
   line-height: 1; /* ✅ 줄 간격 최소화 */
   border-radius: 20px;
   border: 1px solid transparent;
-  background-color: #ffe066;
+  background-color: #ffe56d;
   color: #5c3c00;
   display: inline-flex;
   align-items: center;
@@ -315,7 +315,7 @@
   border: 1px solid transparent;
   cursor: pointer;
   font-weight: 500;
-  background-color: #ffe066;
+  background-color: #ffe56d;
   color: #5c3c00;
 }
 

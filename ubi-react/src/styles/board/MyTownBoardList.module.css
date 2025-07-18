@@ -6,7 +6,7 @@
 }
 
 .mainTitle {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 2rem;
 }
@@ -134,7 +134,7 @@
 
 /* ✅ th 설정: 왼쪽으로 완전히 붙고, 텍스트는 세로/가로 모두 가운데 정렬 */
 .filterLabel {
-  background-color: #ffe066;
+  background-color: #ffe56d;
   padding: 32px 32px;
   margin: 0;
   border: none;
@@ -164,8 +164,8 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  border: 2px solid #ffe066; /* 노란색 외곽선 */
-  background-color: #ffe066; /* ✅ 버튼 자체가 노란색 */
+  border: 2px solid #ffe56d; /* 노란색 외곽선 */
+  background-color:  #ffe56d; /* ✅ 버튼 자체가 노란색 */
   margin: 0;
   position: relative;
   cursor: pointer;
@@ -226,7 +226,7 @@
   border: 1px solid transparent;
   cursor: pointer;
   font-weight: 500;
-  background-color: #ffe066;
+  background-color: #ffe56d;
   color: #5c3c00;
 }
 
@@ -397,7 +397,7 @@
 
 /* --- 카드 색깔  --- */
 .tagYellow {
-  background-color: #ffe066;
+  background-color: #ffe56d;
   color: #5c3c00;
 }
 

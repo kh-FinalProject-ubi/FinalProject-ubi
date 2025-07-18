@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import styles from "../../styles/board/Review.module.css";
 
 export default function ReviewCarousel({ reviews }) {
   const [current, setCurrent] = useState(0);
@@ -19,135 +19,115 @@ export default function ReviewCarousel({ reviews }) {
     boardContent,
     boardDate,
     starCount,
-    profileImage,
+    memberImage,
     memberNickname,
-    imageList,
+
   } = currentReview;
 
-  const imageListSafe = Array.isArray(imageList) ? imageList : [];
-
+ 
+// ✅ 1. 이미지 src 추출 로직 추가
   const goToDetail = () => {
     navigate(`/mytownboard/${boardNo}`);
   };
 
-  const extractFirstImageFromContent = (content) => {
-    const imgTagRegex = /<img[^>]+src="([^"]+)"[^>]*>/i;
-    const match = content?.match(imgTagRegex);
-    return match?.[1] || null;
-  };
 
-  const firstInlineImage = extractFirstImageFromContent(boardContent);
+const extractImageSources = (html) => {
+  const imgTagRegex = /<img[^>]+src=["']([^"']+)["']/g;
+  const srcList = [];
+  let match;
+  while ((match = imgTagRegex.exec(html)) !== null) {
+    srcList.push(match[1]);
+  }
+  return srcList;
+};
 
-  return (
-    <div className="review-carousel">
-      {total > 1 && (
-        <button
-          className="carousel-arrow left"
-          onClick={() => setCurrent((prev) => (prev - 1 + total) % total)}
-        >
-          ◀
-        </button>
-      )}
+const inlineImages = extractImageSources(boardContent);
 
-      <div className="review-card" onClick={goToDetail}>
-        <div className="review-header">
-          <img
-            src={profileImage || "/default-profile.png"}
-            alt="프로필"
-            className="profile-img"
-          />
-          <div className="review-info">
-            <strong>{memberNickname}</strong>
-            <span className="review-date">
-              {new Date(boardDate).toLocaleDateString()}
-            </span>
-          </div>
-          <div className="review-star">⭐ {starCount}</div>
-        </div>
+ 
+  
 
-        <h4 className="review-title">{boardTitle}</h4>
-        <p
-          className="review-content"
-          dangerouslySetInnerHTML={{
-            __html:
-              boardContent.length > 100
-                ? boardContent.slice(0, 100) + "..."
-                : boardContent,
-          }}
-        />
+   return (
 
- <div
-  className="review-images"
-  style={{
-    display: "flex",
-    gap: "8px",
-    marginTop: "10px",
-    flexWrap: "nowrap",
-    alignItems: "center",
-  }}
->
-  {/* ✅ 첨부 이미지가 1개 이상 있는 경우 */}
-  {imageListSafe.length > 0 &&
-    imageListSafe.slice(0, 3).map((img, i) => (
-      <img
-        key={i}
-        src={img.imagePath}
-        alt={`첨부 이미지 ${i + 1}`}
-        style={{
-          width: "80px",
-          height: "80px",
-          objectFit: "cover",
-          borderRadius: "6px",
-        }}
-      />
-    ))}
-
-  {/* ✅ 첨부 이미지가 없고 본문에 이미지가 있을 경우 */}
-  {imageListSafe.length === 0 && firstInlineImage && (
-    <img
-      src={firstInlineImage}
-      alt="본문 이미지"
-      style={{
-        width: "80px",
-        height: "80px",
-        objectFit: "cover",
-        borderRadius: "6px",
-      }}
-    />
-  )}
-
-  {/* ✅ 초과 이미지 개수 표시 */}
-  {imageListSafe.length > 3 && (
-    <div
-      style={{
-        backgroundColor: "rgba(0, 0, 0, 0.6)",
-        color: "white",
-        padding: "6px 10px",
-        borderRadius: "6px",
-        fontSize: "14px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        height: "80px",
-        minWidth: "50px",
-      }}
+        <div className={styles.carouselWrapper}>
+      <div className={styles.carouselHeader}>
+        <span className={styles.commentTitle}>후기</span>
+        <span className={styles.commentCount}>({total})</span>
+      </div>
+<div className={styles.reviewCarousel}>
+  {total > 1 && (
+    <button
+      className={`${styles.carouselArrow} ${styles.left}`}
+      onClick={() => setCurrent((prev) => (prev - 1 + total) % total)}
     >
-      +{imageListSafe.length - 3}
-    </div>
+      <img src="/icons/LeftArrow.svg" alt="이전" className={styles.arrowIcon} />
+    </button>
   )}
-</div>
 
-
+  <div className={styles.reviewCard} onClick={goToDetail}>
+    {/* 헤더 줄 수평 정렬 */}
+    <div className={styles.reviewTopRow}>
+      <div className={styles.profileWrapper}>
+        <img
+          src={memberImage || "/default-profile.png"}
+          alt="프로필"
+          onError={(e) => (e.currentTarget.src = "/default-profile.png")}
+          className={styles.profileImg}
+        />
+        <div className={styles.reviewInfo}>
+          <h4 className={styles.reviewTitle}>{boardTitle}</h4>
+          <strong className={styles.nickname}>{memberNickname}</strong>
+          
+        </div>
       </div>
 
-      {total > 1 && (
-        <button
-          className="carousel-arrow right"
-          onClick={() => setCurrent((prev) => (prev + 1) % total)}
-        >
-          ▶
-        </button>
-      )}
+      <div className={styles.reviewStar}>
+        {[1, 2, 3, 4, 5].map((i) => (
+          <img
+            key={i}
+            src={i <= starCount ? "/icons/boardstar.svg" : "/icons/boardnostar.svg"}
+            alt="별점"
+            className={styles.iconStar}
+          />
+        ))}
+      </div>
     </div>
+
+    <div className={styles.reviewContentWrap}>
+      <div className={styles.reviewTextOnly}>
+        {boardContent.replace(/<[^>]*>?/gm, "").slice(0, 100)}...
+      </div>
+
+      <div className={styles.reviewDate}>
+        {new Date(boardDate).toLocaleDateString()}{" "}
+        {new Date(boardDate).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })}
+      </div>
+
+      <div className={styles.inlineImages}>
+        {inlineImages.slice(0, 4).map((src, idx) => (
+          <img
+            key={idx}
+            src={src}
+            alt={`본문 이미지 ${idx + 1}`}
+            onError={(e) => (e.currentTarget.src = "/default-profile.png")}
+            className={styles.inlineImage}
+          />
+        ))}
+      </div>
+    </div>
+  </div>
+
+  {total > 1 && (
+    <button
+      className={`${styles.carouselArrow} ${styles.right}`}
+      onClick={() => setCurrent((prev) => (prev + 1) % total)}
+    >
+      <img src="/icons/RightArrow.svg" alt="다음" className={styles.arrowIcon} />
+    </button>
+  )}
+</div>
+      </div>
   );
 }
