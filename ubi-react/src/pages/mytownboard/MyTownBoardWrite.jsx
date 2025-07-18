@@ -7,6 +7,7 @@ import useAuthStore from "../../stores/useAuthStore";
 import WelfareFacilityModal from "./WelfareFacilityModal";
 import Modal from "../../components/common/Modal";
 import LocalBenefitModal from "./LocalBenefitModal";
+import styles from "../../styles/board/InsertBoard.module.css";
 
 const MyTownBoardWrite = () => {
   const { memberNo, regionCity, regionDistrict } = useAuthStore();
@@ -17,6 +18,28 @@ const MyTownBoardWrite = () => {
   const [postTypeCheck, setPostTypeCheck] = useState("");
   const postTypeCheckOptions = ["자유", "자랑", "복지시설후기", "복지혜택후기"];
   const [starRating, setStarRating] = useState(0);
+
+  const [parsedTags, setParsedTags] = useState([]);
+
+  const handleRemoveTag = (removeIndex) => {
+    const newTags = parsedTags.filter((_, idx) => idx !== removeIndex);
+    setParsedTags(newTags);
+    setHashtags(newTags.map((tag) => `#${tag}`).join(" "));
+  };
+
+  const handleHashtagChange = (e) => {
+    const input = e.target.value;
+    setHashtags(input);
+    // '#' 기준으로 분할 후 공백/빈값 제거
+    const tags = input
+      .split("#")
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
+
+    setParsedTags(tags);
+    console.log("parsedTags:", parsedTags);
+    console.log("idx:", idx, " / 마지막:", parsedTags.length - 1);
+  };
 
   const [showFacilityModal, setShowFacilityModal] = useState(false);
   const [showBenefitModal, setShowBenefitModal] = useState(false);
@@ -172,148 +195,167 @@ const MyTownBoardWrite = () => {
   }, []);
 
   return (
-    <div>
-      <h3>우리 동네 좋아요</h3>
-      <br />
-      <div className="post-option-box">
-        <p>
-          작성자 지역: {regionCity} {regionDistrict}
-        </p>
-        <table
-          border="1"
-          style={{
-            width: "100%",
-            marginTop: "20px",
-            borderCollapse: "collapse",
-          }}
-        >
+    <div className={styles.container}>
+      <div className={styles.pageHeaderContainer}>
+        <div className={styles.subText}>우리 동네 좋아요</div>
+        <div className={styles.titleRow}>
+          <h2 className={styles.pageTitle}>게시글 작성</h2>
+          <span className={styles.tagButton}>
+            {regionCity} {regionDistrict}
+          </span>
+        </div>
+      </div>
+      {/* 작성 테이블 */}
+      <div className={styles.filterBox}>
+        <table className={styles.filterTable}>
           <tbody>
-            <tr>
-              <th>작성유형</th>
-              <td style={{ whiteSpace: "nowrap" }}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                    gap: "20px",
-                  }}
-                >
-                  {postTypeCheckOptions.map((type) => (
-                    <div key={type}>
-                      <label>
-                        <input
-                          type="radio"
-                          name="postTypeCheck"
-                          value={type}
-                          checked={postTypeCheck === type}
-                          onChange={(e) => setPostTypeCheck(e.target.value)}
-                        />
-                        {type}
-                      </label>
+            <tr className={styles.filterRow}>
+              <th className={styles.filterLabel}>게시판 유형</th>
+              <td className={styles.filterContent}>
+                {postTypeCheckOptions.map((type) => (
+                  <div
+                    key={type}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                    }}
+                  >
+                    <label className={styles.radioLabel}>
+                      <input
+                        type="radio"
+                        name="postTypeCheck"
+                        value={type}
+                        checked={postTypeCheck === type}
+                        onChange={(e) => setPostTypeCheck(e.target.value)}
+                      />
+                      {type}
+                    </label>
 
-                      {postTypeCheck === type && (
-                        <>
-                          {type === "복지시설후기" && (
-                            <>
-                              <button
-                                onClick={() => setShowFacilityModal(true)}
-                                style={{ marginLeft: "10px" }}
-                              >
-                                복지시설 선택
-                              </button>
-                              {selectedFacilityName && (
-                                <span
-                                  style={{
-                                    marginLeft: "10px",
-                                    fontWeight: "bold",
-                                  }}
-                                >
-                                  선택: {selectedFacilityName}
-                                </span>
-                              )}
-                            </>
-                          )}
-                          {type === "복지혜택후기" && (
-                            <>
-                              <button
-                                onClick={() => setShowBenefitModal(true)}
-                                style={{ marginLeft: "10px" }}
-                              >
-                                복지혜택 선택
-                              </button>
-                              {selectedWelfareName && (
-                                <span
-                                  style={{
-                                    marginLeft: "10px",
-                                    fontWeight: "bold",
-                                  }}
-                                >
-                                  선택: {selectedWelfareName}
-                                </span>
-                              )}
-                            </>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                    {/* ✅ 복지시설 또는 복지혜택 후기일 경우 버튼 및 선택값 표시 */}
+                    {postTypeCheck === type && (
+                      <>
+                        {type === "복지시설후기" && (
+                          <>
+                            <button
+                              onClick={() => setShowFacilityModal(true)}
+                              className={styles.tagButton}
+                            >
+                              복지시설 선택
+                            </button>
+                            {selectedFacilityName && (
+                              <span style={{ fontWeight: "bold" }}>
+                                선택: {selectedFacilityName}
+                              </span>
+                            )}
+                          </>
+                        )}
+
+                        {type === "복지혜택후기" && (
+                          <>
+                            <button
+                              onClick={() => setShowBenefitModal(true)}
+                              className={styles.tagButton}
+                            >
+                              복지혜택 선택
+                            </button>
+                            {selectedWelfareName && (
+                              <span style={{ fontWeight: "bold" }}>
+                                선택: {selectedWelfareName}
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ))}
               </td>
             </tr>
 
             {(postTypeCheck === "복지시설후기" ||
               postTypeCheck === "복지혜택후기") && (
-              <tr>
-                <th>별점</th>
-                <td>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <span
-                      key={star}
-                      onClick={() => setStarRating(star)}
-                      style={{
-                        cursor: "pointer",
-                        color: starRating >= star ? "orange" : "lightgray",
-                        fontSize: "24px",
-                      }}
-                    >
-                      ★
-                    </span>
-                  ))}
-                  <span style={{ marginLeft: "10px" }}>
-                    {starRating ? `별점: ${starRating}점` : "선택 안됨"}
-                  </span>
+              <tr className={styles.filterRow}>
+                <th className={styles.filterLabel}>별점</th>
+                <td className={styles.filterContent}>
+                  <div className={styles.stars}>
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <img
+                        key={i}
+                        src={
+                          i <= starRating
+                            ? "/icons/boardstar.svg"
+                            : "/icons/boardnostar.svg"
+                        }
+                        alt="별점"
+                        className={styles.iconStar}
+                        onClick={() => setStarRating(i)}
+                      />
+                    ))}
+                  </div>
                 </td>
               </tr>
             )}
 
-            <tr>
-              <th>해시태그</th>
-              <td>
-                <input
-                  type="text"
-                  placeholder="#해시태그를 샵(#)으로 구분해 입력"
-                  value={hashtags}
-                  onChange={(e) => setHashtags(e.target.value)}
-                  style={{ width: "80%" }}
-                />
+            <tr className={styles.filterRow}>
+              <th className={styles.filterLabel}>해시태그</th>
+              <td className={styles.filterContent}>
+                <div className={styles.tagInputWrapper}>
+                  <input
+                    type="text"
+                    placeholder="#해시태그를 샵(#)으로 구분해 입력"
+                    value={hashtags}
+                    onChange={handleHashtagChange}
+                    className={styles.titleInput}
+                  />
+                  <div className={styles.tagPreviewWrapper}>
+                    {parsedTags.map((tag, idx) => (
+                      <span
+                        key={idx}
+                        className={`${styles.tagButton} ${
+                          idx === parsedTags.length - 1 ? styles.tagPurple : ""
+                        }`}
+                      >
+                        #{tag}
+                        <button
+                          type="button"
+                          className={styles.tagRemoveBtn}
+                          onClick={() => handleRemoveTag(idx)}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
+
       <br />
-      <input
-        type="text"
-        placeholder="제목을 입력하세요"
-        value={boardTitle}
-        onChange={(e) => setTitle(e.target.value)}
-        style={{ width: "100%", marginBottom: "10px", padding: "8px" }}
-      />
+      {/* 제목 입력 */}
+      <div className={styles.inputGroup}>
+        <input
+          type="text"
+          placeholder="제목을 입력하세요"
+          value={boardTitle}
+          onChange={(e) => setTitle(e.target.value)}
+          className={styles.titleInput}
+        />
+      </div>
       <div id="summernote" />
-      <button onClick={handleSubmit} style={{ marginTop: "20px" }}>
-        글쓰기 완료
-      </button>
+
+      <div className={styles.buttonContainer}>
+        <button onClick={() => navigate(-1)} className={styles.listButton}>
+          목록
+        </button>
+        <button onClick={handleSubmit} className={styles.submitButton}>
+          글쓰기 완료
+        </button>
+      </div>
+
       {showFacilityModal && (
         <Modal onClose={() => setShowFacilityModal(false)}>
           <WelfareFacilityModal
