@@ -89,7 +89,7 @@ const Chat = () => {
       
     const client = new Client({
       webSocketFactory: () => {
-        const sock = new SockJS("http://localhost:8080/ws-chat", null, {
+        const sock = new SockJS("/ws-chat", null, {
           transports: ["websocket"], // ✅ fallback까지 허용
           timeout: 30000,
         });

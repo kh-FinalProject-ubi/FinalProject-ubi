@@ -371,4 +371,10 @@ public class MyPageServiceImpl implements MyPageService {
 	public int deleteProfile(int memberNo) {
 		return mapper.deleteProfile(memberNo);
 	}
+	
+	// 찜 취소
+	@Override
+	public int cancelZzim(Map<String, Object> map) {
+		return mapper.cancelZzim(map);
+	}
 }

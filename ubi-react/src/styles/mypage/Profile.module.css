@@ -27,7 +27,7 @@
   box-sizing: border-box;
 }
 
-button {
+.mypageProfile button {
   font-family: inherit;
 }
 
@@ -399,41 +399,15 @@ button {
 }
 
 /* 체크 색상 */
-input[type="radio"],
-input[type="checkbox"] {
+.mypageProfile input[type="radio"],
+.mypageProfile input[type="checkbox"] {
   accent-color: #ffd54f; /* ✅ 노란색 체크 */
 }
 
-input[type="checkbox"],
-input[type="radio"]:focus {
+.mypageProfile input[type="checkbox"],
+.mypageProfile input[type="radio"]:focus {
   outline: none;
   box-shadow: none;
-}
-
-/* 별 버튼 기본 스타일 */
-.favoriteBtn {
-  position: absolute;
-  top: 12px;
-  right: 14px;
-
-  font-size: 18px;
-  line-height: 1;
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--gray-400);          /* 기본은 회색 */
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-/* 호버 시 */
-.favoriteBtn:hover {
-  color: var(--brand-yellow);
-}
-
-/* 활성(찜) 상태 */
-.favoriteBtn.active {
-  color: var(--brand-yellow);
 }
 
 .paginationWrapper {
@@ -441,6 +415,48 @@ input[type="radio"]:focus {
   justify-content: center;   /* 가운데 정렬 */
   margin-top: 24px;          /* 원하는 여백 */
   margin-bottom: 60px;
+}
+
+/* ---------- 주소 입력 라인 ---------- */
+.addressInputs {
+  /* 한 줄 배치 + 좁은 화면에서 줄바꿈 */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.postcodeBtn {                          /* 우편번호 검색 버튼 */
+  padding: 6px 14px;
+  font-size: 14px;
+  border: 1px solid var(--gray-300);
+  background: var(--gray-200);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.postcodeBtn:hover { background: var(--gray-100); }
+
+/* 우편번호 ‧ 기본주소 ‧ 상세주소 */
+.postcodeInput   { flex: 0 0 90px;  }  /* 고정폭 */
+.baseAddrInput   { flex: 1 1 220px; }  /* 넓게 */
+.detailAddrInput { flex: 1 1 160px; }
+
+.postcodeInput,
+.baseAddrInput,
+.detailAddrInput {
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.postcodeInput[readonly],
+.baseAddrInput[readonly] {
+  background: #f1f1f1;
+  cursor: default;
 }
 
 /* ---------- 반응형 ---------- */
@@ -461,5 +477,8 @@ input[type="radio"]:focus {
   .categoryTabs {
     flex-wrap: wrap;
   }
-}
 
+  .postcodeInput   { flex: 1 1 100px; }
+  .baseAddrInput   { flex: 1 1 100%;  } /* 줄바꿈 */
+  .detailAddrInput { flex: 1 1 100%;  }
+}
