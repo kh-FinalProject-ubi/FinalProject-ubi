@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import styles from "../../styles/WelfareSearchFilter.module.css"; // 🌟 모듈 import
 
 const SERVICE_TYPES = [
   "전체",
@@ -20,29 +21,30 @@ const WelfareSearchFilter = ({ onFilterChange, fixedRegion }) => {
     showAll: false,
   });
 
+  /* ---------- 외부로 상태 전달 ---------- */
   useEffect(() => {
-    if (fixedRegion) {
-      onFilterChange({ ...filterState, region: fixedRegion });
-    }
-  }, [filterState, fixedRegion]);
+    onFilterChange({ ...filterState, region: fixedRegion });
+  }, [filterState, fixedRegion, onFilterChange]);
 
-  const updateFilter = (changes) => {
+  const updateFilter = (changes) =>
     setFilterState((prev) => ({ ...prev, ...changes }));
-  };
 
+  /* ---------- UI ---------- */
   return (
-    <div className="welfare-search-filter">
-      <h3>공공 서비스 조회</h3>
+    <div className={styles["welfare-search-filter"]}>
+      <h3 className={styles.title}>공공 서비스 조회</h3>
 
       {/* 🔍 검색창 */}
-      <div className="search-bar">
+      <div className={styles["search-bar"]}>
         <input
+          className={styles["search-input"]}
           type="text"
           placeholder="서비스 이름을 입력하세요"
           value={filterState.keyword}
           onChange={(e) => updateFilter({ keyword: e.target.value })}
         />
         <button
+          className={styles["sort-btn"]}
           onClick={() =>
             updateFilter({
               sortOrder:
@@ -55,11 +57,15 @@ const WelfareSearchFilter = ({ onFilterChange, fixedRegion }) => {
       </div>
 
       {/* 🧑‍💼 유형 필터 */}
-      <div className="service-type-buttons">
+      <div className={styles["service-type-buttons"]}>
         {SERVICE_TYPES.map((type) => (
           <button
             key={type}
-            className={filterState.serviceType === type ? "selected" : ""}
+            className={
+              filterState.serviceType === type
+                ? `${styles["pill-btn"]} ${styles.selected}`
+                : styles["pill-btn"]
+            }
             onClick={() => updateFilter({ serviceType: type })}
           >
             {type}
@@ -68,11 +74,15 @@ const WelfareSearchFilter = ({ onFilterChange, fixedRegion }) => {
       </div>
 
       {/* 📂 카테고리 필터 */}
-      <div className="category-buttons">
+      <div className={styles["category-buttons"]}>
         {CATEGORIES.map((cat) => (
           <button
             key={cat}
-            className={filterState.category === cat ? "selected" : ""}
+            className={
+              filterState.category === cat
+                ? `${styles["pill-btn"]} ${styles.selected}`
+                : styles["pill-btn"]
+            }
             onClick={() => updateFilter({ category: cat })}
           >
             {cat}
@@ -81,7 +91,7 @@ const WelfareSearchFilter = ({ onFilterChange, fixedRegion }) => {
       </div>
 
       {/* ✅ 전체 보기 토글 */}
-      <div className="show-all-toggle">
+      <div className={styles["show-all-toggle"]}>
         <label>
           <input
             type="checkbox"
@@ -94,7 +104,7 @@ const WelfareSearchFilter = ({ onFilterChange, fixedRegion }) => {
 
       {/* ✅ 현재 지역 표시 */}
       {fixedRegion && (
-        <div className="selected-region-info">
+        <div className={styles["selected-region-info"]}>
           현재 선택 지역:{" "}
           <strong>
             {fixedRegion.city} {fixedRegion.district}
