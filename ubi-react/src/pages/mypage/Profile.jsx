@@ -10,6 +10,7 @@ import { div } from "framer-motion/client";
 import DaumPostcode from "react-daum-postcode";
 import { stripHtml } from "./striptHtml";
 import Pagination from "../../components/Pagination";
+import BenefitCard from "../mypage/BenefitCard";
 
 const parseMemberStandardCode = (code) => {
 
@@ -91,37 +92,52 @@ const Profile = () => {
   const [like, setlike] = useState([]);
   const [commentContentType, setCommentContentType] = useState("게시글"); // or '댓글'
 
-  const [page, setPage] = useState(1);
-  const PER_PAGE = 4; 
+  const [benefitPage, setBenefitPage] = useState(1); 
+  const PER_PAGE_BENEFIT = 4;
+
+  const [postPage, setPostPage] = useState(1);
+  const PER_PAGE_POST = 5; 
+
+  const [likePage, setLikePage] = useState(1);
+  const PER_PAGE_LIKE = 5; 
 
   const [favorites, setFavorites] = useState(new Set());
-
-  const toggleFavorite = (benefit) => {
-    setFavorites((prev) => {
-      const next = new Set(prev);
-      if (next.has(benefit.serviceNo)) next.delete(benefit.serviceNo);
-      else next.add(benefit.serviceNo);
-      return next;
-    });
-  };
-
-  const mappedBenefits = benefits.map((b) => ({
-    ...b,
-    isFav: favorites.has(b.serviceNo),
-  }));
-    
-  useEffect(() => {
-    /* fetchData() 호출 후 benefits 가 새로 세팅될 때 */
-    setPage(1);
-  }, [category, benefits.length]); // 카테고리나 개수 변하면 1페이지로
-
-  const totalPages = Math.ceil(benefits.length / PER_PAGE);
-
-  const pagedBenefits = benefits.slice(
-    (page - 1) * PER_PAGE,
-    page * PER_PAGE
+  const mappedBenefits = benefits.map(b => ({ ...b, isFav: favorites.has(b.serviceNo) }));
+  const totalBenefitPages = Math.ceil(mappedBenefits.length / PER_PAGE_BENEFIT);
+  const pagedBenefits = mappedBenefits.slice(
+    (benefitPage - 1) * PER_PAGE_BENEFIT,
+    benefitPage * PER_PAGE_BENEFIT
   );
 
+  const totalPostPages = Math.ceil(board.length / PER_PAGE_POST);
+  const pagedBoard = board.slice(
+    (postPage - 1) * PER_PAGE_POST,
+    postPage * PER_PAGE_POST
+  );
+
+  const totalLikePages = Math.ceil(like.length / PER_PAGE_LIKE);
+  const pagedLike = like.slice(
+    (likePage - 1) * PER_PAGE_LIKE,
+    likePage * PER_PAGE_LIKE
+  );
+
+  useEffect(() => { setBenefitPage(1); }, [category]);
+  useEffect(() => { setPostPage(1); },    [contentType, board.length]);
+  useEffect(() => { setLikePage(1); },    [commentContentType, like.length]);
+
+  /* contentType 이 바뀌면 1페이지부터 */
+  useEffect(() => {
+    setBenefitPage(1);
+  }, [contentType]);
+
+  useEffect(() => {
+    setPostPage(1);
+  }, [contentType]);
+
+  useEffect(() => {
+    setLikePage(1);
+  }, [contentType]);
+  
   // 로딩
   const withLoading = async (taskFn) => {
     setLoading(true);
@@ -415,11 +431,13 @@ const Profile = () => {
             {loading && <LoadingOverlay />}
             <div className={styles.basicInfoHeader}>
               <h3>기본 정보</h3>
+                <div className={styles.categoryTabs}>
                   {editMode ? (
                     <button calssName = {styles.save} onClick={saveMemberData}>저장</button>
                   ) : (
                     <button calssName = {styles.edit} onClick={handleEdit}>수정</button>
                   )}
+                </div>
               </div>
             <div className={styles.line}/>
             <div className={styles.profileRow}>
@@ -520,84 +538,83 @@ const Profile = () => {
                       </li>
                       <li>
                         <strong>주소</strong>
-                        <>
+
+                        {/* 한 줄 레이아웃용 래퍼 */}
+                        <div className={styles.addressInputs}>
+
+                          {/* ── 우편번호 버튼 ───────────────── */}
                           <button
                             type="button"
-                            onClick={() => {
-                              openPostcodePopup("main");
-                            }}
+                            className={styles.postcodeBtn}
+                            onClick={() => openPostcodePopup("main")}
                           >
                             우편번호 검색
                           </button>
 
+                          {/* ── 우편번호 / 기본주소 (읽기전용) ─── */}
                           <input
                             value={zipcode}
-                            placeholder="우편번호"
                             readOnly
-                            style={{
-                              backgroundColor: "#f1f1f1",
-                              cursor: "default",
-                            }}
+                            className={styles.postcodeInput}
+                            placeholder="우편번호"
                           />
 
                           <input
                             value={baseAddress}
-                            placeholder="기본 주소"
                             readOnly
-                            style={{
-                              backgroundColor: "#f1f1f1",
-                              cursor: "default",
-                            }}
+                            className={styles.baseAddrInput}
+                            placeholder="기본 주소"
                           />
 
+                          {/* ── 상세주소(편집 가능) ────────────── */}
                           <input
                             ref={detailAddressRef}
                             value={detailAddress}
                             onChange={(e) => setDetailAddress(e.target.value)}
+                            className={styles.detailAddrInput}
                             placeholder="상세 주소"
                           />
-                        </>
+                        </div>
                       </li>
 
                       <li>
                         <strong>임시주소</strong>
-                        <>
+
+                        <div className={styles.addressInputs}>
+
+                          {/* ── 우편번호 버튼 ───────────────── */}
                           <button
                             type="button"
-                            onClick={() => {
-                              openPostcodePopup("temp");
-                            }}
+                            className={styles.postcodeBtn}
+                            onClick={() => openPostcodePopup("temp")}
                           >
                             우편번호 검색
                           </button>
 
+                          {/* ── 우편번호 / 기본주소 (읽기전용) ─── */}
                           <input
                             value={zipcode2}
-                            placeholder="우편번호"
                             readOnly
-                            style={{
-                              backgroundColor: "#f1f1f1",
-                              cursor: "default",
-                            }}
+                            className={styles.postcodeInput}
+                            placeholder="우편번호"
                           />
 
                           <input
                             value={baseAddress2}
-                            placeholder="기본 주소"
                             readOnly
-                            style={{
-                              backgroundColor: "#f1f1f1",
-                              cursor: "default",
-                            }}
+                            className={styles.baseAddrInput}
+                            placeholder="기본 주소"
                           />
 
+                          {/* ── 상세주소(편집 가능) ────────────── */}
                           <input
                             ref={detailAddressRef}
                             value={detailAddress2}
                             onChange={(e) => setDetailAddress2(e.target.value)}
+                            className={styles.detailAddrInput}
                             placeholder="상세 주소"
                           />
-                        </>
+                        </div>
                       </li>
                     </>
                   ) : (
@@ -691,70 +708,26 @@ const Profile = () => {
               className={styles.benefitCards}
             >
               {pagedBenefits.map((benefit) => (
-                <div
+                <BenefitCard
                   key={benefit.serviceNo}
-                  className={styles.benefitCard}
-                  onClick={() => handleClick(benefit)}
-                >
-
-                  {/* ➡️ 별 버튼 */}
-                  <button
-                    className={`${styles.favoriteBtn} ${
-                      benefit.isFav ? styles.active : ""
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();           // 카드 클릭 전파 차단
-                      toggleFavorite(benefit);
-                    }}
-                  >
-                    ★
-                  </button>
-
-
-                  {/* ⬇️ 태그 + 즐겨찾기 */}
-                  <div className={styles.cardHeader}>
-                    <div className={styles.tagGroup}>
-                      <span className={`${styles.tag} ${styles.tagMain}`}>일반</span>
-                      <span className={`${styles.tag} ${styles.tagType}`}>보조금</span>
-                      {benefit.receptionStart && (
-                        <span className={`${styles.tag} ${styles.tagApply}`}>신청 혜택</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* 기존 카드 콘텐츠 그대로 */}
-                  <div className={styles.benefitTitle}>
-                    {(() => {
-                      const txt = stripHtml(benefit.serviceName) || "";
-                      return txt.length > 11 ? `${txt.slice(0, 11)}...` : txt;
-                    })()}
-
-                  </div>
-                  {/* <div className={styles.benefitAgency}>{benefit.agency}</div> */}
-                  <div className={styles.benefitDescription}>
-                    {/* stripHtml 로 요약 */}
-                    {(() => {
-                      const txt = stripHtml(benefit.description) || "";
-                      return txt.length > 40 ? `${txt.slice(0, 40)}...` : txt;
-                    })()}
-                  </div>
-                  <p className={styles.benefitDate}>
-                    {benefit.receptionStart && benefit.receptionEnd
-                      ? `${benefit.receptionStart} ~ ${benefit.receptionEnd}`
-                      : "상세 확인 필요"}
-                  </p>
-                </div>
+                  benefit={benefit}
+                  token={token}
+                  onUnfav={(servNo) =>
+                    setBenefits((prev) => prev.filter((b) => b.serviceNo !== servNo))
+                  }
+                  onClick={handleClick}   // 상세 페이지 이동
+                />
               ))}
             </motion.div>
           </AnimatePresence>
 
           {/* ⬇️ 페이지네이션 – 필요하면 로직 연결 */}
-          {totalPages > 1 && (
+          {totalBenefitPages > 1 && (
             <div className={styles.paginationWrapper}>
               <Pagination
-                currentPage={page}
-                totalPages={totalPages}
-                onPageChange={(num) => setPage(num)}
+                currentPage={benefitPage}
+                totalPages={totalBenefitPages}
+                onPageChange={setBenefitPage}
               />
             </div>
           )}
@@ -792,7 +765,7 @@ const Profile = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {board.map((b) => (
+                  {pagedBoard.map((b) => (
                     <tr
                       key={b.boardNo}
                       className={styles.clickableRow}
@@ -835,7 +808,7 @@ const Profile = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {board.map((b) => (
+                  {pagedBoard.map((b) => (
                     <tr
                       key={b.commentNo}
                       onClick={() => navigate(`/mytownBoard/${b.boardNo}`)}
@@ -853,16 +826,16 @@ const Profile = () => {
           )}
 
           {/* ⬇️ 페이지네이션 – 필요하면 로직 연결 */}
-          {totalPages > 1 && (
+          {totalPostPages > 1 && (
             <div className={styles.paginationWrapper}>
               <Pagination
-                currentPage={page}
-                totalPages={totalPages}
-                onPageChange={(num) => setPage(num)}
+                currentPage={postPage}
+                totalPages={totalPostPages}
+                onPageChange={setPostPage}
               />
             </div>
           )}
-          
+
         </div>
       </section>
 
@@ -896,7 +869,7 @@ const Profile = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {like.map((l) => (
+                  {pagedLike.map((l) => (
                     <tr key={l.boardNo}>
                       <td>{l.postType}</td>
                       <td>{l.hashtags}</td>
@@ -949,6 +922,17 @@ const Profile = () => {
             </div>
           )}
         </div>
+
+          {/* ⬇️ 페이지네이션 – 필요하면 로직 연결 */}
+          {totalLikePages > 1 && (
+            <div className={styles.paginationWrapper}>
+              <Pagination
+                currentPage={likePage}
+                totalPages={totalLikePages}
+                onPageChange={setLikePage}
+              />
+            </div>
+          )}
       </section>
     </div>
   );

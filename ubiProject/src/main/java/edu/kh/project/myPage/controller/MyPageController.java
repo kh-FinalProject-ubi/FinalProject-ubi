@@ -3,6 +3,7 @@ package edu.kh.project.myPage.controller;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.bind.support.SessionStatus;
@@ -413,6 +415,56 @@ public class MyPageController {
 		
 		
 	}
+	
+	/** 찜 삭제
+	 * @param profileImage
+	 * @param memberNo
+	 * @return
+	 * @throws Exception
+	 */
+	@DeleteMapping("favorite")
+	@ResponseBody
+	public ResponseEntity<Object> cancelZzim(@RequestHeader("Authorization") String authorizationHeader,
+											 @RequestParam ("serviceNo") int serviceNo){
+		
+		try {
+			
+			if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
+			}
+			
+			String token = authorizationHeader.substring(7);
+			
+			if (!jwtU.validateToken(token)) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
+			}
+			
+			Long memberNoLong = jwtU.extractMemberNo(token);
+			int memberNo = memberNoLong.intValue();
+			
+			Map<String, Object> map = new HashMap<>();
+			
+			map.put("memberNo", memberNo);
+			map.put("serviceNo", serviceNo);
+			
+			int result = service.cancelZzim(map);
+			
+			if (result > 0) {
+				return ResponseEntity.ok(result);
+			} else {
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("프로필 이미지 초기화 실패");
+			}
+			
+		} catch (Exception e) {
+			
+			log.error("프로필 이미지 초기화 중 에러 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+		
+		
+	}
+	
+	
 
 	
 	// ---------------------------------------------------------------------------------------------------------------------

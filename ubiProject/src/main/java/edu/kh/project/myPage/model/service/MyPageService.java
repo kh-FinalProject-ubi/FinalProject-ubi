@@ -141,6 +141,12 @@ public interface MyPageService {
 	 */
 	int deleteProfile(int memberNo);
 
+	/** 찜 취소
+	 * @param map
+	 * @return
+	 */
+	int cancelZzim(Map<String, Object> map);
+
 
 
 }
