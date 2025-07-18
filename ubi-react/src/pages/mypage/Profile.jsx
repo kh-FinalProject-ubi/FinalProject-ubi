@@ -9,6 +9,7 @@ import ProfileImgUploader from "./ProfileImgUploader";
 import { div } from "framer-motion/client";
 import DaumPostcode from "react-daum-postcode";
 import { stripHtml } from "./striptHtml";
+import Pagination from "../../components/Pagination";
 
 const parseMemberStandardCode = (code) => {
 
@@ -89,6 +90,37 @@ const Profile = () => {
 
   const [like, setlike] = useState([]);
   const [commentContentType, setCommentContentType] = useState("게시글"); // or '댓글'
+
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 4; 
+
+  const [favorites, setFavorites] = useState(new Set());
+
+  const toggleFavorite = (benefit) => {
+    setFavorites((prev) => {
+      const next = new Set(prev);
+      if (next.has(benefit.serviceNo)) next.delete(benefit.serviceNo);
+      else next.add(benefit.serviceNo);
+      return next;
+    });
+  };
+
+  const mappedBenefits = benefits.map((b) => ({
+    ...b,
+    isFav: favorites.has(b.serviceNo),
+  }));
+    
+  useEffect(() => {
+    /* fetchData() 호출 후 benefits 가 새로 세팅될 때 */
+    setPage(1);
+  }, [category, benefits.length]); // 카테고리나 개수 변하면 1페이지로
+
+  const totalPages = Math.ceil(benefits.length / PER_PAGE);
+
+  const pagedBenefits = benefits.slice(
+    (page - 1) * PER_PAGE,
+    page * PER_PAGE
+  );
 
   // 로딩
   const withLoading = async (taskFn) => {
@@ -352,28 +384,6 @@ const Profile = () => {
       setPregnant(isPregnant);
     }
   }, [member]);
-
-  // const getMemberStandardLabel = (code) => {
-  //   const { main, isDisabled, isPregnant } = parseMemberStandardCode(code);
-
-  //   let labels = [];
-
-  //   if (main) {
-  //     labels.push(main);
-  //   } else {
-  //     labels.push("일반");
-  //   }
-
-  //   if (isDisabled) {
-  //     labels.push("장애인");
-  //   }
-
-  //   if (isPregnant) {
-  //     labels.push("임산부");
-  //   }
-
-  //   return labels.join(", ");
-  // };
 
   const location = useLocation();
 
@@ -654,19 +664,23 @@ const Profile = () => {
       <section className={styles.benefitList}>
         <div style={{ position: "relative" }}>
           {loading && <LoadingOverlay />}
-          <h3>혜택 목록 ({benefits.length})</h3>
-          <div className={styles.categoryTabs}>
-            {loading && <LoadingOverlay />}
-            {["시설", "채용", "혜택"].map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={category === cat ? styles.active : ""}
-              >
-                {cat}
-              </button>
-            ))}
+
+          {/* ⬇️ 헤더 : 제목 + 카테고리 토글 */}
+          <div className={styles.listHeader}>
+            <h3>찜 목록 ({benefits.length})</h3>
+            <div className={styles.categoryTabs}>
+              {["채용", "혜택", "시설"].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setCategory(cat)}
+                  className={category === cat ? styles.active : ""}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
           </div>
+
           <AnimatePresence mode="wait">
             <motion.div
               key={category}
@@ -676,122 +690,74 @@ const Profile = () => {
               transition={{ duration: 0.25 }}
               className={styles.benefitCards}
             >
-              {benefits.map((benefit) => {
-                switch (category) {
-                  case "채용":
-                    return (
-                      <div
-                        className={styles.postList}
-                        key={benefit.recruitNo}
-                        onClick={() =>
-                          navigate(`welfareService/detail/${benefit.serviceNo}`)
-                        }
-                      >
-                        <div className={styles.badgeRow}>채용 정보</div>
-                        <div className={styles.benefitTitle}>
-                          {benefit.jobTitle}
-                        </div>
-                        <div className={styles.benefitAgency}>
-                          {benefit.jobFacilityName}
-                        </div>
-                        <div className={styles.benefitSalary}>
-                          입금조건: {benefit.jobSalary}
-                        </div>
-                        <div className={styles.benefitField}>
-                          채용분야: {benefit.jobPosition}
-                        </div>
-                        <div className={styles.benefitRequirement}>
-                          자격조건: {benefit.jobRequirement}
-                        </div>
-                        <div className={styles.benefitDescription}>
-                          내용: {benefit.jobContent}
-                        </div>
-                        <p className={styles.benefitDate}>
-                          {benefit.rcptbgndt && benefit.rcptenddt
-                            ? `${benefit.rcptbgndt} ~ ${benefit.rcptenddt}`
-                            : "상세 확인 필요"}
-                        </p>
-                      </div>
-                    );
+              {pagedBenefits.map((benefit) => (
+                <div
+                  key={benefit.serviceNo}
+                  className={styles.benefitCard}
+                  onClick={() => handleClick(benefit)}
+                >
 
-                  case "시설":
-                    const isEvent = !!benefit.eventTitle;
-                    return (
-                      <div
-                        className={styles.benefitCard}
-                        key={benefit.facilityNo}
-                      >
-                        <div className={styles.badgeRow}>
-                          {isEvent ? "이벤트 정보" : "시설 이용"}
-                        </div>
-                        <div className={styles.benefitTitle}>
-                          {isEvent ? benefit.eventTitle : benefit.facilityName}
-                        </div>
-                        <div className={styles.benefitKind}>
-                          {isEvent
-                            ? benefit.eventContent
-                            : benefit.facilityKindNM}
-                        </div>
-                        {!isEvent && (
-                          <div className={styles.benefitRequirement}>
-                            입장 기준: {benefit.requirement}
-                          </div>
-                        )}
-                        <p className={styles.benefitDate}>
-                          {isEvent
-                            ? benefit.eventDateStart && benefit.eventDateEnd
-                              ? `${benefit.eventDateStart} ~ ${benefit.eventDateEnd}`
-                              : "상세 확인 필요"
-                            : benefit.rcptbgndt && benefit.rcptenddt
-                            ? `${benefit.rcptbgndt} ~ ${benefit.rcptenddt}`
-                            : "상세 확인 필요"}
-                        </p>
-                      </div>
-                    );
+                  {/* ➡️ 별 버튼 */}
+                  <button
+                    className={`${styles.favoriteBtn} ${
+                      benefit.isFav ? styles.active : ""
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();           // 카드 클릭 전파 차단
+                      toggleFavorite(benefit);
+                    }}
+                  >
+                    ★
+                  </button>
 
-                  case "혜택":
-                    return (
-                      <div
-                        className={styles.benefitCard}
-                        key={benefit.serviceNo}
-                        onClick={() => handleClick(benefit)}
-                      >
-                        <div className={styles.badgeRow}>
-                          <span
-                            className={`${styles.badge} ${
-                              benefit.receptionStart && benefit.receptionEnd
-                                ? styles.신청혜택
-                                : styles.기본혜택
-                            }`}
-                          >
-                            {benefit.receptionStart && benefit.receptionEnd
-                              ? "신청혜택"
-                              : "기본혜택"}
-                          </span>
-                        </div>
-                        <div className={styles.benefitTitle}>
-                          {benefit.serviceName}
-                        </div>
-                        <div className={styles.benefitAgency}>
-                          {benefit.agency}
-                        </div>
-                        <div className={styles.benefitDescription}>
-                          {benefit.description}
-                        </div>
-                        <p className={styles.benefit}>
-                          {benefit.receptionStart && benefit.receptionEnd
-                            ? `${benefit.receptionStart} ~ ${benefit.receptionEnd}`
-                            : "상세 확인 필요"}
-                        </p>
-                      </div>
-                    );
 
-                  default:
-                    return null;
-                }
-              })}
+                  {/* ⬇️ 태그 + 즐겨찾기 */}
+                  <div className={styles.cardHeader}>
+                    <div className={styles.tagGroup}>
+                      <span className={`${styles.tag} ${styles.tagMain}`}>일반</span>
+                      <span className={`${styles.tag} ${styles.tagType}`}>보조금</span>
+                      {benefit.receptionStart && (
+                        <span className={`${styles.tag} ${styles.tagApply}`}>신청 혜택</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 기존 카드 콘텐츠 그대로 */}
+                  <div className={styles.benefitTitle}>
+                    {(() => {
+                      const txt = stripHtml(benefit.serviceName) || "";
+                      return txt.length > 11 ? `${txt.slice(0, 11)}...` : txt;
+                    })()}
+
+                  </div>
+                  {/* <div className={styles.benefitAgency}>{benefit.agency}</div> */}
+                  <div className={styles.benefitDescription}>
+                    {/* stripHtml 로 요약 */}
+                    {(() => {
+                      const txt = stripHtml(benefit.description) || "";
+                      return txt.length > 40 ? `${txt.slice(0, 40)}...` : txt;
+                    })()}
+                  </div>
+                  <p className={styles.benefitDate}>
+                    {benefit.receptionStart && benefit.receptionEnd
+                      ? `${benefit.receptionStart} ~ ${benefit.receptionEnd}`
+                      : "상세 확인 필요"}
+                  </p>
+                </div>
+              ))}
             </motion.div>
           </AnimatePresence>
+
+          {/* ⬇️ 페이지네이션 – 필요하면 로직 연결 */}
+          {totalPages > 1 && (
+            <div className={styles.paginationWrapper}>
+              <Pagination
+                currentPage={page}
+                totalPages={totalPages}
+                onPageChange={(num) => setPage(num)}
+              />
+            </div>
+          )}
         </div>
       </section>
 
@@ -885,6 +851,18 @@ const Profile = () => {
               </table>
             </div>
           )}
+
+          {/* ⬇️ 페이지네이션 – 필요하면 로직 연결 */}
+          {totalPages > 1 && (
+            <div className={styles.paginationWrapper}>
+              <Pagination
+                currentPage={page}
+                totalPages={totalPages}
+                onPageChange={(num) => setPage(num)}
+              />
+            </div>
+          )}
+          
         </div>
       </section>
 

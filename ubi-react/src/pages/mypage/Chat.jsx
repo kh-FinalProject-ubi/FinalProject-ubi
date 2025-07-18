@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
-import "../../styles/mypage/Chat.css";
 import useAuthStore from '../../stores/useAuthStore';
 import { AnimatePresence, motion } from 'framer-motion';
 import LoadingOverlay from '../../components/Loading';
 import ProfileImgUploader from "./ProfileImgUploader";
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
+import styles from "../../styles/mypage/Chat.module.css";
 
 
 
@@ -25,7 +25,7 @@ const Chat = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchNickname, setSearchNickname] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const messagesEndRef = useRef(null);
+  const chatMessagesRef = useRef(null);
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [currentTab, setCurrentTab] = useState("list");   // ← 추가
@@ -53,14 +53,6 @@ const Chat = () => {
     if (!memberNo) return;
     showChat();
   }, [memberNo]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
   // 채팅내역 조회
   const fetchMessages = async (roomNo) => {
@@ -303,10 +295,6 @@ const Chat = () => {
 
   if (!memberNo) return <div>로그인 정보가 없습니다.</div>;
   
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-  
   // 채팅 읽음 표시
   const markAsRead = async (roomNo) => {
      // ✅ 메시지 UI 업데이트
@@ -395,6 +383,22 @@ const Chat = () => {
     }
   };
 
+  const scrollToBottom = () => {
+    const el = chatMessagesRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  };
+
+  /* 2. 메시지가 바뀔 때마다 호출 */
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  /* 3. 새로운 방을 열었을 때도 호출(이미 구현돼 있음) */
+  useEffect(() => {
+    scrollToBottom();
+  }, [selectedRoom]);
+
 
 
 
@@ -403,16 +407,17 @@ console.log("채팅방 목록 : ", rooms);
   return (
     <div>
       <div>연결 상태: {isConnected ? "연결됨" : "연결 안 됨"}</div>
-      <div className="chat-wrapper">
-        {/* 왼쪽 채팅 목록 */}
-        <div className="chat-room-list">
-          <div className="chat-list-header">
+
+      <div className={styles.chatWrapper}>
+        {/* --- 왼쪽 채팅 목록 --- */}
+        <div className={styles.chatRoomList}>
+          <div className={styles.chatListHeader}>
             <h3>채팅 목록</h3>
             <button onClick={() => setShowSearch(!showSearch)}>+ 추가</button>
           </div>
 
           {showSearch && (
-            <div className="chat-search-box">
+            <div className={styles.chatSearchBox}>
               <input
                 type="text"
                 placeholder="닉네임 검색"
@@ -421,15 +426,20 @@ console.log("채팅방 목록 : ", rooms);
                 onKeyDown={(e) => e.key === "Enter" && handleSearchMember()}
               />
               <button onClick={handleSearchMember}>검색</button>
-              <div className="search-results">
+
+              <div className={styles.searchResults}>
                 {loadingSearch && <div>검색 중...</div>}
                 {searchResults.map((user) => (
                   <div
                     key={user.targetNo}
-                    className="search-result-item"
+                    className={styles.searchResultItem}
                     onClick={() => handleCreateRoom(user.targetNo)}
                   >
-                    <img src={user.memberImg || "/default-profile.png"} alt="프로필" className="room-profile" />
+                    <img
+                      src={user.memberImg || "/default-profile.png"}
+                      alt="프로필"
+                      className={styles.roomProfile}
+                    />
                     <span>{user.memberNickname}</span>
                   </div>
                 ))}
@@ -438,115 +448,150 @@ console.log("채팅방 목록 : ", rooms);
           )}
 
           {/* 채팅 목록 */}
-          <div className="chat-search-top">
+          <div className={styles.chatSearchTop}>
             <input
               type="text"
               placeholder="Search"
               value={searchNickname}
-              onChange={(e)=>setSearchNickname(e.target.value)}
-              onKeyDown={(e)=> e.key==="Enter" && handleSearchMember()}
+              onChange={(e) => setSearchNickname(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearchMember()}
             />
           </div>
-          {Array.isArray(rooms) && rooms.map(room => (
-            
-            <div
-              key={room.chatRoomNo}                                        
-              className={`chat-room-item ${
-                selectedRoom?.chatRoomNo === room.chatRoomNo ? "selected" : ""
-              }`}
-              onClick={() => handleSelectRoom(room)}
-            >
-              {/* 프로필 이미지: 값이 없으면 기본 이미지 */}
-              <img
-                src={room.targetProfile ? `http://localhost:8080${room.targetProfile}` : "/default-profile.png"}
-                alt="profile"
-                className="room-profile"
-                onError={e => { e.currentTarget.src = "/default-profile.png"; }}
-              />
 
-              <div className="room-info">
-                <div className="room-name">{room.targetNickname}</div>       {/* ✔ Nick N 대문자 */}
-                <div className="room-last-message">{room.lastMessage}</div>  {/* maxMessageNo → lastMessage */}
+          {Array.isArray(rooms) &&
+            rooms.map((room) => (
+              <div
+                key={room.chatRoomNo}
+                className={`${styles.chatRoomItem} ${
+                  selectedRoom?.chatRoomNo === room.chatRoomNo
+                    ? styles.selected
+                    : ""
+                }`}
+                onClick={() => handleSelectRoom(room)}
+              >
+                <img
+                  src={
+                    room.targetProfile
+                      ? `http://localhost:8080${room.targetProfile}`
+                      : "/default-profile.png"
+                  }
+                  alt="profile"
+                  className={styles.roomProfile}
+                  onError={(e) => {
+                    e.currentTarget.src = "/default-profile.png";
+                  }}
+                />
+
+                <div className={styles.roomInfo}>
+                  <div className={styles.roomName}>{room.targetNickname}</div>
+                  <div className={styles.roomLastMessage}>{room.lastMessage}</div>
+                </div>
+
+                <div className={styles.roomMeta}>
+                  <div className={styles.roomTime}>{room.sendTime}</div>
+                  {room.notReadCount > 0 && (
+                    <div className={styles.roomUnread}>{room.notReadCount}</div>
+                  )}
+                </div>
               </div>
+            ))}
+        </div>
 
-              <div className="room-meta">
-                <div className="room-time">{room.sendTime}</div>
-                {room.notReadCount > 0 && (
-                  <div className="room-unread">{room.notReadCount}</div>
-                )}
-              </div>
-            </div>
-          ))}
-          </div>
-
-        {/* 오른쪽 채팅창 */}
-        <div className="chat-container">
+        {/* --- 오른쪽 채팅창 --- */}
+        <div className={styles.chatContainer}>
           {selectedRoom ? (
             <>
-
-            {/* 탭바 + 나가기 */}
-              <div className="chat-topbar">
-                <div className="tab active">채팅 내역</div>
-                <div className="tab">{selectedRoom?.targetNickname || "대화 상대"}</div>
+              {/* 탭바 + 나가기 */}
+              <div className={styles.chatTopbar}>
+                <div className={`${styles.tab} ${styles.active}`}>채팅 내역</div>
+                <div className={styles.tab}>
+                  {selectedRoom?.targetNickname || "대화 상대"}
+                </div>
                 <button
-                  className="leave-btn"
+                  className={styles.leaveBtn}
                   onClick={() => handleExitRoom(selectedRoom?.chatRoomNo)}
                 >
                   ↩ 채팅 나가기
                 </button>
               </div>
 
-              <div className="chat-messages">
-                {messages.map(msg => {
+              <div className={styles.chatMessages} ref={chatMessagesRef}>
+                {messages.map((msg) => {
                   const isMe = msg.senderNo === memberNo;
 
-                  // 아바타 이미지 경로
                   const avatarSrc = isMe
                     ? null
-                    : (msg.senderProfile     // 백엔드에서 senderProfile 내려주면 사용
-                        ? `http://localhost:8080${msg.senderProfile}`
-                        : (selectedRoom?.targetProfile
-                            ? `http://localhost:8080${selectedRoom.targetProfile}`
-                            : "/default-profile.png"));
+                    : msg.senderProfile
+                    ? `http://localhost:8080${msg.senderProfile}`
+                    : selectedRoom?.targetProfile
+                    ? `http://localhost:8080${selectedRoom.targetProfile}`
+                    : "/default-profile.png";
 
-                  // 닉네임 (메시지 객체에 있으면 우선, 없으면 현재 방 상대 닉네임)
-                  const nick = msg.senderNickname || selectedRoom?.targetNickname || "상대";
+                  const nick =
+                    msg.senderNickname ||
+                    selectedRoom?.targetNickname ||
+                    "상대";
 
                   return (
-                    /* ▶ 그룹 래퍼 (닉네임 + 본문) */
-                    <div key={msg.chatNo} className={isMe ? "my" : "other"}>
-                      {/* ── 닉네임: 내 메시지는 표시 X ── */}
-                      {!isMe && <div className="sender-name">{nick}</div>}
+                    <div
+                      key={msg.chatNo}
+                      className={isMe ? styles.my : styles.other}
+                    >
+                      {!isMe && (
+                        <div className={styles.senderName}>{nick}</div>
+                      )}
 
-                      {/* ── 1줄(아바타 + 말풍선) ── */}
-                      <div className={`chat-line ${isMe ? "my" : "other"}`}>
-                        {!isMe && <img src={avatarSrc} alt="" className="avatar" />}
+                      <div
+                        className={`${styles.chatLine} ${
+                          isMe ? styles.my : styles.other
+                        }`}
+                      >
+                        {!isMe && (
+                          <img
+                            src={avatarSrc}
+                            alt=""
+                            className={styles.avatar}
+                          />
+                        )}
 
-                        <div className={`chat-message ${isMe ? "my-message" : "other-message"}`}>
+                        <div
+                          className={`${styles.chatMessage} ${
+                            isMe
+                              ? styles.myMessage
+                              : styles.otherMessage
+                          }`}
+                        >
                           {msg.chatDelFl === "Y" ? (
-                            <i className="deleted-message">삭제된 메시지입니다.</i>
+                            <i className={styles.deletedMessage}>
+                              삭제된 메시지입니다.
+                            </i>
                           ) : (
                             <>
                               <span>{msg.chatContent}</span>
                               {isMe && (
                                 <button
-                                  className="delete-button"
-                                  onClick={() => handleDeleteMessage(msg.chatNo)}
+                                  className={styles.deleteButton}
+                                  onClick={() =>
+                                    handleDeleteMessage(msg.chatNo)
+                                  }
                                 >
                                   🗑️
                                 </button>
                               )}
                             </>
                           )}
-                          <div className="message-timestamp">{msg.chatSendDate}</div>
+                          <div className={styles.messageTimestamp}>
+                            {msg.chatSendDate}
+                          </div>
                         </div>
                       </div>
                     </div>
                   );
                 })}
-                <div ref={messagesEndRef}></div>
+                
               </div>
-              <div className="chat-input">
+
+              <div className={styles.chatInput}>
                 <input
                   type="text"
                   value={input}
@@ -558,12 +603,15 @@ console.log("채팅방 목록 : ", rooms);
               </div>
             </>
           ) : (
-            <div className="chat-placeholder">채팅방을 선택하세요</div>
+            <div className={styles.chatPlaceholder}>
+              채팅방을 선택하세요
+            </div>
           )}
         </div>
       </div>
     </div>
   );
+
 };
 
 export default Chat;
