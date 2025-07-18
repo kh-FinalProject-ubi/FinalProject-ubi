@@ -28,6 +28,7 @@ public class AlertWebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws-alert")
                 .setAllowedOriginPatterns("*")
+                .withSockJS()
                 ; 
     }
 

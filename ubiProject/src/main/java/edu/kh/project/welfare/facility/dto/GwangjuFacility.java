@@ -84,7 +84,21 @@ public class GwangjuFacility {
     private String corporationName;     // 법인명
     
     private String faxNumber; // 팩스번호
+    
+    private String userCount; // 이용자수
+    
+    private String establishedDate;        // 설립일자
+    private String operatorAddress;        // 법인소재지
+    private String secretaryGeneral;       // 사무국장
+    private String welfareWorkerCount;     // 생활복지사 수
+    private String instructorCount;        // 생활지도원 수
 
+    private String director;
+    
+    private String employeeStatus; // 직원 현황 (직원 수 또는 역할 구성 설명)
+    
+    private String currentChildCount;
+    private String budgetSupport;
     
 
 }

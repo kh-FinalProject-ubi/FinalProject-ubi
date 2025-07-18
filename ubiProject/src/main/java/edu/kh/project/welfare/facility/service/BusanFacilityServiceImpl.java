@@ -301,7 +301,7 @@ public class BusanFacilityServiceImpl implements BusanFacilityService {
 	        dto.setFacilityName(getFirst(item, "시설명", "시설명(운영법인)", "기관명", "시설-기관명", "노인복지관명", "경로당명"));
 	        dto.setAddress(getFirst(item, "소재지도로명주소", "소재지지번주소", "주소", "소재지", "도로명주소"));
 	        dto.setPhone(getFirst(item, "전화번호", "연락처", "기관전화번호","facilityName"));
-	        dto.setCategory(url);
+	        // dto.setCategory();
 	        dto.setDistrict(districtFilter);
 	        
 	        dto.setFacilityName(getFirst(item, "facility_name", "시설명", "기관명")); // 영어 응답 필드 포함

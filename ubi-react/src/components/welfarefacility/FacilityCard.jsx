@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import styles from "../../styles/welfarefacility/FacilityCard.module.css";
+import WelfareLikeButton from "../../components/welfareLike/WelfareLikeButton";
+import useAuthStore from "../../stores/useAuthStore";
 /**
  * 시설 객체에서 다국어 키(FACLT_NM, 시설명 등)를 탐색해 값을 반환하는 함수
  */
@@ -9,6 +11,7 @@ import styles from "../../styles/welfarefacility/FacilityCard.module.css";
 /**
  * 카테고리 매핑 테이블
  */
+
 const categoryMap = {
   체육시설: [
     "체육시설",
@@ -76,6 +79,7 @@ const getCategory = (facility) => {
 };
 
 export default function FacilityCard({ facility }) {
+  const auth = useAuthStore();
   const name =
     getField(facility, "facilityName", "시설명", "FACLT_NM", "facilityAddr") ||
     "이름 없음";
@@ -89,7 +93,22 @@ export default function FacilityCard({ facility }) {
         <div className={styles.serviceTarget}>{serviceTarget}</div>
         <div className={styles.category}>{category}</div>
       </div>
-
+      <WelfareLikeButton
+        token={auth.token}
+        apiServiceId={facility.apiServiceId}
+        serviceName={facility.serviceName}
+        category={facility.category}
+        regionCity={facility.regionCity}
+        regionDistrict={facility.regionDistrict}
+        description={facility.description}
+        agency={facility.agency}
+        url={facility.url}
+        receptionStart={facility.receptionStart}
+        receptionEnd={facility.receptionEnd}
+        imageProfile={facility.imageProfile}
+        lat={facility.lat}
+        lng={facility.lng}
+      />
       <div className={styles.facilityStatus}>
         <Link to={{ pathname: "/facility/detail" }} state={{ facility }}>
           {name}
