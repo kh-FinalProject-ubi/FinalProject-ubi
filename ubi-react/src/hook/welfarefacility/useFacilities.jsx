@@ -45,6 +45,8 @@ export function useFacilities(
           url = "/api/jeju-facility";
         } else if (city === "인천광역시") {
           url = "/api/incheon-facility";
+        } else if (city === "광주광역시") {
+          url = "/api/gwangju-facility";
         }
 
         const res = await axios.get(url, { params });

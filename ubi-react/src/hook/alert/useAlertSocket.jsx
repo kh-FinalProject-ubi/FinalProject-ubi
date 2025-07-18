@@ -9,6 +9,12 @@ export default function useAlertSocket(memberNo, onAlertReceive) {
   const prevMemberNoRef = useRef(null);
   const token = useAuthStore.getState().token;
 
+  const getWebSocketFactory = () => {
+    const isLocal = location.hostname === "localhost";
+    const baseUrl = isLocal ? "http://localhost:8080/ws-alert" : "/ws-alert";
+    return () => new SockJS(baseUrl);
+  };
+
   const connect = () => {
     if (!Number.isInteger(memberNo) || memberNo <= 0) {
       console.warn("🚫 유효하지 않은 memberNo → WebSocket 연결 생략");
@@ -19,7 +25,7 @@ export default function useAlertSocket(memberNo, onAlertReceive) {
       console.log("🔑 전달된 token:", token);
 
       const client = new Client({
-        brokerURL: "ws://localhost:8080/ws-alert",
+        webSocketFactory: getWebSocketFactory(),
         connectHeaders: {
           Authorization: `Bearer ${token}`,
         },
