@@ -276,7 +276,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
                     </button>
                   )}
               </div>
-              {(isAdmin || isMine) && (
+              {token  && (isAdmin || isMine) && (
                 <div className={styles.commentActionsRight}>
                   {editingCommentNo === c.commentNo ? (
                     <>

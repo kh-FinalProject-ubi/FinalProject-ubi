@@ -1,0 +1,211 @@
+.modalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* 배경을 투명하게 변경하고, 외부 클릭 시 닫기 기능은 유지 */
+  background-color: transparent;
+  z-index: 1000;
+}
+
+.modalContainer {
+  /* position을 absolute로 변경하여 위치를 직접 제어 */
+  position: absolute;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  /* 애니메이션 적용 */
+  animation-duration: 0.3s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+
+.slideDown {
+  animation-name: slideDown;
+}
+
+.slideUp {
+  animation-name: slideUp;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+}
+
+.modalHeader {
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* 헤더를 잡고 드래그할 수 있도록 커서 모양 변경 */
+  cursor: move;
+}
+
+.modalHeader h2 {
+  margin: 0;
+  font-size: 1.2em; /* 이미지와 유사하게 조정 */
+  font-weight: bold;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 1.8em;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+
+.closeButton:hover {
+  color: #333;
+}
+
+.modalContent {
+  padding: 20px 50px;
+  overflow-y: auto;
+  max-height: 60vh; /* 화면 높이에 따라 유동적으로 조절 */
+  line-height: 1.6;
+}
+
+.modalContent h4 {
+  font-size: 1em;
+  font-weight: bold;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.modalContent p {
+  margin-bottom: 15px;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.modalFooter {
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: space-between; /* 양쪽 끝으로 정렬 */
+  align-items: center;
+}
+
+.modalFooter label {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.9em;
+  color: #333;
+  user-select: none; /* 텍스트 드래그 방지 */
+}
+
+.modalFooter input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.confirmButton {
+  background-color: #fce500; /* 카카오와 유사한 노란색 */
+  color: #3C1E1E;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+
+/* 동의 체크 안 됐을 때 버튼 스타일 */
+.confirmButton:disabled {
+  background-color: #f2f2f2;
+  color: #b5b5b5;
+  cursor: not-allowed;
+}
+
+.checked input[type="checkbox"]:checked::after {
+  content: '✔';
+  font-size: 14px;
+  color: rgb(0, 0, 0);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* label 스타일 */
+.modalFooter label {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.9em;
+  color: #333;
+  user-select: none; /* 텍스트 드래그 방지 */
+}
+
+/* 1. 기본 체크박스는 화면에서 숨깁니다 */
+.modalFooter input[type="checkbox"] {
+  display: none;
+}
+
+/* 2. 커스텀 체크박스 스타일 (체크 안 됐을 때) */
+.modalFooter input[type="checkbox"] + span {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  border: 1.5px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  transition: all 0.2s;
+}
+
+/* 3. 체크박스가 선택됐을 때(checked) 커스텀 체크박스 스타일 */
+.modalFooter input[type="checkbox"]:checked + span {
+  background-color: #fce500; /* ⭐ 배경을 노란색으로 변경 */
+  border-color: #fce500;
+}
+
+/* 4. 체크 표시(V) 스타일 */
+.modalFooter input[type="checkbox"] + span::after {
+  content: '✔';
+  display: block;
+  text-align: center;
+  line-height: 18px;
+  font-size: 14px;
+  font-weight: bold;
+  color: white; /* ⭐ 체크 표시를 하얀색으로 변경 */
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+/* 체크됐을 때 체크 표시(V)가 나타나도록 함 */
+.modalFooter input[type="checkbox"]:checked + span::after {
+  opacity: 1;
+}

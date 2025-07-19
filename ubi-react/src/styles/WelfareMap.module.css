@@ -27,26 +27,27 @@
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   max-height: 420px;
-  overflow-y: auto;
-  padding: 20px 24px;
+  padding: 0; /* 노란색 영역까지 꽉 채우기 위해 padding 제거 */
   display: flex;
   flex-direction: column;
-  gap: 14px;
   width: 100%;
 }
 
 .tab {
   background: var(--yellow);
-  padding: 20px;
+  padding: 20px 24px;  /* 좌우도 약간의 내부 여백만 */
   font-weight: 700;
   font-size: 1.1rem;
   color: var(--gray-800);
+  flex-shrink: 0;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
 }
 
 .content {
   flex: 1;
   overflow-y: auto;
-  padding: 20px 0 0;
+  padding: 20px 24px; 
   display: flex;
   flex-direction: column;
   gap: 10px;
