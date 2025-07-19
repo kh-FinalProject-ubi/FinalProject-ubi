@@ -303,7 +303,7 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 	                    LocalDateTime now = LocalDateTime.now();
 	                    if (suspension == null) {
 	                        // 신규 정지 등록 (5의 배수일 때)
-	                        LocalDateTime end = now.plusMinutes(5);
+	                    	LocalDateTime end = now.plusDays(7);
 	                        memberMapper.insertSuspensionTest(targetMemberNo, now, end);
 	                    } else {
 	                        // 정지 중이면 정지 기간 연장
@@ -383,7 +383,7 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 	                        memberMapper.insertSuspensionTest(targetMemberNo, now, end);
 	                    } else {
 	                        LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
-	                        LocalDateTime end = originEnd.plusMinutes(5);
+	                        LocalDateTime end = originEnd.plusDays(7);
 	                        memberMapper.extendSuspensionEnd(targetMemberNo, end);
 	                    }
 

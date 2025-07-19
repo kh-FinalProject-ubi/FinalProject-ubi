@@ -117,7 +117,7 @@ public interface MemberMapper {
 	int checkMemberIdAndEmail(@Param("memberId") String memberId, @Param("email") String email);
 
 	// 비밀번호 업데이트
-	int updatePassword(@Param("memberId") String memberId, @Param("encPw") String encPw);
+	int updatePassword(@Param("memberId") String memberId, @Param("newEncPw") String newEncPw);
 
 
 	
@@ -132,5 +132,11 @@ public interface MemberMapper {
 
 	Integer existsByNameAndMemberIdAndEmail(
 			@Param("name") String name,@Param("memberId") String memberId,@Param("email") String email);
+
+	String findPasswordById(String memberId);
+
+	// 연장 삭제
+	void extendSuspensionEnd(Map<String, Object> param);
+
 
 }

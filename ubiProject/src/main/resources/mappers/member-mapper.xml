@@ -305,7 +305,7 @@
 	<!-- 비밀번호 업데이트 -->
 	<update id="updatePassword">
 		UPDATE MEMBER
-		SET MEMBER_PW = #{encPw}
+		SET MEMBER_PW = #{newEncPw}
 		WHERE
 		MEMBER_ID =
 		#{memberId}
@@ -337,13 +337,24 @@
 	<select id="existsByNameAndEmail">
 		SELECT * FROM "MEMBER"
 		WHERE MEMBER_NAME = #{name}
-		AND MEMBER_EMAIL = #{email}
+		AND
+		MEMBER_EMAIL = #{email}
 	</select>
+
 	<select id="existsByNameAndMemberIdAndEmail">
 		SELECT * FROM "MEMBER"
 		WHERE MEMBER_NAME = #{name}
-		AND MEMBER_ID = #{memberId}
+		AND
+		MEMBER_ID = #{memberId}
 		AND MEMBER_EMAIL = #{email}
 	</select>
+
+	<select id="findPasswordById">
+		SELECT MEMBER_PW FROM "MEMBER"
+		WHERE MEMBER_ID =
+		#{memberId}
+
+	</select>
+
 
 </mapper>

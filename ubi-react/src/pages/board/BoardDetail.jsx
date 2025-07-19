@@ -146,7 +146,7 @@ const BoardDetail = () => {
                     <h3 className={styles.boardTitle}>{board.boardTitle}</h3>
                   </div>
                   <div className={styles.buttonContainer}>
-                    {(isWriter || isAdmin) && (
+                    {token && (isWriter || isAdmin) && (
                       <>
                         <button
                           className={styles.editButton}

@@ -234,11 +234,10 @@ public class MemberController {
 
 	@GetMapping("/checkId")
 	public ResponseEntity<?> checkId(@RequestParam("memberId") String memberId) {
-	    System.out.println("✅ checkId() 호출됨: " + memberId);
-	    boolean isAvailable = service.checkIdAvailable(memberId);
-	    return isAvailable 
-	        ? ResponseEntity.ok().build()
-	        : ResponseEntity.status(409).body(Map.of("message", "이미 사용 중인 아이디입니다."));
+		System.out.println("✅ checkId() 호출됨: " + memberId);
+		boolean isAvailable = service.checkIdAvailable(memberId);
+		return isAvailable ? ResponseEntity.ok().build()
+				: ResponseEntity.status(409).body(Map.of("message", "이미 사용 중인 아이디입니다."));
 	}
 
 	@GetMapping("/checkNickname")
@@ -515,55 +514,70 @@ public class MemberController {
 		return ResponseEntity.ok().build();
 	}
 
+	// 멤버 정지 여부 확인
+	@GetMapping("/{targetMemberNo}/suspend-status")
+	public ResponseEntity<Object> checkSuspendStatus(@PathVariable("targetMemberNo") int targetMemberNo) {
+		return ResponseEntity.ok(service.checkSuspension(targetMemberNo));
+	}
+
+	// 멤버 정지하는 경우
+	@PostMapping("/{targetMemberNo}/suspend")
+	public ResponseEntity<?> toggleSuspend(@PathVariable("targetMemberNo") int targetMemberNo) {
+		boolean isSuspended = service.suspendMember(targetMemberNo);
+		return ResponseEntity.ok(isSuspended ? "정지됨" : "정지 해제됨");
+	}
+
+	// 인증번호 보내기
 	@PostMapping("/sendCode")
 	public ResponseEntity<?> sendCode(@RequestBody SendCodeRequest req) {
-	    try {
-	        String email = req.getEmail();
-	        String type = req.getType();
+		try {
+			String email = req.getEmail();
+			String type = req.getType();
 
-	        // 아이디 찾기 (name + email)
-	        if ("id".equals(type)) {
-	            Integer exists = service.existsByNameAndEmail(req.getName(), email);
-	            if (Objects.isNull(exists) || exists == 0) {
-	                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-	                        .body(Map.of("message", "입력하신 정보와 일치하는 사용자가 없습니다."));
-	            }
-	        } 
-	        // 비밀번호 찾기 (name + memberId + email)
-	        else if ("pw".equals(type)) {
-	            Integer exists = service.existsByNameAndMemberIdAndEmail(req.getName(), req.getMemberId(), email);
-	            if (Objects.isNull(exists) || exists == 0) {
-	                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-	                        .body(Map.of("message", "입력하신 정보와 일치하는 사용자가 없습니다."));
-	            }
-	        }
+			// 아이디 찾기 (name + email)
+			if ("id".equals(type)) {
+				Integer exists = service.existsByNameAndEmail(req.getName(), email);
+				if (Objects.isNull(exists) || exists == 0) {
+					return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+							.body(Map.of("message", "입력하신 정보와 일치하는 사용자가 없습니다."));
+				}
+			}
+			// 비밀번호 찾기 (name + memberId + email)
+			else if ("pw".equals(type)) {
+				Integer exists = service.existsByNameAndMemberIdAndEmail(req.getName(), req.getMemberId(), email);
+				if (Objects.isNull(exists) || exists == 0) {
+					return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+							.body(Map.of("message", "입력하신 정보와 일치하는 사용자가 없습니다."));
+				}
+			}
 
-	        // 인증 코드 전송
-	        String code = emailService.sendEmail(type, email);
+			// 인증 코드 전송
+			String code = emailService.sendEmail(type, email);
 
-	        if (code != null) {
-	            return ResponseEntity.ok(Map.of("code", code));
-	        } else {
-	            return ResponseEntity.status(500).body(Map.of("message", "이메일 전송 실패"));
-	        }
+			if (code != null) {
+				return ResponseEntity.ok(Map.of("code", code));
+			} else {
+				return ResponseEntity.status(500).body(Map.of("message", "이메일 전송 실패"));
+			}
 
-	    } catch (Exception e) {
-	        return ResponseEntity.status(500).body(Map.of("message", "서버 오류: " + e.getMessage()));
-	    }
+		} catch (Exception e) {
+			return ResponseEntity.status(500).body(Map.of("message", "서버 오류: " + e.getMessage()));
+		}
 	}
-	
+
+	// 인증번호 비교 로직
 	@PostMapping("/verifyCode")
 	public ResponseEntity<?> verifyCode(@RequestBody Map<String, String> paramMap) {
-	    String email = paramMap.get("email");
-	    String code = paramMap.get("code");
+		String email = paramMap.get("email");
+		String code = paramMap.get("code");
 
-	    int result = emailService.checkAuthKey(Map.of("email", email, "authKey", code));
+		int result = emailService.checkAuthKey(Map.of("email", email, "authKey", code));
 
-	    boolean verified = result > 0;
+		boolean verified = result > 0;
 
-	    return ResponseEntity.ok(Map.of("verified", verified));
+		return ResponseEntity.ok(Map.of("verified", verified));
 	}
-	
+
 	// 아이디 찾기
 	@PostMapping("/find-id")
 	public ResponseEntity<?> findId(@RequestBody Map<String, String> paramMap) {
@@ -583,17 +597,16 @@ public class MemberController {
 	@PostMapping("/reset-pw")
 	public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> paramMap) {
 		String memberId = paramMap.get("memberId");
-		String email = paramMap.get("email");
 		String newPassword = paramMap.get("newPassword");
 
-		boolean success = service.resetPassword(memberId, email, newPassword);
+		boolean success = service.resetPassword(memberId, newPassword);
 
 		if (success) {
 			return ResponseEntity.ok(Map.of("message", "비밀번호가 성공적으로 변경되었습니다."));
 		}
 
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "정보가 일치하지 않습니다."));
+		// 실패 시, "비밀번호가 기존과 동일" 또는 "회원 없음" 등의 경우를 포함
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(Map.of("message", "비밀번호를 변경할 수 없습니다. 입력 정보를 확인해 주세요."));
 	}
 }
-
-	
