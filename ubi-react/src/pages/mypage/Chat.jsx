@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import useAuthStore from '../../stores/useAuthStore';
+import useChatAlertStore from "../../stores/useChatAlertStore";
 import { AnimatePresence, motion } from 'framer-motion';
 import LoadingOverlay from '../../components/Loading';
 import ProfileImgUploader from "./ProfileImgUploader";
@@ -12,14 +13,27 @@ import styles from "../../styles/mypage/Chat.module.css";
 
 
 const Chat = () => {
-  console.log("SockJS 타입:", typeof SockJS);
+
+  const formatChatTime = (isoString) => {
+    if (!isoString) return "";
+
+    const date = new Date(isoString);
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    const hh = String(date.getHours()).padStart(2, "0");
+    const min = String(date.getMinutes()).padStart(2, "0");
+
+    return `${yyyy}.${mm}.${dd} ${hh}:${min}`;
+  };
+    console.log("SockJS 타입:", typeof SockJS);
   console.log("SockJS 실제 객체:", SockJS); 
 
   const { memberNo, memberName, token } = useAuthStore();
   const stompRef = useRef(null);
 
-  const [rooms, setRooms] = useState([]);
-  const [selectedRoom, setSelectedRoom] = useState(null);
+  // const [rooms, setRooms] = useState([]);
+  // const [selectedRoom, setSelectedRoom] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [showSearch, setShowSearch] = useState(false);
@@ -30,6 +44,15 @@ const Chat = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [currentTab, setCurrentTab] = useState("list");   // ← 추가
 
+  const {
+    rooms,             // 채팅방 목록 (전역)
+    setRooms,          // rooms 갱신 함수
+    selectedRoom,      // 선택된 방 (전역)
+    setSelectedRoom,   // 선택된 방 설정 함수
+    incrementUnread,   // 미읽음 +1
+    clearUnread,       // 미읽음 0 으로
+  } = useChatAlertStore();
+
   // ✅ 채팅방 목록 불러오기
   const showChat = async () => {
     try {
@@ -37,12 +60,16 @@ const Chat = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (res.status === 200) {
-        const data = res.data;
-        if (Array.isArray(data)) setRooms(data);
-        else if (Array.isArray(data.rooms)) setRooms(data.rooms);
-        else setRooms([]);
-      }
+      console.log("✅ 채팅방 응답 전체:", res.data);
+
+      // ✅ 무조건 배열만 뽑아서 넣기
+      const list = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray(res.data.rooms)
+        ? res.data.rooms
+        : [];
+
+      setRooms(list);
     } catch (error) {
       console.error("채팅 목록 조회 중 예외 발생:", error);
       setRooms([]);
@@ -76,11 +103,14 @@ const Chat = () => {
   
   const handleSelectRoom = async (room) => {
     // ① 방 선택 상태 업데이트
+    clearUnread(room.chatRoomNo);
     setSelectedRoom(room);
+    console.log("✅ 방 선택됨:", room)
     setMessages([]);               // 리스트 비우기(로딩 상태처럼)
 
     try {
       const list = await fetchMessages(room.chatRoomNo);
+      console.log("✅ 메시지 받아옴:", list);  // ← 추가
       setMessages(list);
     } catch (e) {
       console.error("메시지 조회 실패:", e);
@@ -135,59 +165,67 @@ const Chat = () => {
         client.subscribe(destination, (message) => {
           try {
             const body = JSON.parse(message.body);
-            const currentRoom = selectedRoomRef.current;   // 🔹 수정
+            console.log("📥 수신 메시지:", body);
 
-            if (currentRoom && body.chatRoomNo === currentRoom.chatRoomNo) {
-              setMessages((prev) => {
-                const updated = [...prev];
+            const { chatRoomNo, senderNo, chatNo, chatContentDelFl } = body;
+            const currentRoom = selectedRoomRef.current;
 
-                const idx = updated.findIndex(
-                  (msg) =>
-                    msg.chatContent === body.chatContent &&
-                    msg.senderNo === memberNo &&
-                    msg.chatNo &&
-                    !msg.chatNo.toString().startsWith("srv_")
-                );
+            // 내가 보낸 게 아니면 unread 증가
+            if (senderNo !== memberNo) {
+              console.log("📩 새로운 메시지 수신 → unread 증가:", chatRoomNo);
+              incrementUnread(chatRoomNo);
+            }
 
-                if (idx !== -1) {
-                  updated[idx] = { ...body, chatDelFl: "N" };
-                  return updated;
-                }
+            if (chatContentDelFl === "Y") {
+              setMessages(prev =>
+                prev.map(msg =>
+                  msg.chatNo === chatNo ? { ...msg, chatContentDelFl: "Y" } : msg
+                )
+              );
+              return; // 나머지 처리 필요 없으니 종료
+            }
 
-                return [...prev, { ...body, chatDelFl: "N" }];
-              });
+            // 지금 열어둔 방이면 채팅창에 추가
+            if (currentRoom && chatRoomNo === currentRoom.chatRoomNo) {
+              setMessages(prev => [...prev, { ...body, chatDelFl: "N" }]);
             } else {
-              // 선택된 방이 아니면 읽지 않은 수 갱신용으로 목록만 새로고침
-              showChat();
+              // 다른 방일 경우 unread 처리 + notReadCount 증가
+              incrementUnread(chatRoomNo);
+              setRooms(prevRooms =>
+                prevRooms.map((r) =>
+                  r.chatRoomNo === chatRoomNo
+                    ? { ...r, notReadCount: (r.notReadCount || 0) + 1 }
+                    : r
+                )
+              );
             }
           } catch (err) {
             console.error("STOMP 메시지 처리 중 예외 발생:", err);
           }
         });
-
       },
 
-      onStompError: (frame) => {
-        console.error("❌ STOMP 오류:", frame.headers["message"]);
-        console.error("❌ 상세 설명:", frame.body);
-      },
+            onStompError: (frame) => {
+              console.error("❌ STOMP 오류:", frame.headers["message"]);
+              console.error("❌ 상세 설명:", frame.body);
+            },
 
-      onDisconnect: () => {
-        console.log("🔌 연결 해제됨");
-        setIsConnected(false);
-      },
+            onDisconnect: () => {
+              console.log("🔌 연결 해제됨");
+              setIsConnected(false);
+            },
 
-      onWebSocketClose: (event) => {
-        console.error("🔌 WebSocket Closed", event);
-        console.error("이유:", event.reason);  // 종료 사유 확인
-        console.error("코드:", event.code);    // 종료 코드 확인
-        console.error("정상 종료 여부:", event.wasClean);  // 정상 종료 여부 확인
-      },
+            onWebSocketClose: (event) => {
+              console.error("🔌 WebSocket Closed", event);
+              console.error("이유:", event.reason);  // 종료 사유 확인
+              console.error("코드:", event.code);    // 종료 코드 확인
+              console.error("정상 종료 여부:", event.wasClean);  // 정상 종료 여부 확인
+            },
 
-      onWebSocketError: (error) => {
-        console.error("❌ WebSocket Error", error);
-      },
-    });
+            onWebSocketError: (error) => {
+              console.error("❌ WebSocket Error", error);
+            },
+          });
 
     stompRef.current = client;
     console.log("📦 stompRef.current 설정 완료:", client);
@@ -221,15 +259,6 @@ const Chat = () => {
       destination: '/app/chatting/sendMessage',
       body: JSON.stringify(payload),
     });
-
-    // 낙관적 UI 업데이트
-    setMessages(prev => [...prev, {
-      chatNo: Date.now(), // ✅ 임시 chatNo로 고유값
-      senderNo: memberNo,
-      chatContent: input,
-      chatSendDate: new Date().toISOString(),
-      chatRoomNo: selectedRoom.chatRoomNo,
-    }]);
 
     setInput('');
   };
@@ -315,13 +344,13 @@ const Chat = () => {
       )
     );
 
-    setRooms(prev =>
-      (prev ?? []).map(room =>
-        room.chatRoomNo === roomNo
-          ? { ...room, notReadCount: 0 }
-          : room
-      )
-    );
+  const updated = rooms.map(r =>
+    r.chatRoomNo === roomNo
+      ? { ...r, notReadCount: 0 }
+      : r
+  );
+
+  setRooms(updated);  
 
     // 2) 서버 PATCH
     try {
@@ -352,7 +381,7 @@ const Chat = () => {
 
       if (res.status === 200) {
         // ✅ 방 목록에서 제거
-        setRooms(prev => prev.filter(room => room.chatRoomNo !== roomNo));
+        setRooms(rooms.filter(r => r.chatRoomNo !== roomNo));
 
         // ✅ 선택되어 있던 방도 초기화
         if (selectedRoom?.chatRoomNo === roomNo) {
@@ -368,21 +397,35 @@ const Chat = () => {
 
   // 채팅 삭제
   const handleDeleteMessage = async (chatNo) => {
+
+    if (typeof chatNo === "string" && chatNo.startsWith("temp-")) {
+      alert("이 메시지는 아직 서버에 저장되지 않았습니다.");
+      return;
+    }
+
     const confirmDelete = window.confirm("이 메시지를 삭제하시겠습니까?");
     if (!confirmDelete) return;
 
     console.log("chatNo : ", chatNo);
+    console.log("selectRoom : ", selectedRoom);
+    const targetNo = selectedRoom?.participant || selectedRoom?.targetNo;
+
+    if (!targetNo) {
+      console.error("❌ targetNo를 찾을 수 없습니다.");
+      alert("대상 정보를 찾을 수 없습니다.");
+      return;
+    }
 
     try {
       await axios.post("/api/chatting/deleteMessage", null, {
-        params: { chatNo },
+        params: { chatNo,  targetNo },
         headers: { Authorization: `Bearer ${token}` },
       });
 
       // 프론트에서 상태 업데이트 (soft delete 처리)
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.chatNo === chatNo ? { ...msg, chatDelFl: "Y" } : msg
+          msg.chatNo === chatNo ? { ...msg, chatContentDelFl: "Y" } : msg
         )
       );
 
@@ -408,11 +451,7 @@ const Chat = () => {
     scrollToBottom();
   }, [selectedRoom]);
 
-
-
-
-
-console.log("채팅방 목록 : ", rooms);
+  console.log("채팅방 목록 : ", rooms);
   return (
     <div>
       <div>연결 상태: {isConnected ? "연결됨" : "연결 안 됨"}</div>
@@ -543,7 +582,7 @@ console.log("채팅방 목록 : ", rooms);
 
                   return (
                     <div
-                      key={msg.chatNo}
+                      key={msg.chatNo ? `${msg.chatRoomNo}-${msg.chatNo}` : `${msg.chatRoomNo}-temp-${Math.random()}`}
                       className={isMe ? styles.my : styles.other}
                     >
                       {!isMe && (
@@ -570,7 +609,7 @@ console.log("채팅방 목록 : ", rooms);
                               : styles.otherMessage
                           }`}
                         >
-                          {msg.chatDelFl === "Y" ? (
+                          {msg.chatContentDelFl === "Y" ? (
                             <i className={styles.deletedMessage}>
                               삭제된 메시지입니다.
                             </i>
@@ -590,7 +629,7 @@ console.log("채팅방 목록 : ", rooms);
                             </>
                           )}
                           <div className={styles.messageTimestamp}>
-                            {msg.chatSendDate}
+                            {formatChatTime(msg.chatSendDate)}
                           </div>
                         </div>
                       </div>

@@ -21,4 +21,5 @@ public class Message {
     private int targetNo;
     private int chatRoomNo;
     private String chatSendDate;
+    private String chatContentDelFl;
 }
