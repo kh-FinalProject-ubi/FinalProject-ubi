@@ -24,13 +24,11 @@
 		AND MEMBER_DEL_FL = 'N'
 	</select>
 
-	<!-- 이메일 중복 검사 -->
-	<select id="checkEmail" resultType="_int">
-		SELECT COUNT(*)
-		FROM "MEMBER"
-		WHERE MEMBER_EMAIL = #{memberEmail}
-		AND MEMBER_DEL_FL = 'N'
-	</select>
+	<select id="selectEmailCount" resultType="int">
+	SELECT COUNT(*) FROM MEMBER 
+	WHERE MEMBER_EMAIL = #{email} 
+	AND MEMBER_DEL_FL = 'N'
+</select>
 
 	<!-- 닉네임 중복 검사 -->
 	<select id="checkNickname">

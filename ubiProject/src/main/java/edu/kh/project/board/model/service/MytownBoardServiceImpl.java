@@ -312,7 +312,7 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 	                        memberMapper.extendSuspensionEnd(targetMemberNo, end);
 	                    }
 
-	                    // ▶ 회원 정지 발생 시 신고당한 게시글 및 댓글 삭제 처리
+	                    //회원 정지 발생 시 신고당한 게시글 및 댓글 삭제 처리
 	                    List<Integer> reportedComments = commentMapper.selectAllReportComments(targetMemberNo);
 	                    for (int commentNo : reportedComments) {
 	                        commentMapper.delete(commentNo);
@@ -406,7 +406,7 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 	        }
 
 	    } catch (Exception e) {
-	        System.out.println("⛔ reportBoard 트랜잭션 처리 중 예외 발생!");
+	        System.out.println("reportBoard 트랜잭션 처리 중 예외 발생!");
 	        e.printStackTrace();
 	        throw e;
 	    }

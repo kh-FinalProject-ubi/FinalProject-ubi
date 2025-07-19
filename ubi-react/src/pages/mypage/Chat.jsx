@@ -8,6 +8,7 @@ import ProfileImgUploader from "./ProfileImgUploader";
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import styles from "../../styles/mypage/Chat.module.css";
+import CommentModal from '../comment/CommentModal';
 
 
 
@@ -29,6 +30,11 @@ const Chat = () => {
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [currentTab, setCurrentTab] = useState("list");   // ← 추가
+  
+  const [showReportModal, setShowReportModal] = useState(false); // 효원씨 저예요
+  const [reportTargetMember, setReportTargetMember] = useState(null); // 채팅 신고를 위해 추가합니다:3
+  const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
+
 
   // ✅ 채팅방 목록 불러오기
   const showChat = async () => {
@@ -399,6 +405,12 @@ const Chat = () => {
     scrollToBottom();
   }, [selectedRoom]);
 
+  // 프사 신고하면 모달창
+  const handleProfileClick = (member, e) => {
+    setReportTargetMember(member);
+    setModalPosition({ x: e.clientX, y: e.clientY });
+    setShowReportModal(true);
+  };
 
 
 
@@ -547,11 +559,16 @@ console.log("채팅방 목록 : ", rooms);
                         }`}
                       >
                         {!isMe && (
-                          <img
-                            src={avatarSrc}
-                            alt=""
-                            className={styles.avatar}
-                          />
+                      <img
+                      src={avatarSrc}
+                      alt=""
+                      className={styles.avatar}
+                      onClick={(e) => handleProfileClick({
+                        memberNo: msg.senderNo,
+                        memberNickname: msg.senderNickname,
+                        memberImg: msg.senderProfile
+                      }, e)}
+                    />
                         )}
 
                         <div
@@ -609,6 +626,16 @@ console.log("채팅방 목록 : ", rooms);
           )}
         </div>
       </div>
+
+      {showReportModal && reportTargetMember && (
+  <CommentModal
+    member={reportTargetMember}
+    onClose={() => setShowReportModal(false)}
+    position={modalPosition}
+    token={token}
+  />
+)}
+
     </div>
   );
 

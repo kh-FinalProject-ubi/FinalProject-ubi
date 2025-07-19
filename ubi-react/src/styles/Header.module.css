@@ -1,4 +1,10 @@
+/* Header.module.css */
+
 .siteHeader {
+  position: sticky; /* ✅ 스티키 포지션 유지 */
+  top: 0;           /* ✅ 스크롤 시 화면 상단에 붙도록 위치 지정 */
+  z-index: 1000;    /* ✅ 다른 요소들 위에 표시되도록 z-index 추가 */
+  width: 100%;      /* ✅ 너비를 100%로 설정하여 레이아웃 안정성 확보 */
   background-color: #ffffff;
   border-bottom: 1px solid #e0e0e0;
 }
@@ -15,16 +21,15 @@
 }
 
 .topRow {
-  height: 64px; /* 상단 높이 지정 */
+  height: 64px;
 }
 
 .bottomRow {
-  height: 48px; /* 하단 높이 지정 */
+  height: 48px;
   border-top: 1px solid #e0e0e0;
 }
 
 /* --- 로고 및 사용자 정보 --- */
-/* JSX 구조에 맞게 선택자를 수정했습니다 */
 .topRow h2 a {
   display: flex;
   align-items: center;
@@ -89,21 +94,20 @@
   cursor: pointer;
 }
 
-/* 활성화된 메뉴 밑줄 스타일 */
 .navMenu a.active {
   color: #222;
-  font-weight: bold; /* 2px -> bold로 수정 */
+  font-weight: bold;
   position: relative;
 }
 
 .navMenu a.active::after {
   content: "";
   position: absolute;
-  bottom: -12px; /* 하단 경계선과 맞춤 */
+  bottom: -12px;
   left: 0;
   width: 100%;
   height: 2px;
-  background-color: #ffc107; /* 노란색 */
+  background-color: #ffc107;
 }
 
 .locationSelector {
@@ -111,7 +115,7 @@
   font-weight: 500;
 }
 
-/* 알람 모달 */
+/* --- 알림 관련 스타일 (생략) --- */
 .alertModal {
   position: fixed;
   top: 20%;
@@ -121,7 +125,7 @@
   border: 2px solid #ff8888;
   padding: 20px;
   border-radius: 10px;
-  z-index: 999;
+  z-index: 1001; /* ✅ 헤더보다 높게 설정 */
   box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
 }
 
@@ -142,13 +146,14 @@
   position: absolute;
   top: 40px;
   left: 50%;
+  transform: translateX(-50%); /* ✅ 드롭다운이 아이콘 중앙에 오도록 수정 */
   width: 250px;
   background: #fff;
   border: 1px solid #ddd;
   border-radius: 8px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  z-index: 100;
+  z-index: 1001;
 }
 
 .alert-empty {
@@ -187,4 +192,46 @@
   color: red;
   font-size: 0.75rem;
   margin-left: 4px;
+}
+
+
+/* --- 반응형 쿼리 --- */
+@media (max-width: 768px) {
+  .topRow,
+  .bottomRow {
+    flex-direction: column;   
+    align-items: flex-start;  
+    padding: 15px 5%;        
+    gap: 15px;               
+    height: auto;            
+  }
+
+  .headerRight {
+    flex-wrap: wrap;       
+    gap: 12px;               
+    /* width: 100%;                 
+  justify-content: flex-end; */  
+  /* 여기 주석 취소하면 오른쪽으로 감 */
+  }
+
+  .navMenu {
+    width: 100%;             
+    justify-content: space-between; 
+    flex-wrap: wrap;       
+    gap: 1rem;
+  }
+
+  .navMenu a {
+    font-size: 0.9rem;       
+  }
+  
+  /* ✅ 활성화된 메뉴 밑줄 위치 조정 */
+  .navMenu a.active::after {
+    bottom: -8px; 
+  }
+
+  .locationSelector {
+    margin-top: 0; 
+    align-self: flex-end;
+  }
 }

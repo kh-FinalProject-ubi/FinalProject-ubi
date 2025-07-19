@@ -190,21 +190,13 @@ public class MemberController {
 		int result = service.signup(inputMember); // 이 시점에 memberNo가 자동으로 세팅돼야 함
 
 		if (result > 0) {
-			// 4. JWT 토큰 생성
 			String token = jwtUtil.generateToken(inputMember);
-
-			// 5. 응답 데이터 구성
-			Map<String, Object> body = new HashMap<>();
-			body.put("token", token);
-			body.put("memberName", inputMember.getMemberNickname());
-			body.put("address", extractDistrict(inputMember.getMemberAddress()));
-			body.put("memberStandard", parseMemberStandard(inputMember.getMemberStandard()));
-			body.put("memberNo", inputMember.getMemberNo());
-			body.put("authority", inputMember.getAuthority());
-
-			return ResponseEntity.ok(body);
+			return ResponseEntity.ok(Map.of("success", true, "message", "회원가입 완료", "token", token, "memberName",
+					inputMember.getMemberNickname(), "address", extractDistrict(inputMember.getMemberAddress()),
+					"memberStandard", parseMemberStandard(inputMember.getMemberStandard()), "memberNo",
+					inputMember.getMemberNo(), "authority", inputMember.getAuthority()));
 		} else {
-			return ResponseEntity.badRequest().body(Map.of("message", "회원가입 실패"));
+			return ResponseEntity.badRequest().body(Map.of("success", false, "message", "회원가입 실패"));
 		}
 	}
 
@@ -245,6 +237,13 @@ public class MemberController {
 		boolean isAvailable = service.checkNicknameAvailable(memberNickname); // ✅ 오타 수정
 		return isAvailable ? ResponseEntity.ok().build()
 				: ResponseEntity.status(409).body(Map.of("message", "이미 사용 중인 닉네임입니다.")); // 메시지도 닉네임용으로 변경
+	}
+	
+	@GetMapping("/checkEmail")
+	public ResponseEntity<?> checkEmail(@RequestParam("email") String email) {
+	    boolean isAvailable = service.checkEmailAvailable(email);
+	    return isAvailable ? ResponseEntity.ok().build()
+	           : ResponseEntity.status(409).body(Map.of("message", "이미 가입된 이메일입니다."));
 	}
 
 	@PostMapping("/kakao-login")

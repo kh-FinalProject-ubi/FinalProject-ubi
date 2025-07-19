@@ -168,6 +168,14 @@ public class MemberServiceImpl implements MemberService {
 
 	}
 
+	// 중복 이메일 찾기
+	@Override
+	public boolean checkEmailAvailable(String email) {
+
+		int count = mapper.selectEmailCount(email);
+		return count == 0;
+	}
+
 	// 신고하고 신고 취소하는 메서드
 	@Override
 	public boolean reportMember(int targetMemberNo, int reporterMemberNo, String reason) {
@@ -213,9 +221,7 @@ public class MemberServiceImpl implements MemberService {
 					} else {
 						// 정지 기간 연장
 						LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
-						LocalDateTime end = originEnd.isAfter(now) 
-							    ? originEnd.plusDays(7)
-							    : now.plusDays(7); 
+						LocalDateTime end = originEnd.isAfter(now) ? originEnd.plusDays(7) : now.plusDays(7);
 						mapper.extendSuspensionEnd(targetMemberNo, end);
 					}
 				}
@@ -279,9 +285,7 @@ public class MemberServiceImpl implements MemberService {
 
 					} else {
 						LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
-						LocalDateTime extendedEnd = originEnd.isAfter(now) 
-							? originEnd.plusDays(7)
-							: now.plusDays(7);
+						LocalDateTime extendedEnd = originEnd.isAfter(now) ? originEnd.plusDays(7) : now.plusDays(7);
 						mapper.extendSuspensionEnd(targetMemberNo, extendedEnd);
 					}
 				}

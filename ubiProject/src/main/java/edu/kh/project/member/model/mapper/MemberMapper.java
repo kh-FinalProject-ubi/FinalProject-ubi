@@ -119,9 +119,6 @@ public interface MemberMapper {
 	// 비밀번호 업데이트
 	int updatePassword(@Param("memberId") String memberId, @Param("newEncPw") String newEncPw);
 
-
-	
-
 	String selectMemberRegionCity(int memberNo);
 
 	String selectMemberRegionDistrict(int memberNo);
@@ -130,13 +127,14 @@ public interface MemberMapper {
 
 	Integer existsByNameAndEmail(@Param("name") String name, @Param("email") String email);
 
-	Integer existsByNameAndMemberIdAndEmail(
-			@Param("name") String name,@Param("memberId") String memberId,@Param("email") String email);
+	Integer existsByNameAndMemberIdAndEmail(@Param("name") String name, @Param("memberId") String memberId,
+			@Param("email") String email);
 
 	String findPasswordById(String memberId);
 
 	// 연장 삭제
 	void extendSuspensionEnd(Map<String, Object> param);
 
+	int selectEmailCount(String email);
 
 }

@@ -54,5 +54,8 @@ public interface MemberService {
 	// 정지 시키기
 	boolean suspendMember(int targetMemberNo);
 
+	// 중복된 이메일 확인
+	boolean checkEmailAvailable(String email);
+
 
 }
