@@ -54,6 +54,12 @@ const Chat = () => {
     showChat();
   }, [memberNo]);
 
+  const selectedRoomRef = useRef(null);
+
+  useEffect(() => {
+    selectedRoomRef.current = selectedRoom;
+  }, [selectedRoom]);
+
   // 채팅내역 조회
   const fetchMessages = async (roomNo) => {
     try {
@@ -115,41 +121,44 @@ const Chat = () => {
 
       reconnectDelay: 5000,
 
-      debug: (msg) => console.log("[STOMP]", msg),
+      debug: (msg) => console.log("%c[STOMP]", "color:orange", msg),  // 보기 편하게
+      onUnhandledMessage: (frame) => console.warn("⚠️ Unhandled →", frame.body),
+      onUnhandledFrame:   (frame) => console.warn("⚠️ UnhandledFrame →", frame),
 
       onConnect: (frame) => {
         console.log("✅ STOMP 연결 성공!", frame);
         setIsConnected(true);
 
-        const destination = `/user/queue/chat/${memberNo}`;
+        const destination = `/queue/chat/${memberNo}`;
         console.log("📍 구독할 경로:", destination);
 
         client.subscribe(destination, (message) => {
           try {
             const body = JSON.parse(message.body);
+            const currentRoom = selectedRoomRef.current;   // 🔹 수정
 
-            if (selectedRoom && body.chatRoomNo === selectedRoom.chatRoomNo) {
+            if (currentRoom && body.chatRoomNo === currentRoom.chatRoomNo) {
               setMessages((prev) => {
                 const updated = [...prev];
 
-                const index = updated.findIndex(
+                const idx = updated.findIndex(
                   (msg) =>
                     msg.chatContent === body.chatContent &&
                     msg.senderNo === memberNo &&
-                    msg.chatNo && // 💡 보호 코드
+                    msg.chatNo &&
                     !msg.chatNo.toString().startsWith("srv_")
                 );
 
-                if (index !== -1) {
-                  updated[index] = {
-                    ...body,
-                    chatDelFl: 'N',
-                  };
+                if (idx !== -1) {
+                  updated[idx] = { ...body, chatDelFl: "N" };
                   return updated;
                 }
 
-                return [...prev, { ...body, chatDelFl: 'N' }];
+                return [...prev, { ...body, chatDelFl: "N" }];
               });
+            } else {
+              // 선택된 방이 아니면 읽지 않은 수 갱신용으로 목록만 새로고침
+              showChat();
             }
           } catch (err) {
             console.error("STOMP 메시지 처리 중 예외 발생:", err);
