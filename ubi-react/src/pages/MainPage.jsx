@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import useAuthStore from "../stores/useAuthStore";
 import WelfareMap from "../components/WelfareMap";
 import PopularBenefitCarousel from "../components/PopularBenefitCarousel";
 import PopularPostCarousel from "../components/PopularPostCarousel";
@@ -34,6 +35,15 @@ const MainPage = () => {
   // 치안지도 컨트롤 상태
   const [showHybrid, setShowHybrid] = useState(true);
   const [selectedCrime, setSelectedCrime] = useState("전체");
+
+  const { suspensionNotice, setAuth } = useAuthStore();
+
+  useEffect(() => {
+    if (suspensionNotice) {
+      alert(suspensionNotice);
+      setAuth({ suspensionNotice: null }); 
+    }
+  }, [suspensionNotice]);
 
   return (
     <main className={styles.mainWrapper}>

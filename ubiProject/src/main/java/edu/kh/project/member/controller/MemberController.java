@@ -112,20 +112,17 @@ public class MemberController {
 				// 3) 정지 기간 종료 후
 
 				if ("N".equals(notified)) {
-					// 알림 안 띄운 상태면 알림 띄우고 notified 업데이트
-					mapper.updateSuspensionNotified(loginMember.getMemberNo());
+				    mapper.updateSuspensionNotified(loginMember.getMemberNo());
+				    mapper.resetReportCount(loginMember.getMemberNo());
+				    mapper.updateReportStatusSuspension(loginMember.getMemberNo());
 
-					// 🔄 신고 횟수 초기화
-					mapper.resetReportCount(loginMember.getMemberNo());
-					mapper.updateReportStatusSuspension(loginMember.getMemberNo());
+				    // 🔥 세션 쓰지 말고 JWT 발급 + 알림 같이 넘기기
+				    Map<String, Object> body = createLoginResponseBody(loginMember);
+				    body.put("suspensionNotice", "회원님의 정지 기간이 종료되었습니다.");
 
-					session.setAttribute("loginMember", loginMember);
-
-					Map<String, Object> body = createLoginResponseBody(loginMember);
-					body.put("suspensionNotice", "회원님의 정지 기간이 종료되었습니다.");
-
-					return ResponseEntity.ok(body);
+				    return ResponseEntity.ok(body);
 				}
+
 			}
 		}
 

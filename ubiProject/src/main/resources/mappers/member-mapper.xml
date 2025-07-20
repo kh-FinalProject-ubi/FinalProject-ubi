@@ -25,10 +25,10 @@
 	</select>
 
 	<select id="selectEmailCount" resultType="int">
-	SELECT COUNT(*) FROM MEMBER 
-	WHERE MEMBER_EMAIL = #{email} 
-	AND MEMBER_DEL_FL = 'N'
-</select>
+		SELECT COUNT(*) FROM MEMBER
+		WHERE MEMBER_EMAIL = #{email}
+		AND MEMBER_DEL_FL = 'N'
+	</select>
 
 	<!-- 닉네임 중복 검사 -->
 	<select id="checkNickname">
@@ -249,8 +249,7 @@
 	<!-- 신고 횟수 0으로 초기화 -->
 	<update id="resetReportCount" parameterType="int">
 		UPDATE MEMBER
-		SET
-		REPORT_COUNT = REPORT_COUNT % 5
+		SET REPORT_COUNT = MOD(REPORT_COUNT, 5)
 		WHERE MEMBER_NO = #{memberNo}
 	</update>
 

@@ -188,7 +188,7 @@
 
 /* 3. 체크박스가 선택됐을 때(checked) 커스텀 체크박스 스타일 */
 .modalFooter input[type="checkbox"]:checked + span {
-  background-color: #fce500; /* ⭐ 배경을 노란색으로 변경 */
+  background-color: #fce500;
   border-color: #fce500;
 }
 
@@ -200,7 +200,7 @@
   line-height: 18px;
   font-size: 14px;
   font-weight: bold;
-  color: white; /* ⭐ 체크 표시를 하얀색으로 변경 */
+  color: white; 
   opacity: 0;
   transition: opacity 0.2s;
 }
