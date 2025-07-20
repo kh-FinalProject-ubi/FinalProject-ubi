@@ -158,14 +158,14 @@ const WelfareMap = () => {
         <aside className={styles.benefitPanel}>
           <div className={styles.tab}>지역</div>
           <div className={styles.content}>
-            <div className={styles.compareText}>
+            {/* <div className={styles.compareText}>
               기준 지역 (A): {normalizedDistrictA}
             </div>
             {districtB && (
               <div className={styles.compareText}>
                 비교 지역 (B): {districtB}
               </div>
-            )}
+            )} */}
             {districtB ? (
               <WelfareCompareView
                 districtA={normalizedDistrictA}

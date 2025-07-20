@@ -226,21 +226,21 @@ function MyTownBoardDetail() {
             {/* 좋아요 + 조회 + 신고 */}
             <div className={styles.statColumn}>
               {/* 신고 버튼만 위로 */}
-              {token && loginMemberNo !== writerNo && (
-                <button
-                  className={styles.reportBtn}
-                  onClick={() => handleReport(board.boardNo)}
-                >
-                  <img
-                    src={
-                      reportedByMe
-                        ? "/boardCancleReport.svg"
-                        : "/boardReport.svg"
-                    }
-                    alt="신고 아이콘"
-                  />
-                </button>
-              )}
+              {token && loginMemberNo !== writerNo && board.authority !== "2" && (
+  <button
+    className={styles.reportBtn}
+    onClick={() => handleReport(board.boardNo)}
+  >
+    <img
+      src={
+        reportedByMe
+          ? "/boardCancleReport.svg"
+          : "/boardReport.svg"
+      }
+      alt="신고 아이콘"
+    />
+  </button>
+)}
 
               <div className={styles.stats}>
                 <button onClick={handleLike} className={styles.likeButton}>

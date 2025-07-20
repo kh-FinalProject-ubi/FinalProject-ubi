@@ -338,3 +338,11 @@
   width: 28px;
   height: 28px;
 }
+
+@media (max-width: 768px) {
+  .container {
+    min-width: auto;
+    padding: 1rem 5%;
+  }
+
+}

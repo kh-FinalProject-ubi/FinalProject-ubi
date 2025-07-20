@@ -168,6 +168,14 @@ public class MemberServiceImpl implements MemberService {
 
 	}
 
+	// 중복 이메일 찾기
+	@Override
+	public boolean checkEmailAvailable(String email) {
+
+		int count = mapper.selectEmailCount(email);
+		return count == 0;
+	}
+
 	// 신고하고 신고 취소하는 메서드
 	@Override
 	public boolean reportMember(int targetMemberNo, int reporterMemberNo, String reason) {
@@ -175,7 +183,6 @@ public class MemberServiceImpl implements MemberService {
 		// 1. 기존 신고 상태 조회 (Y, N, null)
 		String status = mapper.checkReportStatus(targetMemberNo, reporterMemberNo);
 		System.out.println("신고 상태: " + status + " (null? " + (status == null) + ")");
-
 
 		// 2. 기존 멤버 신고 횟수 조회
 		int beforeCount = mapper.selectMemberReportCount(targetMemberNo);
@@ -193,7 +200,7 @@ public class MemberServiceImpl implements MemberService {
 
 				// 신고 5의 배수면 정지 신규 등록 또는 연장
 				if (afterCount % 5 == 0) {
-					LocalDateTime newEnd = now.plusMinutes(5); // 정지 기간 (임시 5분)
+					LocalDateTime newEnd = now.plusDays(7);
 					if (suspension == null) {
 						// 신규 정지 등록
 						mapper.insertSuspensionTest(targetMemberNo, now, newEnd);
@@ -214,8 +221,8 @@ public class MemberServiceImpl implements MemberService {
 					} else {
 						// 정지 기간 연장
 						LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
-						LocalDateTime extendedEnd = originEnd.isAfter(now) ? originEnd.plusMinutes(5) : newEnd;
-						mapper.extendSuspensionEnd(targetMemberNo, extendedEnd);
+						LocalDateTime end = originEnd.isAfter(now) ? originEnd.plusDays(7) : now.plusDays(7);
+						mapper.extendSuspensionEnd(targetMemberNo, end);
 					}
 				}
 
@@ -260,9 +267,9 @@ public class MemberServiceImpl implements MemberService {
 
 				// 신고 5의 배수면 정지 신규 등록 또는 연장
 				if (afterCount % 5 == 0) {
-					LocalDateTime end = now.plusMinutes(5);
+					LocalDateTime newEnd = now.plusDays(7);
 					if (suspension == null) {
-						mapper.insertSuspensionTest(targetMemberNo, now, end);
+						mapper.insertSuspensionTest(targetMemberNo, now, newEnd);
 
 						// ▶ 정지 발생 시 신고당한 댓글, 게시글 숨김 처리(삭제)
 						List<Integer> reportedComments = commentMapper.selectAllReportComments(targetMemberNo);
@@ -278,7 +285,7 @@ public class MemberServiceImpl implements MemberService {
 
 					} else {
 						LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
-						LocalDateTime extendedEnd = originEnd.isAfter(now) ? originEnd.plusMinutes(5) : end;
+						LocalDateTime extendedEnd = originEnd.isAfter(now) ? originEnd.plusDays(7) : now.plusDays(7);
 						mapper.extendSuspensionEnd(targetMemberNo, extendedEnd);
 					}
 				}
@@ -291,35 +298,132 @@ public class MemberServiceImpl implements MemberService {
 
 		return false;
 	}
-	
+
+	// 정지 회원 찾기
+	@Override
+	public Map<String, String> checkSuspension(int memberNo) {
+		Map<String, String> suspension = mapper.selectSuspension(memberNo);
+		if (suspension != null) {
+			suspension.put("suspended", "Y");
+		} else {
+			suspension = new HashMap<>();
+			suspension.put("suspended", "N");
+		}
+		return suspension;
+	}
+
+	// 정지 시키기
+	@Override
+	public boolean suspendMember(int targetMemberNo) {
+		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime newEndDate = now.plusDays(7); // 정지 기간: 7일
+
+		Map<String, String> suspension = mapper.selectSuspension(targetMemberNo);
+
+		try {
+			if (suspension == null) {
+				// ⭕ 정지 기록 없음 → 신규 정지 등록
+				mapper.insertSuspensionTest(targetMemberNo, now, newEndDate);
+
+				hideUserContents(targetMemberNo);
+
+				return true; // 정지됨
+			}
+
+			// 기존 정지 존재
+			LocalDateTime endDate = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
+
+			if (endDate.isAfter(now)) {
+				// ⭕ 정지 진행중 → 정지 해제
+				mapper.deleteSuspension(targetMemberNo);
+
+				recoverUserContents(targetMemberNo);
+
+				return false; // 해제됨
+			} else {
+				// ⭕ 정지 기간 지났음 → 재정지 (기간 갱신)
+				Map<String, Object> param = new HashMap<>();
+				param.put("targetMemberNo", targetMemberNo);
+				param.put("end", newEndDate);
+
+				mapper.extendSuspensionEnd(param);
+
+				hideUserContents(targetMemberNo);
+
+				return true; // 재정지됨
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
+	}
+
+	private void hideUserContents(int memberNo) {
+		List<Integer> comments = commentMapper.selectAllReportComments(memberNo);
+		for (int c : comments)
+			commentMapper.delete(c);
+
+		List<Integer> boards = boardMapper.selectAllReportBoards(memberNo);
+		for (int b : boards) {
+			int writerNo = boardMapper.selectBoardWriterNo(b);
+			boardMapper.deleteBoard(b, writerNo);
+		}
+	}
+
+	private void recoverUserContents(int memberNo) {
+		List<Integer> comments = commentMapper.selectAllReportComments(memberNo);
+		for (int c : comments)
+			commentMapper.recover(c);
+
+		List<Integer> boards = boardMapper.selectAllReportBoards(memberNo);
+		for (int b : boards) {
+			boardMapper.recoverBoard(b);
+		}
+	}
+
+	// 아이디 찾기 비밀번호 찾기
+
 	@Override
 	public String findIdByNameAndEmail(String name, String email) {
 		return mapper.selectMemberIdByNameAndEmail(name, email);
 	}
 
 	@Override
-	public boolean resetPassword(String memberId, String email, String newPassword) {
-		// 사용자 검증
-		int count = mapper.checkMemberIdAndEmail(memberId, email);
-		if (count == 0) return false;
+	public boolean resetPassword(String memberId, String newPassword) {
+		// 1. memberId로 DB에 저장된 현재 암호화된 비밀번호 조회
+		String currentEncPw = mapper.findPasswordById(memberId);
 
-		// 비밀번호 암호화 후 업데이트
-		String encPw = bcrypt.encode(newPassword);
-		return mapper.updatePassword(memberId, encPw) > 0;
+		// 2. 해당 아이디의 사용자가 없으면 실패(false) 반환
+		if (currentEncPw == null) {
+			return false;
+		}
+
+		// 3. 새 비밀번호가 기존 비밀번호와 동일한지 비교
+		if (bcrypt.matches(newPassword, currentEncPw)) {
+			// 동일하면 변경 불가 -> 실패(false) 반환
+			return false;
+		}
+
+		// 4. 새 비밀번호를 암호화하여 DB 업데이트
+		String newEncPw = bcrypt.encode(newPassword);
+		int updateResult = mapper.updatePassword(memberId, newEncPw);
+
+		return updateResult > 0;
 	}
 
 	private String generateTempPassword() {
-	    return UUID.randomUUID().toString().substring(0, 10);
+		return UUID.randomUUID().toString().substring(0, 10);
 	}
-	
+
 	@Override
 	public Integer existsByNameAndEmail(String name, String email) {
 		return mapper.existsByNameAndEmail(name, email);
 	}
-	
+
 	@Override
 	public Integer existsByNameAndMemberIdAndEmail(String name, String memberId, String email) {
-		
+
 		return mapper.existsByNameAndMemberIdAndEmail(name, memberId, email);
 	}
 }

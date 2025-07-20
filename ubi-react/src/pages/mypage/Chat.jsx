@@ -9,6 +9,7 @@ import ProfileImgUploader from "./ProfileImgUploader";
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import styles from "../../styles/mypage/Chat.module.css";
+import CommentModal from '../comment/CommentModal';
 
 
 
@@ -43,6 +44,11 @@ const Chat = () => {
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [currentTab, setCurrentTab] = useState("list");   // ← 추가
+  
+  const [showReportModal, setShowReportModal] = useState(false); // 효원씨 저예요
+  const [reportTargetMember, setReportTargetMember] = useState(null); // 채팅 신고를 위해 추가합니다:3
+  const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
+
 
   const {
     rooms,             // 채팅방 목록 (전역)
@@ -453,6 +459,19 @@ const Chat = () => {
   }, [selectedRoom]);
 
   console.log("채팅방 목록 : ", rooms);
+
+  // 프사 신고하면 모달창
+  const handleProfileClick = (member, e) => {
+    setReportTargetMember(member);
+    setModalPosition({ x: e.clientX, y: e.clientY });
+    setShowReportModal(true);
+  };
+
+
+
+
+console.log("채팅방 목록 : ", rooms);
+
   return (
     <div>
       <div>연결 상태: {isConnected ? "연결됨" : "연결 안 됨"}</div>
@@ -600,11 +619,16 @@ const Chat = () => {
                         }`}
                       >
                         {!isMe && (
-                          <img
-                            src={avatarSrc}
-                            alt=""
-                            className={styles.avatar}
-                          />
+                      <img
+                      src={avatarSrc}
+                      alt=""
+                      className={styles.avatar}
+                      onClick={(e) => handleProfileClick({
+                        memberNo: msg.senderNo,
+                        memberNickname: msg.senderNickname,
+                        memberImg: msg.senderProfile
+                      }, e)}
+                    />
                         )}
 
                         <div
@@ -662,6 +686,16 @@ const Chat = () => {
           )}
         </div>
       </div>
+
+      {showReportModal && reportTargetMember && (
+  <CommentModal
+    member={reportTargetMember}
+    onClose={() => setShowReportModal(false)}
+    position={modalPosition}
+    token={token}
+  />
+)}
+
     </div>
   );
 
