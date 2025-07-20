@@ -618,12 +618,6 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
     setMode("reset-pw");
   };
 
-  useEffect(() => {
-    if (suspensionNotice) {
-      setShowNotice(true);
-    }
-  }, [suspensionNotice]);
-
   return (
     <>
       <div className={styles.formContent}>
