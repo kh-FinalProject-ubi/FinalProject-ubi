@@ -69,6 +69,7 @@ public class ChattigController {
 		    int memberNo = memberNoLong.intValue();
 		    
 		    List<ChattingRoom> roomList = service.selectRoomList(memberNo);
+		    System.out.println("채팅목록 : " + roomList);
 
 		    if (roomList != null) {
 		        return ResponseEntity.ok(roomList); // 🔹 새 경로 반환
@@ -221,6 +222,7 @@ public class ChattigController {
     		map.put("chatRoomNo", chatRoomNo);
     		
     		List<Message> message = service.selectMessageList(map);
+    		System.out.println("메시지 조회 결과: " + message);
     		
     		if (message != null) {
  		        return ResponseEntity.ok(message); // 새 경로 반환

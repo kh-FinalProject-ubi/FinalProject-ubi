@@ -870,7 +870,9 @@ const Profile = () => {
                 </thead>
                 <tbody>
                   {pagedLike.map((l) => (
-                    <tr key={l.boardNo}>
+                    <tr key={l.boardNo}
+                        onClick={() => navigate(`/mytownBoard/${l.boardNo}`)}
+                    >
                       <td>{l.postType}</td>
                       <td>{l.hashtags}</td>
                       <td>{l.boardTitle}</td>
@@ -909,7 +911,9 @@ const Profile = () => {
                 </thead>
                 <tbody>
                   {like.map((l) => (
-                    <tr key={l.commentNo}>
+                    <tr key={l.commentNo}
+                        onClick={() => navigate(`/mytownBoard/${l.boardNo}`)}
+                    >
                       <td>{l.postType}</td>
                       <td>{l.boardTitle}</td>
                       <td>{l.commentContent}</td>

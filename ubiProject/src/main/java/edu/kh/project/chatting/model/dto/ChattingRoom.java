@@ -16,6 +16,7 @@ import lombok.ToString;
 public class ChattingRoom {
 	private int chatRoomNo; // 채팅방 번호
     private String lastMessage; // 채팅방의 마지막 메세지
+    private String lastMessageDelFl; // 채팅방의 마지막 메세지
     private String sendTime; // 마지막 메세지 보낸시간
     private int participant; // 채팅방의 대상자 회원 번호
     private String targetNickname; // 채팅방의 대상자 닉네임
