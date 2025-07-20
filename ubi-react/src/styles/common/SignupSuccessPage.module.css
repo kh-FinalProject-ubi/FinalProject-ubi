@@ -1,0 +1,98 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 70vh;
+  padding: 2rem;
+  font-family: "Pretendard", sans-serif;
+}
+
+/* 전체를 감싸는 메인 박스 */
+.mainBox {
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+}
+
+/* 왼쪽 환영 이미지 영역 */
+.imageBox {
+  flex: 1;
+  display: none; /* 모바일에서는 숨김 */
+}
+
+.imageBox img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 오른쪽 완료 메시지 영역 */
+.completeBox {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+  text-align: center;
+}
+
+.completeBox h3 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1a202c;
+  margin-bottom: 0.5rem;
+}
+
+.completeBox p {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 2rem;
+}
+
+/* 로그인 버튼 */
+.loginButton {
+  width: 100%;
+  max-width: 300px; /* 버튼 최대 너비 설정 */
+  padding: 14px;
+  border: none;
+  border-radius: 1000px;
+  background-color: #fee500; /* 카카오 노란색과 유사 */
+  color: #191919;
+  font-size: 1.1rem;
+  font-weight: 200;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+
+/* 완료 캐릭터 이미지 */
+.characterImage {
+  width: 250px;  /* 이미지 크기 조정 */
+  height: 250px;
+  margin-top: 2rem;
+}
+
+/* 데스크탑 화면 (768px 이상) */
+@media (min-width: 768px) {
+  .imageBox {
+    display: block; /* 데스크탑에서만 이미지 표시 */
+  }
+}
+
+/* 모바일 화면 (768px 미만) */
+@media (max-width: 767px) {
+    .mainBox {
+        flex-direction: column;
+        box-shadow: none;
+        border-radius: 0;
+    }
+    .completeBox {
+        padding: 2rem 1.5rem;
+    }
+}

@@ -25,6 +25,79 @@
   flex: 1;
   display: none; /* 모바일에서는 기본적으로 숨김 */
 }
+
+.radioRow {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.optionRow {
+  display: flex;
+  gap: 20px;
+}
+
+.checkBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.toggleSwitch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggleSwitch input {
+  display: none;
+}
+
+.slider {
+  width: 50px;
+  height: 26px;
+  background-color: #ccc;
+  border-radius: 1000px;
+  position: relative;
+  transition: background-color 0.3s;
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  left: 2px;
+  top: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+/* 체크됐을 때 */
+.toggleSwitch input:checked + .slider {
+  background-color: #ffe56d;
+}
+
+.toggleSwitch input:checked + .slider::before {
+  transform: translateX(24px);
+}
+
+/* 텍스트 라벨 */
+.labelText {
+  margin-left: 10px;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.disabledToggle {
+  margin-left: 10px;
+}
+
+
 /* 768px 이상 화면에서만 이미지 표시 */
 @media (min-width: 768px) {
   .imageBox {

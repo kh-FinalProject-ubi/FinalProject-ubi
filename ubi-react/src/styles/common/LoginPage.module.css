@@ -125,7 +125,11 @@
 
 .successMessage {
   color: #38a169;
+  font-size: 0.85rem;  /* 크기도 통일 */
+  height: 18px;
+  line-height: 18px;
 }
+
 
 .hiddenMessage {
   visibility: hidden;
@@ -133,16 +137,15 @@
 
 /* 타이머 */
 .timer {
-  display: block;
-  margin-top: 5px;
   font-size: 0.85rem;
   color: #e53e3e;
+  margin-left: 370px; /* 오른쪽 끝으로 밀어냄 */
 }
-
 /* 인라인 그룹 */
 .inputGroup {
   display: flex;
   align-items: center;
+  justify-content: space-between; /* 왼쪽-오른쪽 배치 */
 }
 
 .inputGroup input {
