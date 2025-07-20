@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import useAuthStore from "../stores/useAuthStore";
 import useModalStore from "../stores/useModalStore";
 import styles from "../styles/common/LoginPage.module.css";
-import SuspensionNotice from "./common/SuspensionNotice.JSX";
+
 
 // 이메일 유효성 검사
 const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -40,7 +40,7 @@ const LoginPage = () => {
 
   return (
     <div className={styles.loginPageContainer}>
-      {showNotice && (
+      {/* {showNotice && (
         <SuspensionNotice
           message={suspensionNotice || alertMessage}
           onClose={() => {
@@ -49,7 +49,7 @@ const LoginPage = () => {
             setShowNotice(false);
           }}
         />
-      )}
+      )} */}
 
       <main className={styles.loginMainContent}>
         <div className={styles.imageBox}>
