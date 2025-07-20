@@ -173,16 +173,16 @@ public class CommentServiceImpl implements CommentService {
 					Map<String, String> suspension = memberMapper.selectSuspension(targetMemberNo);
 
 					if (memberReportCount % 5 == 0) {
-						LocalDateTime now = LocalDateTime.now();
+						 LocalDateTime now = LocalDateTime.now();
 						if (suspension == null) {
 							// 신규 정지 등록 (5의 배수일 때)
-							LocalDateTime end = now.plusMinutes(5);
+							LocalDateTime end = now.plusDays(7);
 							memberMapper.insertSuspensionTest(targetMemberNo, now, end);
 						} else {
 							// 정지 중이면 정지 기간 연장
 							LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
-							LocalDateTime end = originEnd.plusMinutes(5); // 연장 기간 설정
-							memberMapper.extendSuspensionEnd(targetMemberNo, end);
+							 LocalDateTime end = now.plusDays(7);
+						        memberMapper.insertSuspensionTest(targetMemberNo, now, end);
 						}
 
 						// ▶ 회원 정지 발생 시 신고당한 댓글 삭제 처리
@@ -258,7 +258,7 @@ public class CommentServiceImpl implements CommentService {
 							memberMapper.insertSuspensionTest(targetMemberNo, now, end);
 						} else {
 							LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
-							LocalDateTime end = originEnd.plusMinutes(5);
+							LocalDateTime end = originEnd.plusDays(7);
 							memberMapper.extendSuspensionEnd(targetMemberNo, end);
 						}
 

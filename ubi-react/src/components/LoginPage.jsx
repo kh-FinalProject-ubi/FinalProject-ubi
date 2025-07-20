@@ -228,33 +228,35 @@ const FindIdForm = ({ setMode }) => {
     let newErrors = {};
     if (!name) newErrors.name = "이름을 입력해주세요.";
     if (!email) newErrors.email = "이메일을 입력해주세요.";
-    else if (!validateEmail(email))
-      newErrors.email = "이메일 형식이 올바르지 않습니다.";
-
+    else if (!validateEmail(email)) {
+      alert("이메일 형식이 올바르지 않습니다.");
+      setEmail(""); // 이메일 입력칸 비우기
+      return;
+    }
+  
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-
+  
     setErrors({});
     setIsLoading(true);
-
+  
     try {
       const res = await fetch(`/api/member/sendCode`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: "id", // 백엔드에서 이걸로 분기
+          type: "id",
           name,
           email,
         }),
       });
-
+  
       if (res.ok) {
         setIsCodeSent(true);
         setTimer(300);
         setIsTimerActive(true);
-        setErrors({});
       } else {
         const errorData = await res.json();
         alert(errorData.message || "인증번호 전송에 실패했습니다.");
@@ -501,40 +503,39 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
     if (!name) newErrors.name = "이름을 입력해주세요.";
     if (!memberId) newErrors.memberId = "아이디를 입력해주세요.";
     if (!email) newErrors.email = "이메일을 입력해주세요.";
-    else if (!validateEmail(email))
-      newErrors.email = "이메일 형식이 올바르지 않습니다.";
-
+    else if (!validateEmail(email)) {
+      alert("이메일 형식이 올바르지 않습니다.");
+      setEmail(""); // 이메일 입력칸 비우기
+      return;
+    }
+  
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
+  
     setErrors({});
     setIsLoading(true);
+  
     try {
-      // POST 방식으로 변경
       const res = await fetch("/api/member/sendCode", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: name,
-          memberId: memberId,
-          email: email,
-          type: "pw", // 비밀번호 찾기 타입
+          name,
+          memberId,
+          email,
+          type: "pw",
         }),
       });
-
+  
       if (res.ok) {
         setIsCodeSent(true);
         setTimer(300);
         setIsTimerActive(true);
       } else {
         const errorData = await res.json();
-        alert(
-          errorData.message ||
-            "인증번호 전송에 실패했습니다. 입력 정보를 확인해주세요."
-        );
+        alert(errorData.message || "인증번호 전송에 실패했습니다.");
         setName("");
         setMemberId("");
         setEmail("");
@@ -646,36 +647,38 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
         </div>
         {isCodeSent && (
           <>
-            <div className={styles.inputWrapper}>
-              <div className={styles.inputGroup}>
-                <div className={styles.inlineInputs}>
-                  <input
-                    placeholder="인증번호 입력"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    disabled={isCodeVerified}
-                    style={{ width: "310px", marginTop: "20px" }}
-                  />
-                  {!isCodeVerified && (
-                    <button
-                      onClick={handleInlineVerify}
-                      className={styles.authBtn}
-                    >
-                      인증확인
-                    </button>
-                  )}
-                  {isTimerActive && (
-                    <span className={styles.timer}>{formatTime(timer)}</span>
-                  )}
-                </div>
-                {errors.code && (
-                  <span className={styles.errorMessage}>{errors.code}</span>
-                )}
-                {successMsg && (
-                  <span className={styles.successMessage}>{successMsg}</span>
-                )}
-              </div>
-            </div>
+           <div className={styles.inputWrapper}>
+  <div className={styles.inputGroup} style={{ marginTop: "10px" }}>
+    <input
+      placeholder="인증번호 입력"
+      value={code}
+      onChange={(e) => setCode(e.target.value)}
+      disabled={isCodeVerified}
+      className={
+        isCodeVerified ? styles.authInputFull : styles.authInput
+      }
+    />
+    {!isCodeVerified && (
+      <>
+        <button onClick={handleInlineVerify} className={styles.authBtn}>
+          인증확인
+        </button>
+      </>
+    )}
+  </div>
+
+    {isTimerActive && (
+      <span className={styles.timer}>{formatTime(timer)}</span>
+    )}
+  <div className={styles.messageWrapper}>
+    {errors.code && (
+      <span className={styles.errorMessage}>{errors.code}</span>
+    )}
+    {successMsg && (
+      <span className={styles.successMessage}>{successMsg}</span>
+    )}
+  </div>
+</div>
             <button
               onClick={handleFinalVerify}
               className={styles.confirmBtn}
@@ -750,7 +753,7 @@ const ResetPwForm = ({ setMode, memberId, email }) => {
       if (res.ok) {
         setSubMode("complete");
       } else {
-        alert("비밀번호 재설정 중 오류가 발생했습니다.");
+        alert("비밀번호를 변경할 수 없습니다. 입력 정보를 확인해 주세요.");
       }
       setNewPw("");
       setNewPwCheck("");

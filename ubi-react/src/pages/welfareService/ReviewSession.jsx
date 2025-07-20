@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import styles from "../../styles/board/Review.module.css";
 export default function WelfareReviewSection({ apiServiceId }) {
   const [reviews, setReviews] = useState([]);
   const [current, setCurrent] = useState(0);
@@ -28,9 +28,11 @@ export default function WelfareReviewSection({ apiServiceId }) {
 
   if (!reviews || reviews.length === 0) {
     return (
-      <section className="facility-section">
+      <section className={styles.carouselWrapper}>
         <h3>📰 이 복지혜택과 관련된 게시글</h3>
-        <p style={{ color: "#666", fontStyle: "italic" }}>관련 후기가 없습니다.</p>
+        <p style={{ color: "#666", fontStyle: "italic" }}>
+          관련 후기가 없습니다.
+        </p>
       </section>
     );
   }
@@ -49,7 +51,7 @@ export default function WelfareReviewSection({ apiServiceId }) {
   const imageListSafe = Array.isArray(imageList) ? imageList : [];
 
   const extractFirstImage = (content) => {
-    const match = content?.match(/<img[^>]+src="([^"]+)"[^>]*>/i);
+    const match = content?.match(/<img[^>]+src=\"([^\"]+)\"[^>]*>/i);
     return match?.[1] || null;
   };
 
@@ -60,107 +62,114 @@ export default function WelfareReviewSection({ apiServiceId }) {
   };
 
   return (
-    <section className="facility-section">
-      <h3>📰 이 복지혜택과 관련된 게시글</h3>
-      <p style={{ marginBottom: "10px", fontWeight: "bold" }}>
-        총 {reviews.length}건의 후기
-      </p>
+    <section className={styles.carouselWrapper}>
+      <div className={styles.reviewHeaderRow}>
+        <span className={styles.commentTitle}>후기</span>
+        <span className={styles.commentCount}>({reviews.length})</span>
+      </div>
+      <hr />
 
-      <div className="review-carousel">
+      <div className={styles.reviewCarousel}>
         {reviews.length > 1 && (
-          <button className="carousel-arrow left" onClick={() => setCurrent((prev) => (prev - 1 + reviews.length) % reviews.length)}>
-            ◀
+          <button
+            className={`${styles.carouselArrow} ${styles.left}`}
+            onClick={() =>
+              setCurrent((prev) => (prev - 1 + reviews.length) % reviews.length)
+            }
+          >
+            <img
+              src="/icons/LeftArrow.svg"
+              alt="이전"
+              className={styles.arrowIcon}
+            />
           </button>
         )}
 
-        <div className="review-card" onClick={goToDetail}>
-          <div className="review-header">
+        <div className={styles.reviewCard} onClick={goToDetail}>
+          <div className={styles.reviewRow}>
             <img
               src={profileImage || "/default-profile.png"}
               alt="프로필"
-              className="profile-img"
+              className={styles.profileImg}
+              onError={(e) => (e.currentTarget.src = "/default-profile.png")}
             />
-            <div className="review-info">
-              <strong>{memberNickname}</strong>
-              <span className="review-date">
-                {new Date(boardDate).toLocaleDateString()}
-              </span>
-            </div>
-            <div className="review-star">⭐ {starCount}</div>
-          </div>
 
-          <h4 className="review-title">{boardTitle}</h4>
-          <p
-            className="review-content"
-            dangerouslySetInnerHTML={{
-              __html: boardContent.length > 100
-                ? boardContent.slice(0, 100) + "..."
-                : boardContent,
-            }}
-          />
-
-          <div
-            className="review-images"
-            style={{
-              display: "flex",
-              gap: "8px",
-              marginTop: "10px",
-              flexWrap: "nowrap",
-              alignItems: "center",
-            }}
-          >
-            {imageListSafe.length > 0 &&
-              imageListSafe.slice(0, 3).map((img, i) => (
-                <img
-                  key={i}
-                  src={img.imagePath}
-                  alt={`첨부 이미지 ${i + 1}`}
-                  style={{
-                    width: "80px",
-                    height: "80px",
-                    objectFit: "cover",
-                    borderRadius: "6px",
-                  }}
-                />
-              ))}
-
-            {imageListSafe.length === 0 && firstInlineImage && (
-              <img
-                src={firstInlineImage}
-                alt="본문 이미지"
-                style={{
-                  width: "80px",
-                  height: "80px",
-                  objectFit: "cover",
-                  borderRadius: "6px",
-                }}
-              />
-            )}
-
-            {imageListSafe.length > 3 && (
-              <div
-                style={{
-                  backgroundColor: "rgba(0, 0, 0, 0.6)",
-                  color: "white",
-                  padding: "6px 10px",
-                  borderRadius: "6px",
-                  fontSize: "14px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "80px",
-                  minWidth: "50px",
-                }}
-              >
-                +{imageListSafe.length - 3}
+            <div className={styles.reviewCol}>
+              <div className={styles.reviewTop}>
+                <h4 className={styles.reviewTitle}>{boardTitle}</h4>
+                <div className={styles.reviewStar}>
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <img
+                      key={i}
+                      src={
+                        i <= starCount
+                          ? "/icons/boardstar.svg"
+                          : "/icons/boardnostar.svg"
+                      }
+                      alt="별점"
+                      className={styles.iconStar}
+                    />
+                  ))}
+                </div>
               </div>
-            )}
+
+              <div className={styles.nickname}>{memberNickname}</div>
+
+              <div className={styles.reviewDate}>
+                {new Date(boardDate).toLocaleDateString()}{" "}
+                {new Date(boardDate).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </div>
+
+              <div className={styles.reviewTextOnly}>
+                {boardContent.replace(/<[^>]*>?/gm, "").slice(0, 100)}...
+              </div>
+
+              <div className={styles.inlineImages}>
+                <div className={styles.imageRow}>
+                  {imageListSafe.slice(0, 4).map((src, idx) => (
+                    <img
+                      key={idx}
+                      src={src.imagePath}
+                      alt={`본문 이미지 ${idx + 1}`}
+                      onError={(e) =>
+                        (e.currentTarget.src = "/default-profile.png")
+                      }
+                      className={styles.inlineImage}
+                    />
+                  ))}
+
+                  {imageListSafe.length === 0 && firstInlineImage && (
+                    <img
+                      src={firstInlineImage}
+                      alt="본문 이미지"
+                      className={styles.inlineImage}
+                    />
+                  )}
+
+                  {imageListSafe.length > 4 && (
+                    <div className={styles.moreImageCircle}>
+                      +{imageListSafe.length - 4}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         {reviews.length > 1 && (
-          <button className="carousel-arrow right" onClick={() => setCurrent((prev) => (prev + 1) % reviews.length)}>
-            ▶
+          <button
+            className={`${styles.carouselArrow} ${styles.right}`}
+            onClick={() => setCurrent((prev) => (prev + 1) % reviews.length)}
+          >
+            <img
+              src="/icons/RightArrow.svg"
+              alt="다음"
+              className={styles.arrowIcon}
+            />
           </button>
         )}
       </div>

@@ -28,6 +28,7 @@ import FacilityJobDetailPage from "./pages/welfareService/FacilityJobDetailPage"
 import LoginPage from "./components/LoginPage";
 import React, { useEffect } from "react";
 import useAuthStore from "./stores/useAuthStore";
+import SignupSuccessPage from "./pages/SignupSuccessPage";
 
 initAuthFromToken(); // ✅ 렌더 이전에 동기적으로 실행!
 function App() {
@@ -69,6 +70,7 @@ function App() {
             <Route path="withdraw" element={<Withdraw />} />
           </Route>
           <Route path="signup" element={<Signup />} />
+          <Route path="/signup/success" element={<SignupSuccessPage />} />
           <Route path="mytownBoard" element={<MyTownBoard />} />
           <Route path="localBenefits" element={<LocalBenefitSection />} />
           <Route

@@ -1,17 +1,39 @@
+.carouselWrapper {
+  font-family: "Pretendard", sans-serif;
+}
+
+.reviewHeaderRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.commentTitle {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.commentCount {
+  font-size: 14px;
+  color: gray;
+}
+
 .reviewCarousel {
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
   gap: 16px;
+  position: relative;
+  /* ✅ 너비 확장 */
+  width: 100%;
+  max-width: 1200px; /* 필요 시 더 키워도 됨 */
 }
 
 .carouselArrow {
   background: none;
   border: none;
   cursor: pointer;
-  position: relative;
-  top: 0;
 }
 
 .arrowIcon {
@@ -20,38 +42,51 @@
 }
 
 .reviewCard {
-  width: 900px;
-  height: 210px;
-  padding: 16px;
+  width: 960px;
+  padding: 20px;
   background-color: white;
   border-radius: 12px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  gap: 12px;
 }
 
-.reviewTopRow {
+.reviewRow {
+  display: flex;
+  gap: 40px;
+}
+
+.profileImg {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  margin-top: 6px; /* ✅ 상단 정렬 맞춤 */
+}
+
+.reviewCol {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reviewTop {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.profileWrapper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.reviewInfo {
-  display: flex;
-  flex-direction: column;
-}
-
 .reviewTitle {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: bold;
-  margin: 2px 0 0 0;
+  margin: 0;
   color: #222;
+  width: 620px; /* ✅ 1. 제목 너비 고정 */
+  white-space: nowrap; /* ✅ 2. 줄바꿈 방지 */
+  overflow: hidden;
+  text-overflow: ellipsis; /* ✅ 2. 줄바뀌기 직전 ... 처리 */
 }
 
 .reviewStar {
@@ -60,31 +95,63 @@
 }
 
 .iconStar {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
 }
 
-.profileImg {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
+.nickname {
+  font-size: 14px;
+  color: #444;
 }
 
-.reviewContentWrap {
-  margin-top: 10px;
+.reviewDate {
+  font-size: 13px;
+  color: #777;
+}
+
+.reviewTextOnly {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+  min-height: 42px;
 }
 
 .inlineImages {
   display: flex;
-  gap: 8px;
-  margin-top: 8px;
-  flex-wrap: wrap;
+  margin-top: 10px;
+  min-height: 80px; /* ✅ 이미지 없어도 공간 확보 */
+}
+
+.imageRow {
+  display: flex;
+  align-items: center;
 }
 
 .inlineImage {
-  width: 70px;
-  height: 70px;
+  width: 90px;
+  height: 80px;
   object-fit: cover;
   border-radius: 6px;
+  margin-right: 6px; /* ✅ 이미지 간격 좁게 */
+}
+
+/* ✅ 마지막 이미지에는 오른쪽 margin 제거 */
+.inlineImage:last-of-type {
+  margin-right: 0;
+}
+
+/* ✅ 더보기 아이콘과 마지막 이미지 사이 넓은 간격 */
+.moreImageCircle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #ffe066;
+  color: #000;
+  font-weight: bold;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 42px; /* ✅ 이 간격만 넓게 */
+  flex-shrink: 0;
 }
