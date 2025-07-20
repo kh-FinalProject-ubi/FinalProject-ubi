@@ -228,12 +228,6 @@ const WelfareDetailPage = () => {
           )}
         </p>
       )}
-
-    <WelfareReviewSection apiServiceId={data.apiServiceId} />
-
-
-
-      
     </div>
   );
 };
