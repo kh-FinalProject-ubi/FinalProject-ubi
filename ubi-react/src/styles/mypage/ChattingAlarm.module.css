@@ -1,0 +1,51 @@
+/* 모달 스타일 추가 */
+.chatAlertWrapper {
+  position: relative;
+  display: inline-block;        /* 헤더에서 인라인 배치 */
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;                    /* 버튼 바로 아래 */
+  right: 0;                     /* 우측 맞춤 */
+  margin-top: 8px;              /* 살짝 띄우기 */
+  width: 260px;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  z-index: 999;                 /* 지도(등)보다 위로 */
+}
+
+.ddTitle {
+  margin: 12px 16px 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.ddEmpty {
+  padding: 20px;
+  text-align: center;
+  color: #888;
+  font-size: 14px;
+}
+
+.noticeItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.noticeItem:hover { background: #fafafa; }
+
+.noticeCnt {
+  background: #ff4d4f;
+  color: #fff;
+  border-radius: 12px;
+  padding: 0 6px;
+  font-size: 12px;
+}
