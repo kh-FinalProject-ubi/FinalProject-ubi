@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import useAuthStore from "../stores/useAuthStore";
+import useModalStore from "../stores/useModalStore";
 import styles from "../styles/common/LoginPage.module.css";
+import SuspensionNotice from "./common/SuspensionNotice.JSX";
 
 // 이메일 유효성 검사
 const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -22,10 +24,33 @@ const LoginPage = () => {
   const mode = searchParams.get("mode") || "login";
   const [resetInfo, setResetInfo] = useState({ memberId: "", email: "" });
 
+  const { suspensionNotice, setSuspensionNotice } = useAuthStore();
+  const { alertMessage, setAlertMessage, clearAlertMessage } = useModalStore(); // ✅ 추가
+
+  const [showNotice, setShowNotice] = useState(false);
+
   const goToMode = (targetMode) => setSearchParams({ mode: targetMode });
+
+
+  useEffect(() => {
+    if (alertMessage) {
+      setShowNotice(true);
+    }
+  }, [alertMessage]);
 
   return (
     <div className={styles.loginPageContainer}>
+      {showNotice && (
+        <SuspensionNotice
+          message={suspensionNotice || alertMessage}
+          onClose={() => {
+            setSuspensionNotice(null);
+            clearAlertMessage(); // ✅ alertMessage도 초기화
+            setShowNotice(false);
+          }}
+        />
+      )}
+
       <main className={styles.loginMainContent}>
         <div className={styles.imageBox}>
           <img src="/default-thumbnail.png" alt="login" />
@@ -59,7 +84,7 @@ const LoginForm = ({ setMode }) => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [saveId, setSaveId] = useState(false);
-  const { setAuth } = useAuthStore();
+  const { setAuth, setSuspensionNotice } = useAuthStore();
   const navigate = useNavigate();
 
   // 이미 기존의 아이디 저장된 거 찾아오기
@@ -73,8 +98,10 @@ const LoginForm = ({ setMode }) => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!memberId || !password)
-      return alert("아이디와 비밀번호를 입력해주세요.");
+    if (!memberId || !password) {
+      alert("아이디와 비밀번호를 입력해주세요.");
+      return;
+    }
     setIsLoading(true);
     try {
       const res = await fetch("/api/member/login", {
@@ -84,16 +111,17 @@ const LoginForm = ({ setMode }) => {
       });
       const data = await res.json();
       if (res.ok) {
-        // 로그인 성공 시 '아이디 저장' 옵션에 따라 localStorage에 저장/삭제
-        if (saveId) {
-          localStorage.setItem("savedMemberId", memberId);
-        } else {
-          localStorage.removeItem("savedMemberId");
-        }
+        if (saveId) localStorage.setItem("savedMemberId", memberId);
+        else localStorage.removeItem("savedMemberId");
+
         setAuth(data);
         navigate("/");
       } else {
-        alert(data.message || "로그인 실패");
+        if (data.suspensionMessage) {
+          setSuspensionNotice(data.suspensionMessage); // 정지 메시지 모달로 띄우기
+        } else {
+          alert(data.message || "로그인 실패");
+        }
         setPassword("");
       }
     } catch {
@@ -589,6 +617,12 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
     setResetInfo({ memberId, email });
     setMode("reset-pw");
   };
+
+  useEffect(() => {
+    if (suspensionNotice) {
+      setShowNotice(true);
+    }
+  }, [suspensionNotice]);
 
   return (
     <>

@@ -4,7 +4,7 @@ import { persist } from "zustand/middleware";
 const useAuthStore = create(
   persist(
     (set) => ({
-      // 초기 상태 정의
+      // 초기 상태
       token: null,
       address: null,
       memberName: null,
@@ -17,8 +17,10 @@ const useAuthStore = create(
       regionDistrict: null,
       tempRegionCity: null,
       tempRegionDistrict: null,
-      memberNo: null, // ✅ 빠졌던 필드 추가
+      memberNo: null,
+      suspensionNotice: null,  // ✅ 추가
 
+      // 통째로 세팅
       setAuth: ({
         token,
         address,
@@ -29,10 +31,11 @@ const useAuthStore = create(
         memberImg,
         authority,
         role,
-        regionCity, // ✅ 지역 추가
+        regionCity,
         regionDistrict,
-        tempRegionCity, // ✅ 추가
-        tempRegionDistrict, // ✅ 추가
+        tempRegionCity,
+        tempRegionDistrict,
+        suspensionNotice, // ✅ 추가
       }) =>
         set({
           token,
@@ -43,12 +46,27 @@ const useAuthStore = create(
           memberNo,
           memberImg,
           authority,
-          role, // ✅ 지역 추가
+          role,
           regionCity,
           regionDistrict,
-          tempRegionCity, // ✅ 추가
-          tempRegionDistrict, // ✅ 추가
+          tempRegionCity,
+          tempRegionDistrict,
+          suspensionNotice: suspensionNotice || null,
         }),
+
+      // 부분 업데이트용
+      updateAuth: (payload) =>
+        set((state) => ({
+          ...state,
+          ...payload,
+        })),
+
+      // suspensionNotice만 따로 변경
+      setSuspensionNotice: (value) =>
+        set((state) => ({
+          ...state,
+          suspensionNotice: value,
+        })),
 
       clearAuth: () =>
         set({
@@ -65,6 +83,7 @@ const useAuthStore = create(
           tempRegionCity: null,
           tempRegionDistrict: null,
           memberNo: null,
+          suspensionNotice: null,
         }),
     }),
     {
