@@ -211,7 +211,7 @@
 	<!-- 혜택찜 취소 -->
 	<update id="cancelZzim">
 	 UPDATE "WELFARE" SET
-	 JJ_DEL_FL = 'Y"
+	 JJ_DEL_FL = 'Y'
 	 WHERE MEMBER_NO = #{memberNo}
 	 AND SERVICE_NO = #{serviceNo}
 	</update>
