@@ -92,8 +92,26 @@ const NoticeBoard = () => {
             >
               <td>{index + 1 + (currentPage - 1) * pagination.limit}</td>
               <td>
-                <span className={styles.postTypeTag}>{board.postType}</span>
-              </td>
+  <span
+    className={styles.postTypeTag}
+    style={{
+      borderColor:
+        board.postType === "중요"
+          ? "#e53e3e"
+          : board.postType === "이벤트"
+          ? "#5e60ce"
+          : "#6C6C6C",
+      color:
+        board.postType === "중요"
+          ? "#e53e3e"
+          : board.postType === "이벤트"
+          ? "#5e60ce"
+          : "#6C6C6C",
+    }}
+  >
+    {board.postType}
+  </span>
+</td>
 
               <td className={styles.titleCell}>
                 {(() => {

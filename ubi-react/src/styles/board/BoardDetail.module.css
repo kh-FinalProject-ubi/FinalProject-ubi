@@ -186,6 +186,7 @@
 
 /* --- 게시글 본문 --- */
 .boardContent {
+  /* ... .boardContent의 기존 스타일 ... */
   min-height: 400px;
   padding: 40px 0;
   border-top: 1px solid #eee;
@@ -194,23 +195,24 @@
   font-size: 1rem;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  overflow-x: auto; /* ✅ 가로 스크롤 허용 (필요 시) */
-  max-width: 100%; /* ✅ 부모 너비를 넘지 않도록 제한 */
+  overflow-x: auto;
+  max-width: 100%; 
   box-sizing: border-box;
-}
 
-.boardContent :global(p) {
-  display: inline-block;
-  vertical-align: top;
-  margin: 0 5px 10px 0;
-  line-height: normal;
-}
-
-.boardContent :global(img) {
-  max-width: 100%;
-  height: auto !important;
-  border-radius: 8px;
-  display: block;
+  /* 👇 :global 블록으로 p와 img 태그 스타일을 한 번에 관리 */
+  :global {
+    p {
+      display: block;   
+      margin: 0 0 1em 0; /* 아래쪽에만 1em 여백을 줍니다. */
+      line-height: 1.8;
+    }
+    img {
+      max-width: 100%;
+      height: auto !important;
+      border-radius: 8px;
+      display: block;
+    }
+  }
 }
 
 /* --- 버튼 --- */

@@ -25,6 +25,8 @@ const AskBoard = () => {
   const isAdmin = authority === "2";
   const isUser = authority === "1";
 
+  console.log(isAdmin);
+
   const handleRowClick = (board) => {
     if (!token || !memberNo) {
       alert("로그인 후 조회할 수 있습니다.");
@@ -106,8 +108,16 @@ const AskBoard = () => {
             >
               <td>{index + 1 + (currentPage - 1) * pagination.limit}</td>
               <td>
-                <span className={styles.postTypeTag}>{board.postType}</span>
-              </td>
+  <span
+    className={styles.postTypeTag}
+    style={{
+      borderColor: board.postType === "문의" ? "#6C6C6C" : "#e53e3e",
+      color: board.postType === "문의" ? "#6C6C6C" : "#e53e3e",
+    }}
+  >
+    {board.postType}
+  </span>
+</td>
 
               <td className={styles.titleCell}>
                 {(() => {
