@@ -23,11 +23,11 @@ public class ImageDeleteScheduling {
 	
 	// 회원 프로필 이미지 파일 저장 경로
 	@Value("${my.profile.folder-path}")
-	private String profileFolderPath; //C:/uploadFiles/profile/
+	private String profileFolderPath; //home/ec2-useruploadFiles/profile/
 	
 	// 게시판 이미지 파일 저장 경로 
 	@Value("${my.board.folder-path}")
-	private String boardFolderPath;	//C:/uploadFiles/board/
+	private String boardFolderPath;	//home/ec2-useruploadFiles/board/
 	
 //	@Scheduled(cron = "30 * * * * *")
 	@Scheduled(cron = "0 0 0 1 * *")
