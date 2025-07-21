@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.kh.project.member.model.dto.CustomUser;
+import edu.kh.project.welfare.facility.dto.WelfareFacility;
 import edu.kh.project.welfare.like.dto.FacilityLike;
 import edu.kh.project.welfare.like.model.service.WelfareFacilityLikeService;
 import lombok.RequiredArgsConstructor;
