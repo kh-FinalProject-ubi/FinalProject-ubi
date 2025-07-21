@@ -183,6 +183,10 @@ const Header = () => {
     navigate("/");
   };
 
+  const goToChatPage = () => {
+    navigate("/mypage/chat"); // 원하는 채팅 경로로 수정
+  };
+
   return (
     <>
       <header className={styles.siteHeader}>
@@ -245,13 +249,8 @@ const Header = () => {
                 {/* ✅ 채팅 아이콘 */}
                 <div className={styles.chatAlertWrapper}>
                   {/* 아이콘 + 배지 */}
-                  <button className={styles.alarmBtn} onClick={openAlarm}>
+                  <button className={styles.alarmBtn} onClick={goToChatPage}>
                     <img src="/chatting.svg" alt="채팅" />
-                    {totalUnread > 0 && (
-                      <span className={styles.badge}>
-                        {totalUnread > 99 ? "99+" : totalUnread}
-                      </span>
-                    )}
                   </button>
 
                   {/* 드롭다운 */}

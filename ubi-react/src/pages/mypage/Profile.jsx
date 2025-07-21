@@ -558,28 +558,27 @@ const Profile = () => {
                           readOnly
                         />
                       </li>
-                      <li>
-                        <strong>주소</strong>
+                      
+                      {/* 내 주소 */}
+                      <li className={styles.addressRow}>
+                        <strong>내 주소</strong>
 
-                        {/* 한 줄 레이아웃용 래퍼 */}
-                        <div className={styles.addressInputs}>
-
-                          {/* ── 우편번호 버튼 ───────────────── */}
-                          <button
-                            type="button"
-                            className={styles.postcodeBtn}
-                            onClick={() => openPostcodePopup("main")}
-                          >
-                            우편번호 검색
-                          </button>
-
-                          {/* ── 우편번호 / 기본주소 (읽기전용) ─── */}
-                          <input
-                            value={zipcode}
-                            readOnly
-                            className={styles.postcodeInput}
-                            placeholder="우편번호"
-                          />
+                        <div className={styles.addressInputsColumn}>
+                          <div className={styles.inputRow}>
+                            <button
+                              type="button"
+                              className={styles.postcodeBtn}
+                              onClick={() => openPostcodePopup("main")}
+                            >
+                              우편번호 검색
+                            </button>
+                            <input
+                              value={zipcode}
+                              readOnly
+                              className={styles.postcodeInput}
+                              placeholder="우편번호"
+                            />
+                          </div>
 
                           <input
                             value={baseAddress}
@@ -588,7 +587,6 @@ const Profile = () => {
                             placeholder="기본 주소"
                           />
 
-                          {/* ── 상세주소(편집 가능) ────────────── */}
                           <input
                             ref={detailAddressRef}
                             value={detailAddress}
@@ -599,27 +597,26 @@ const Profile = () => {
                         </div>
                       </li>
 
-                      <li>
-                        <strong>임시주소</strong>
+                      {/* 임시 주소 */}
+                      <li className={styles.addressRow}>
+                        <strong>임시 주소</strong>
 
-                        <div className={styles.addressInputs}>
-
-                          {/* ── 우편번호 버튼 ───────────────── */}
-                          <button
-                            type="button"
-                            className={styles.postcodeBtn}
-                            onClick={() => openPostcodePopup("temp")}
-                          >
-                            우편번호 검색
-                          </button>
-
-                          {/* ── 우편번호 / 기본주소 (읽기전용) ─── */}
-                          <input
-                            value={zipcode2}
-                            readOnly
-                            className={styles.postcodeInput}
-                            placeholder="우편번호"
-                          />
+                        <div className={styles.addressInputsColumn}>
+                          <div className={styles.inputRow}>
+                            <button
+                              type="button"
+                              className={styles.postcodeBtn}
+                              onClick={() => openPostcodePopup("temp")}
+                            >
+                              우편번호 검색
+                            </button>
+                            <input
+                              value={zipcode2}
+                              readOnly
+                              className={styles.postcodeInput}
+                              placeholder="우편번호"
+                            />
+                          </div>
 
                           <input
                             value={baseAddress2}
@@ -628,7 +625,6 @@ const Profile = () => {
                             placeholder="기본 주소"
                           />
 
-                          {/* ── 상세주소(편집 가능) ────────────── */}
                           <input
                             ref={detailAddressRef}
                             value={detailAddress2}
@@ -638,6 +634,9 @@ const Profile = () => {
                           />
                         </div>
                       </li>
+
+
+
                     </>
                   ) : (
                     <>
@@ -717,6 +716,7 @@ const Profile = () => {
               ))}
             </div>
           </div>
+          <div className={styles.line}/>
 
           <AnimatePresence mode="wait">
             <motion.div
@@ -766,29 +766,37 @@ const Profile = () => {
       {/* 게시글 목록 */}
       <section className={styles.postList}>
         <div style={{ position: "relative" }}>
-          <div className={styles.categoryTabs}>
-            {loading && <LoadingOverlay />}
-            {["게시글", "댓글"].map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setContentType(cat)}
-                className={contentType === cat ? styles.active : ""}
-              >
-                {cat}
-              </button>
-            ))}
+          <div className={styles.listHeader}>
+            <h3>
+              {contentType === "게시글"
+                ? `내가 작성한 게시글 (${board.length})`
+                : `내가 작성한 댓글 (${board.length})`}
+            </h3>
+
+            <div className={styles.categoryTabs}>
+              {["게시글", "댓글"].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setContentType(cat)}
+                  className={contentType === cat ? styles.active : ""}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
           </div>
+
+          <div className={styles.line} />
 
           {contentType === "게시글" && (
             <div>
-              <h3>내가 작성한 게시글 ({board.length})</h3>
               <table className={styles.postTable}>
                 <thead>
                   <tr>
                     <th>분류</th>
                     <th>해시태그</th>
-                    <th>제목</th>
-                    <th>내용</th>
+                    <th className={styles.content}>제목</th>
+                    <th className={styles.content}>내용</th>
                     <th>작성일</th>
                     <th>조회수</th>
                   </tr>
@@ -801,9 +809,30 @@ const Profile = () => {
                       onClick={() => navigate(`/mytownBoard/${b.boardNo}`)}
                     >
                       <td>{b.postType}</td>
-                      <td>{b.hashtags}</td>
-                      <td>{b.boardTitle}</td>
                       <td>
+                        {(() => {
+                          if (!b.hashtags) {
+                            return <span className={`${styles.hashtag} ${styles.hashtagNone}`}>없음</span>;
+                          }
+
+                          const first = b.hashtags.split(",")[0].trim();
+                          const text = first.length > 3 ? `#${first.slice(0, 3)}...` : `#${first}`;
+
+                          return <span className={styles.hashtag}>{text}</span>;
+                        })()}
+                      </td>
+                      <td className={styles.content}>
+                        {(() => {
+                          const plainContent = stripHtml(b.boardTitle);
+
+                          if (!plainContent) return "내용 없음";
+
+                          return plainContent.length > 15
+                            ? `${plainContent.slice(0, 15)}...`
+                            : plainContent;
+                        })()}
+                      </td>
+                      <td className={styles.content}>
                         {(() => {
                           const plainContent = stripHtml(b.boardContent);
 
@@ -825,13 +854,12 @@ const Profile = () => {
 
           {contentType === "댓글" && (
             <div>
-              <h3>내가 작성한 댓글 ({board.length})</h3>
               <table className={styles.postTable}>
                 <thead>
                   <tr>
                     <th>분류</th>
-                    <th>제목</th>
-                    <th>내 댓글</th>
+                    <th className={styles.content}>제목</th>
+                    <th className={styles.content}>내 댓글</th>
                     <th>작성일</th>
                     <th>좋아요</th>
                   </tr>
@@ -843,10 +871,30 @@ const Profile = () => {
                       onClick={() => navigate(`/mytownBoard/${b.boardNo}`)}
                     >
                       <td>{b.postType}</td>
-                      <td>{b.boardTitle}</td>
-                      <td>{b.commentContent}</td>
+                      <td className={styles.content}>
+                        {(() => {
+                          const plainContent = stripHtml(b.boardTitle);
+
+                          if (!plainContent) return "내용 없음";
+
+                          return plainContent.length > 15
+                            ? `${plainContent.slice(0, 15)}...`
+                            : plainContent;
+                        })()}
+                      </td>
+                      <td className={styles.content}>
+                        {(() => {
+                          const plainContent = stripHtml(b.commentContent);
+
+                          if (!plainContent) return "내용 없음";
+
+                          return plainContent.length > 20
+                            ? `${plainContent.slice(0, 20)}...`
+                            : plainContent;
+                        })()}
+                        </td>
                       <td>{b.commentDate}</td>
-                      <td>{b.likeCount}</td>
+                      <td>{b.likeCount != null ? b.likeCount : 0}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -870,29 +918,37 @@ const Profile = () => {
 
       <section className={styles.postList}>
         <div style={{ position: "relative" }}>
-          <div className={styles.categoryTabs}>
-            {loading && <LoadingOverlay />}
-            {["게시글", "댓글"].map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCommentContentType(cat)}
-                className={commentContentType === cat ? styles.active : ""}
-              >
-                {cat}
-              </button>
-            ))}
+          <div className={styles.listHeader}>
+            <h3>
+              {commentContentType === "게시글"
+                ? `내가 좋아요를 누른 게시글 (${like.length})`
+                : `내가 좋아요를 누른 댓글 (${like.length})`}
+            </h3>
+
+            <div className={styles.categoryTabs}>
+              {["게시글", "댓글"].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setCommentContentType(cat)}
+                  className={setCommentContentType === cat ? styles.active : ""}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
           </div>
+
+          <div className={styles.line} />
 
           {commentContentType === "게시글" && (
             <div>
-              <h3>내가 좋아요를 누른 게시글 ({like.length})</h3>
               <table className={styles.postTable}>
                 <thead>
                   <tr>
                     <th>분류</th>
                     <th>해시태그</th>
-                    <th>제목</th>
-                    <th>내용</th>
+                    <th className={styles.content}>제목</th>
+                    <th className={styles.content}>내용</th>
                     <th>작성자</th>
                     <th>작성일</th>
                   </tr>
@@ -903,9 +959,30 @@ const Profile = () => {
                         onClick={() => navigate(`/mytownBoard/${l.boardNo}`)}
                     >
                       <td>{l.postType}</td>
-                      <td>{l.hashtags}</td>
-                      <td>{l.boardTitle}</td>
-                      <td>
+                      <td>  
+                        {(() => {
+                          if (!l.hashtags) {
+                            return <span className={`${styles.hashtag} ${styles.hashtagNone}`}>없음</span>;
+                          }
+
+                          const first = l.hashtags.split(",")[0].trim();
+                          const text = first.length > 3 ? `#${first.slice(0, 3)}...` : `#${first}`;
+
+                          return <span className={styles.hashtag}>{text}</span>;
+                        })()}
+                      </td>
+                      <td className={styles.content}>
+                        {(() => {
+                          const plainContent = stripHtml(l.boardTitle);
+
+                          if (!plainContent) return "내용 없음";
+
+                          return plainContent.length > 15
+                            ? `${plainContent.slice(0, 15)}...`
+                            : plainContent;
+                        })()}
+                      </td>
+                      <td className={styles.content}>
                         {(() => {
                           const plainContent = stripHtml(l.boardContent);
 
@@ -927,13 +1004,12 @@ const Profile = () => {
 
           {commentContentType === "댓글" && (
             <div>
-              <h3>내가 좋아요를 누른 댓글 ({like.length})</h3>
               <table className={styles.postTable}>
                 <thead>
                   <tr>
                     <th>분류</th>
-                    <th>제목</th>
-                    <th>내 댓글</th>
+                    <th className={styles.content}>제목</th>
+                    <th className={styles.content}>내 댓글</th>
                     <th>작성일</th>
                     <th>좋아요</th>
                   </tr>
@@ -944,10 +1020,30 @@ const Profile = () => {
                         onClick={() => navigate(`/mytownBoard/${l.boardNo}`)}
                     >
                       <td>{l.postType}</td>
-                      <td>{l.boardTitle}</td>
-                      <td>{l.commentContent}</td>
+                      <td className={styles.content}>
+                        {(() => {
+                          const plainContent = stripHtml(l.boardTitle);
+
+                          if (!plainContent) return "내용 없음";
+
+                          return plainContent.length > 15
+                            ? `${plainContent.slice(0, 15)}...`
+                            : plainContent;
+                        })()}
+                      </td>
+                      <td className={styles.content}>
+                        {(() => {
+                          const plainContent = stripHtml(l.commentContent);
+
+                          if (!plainContent) return "내용 없음";
+
+                          return plainContent.length > 20
+                            ? `${plainContent.slice(0, 20)}...`
+                            : plainContent;
+                        })()}
+                        </td>
                       <td>{l.commentDate}</td>
-                      <td>{l.likeCount}</td>
+                      <td>{l.likeCount != null ? l.likeCount : 0}</td>
                     </tr>
                   ))}
                 </tbody>
