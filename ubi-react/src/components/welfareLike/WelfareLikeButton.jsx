@@ -33,13 +33,13 @@ const WelfareLikeButton = ({
 
     try {
       if (liked) {
-        await axios.delete("/api/welfare/like", {
+        await axios.delete("/api/welfarefacility/like", {
           headers: { Authorization: `Bearer ${token}` },
           data: { apiUrl }, // ✅ 고유 식별자
         });
       } else {
         await axios.post(
-          "/api/welfare/like",
+          "/api/welfarefacility/like",
           {
             apiUrl,
             facilityName,
