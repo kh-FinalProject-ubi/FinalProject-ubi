@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import edu.kh.project.member.model.dto.CustomUser;
 import edu.kh.project.welfare.facility.dto.BusanFacility;
 import edu.kh.project.welfare.facility.dto.GangwonFacility;
 import edu.kh.project.welfare.facility.dto.GwangjuFacility;
