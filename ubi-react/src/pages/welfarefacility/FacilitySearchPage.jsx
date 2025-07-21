@@ -349,7 +349,14 @@ export default function FacilitySearchPage() {
             facility["OPEN_FACLT_NM"] ||
             "시설";
           const key = `${name}-${idx}`;
-          return <FacilityCard key={key} facility={facility} />;
+          return (
+            <FacilityCard
+              key={key}
+              facility={facility}
+              selectedCity={selectedCity}
+              selectedDistrict={selectedDistrict}
+            />
+          );
         })}
       </div>
 

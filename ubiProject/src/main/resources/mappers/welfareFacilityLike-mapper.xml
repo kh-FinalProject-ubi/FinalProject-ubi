@@ -5,8 +5,8 @@
 
 <mapper namespace="edu.kh.project.welfare.like.model.mapper.WelfareFacilityLikeMapper">
 
-  <!-- 찜 상태 확인 (찜 여부: 'N', 'Y' or null) -->
-  <select id="selectLikeStatus" resultType="string">
+  <!-- 1. 찜 상태 확인 ('N', 'Y' 또는 null) -->
+  <select id="selectLikeStatus" parameterType="edu.kh.project.welfare.like.dto.FacilityLike" resultType="string">
     SELECT jj_del_fl
     FROM welfare_facility
     WHERE member_no = #{memberNo}
@@ -16,8 +16,8 @@
     FETCH FIRST 1 ROWS ONLY
   </select>
 
-  <!-- 찜 등록 -->
-  <insert id="insertLike" parameterType="FacilityLike">
+  <!-- 2. 찜 등록 -->
+  <insert id="insertLike" parameterType="edu.kh.project.welfare.like.dto.FacilityLike">
     INSERT INTO welfare_facility (
       facility_no,
       facility_api_service_id,
@@ -25,10 +25,7 @@
       facility_name,
       region_city,
       region_district,
-      category,
       facility_addr,
-      description,
-      agency,
       lat,
       lng,
       jj_time,
@@ -41,10 +38,7 @@
       #{facilityName},
       #{regionCity},
       #{regionDistrict},
-      #{category},
       #{facilityAddr},
-      #{description},
-      #{agency},
       #{lat},
       #{lng},
       SYSDATE,
@@ -53,8 +47,8 @@
     )
   </insert>
 
-  <!-- 찜 복구 (기존에 있던 행 활성화) -->
-  <update id="reactivateLike" parameterType="FacilityLike">
+  <!-- 3. 찜 복구 (해제된 찜을 다시 활성화) -->
+  <update id="reactivateLike" parameterType="edu.kh.project.welfare.like.dto.FacilityLike">
     UPDATE welfare_facility
     SET jj_del_fl = 'N',
         jj_time = SYSDATE
@@ -64,8 +58,8 @@
       AND region_district = #{regionDistrict}
   </update>
 
-  <!-- 찜 취소 -->
-  <update id="deleteLike" parameterType="FacilityLike">
+  <!-- 4. 찜 해제 -->
+  <update id="deleteLike" parameterType="edu.kh.project.welfare.like.dto.FacilityLike">
     UPDATE welfare_facility
     SET jj_del_fl = 'Y'
     WHERE member_no = #{memberNo}

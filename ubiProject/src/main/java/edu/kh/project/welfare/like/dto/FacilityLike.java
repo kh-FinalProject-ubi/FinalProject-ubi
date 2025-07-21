@@ -1,12 +1,17 @@
 package edu.kh.project.welfare.like.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 
 @Data
 public class FacilityLike {
 
 	private Long memberNo;             // 회원 번호 (찜한 사용자)
+	
+	@JsonProperty("facilityName")
     private String facilityName;       // 시설명
+	
     private String regionCity;         // 시/도
     private String regionDistrict;     // 시/군/구
     private String category;           // 카테고리

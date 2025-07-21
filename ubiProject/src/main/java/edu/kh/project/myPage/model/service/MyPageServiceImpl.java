@@ -50,7 +50,7 @@ public class MyPageServiceImpl implements MyPageService {
 	private String profileWebPath; // /myPage/profile/
 
 	@Value("${my.profile.folder-path}")
-	private String profileFolderPath; // C:/uploadFiles/profile/
+	private String profileFolderPath; // home/ec2-useruploadFiles/profile/
 	
 	// 내 기본 정보 조회
 	@Override
@@ -202,11 +202,11 @@ public class MyPageServiceImpl implements MyPageService {
 		}
 
 		// 업로드한 파일이 있을 경우
-		// C:/uploadFiles/test/파일명으로 서버에 저장
-		uploadFile.transferTo(new File("c:/uploadFiles/test/" + uploadFile.getOriginalFilename()));
+		// home/ec2-useruploadFiles/test/파일명으로 서버에 저장
+		uploadFile.transferTo(new File("home/ec2-user/uploadFiles/test/" + uploadFile.getOriginalFilename()));
 
 		// 웹에서 해당 파일에 접근할 수 있는 경로로 반환
-		// 서버 : C:/uploadFiles/test/A.jpg
+		// 서버 : home/ec2-useruploadFiles/test/A.jpg
 		// 웹 접근 주소 : /myPage/file/A.jpg
 
 		return "/myPage/file/" + uploadFile.getOriginalFilename();
@@ -236,7 +236,7 @@ public class MyPageServiceImpl implements MyPageService {
 		// 1. 서버에 저장할 파일 경로 만들기
 
 		// 파일이 저장될 서버 폴더 경로
-		String folderPath = "C:/uploadFiles/test/";
+		String folderPath = "home/ec2-user/uploadFiles/test/";
 
 		// 클라이언트가 파일이 저장된 폴더에 접근할 수 있는 주소(정적리소스 요청 주소)
 		String webPath = "/myPage/file/";
@@ -259,10 +259,10 @@ public class MyPageServiceImpl implements MyPageService {
 		if (result == 0)
 			return 0;
 
-		// folderPath경로(C:/uploadFiles/test/변경된파일명)으로
+		// folderPath경로(home/ec2-useruploadFiles/test/변경된파일명)으로
 		// 파일을 서버 컴퓨터에 저장
 		uploadFile.transferTo(new File(folderPath + fileRename));
-		// C:/uploadFiles/test/20250424150830_00001.jpg
+		// home/ec2-useruploadFiles/test/20250424150830_00001.jpg
 
 		return result;
 	}

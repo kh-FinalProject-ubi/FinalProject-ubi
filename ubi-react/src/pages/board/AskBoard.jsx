@@ -22,8 +22,8 @@ const AskBoard = () => {
   const { token, role, memberNo, authority } = useAuthStore();
   const path = location.pathname;
   const boardCode = boardCodeMap[path];
-  const isAdmin = authority === "2";
-  const isUser = authority === "1";
+  const isAdmin = role === "ADMIN" || authority == "2";
+  const isUser = role === "USER" || authority == "1";
 
   console.log(isAdmin);
 
@@ -108,16 +108,20 @@ const AskBoard = () => {
             >
               <td>{index + 1 + (currentPage - 1) * pagination.limit}</td>
               <td>
-  <span
-    className={styles.postTypeTag}
-    style={{
-      borderColor: board.postType === "문의" ? "#6C6C6C" : "#e53e3e",
-      color: board.postType === "문의" ? "#6C6C6C" : "#e53e3e",
-    }}
-  >
-    {board.postType}
-  </span>
-</td>
+                <span
+                  className={
+                    board.postType === "공지" || board.postType === "문의"
+                      ? `${styles.postType} ${styles.postTypeGray}`
+                      : board.postType === "중요" || board.postType === "신고"
+                      ? `${styles.postType} ${styles.postTypeRed}`
+                      : board.postType === "이벤트"
+                      ? `${styles.postType} ${styles.postTypePurple}`
+                      : styles.postType
+                  }
+                >
+                  {board.postType}
+                </span>
+              </td>
 
               <td className={styles.titleCell}>
                 {(() => {

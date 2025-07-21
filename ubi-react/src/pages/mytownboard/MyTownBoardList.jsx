@@ -301,11 +301,16 @@ function MyTownBoard() {
                 </div>
                 <div className={styles.metaRow}>
                   <div className={styles.userInfo}>
-                    <img
-                      className={styles.profileImg}
-                      src={board.profileImgImg || "/default-profile.png"}
-                      alt="프로필"
-                    />
+<img
+  className={styles.profileImg}
+  src={board.memberImg || "/default-profile.png"}
+  alt="프로필"
+  onError={(e) => {
+    e.currentTarget.src = "/default-profileerror.png";
+    e.currentTarget.onerror = null;
+  }}
+/>
+
                     <span>{board.memberNickname}</span>
                   </div>
                   <div className={styles.iconInfo}>

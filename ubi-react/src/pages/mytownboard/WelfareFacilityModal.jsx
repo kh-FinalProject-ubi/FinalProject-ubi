@@ -68,10 +68,8 @@ export default function WelfareFacilityModal({
           ✖
         </button>
 
-        <h2 className={styles["modal-title"]}>복지시설 선택</h2>
-        <div className={styles["region-label"]}>
-          작성자 지역: {normCity} {normDistrict}
-        </div>
+  <h2 className={styles["modal-title"]}>복지시설 선택</h2>
+ 
 
         <input
           type="text"
@@ -110,20 +108,28 @@ export default function WelfareFacilityModal({
               facility["address"] ||
               facility["ADDR"] ||
               facility["주소"] ||
+              facility["refineRoadnmAddr"] ||
+               facility["REFINE_ROADNM_ADDR"] ||
+              
               "주소 없음";
 
             return (
-              <li
-                key={`${name}-${id}-${idx}`}
-                className={styles["facility-item"]}
-                onClick={() => {
-                  onSelect({ name, id, address });
-                  onClose();
-                }}
-              >
-                <strong>{name}</strong> <br />
-                <small>Service ID: {id}</small>
-              </li>
+<li
+  key={`${name}-${id}-${idx}`}
+  className={styles["facility-item"]}
+  onClick={() => {
+    onSelect({ name, id, address });
+    onClose();
+  }}
+>
+  <div className={styles["facility-info"]}>
+    <div className={styles["region-label"]}>
+      {normCity} {normDistrict}
+    </div>
+    <strong>{name}</strong>
+    <small>주소: {address}</small>
+  </div>
+</li>
             );
           })}
         </ul>

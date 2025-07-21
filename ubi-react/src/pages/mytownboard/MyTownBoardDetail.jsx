@@ -201,10 +201,12 @@ function MyTownBoardDetail() {
             {/* 작성자 정보 */}
             <div className={styles.userInfo}>
               <img
-                src={board.profileImgImg || "/default-profile.png"}
+                 className={styles.profileImg}
+                src={board.memberImg || "/default-profile.png"}
                 alt="프로필"
-                className={styles.profileImg}
-                onClick={(e) => {
+                onError={(e) => {
+                   e.currentTarget.src = "/default-profileerror.png";
+                  e.currentTarget.onerror = null;
                   setSelectedMember({
                     memberNo: board.memberNo,
                     memberImg: board.memberImg,
@@ -243,15 +245,15 @@ function MyTownBoardDetail() {
 )}
 
               <div className={styles.stats}>
-                <button onClick={handleLike} className={styles.likeButton}>
-                  <img
-                    src="/icons/boardlike.svg"
-                    alt="좋아요"
-                    className={styles.iconHeart}
-                  />
-                  {likeCount}
-                </button>
-                <span>조회 {board.boardReadCount}</span>
+               <button onClick={handleLike} className={styles.likeButton}>
+  <img
+    src="/icons/boardlike.svg"
+    alt="좋아요"
+    className={styles.iconHeart}
+  />
+  <span className={styles.likeCount}> {likeCount}</span>
+</button>
+     <span className={styles.readCount}>조회 {board.boardReadCount}</span>
               </div>
             </div>
           </div>
