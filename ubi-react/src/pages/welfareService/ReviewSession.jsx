@@ -8,7 +8,8 @@ export default function WelfareReviewSection({ apiServiceId }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-
+  const currentReview = reviews[current];
+  
   useEffect(() => {
     if (!apiServiceId) return;
 
@@ -43,23 +44,26 @@ export default function WelfareReviewSection({ apiServiceId }) {
     boardContent,
     boardDate,
     starCount,
-    profileImage,
+    memberImage,
     memberNickname,
-    imageList,
-  } = reviews[current];
+  } = currentReview;
 
-  const imageListSafe = Array.isArray(imageList) ? imageList : [];
-
-  const extractFirstImage = (content) => {
-    const match = content?.match(/<img[^>]+src=\"([^\"]+)\"[^>]*>/i);
-    return match?.[1] || null;
-  };
-
-  const firstInlineImage = extractFirstImage(boardContent);
-
+  // ✅ 1. 이미지 src 추출 로직 추가
   const goToDetail = () => {
     navigate(`/mytownboard/${boardNo}`);
   };
+
+  const extractImageSources = (html) => {
+    const imgTagRegex = /<img[^>]+src=["']([^"']+)["']/g;
+    const srcList = [];
+    let match;
+    while ((match = imgTagRegex.exec(html)) !== null) {
+      srcList.push(match[1]);
+    }
+    return srcList;
+  };
+
+  const inlineImages = extractImageSources(boardContent);
 
   return (
     <section className={styles.carouselWrapper}>
@@ -88,7 +92,7 @@ export default function WelfareReviewSection({ apiServiceId }) {
         <div className={styles.reviewCard} onClick={goToDetail}>
           <div className={styles.reviewRow}>
             <img
-              src={profileImage || "/default-profile.png"}
+              src={memberImage || "/default-profile.png"}
               alt="프로필"
               className={styles.profileImg}
               onError={(e) => (e.currentTarget.src = "/default-profile.png")}
@@ -127,35 +131,27 @@ export default function WelfareReviewSection({ apiServiceId }) {
                 {boardContent.replace(/<[^>]*>?/gm, "").slice(0, 100)}...
               </div>
 
-              <div className={styles.inlineImages}>
-                <div className={styles.imageRow}>
-                  {imageListSafe.slice(0, 4).map((src, idx) => (
-                    <img
-                      key={idx}
-                      src={src.imagePath}
-                      alt={`본문 이미지 ${idx + 1}`}
-                      onError={(e) =>
-                        (e.currentTarget.src = "/default-profile.png")
-                      }
-                      className={styles.inlineImage}
-                    />
-                  ))}
-
-                  {imageListSafe.length === 0 && firstInlineImage && (
-                    <img
-                      src={firstInlineImage}
-                      alt="본문 이미지"
-                      className={styles.inlineImage}
-                    />
-                  )}
-
-                  {imageListSafe.length > 4 && (
-                    <div className={styles.moreImageCircle}>
-                      +{imageListSafe.length - 4}
-                    </div>
-                  )}
-                </div>
-              </div>
+                          <div className={styles.inlineImages}>
+                            <div className={styles.imageRow}>
+                              {inlineImages.slice(0, 4).map((src, idx) => (
+                                <img
+                                  key={idx}
+                                  src={src}
+                                  alt={`본문 이미지 ${idx + 1}`}
+                                  onError={(e) =>
+                                    (e.currentTarget.src = "/default-profile.png")
+                                  }
+                                  className={styles.inlineImage}
+                                />
+                              ))}
+            
+                              {inlineImages.length > 4 && (
+                                <div className={styles.moreImageCircle}>
+                                  +{inlineImages.length - 4}
+                                </div>
+                              )}
+                            </div>
+                          </div>
             </div>
           </div>
         </div>
