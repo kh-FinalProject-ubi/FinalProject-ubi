@@ -60,7 +60,7 @@ public class FileConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
     	 registry
          .addResourceHandler(webPath + "**") // ex: /images/board/**
-         .addResourceLocations("file:///" + folderPath); // ex: file:///home/ec2-useruploadFiles/board/
+         .addResourceLocations("file:" + folderPath); // ex: file:///home/ec2-useruploadFiles/board/
     	 
  		registry
  		.addResourceHandler(profileResourceHandler)
