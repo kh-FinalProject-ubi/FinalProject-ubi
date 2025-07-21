@@ -35,74 +35,70 @@ public class WelfareFacilityLikeController {
 
     private final WelfareFacilityLikeService likeService;
 
-    // ✅ 1. 찜 등록/취소 토글
-    /** ✅ 1. 부산 찜 토글 */
-    @PostMapping("/busan")
-    public ResponseEntity<?> toggleLikeBusan(@RequestBody BusanFacility dto,
-                                             @AuthenticationPrincipal CustomUser user) {
-        FacilityLike like = FacilityLikeConverter.fromBusanFacility(dto, (long) user.getMemberNo());
-        boolean result = likeService.toggleLike(like, like.getMemberNo());
-        return ResponseEntity.ok(result);
-    }
-
-    /** ✅ 2. 서울/복지시설 찜 토글 */
+    /** ✅ 1. 서울/복지시설 찜 토글 */
     @PostMapping("/seoul")
-    public ResponseEntity<?> toggleLikeWelfare(@RequestBody FacilityLike dto,
-                                               @AuthenticationPrincipal CustomUser user) {
-
-        log.debug("📥 facilityName from client = {}", dto.getFacilityName());
-        log.debug("📥 regionDistrict from client = {}", dto.getRegionDistrict());
-        log.debug("📥 address from client = {}", dto.getFacilityAddr());
-        log.debug("📥 lat = {}, lng = {}", dto.getLat(), dto.getLng());
-
-        // 이미 프론트에서 FacilityLike 구조로 보냈기 때문에 Converter 필요 없음
-        boolean result = likeService.toggleLike(dto, (long) user.getMemberNo());
-
-        return ResponseEntity.ok(result);
+    public ResponseEntity<?> toggleLikeSeoul(@RequestBody FacilityLike dto,
+                                             @AuthenticationPrincipal CustomUser user) {
+        return handleLike(dto, user, "서울");
     }
 
-    /** ✅ 3. 제주 찜 토글 */
-    @PostMapping("/jeju")
-    public ResponseEntity<?> toggleLikeJeju(@RequestBody JejuFacility dto,
-                                            @AuthenticationPrincipal CustomUser user) {
-        FacilityLike like = FacilityLikeConverter.fromJejuFacility(dto, (long) user.getMemberNo());
-        boolean result = likeService.toggleLike(like, like.getMemberNo());
-        return ResponseEntity.ok(result);
+    /** ✅ 2. 부산 */
+    @PostMapping("/busan")
+    public ResponseEntity<?> toggleLikeBusan(@RequestBody FacilityLike dto,
+                                             @AuthenticationPrincipal CustomUser user) {
+        return handleLike(dto, user, "부산");
     }
-    
-    @PostMapping("/gangwon")
-    public ResponseEntity<?> toggleLikeFromGangwon(@RequestBody GangwonFacility dto,
-                                                   @AuthenticationPrincipal CustomUser user) {
-        FacilityLike like = FacilityLikeConverter.fromGangwonFacility(dto, (long) user.getMemberNo());
-        boolean result = likeService.toggleLike(like, like.getMemberNo());
-        return ResponseEntity.ok(result);
-    }
-    
-    @PostMapping("/gwangju")
-    public ResponseEntity<?> toggleLikeFromGwangju(@RequestBody GwangjuFacility dto,
-                                                   @AuthenticationPrincipal CustomUser user) {
-        FacilityLike like = FacilityLikeConverter.fromGwangjuFacility(dto, (long) user.getMemberNo());
-        boolean result = likeService.toggleLike(like, like.getMemberNo());
-        return ResponseEntity.ok(result);
-    }
-    
-    @PostMapping("/gyeonggi")
-    public ResponseEntity<?> toggleLikeFromGyeonggi(@RequestBody GyeonggiFacility dto,
-                                                    @AuthenticationPrincipal CustomUser user) {
-        FacilityLike like = FacilityLikeConverter.fromGyeonggiFacility(dto, (long) user.getMemberNo());
-        boolean result = likeService.toggleLike(like, like.getMemberNo());
-        return ResponseEntity.ok(result);
-    }
-    
+
+    /** ✅ 3. 인천 */
     @PostMapping("/incheon")
-    public ResponseEntity<?> toggleLikeFromIncheon(@RequestBody IncheonFacility dto,
-                                                   @AuthenticationPrincipal CustomUser user) {
-        FacilityLike like = FacilityLikeConverter.fromIncheonFacility(dto, (long) user.getMemberNo());
-        boolean result = likeService.toggleLike(like, like.getMemberNo());
+    public ResponseEntity<?> toggleLikeIncheon(@RequestBody FacilityLike dto,
+                                               @AuthenticationPrincipal CustomUser user) {
+        return handleLike(dto, user, "인천");
+    }
+
+    /** ✅ 4. 경기 */
+    @PostMapping("/gyeonggi")
+    public ResponseEntity<?> toggleLikeGyeonggi(@RequestBody FacilityLike dto,
+                                                @AuthenticationPrincipal CustomUser user) {
+        return handleLike(dto, user, "경기");
+    }
+
+    /** ✅ 5. 강원 */
+    @PostMapping("/gangwon")
+    public ResponseEntity<?> toggleLikeGangwon(@RequestBody FacilityLike dto,
+                                               @AuthenticationPrincipal CustomUser user) {
+        return handleLike(dto, user, "강원");
+    }
+
+    /** ✅ 6. 광주 */
+    @PostMapping("/gwangju")
+    public ResponseEntity<?> toggleLikeGwangju(@RequestBody FacilityLike dto,
+                                               @AuthenticationPrincipal CustomUser user) {
+        return handleLike(dto, user, "광주");
+    }
+
+    /** ✅ 7. 제주 */
+    @PostMapping("/jeju")
+    public ResponseEntity<?> toggleLikeJeju(@RequestBody FacilityLike dto,
+                                            @AuthenticationPrincipal CustomUser user) {
+        return handleLike(dto, user, "제주");
+    }
+
+    /** ✅ 공통 찜 처리 (서울 방식 로그 포함) */
+    private ResponseEntity<?> handleLike(FacilityLike dto, CustomUser user, String regionTag) {
+        dto.setMemberNo((long) user.getMemberNo());
+
+        log.debug("📍 [{}] facilityName = {}", regionTag, dto.getFacilityName());
+        log.debug("📍 [{}] regionCity = {}", regionTag, dto.getRegionCity());
+        log.debug("📍 [{}] regionDistrict = {}", regionTag, dto.getRegionDistrict());
+        log.debug("📍 [{}] address = {}", regionTag, dto.getFacilityAddr());
+        log.debug("📍 [{}] lat = {}, lng = {}", regionTag, dto.getLat(), dto.getLng());
+
+        boolean result = likeService.toggleLike(dto, dto.getMemberNo());
         return ResponseEntity.ok(result);
     }
 
-    /** ✅ 4. 찜 여부 확인 (공통) */
+    /** ✅ 찜 여부 확인 */
     @GetMapping("/check")
     public ResponseEntity<Boolean> checkLike(@RequestParam String facilityName,
                                              @RequestParam String regionCity,
