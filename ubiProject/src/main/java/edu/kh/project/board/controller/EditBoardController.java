@@ -262,7 +262,7 @@ public class EditBoardController {
 
 	          // 배포 주소를 동적으로 만듦 (호스트 주소 + webPath)
 	          String serverUrl = request.getScheme() + "://" + request.getServerName() + 
-	                  (request.getServerPort() == 80 || request.getServerPort() == 443 ? "" : ":" + request.getServerPort());
+	                  (request.getServerPort() == 8080 || request.getServerPort() == 443 ? "" : ":" + request.getServerPort());
 
 	          String imageUrl = serverUrl + "/images/board/" + fileName;
 
