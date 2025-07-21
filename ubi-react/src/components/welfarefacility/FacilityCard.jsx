@@ -78,7 +78,11 @@ const getCategory = (facility) => {
   return "기타";
 };
 
-export default function FacilityCard({ facility }) {
+export default function FacilityCard({
+  facility,
+  selectedCity,
+  selectedDistrict,
+}) {
   const auth = useAuthStore();
   const name =
     getField(facility, "facilityName", "시설명", "FACLT_NM", "facilityAddr") ||
@@ -95,16 +99,13 @@ export default function FacilityCard({ facility }) {
       </div>
       <WelfareLikeButton
         token={auth.token}
-        apiServiceId={facility.apiServiceId}
-        serviceName={facility.serviceName}
+        facilityName={facility.serviceName}
         category={facility.category}
-        regionCity={facility.regionCity}
-        regionDistrict={facility.regionDistrict}
+        regionCity={selectedCity} // 💡 여기!
+        regionDistrict={selectedDistrict} // 💡 여기!
         description={facility.description}
         agency={facility.agency}
-        url={facility.url}
-        receptionStart={facility.receptionStart}
-        receptionEnd={facility.receptionEnd}
+        apiUrl={facility.url}
         imageProfile={facility.imageProfile}
         lat={facility.lat}
         lng={facility.lng}
