@@ -14,11 +14,9 @@ import BenefitCardGeneral from "../../components/MyPage/BenefitCardGeneral";
 import BenefitCardWrapper from "../../components/MyPage/BenefitCardWrapper";
 
 const parseMemberStandardCode = (code) => {
-
-  
   switch (code) {
     case "A":
-      return { main: "일반", isDisabled: true, isPregnant: true };
+      return { main: "일반", isDisabled: false, isPregnant: true };
     case "B":
       return { main: "노인", isDisabled: true, isPregnant: true };
     case "C":
@@ -27,21 +25,19 @@ const parseMemberStandardCode = (code) => {
       return { main: "아동", isDisabled: true, isPregnant: true };
 
     case "E":
-      return { main: "일반", isDisabled: false, isPregnant: true };
-    case "F":
       return { main: "노인", isDisabled: false, isPregnant: true };
-    case "G":
+    case "F":
       return { main: "청년", isDisabled: false, isPregnant: true };
-    case "H":
+    case "G":
       return { main: "아동", isDisabled: false, isPregnant: true };
 
-    case "I":
+    case "H":
       return { main: "일반", isDisabled: true, isPregnant: false };
-    case "J":
+    case "I":
       return { main: "노인", isDisabled: true, isPregnant: false };
-    case "K":
+    case "J":
       return { main: "청년", isDisabled: true, isPregnant: false };
-    case "L":
+    case "K":
       return { main: "아동", isDisabled: true, isPregnant: false };
 
     case "0":
@@ -57,6 +53,7 @@ const parseMemberStandardCode = (code) => {
       return { main: "일반", isDisabled: false, isPregnant: false };
   }
 };
+
 
 const Profile = () => {
   const { memberNo } = useAuthStore(); // Zustand에서 회원 정보 가져옴
