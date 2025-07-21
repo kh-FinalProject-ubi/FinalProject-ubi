@@ -86,10 +86,8 @@ public class Board {
 	// 게시글 신고 여부 확인
 	 private String reportedByMe;
 
-	 private String ApiServiceId;
+//	 private String ApiServiceId;
 	 
-//	// 관리자페이지에서 필요
-//	// 게시판 종류명
-//	private String boardName;
+
 
 }

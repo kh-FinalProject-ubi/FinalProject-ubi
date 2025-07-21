@@ -26,19 +26,17 @@
 .modal-title {
   font-size: 1.25rem;
   font-weight: bold;
-  margin-bottom: 12px;
+  margin-bottom: 24px; /* ✅ 검색창과 타이틀 간 간격 넓힘 */
   text-align: center;
 }
 
 .region-label {
-  background-color: #ffd600;
+  background-color: #ffe56d;
   border: none;
-  padding: 6px 12px;
+  padding: 3px 6px;
   font-size: 0.95rem;
   font-weight: bold;
   border-radius: 8px;
-  margin-bottom: 16px;
-  display: inline-block;
   color: #333;
 }
 
@@ -54,7 +52,7 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  max-height: 300px; /* ✅ 이거 없으면 절대 스크롤 안됨 */
+  max-height: 500px; /* ✅ 이거 없으면 절대 스크롤 안됨 */
   overflow-y: auto;
   border-top: 1px solid #eee;
   border-bottom: 1px solid #eee;
@@ -66,6 +64,13 @@
   cursor: pointer;
   transition: background-color 0.2s ease;
   font-size: 0.95rem;
+}
+
+.facility-info {
+  display: flex;
+  flex-direction: column; /* 수직 정렬 */
+  align-items: flex-start; /* 왼쪽 정렬 */
+  gap: 4px; /* 요소 간 간격 */
 }
 
 .facility-item:hover {
