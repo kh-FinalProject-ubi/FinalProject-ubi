@@ -36,7 +36,7 @@ public class EditBoardServiceImpl implements EditBoardService {
 	private String webPath; // /images/board/
 
 	@Value("${my.board.folder-path}")
-	private String folderPath; // C:/uploadFiles/board/
+	private String folderPath; // home/ec2-useruploadFiles/board/
 	
 	@Autowired
 	private AlertService alertService;
@@ -138,7 +138,7 @@ public class EditBoardServiceImpl implements EditBoardService {
 	    }
 
 	    List<BoardImage> uploadList = new ArrayList<>();
-	    String uploadFolder = "C:/uploadFiles/board/";
+	    String uploadFolder = "home/ec2-user/uploadFiles/board/";
 	    File folder = new File(uploadFolder);
 	    if (!folder.exists()) folder.mkdirs();  // 폴더 없으면 생성
 

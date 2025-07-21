@@ -303,7 +303,7 @@ function MyTownBoard() {
                   <div className={styles.userInfo}>
                     <img
                       className={styles.profileImg}
-                      src={board.profileImgImg || "/default-profile.png"}
+                      src={board.memberImg || "/default-profile.png"}
                       alt="프로필"
                     />
                     <span>{board.memberNickname}</span>
