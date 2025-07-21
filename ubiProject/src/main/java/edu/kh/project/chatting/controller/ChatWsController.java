@@ -35,7 +35,7 @@ public class ChatWsController {
             	msg.setChatSendDate(nowStr);
             }
 
-            service.insertMessage(msg);
+            int chatNo = service.insertMessage(msg);
             log.info("📥 메시지 DB 저장 완료");
 
             template.convertAndSend("/queue/chat/" + msg.getTargetNo(), msg);

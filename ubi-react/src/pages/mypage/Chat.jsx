@@ -101,6 +101,7 @@ const Chat = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.status === 200) return res.data;
+      console.log("채팅내역 : ", res);
     } catch (err) {
       console.error("메시지 조회 실패:", err);
       return[];
@@ -193,7 +194,7 @@ const Chat = () => {
 
             // 지금 열어둔 방이면 채팅창에 추가
             if (currentRoom && chatRoomNo === currentRoom.chatRoomNo) {
-              setMessages(prev => [...prev, { ...body, chatDelFl: "N" }]);
+              setMessages(prev => [...prev, { ...body, chatContentDelFl: body.chatContentDelFl || "N" }]);
             } else {
               // 다른 방일 경우 unread 처리 + notReadCount 증가
               incrementUnread(chatRoomNo);
@@ -479,8 +480,12 @@ console.log("채팅방 목록 : ", rooms);
         {/* --- 왼쪽 채팅 목록 --- */}
         <div className={styles.chatRoomList}>
           <div className={styles.chatListHeader}>
-            <h3>채팅 목록</h3>
-            <button onClick={() => setShowSearch(!showSearch)}>+ 추가</button>
+            <div className={styles.chatListTitle}>
+                <strong>채팅 목록</strong>
+                <button className={styles.addButton} onClick={() => setShowSearch(!showSearch)}>
+                  + 추가
+                </button>
+              </div>
           </div>
 
           {showSearch && (
@@ -514,17 +519,6 @@ console.log("채팅방 목록 : ", rooms);
             </div>
           )}
 
-          {/* 채팅 목록 */}
-          <div className={styles.chatSearchTop}>
-            <input
-              type="text"
-              placeholder="Search"
-              value={searchNickname}
-              onChange={(e) => setSearchNickname(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearchMember()}
-            />
-          </div>
-
           {Array.isArray(rooms) &&
             rooms.map((room) => (
               <div
@@ -551,7 +545,7 @@ console.log("채팅방 목록 : ", rooms);
 
                 <div className={styles.roomInfo}>
                   <div className={styles.roomName}>{room.targetNickname}</div>
-                  <div className={styles.roomLastMessage}>{room.lastMessage}</div>
+                  <div className={styles.roomLastMessage}>{room.lastMessageDelFl === "Y" ? "삭제된 메시지입니다." : room.lastMessage}</div>
                 </div>
 
                 <div className={styles.roomMeta}>
@@ -570,7 +564,18 @@ console.log("채팅방 목록 : ", rooms);
             <>
               {/* 탭바 + 나가기 */}
               <div className={styles.chatTopbar}>
-                <div className={`${styles.tab} ${styles.active}`}>채팅 내역</div>
+                <img
+                  src={
+                    selectedRoom.targetProfile
+                      ? `http://localhost:8080${selectedRoom.targetProfile}`
+                      : "/default-profile.png"
+                  }
+                  alt="profile"
+                  className={styles.selectedRoomProfile}
+                  onError={(e) => {
+                    e.currentTarget.src = "/default-profile.png";
+                  }}
+                />
                 <div className={styles.tab}>
                   {selectedRoom?.targetNickname || "대화 상대"}
                 </div>
@@ -671,7 +676,7 @@ console.log("채팅방 목록 : ", rooms);
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyPress}
                 />
-                <button onClick={handleSendMessage}>보내기</button>
+                <button onClick={handleSendMessage} className={styles.sendButton}></button>
               </div>
             </>
           ) : (

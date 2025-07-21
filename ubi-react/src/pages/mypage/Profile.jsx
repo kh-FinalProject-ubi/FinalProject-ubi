@@ -10,7 +10,8 @@ import { div } from "framer-motion/client";
 import DaumPostcode from "react-daum-postcode";
 import { stripHtml } from "./striptHtml";
 import Pagination from "../../components/Pagination";
-import BenefitCard from "../mypage/BenefitCard";
+import BenefitCardGeneral from "../../components/MyPage/BenefitCardGeneral";
+import BenefitCardWrapper from "../../components/MyPage/BenefitCardWrapper";
 
 const parseMemberStandardCode = (code) => {
 
@@ -84,7 +85,7 @@ const Profile = () => {
   const detailAddressRef = useRef(null);
 
   const [benefits, setBenefits] = useState([]);
-  const [category, setCategory] = useState("시설"); // or '채용', '혜택', '시설'
+  const [category, setCategory] = useState("혜택"); // or '채용', '혜택', '시설'
 
   const [board, setBoard] = useState([]);
   const [contentType, setContentType] = useState("게시글"); // or '댓글'
@@ -138,6 +139,18 @@ const Profile = () => {
     setLikePage(1);
   }, [contentType]);
   
+  const handleUnfav = (id) => {
+  setBenefits((prev) =>
+    prev.filter((b) =>
+      b.serviceNo
+        ? b.serviceNo !== id
+        : b.recruitNo
+        ? b.recruitNo !== id
+        : b.facilityNo !== id
+      )
+    );
+  };
+
   // 로딩
   const withLoading = async (taskFn) => {
     setLoading(true);
@@ -414,11 +427,23 @@ const Profile = () => {
   }, [location.pathname, memberNo, category, contentType, commentContentType]);
 
   const handleClick = (benefit) => {
-    const servId = benefit.apiServiceId.replace("bokjiro-", "");
+    const { apiServiceId } = benefit;
 
-    navigate(`/welfareDetail/${servId}`, {
-      state: { data: benefit }, // ✅ 상세 페이지에서 받는 location.state.data
-    });
+    if (apiServiceId.startsWith("bokjiro-")) {
+      const servId = apiServiceId.replace("bokjiro-", "");
+      navigate(`/welfareDetail?servId=${servId}`);
+    } else if (apiServiceId.startsWith("seoul-")) {
+      navigate(`/seoulDetail?apiServiceId=${apiServiceId}`, {
+        state: { data: benefit },
+      });
+    } else if (apiServiceId.startsWith("job-API")) {
+      const servId = apiServiceId.replace(/^job-API[12]-/, "");
+      navigate(`/facilityJobDetail?servId=${servId}`, {
+        state: { data: benefit },
+      });
+    } else {
+      alert("지원하지 않는 상세 데이터 유형입니다.");
+    }
   };
 
   return (
@@ -680,13 +705,11 @@ const Profile = () => {
       {/* 혜택 리스트 */}
       <section className={styles.benefitList}>
         <div style={{ position: "relative" }}>
-          {loading && <LoadingOverlay />}
-
           {/* ⬇️ 헤더 : 제목 + 카테고리 토글 */}
           <div className={styles.listHeader}>
             <h3>찜 목록 ({benefits.length})</h3>
             <div className={styles.categoryTabs}>
-              {["채용", "혜택", "시설"].map((cat) => (
+              {["혜택", "시설"].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setCategory(cat)}
@@ -707,19 +730,28 @@ const Profile = () => {
               transition={{ duration: 0.25 }}
               className={styles.benefitCards}
             >
-              {pagedBenefits.map((benefit) => (
-                <BenefitCard
-                  key={benefit.serviceNo}
-                  benefit={benefit}
-                  token={token}
-                  onUnfav={(servNo) =>
-                    setBenefits((prev) => prev.filter((b) => b.serviceNo !== servNo))
-                  }
-                  onClick={handleClick}   // 상세 페이지 이동
-                />
-              ))}
+              {benefits.length === 0 ? (
+                <p className={styles.emptyMsg}>
+                  {category === "혜택" && "찜한 혜택이 없습니다."}
+                  {category === "시설" && "찜한 시설이 없습니다."}
+                </p>
+              ) : (
+                pagedBenefits.map((benefit) => (
+                  <BenefitCardWrapper
+                    key={
+                      benefit.serviceNo || benefit.recruitNo || benefit.facilityNo
+                    }
+                    category={category}
+                    benefit={benefit}
+                    token={token}
+                    onUnfav={handleUnfav}
+                    onClick={handleClick}
+                  />
+                ))
+              )}
             </motion.div>
           </AnimatePresence>
+
 
           {/* ⬇️ 페이지네이션 – 필요하면 로직 연결 */}
           {totalBenefitPages > 1 && (
@@ -870,7 +902,9 @@ const Profile = () => {
                 </thead>
                 <tbody>
                   {pagedLike.map((l) => (
-                    <tr key={l.boardNo}>
+                    <tr key={l.boardNo}
+                        onClick={() => navigate(`/mytownBoard/${l.boardNo}`)}
+                    >
                       <td>{l.postType}</td>
                       <td>{l.hashtags}</td>
                       <td>{l.boardTitle}</td>
@@ -909,7 +943,9 @@ const Profile = () => {
                 </thead>
                 <tbody>
                   {like.map((l) => (
-                    <tr key={l.commentNo}>
+                    <tr key={l.commentNo}
+                        onClick={() => navigate(`/mytownBoard/${l.boardNo}`)}
+                    >
                       <td>{l.postType}</td>
                       <td>{l.boardTitle}</td>
                       <td>{l.commentContent}</td>

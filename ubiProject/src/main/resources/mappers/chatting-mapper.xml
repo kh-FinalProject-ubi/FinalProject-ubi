@@ -6,11 +6,23 @@
 	<!-- 채팅방 목록 조회 -->
 	<select id="selectRoomList" resultType="ChattingRoom">
 		SELECT CHAT_ROOM_NO
-			,(SELECT CHAT_CONTENT FROM (
-				SELECT * FROM MEMBER_CHAT_MESSAGE M2
-				WHERE M2.CHAT_ROOM_NO = R.CHAT_ROOM_NO
-				ORDER BY CHAT_NO DESC) 
-				WHERE ROWNUM = 1) LAST_MESSAGE
+			,(SELECT CHAT_CONTENT 
+			 FROM (
+			   SELECT CHAT_CONTENT, CHAT_CONTENT_DEL_FL 
+			   FROM MEMBER_CHAT_MESSAGE M2
+			   WHERE M2.CHAT_ROOM_NO = R.CHAT_ROOM_NO
+			   ORDER BY CHAT_NO DESC
+			 ) 
+			 WHERE ROWNUM = 1) LAST_MESSAGE,
+			
+			(SELECT CHAT_CONTENT_DEL_FL 
+			 FROM (
+			   SELECT CHAT_CONTENT, CHAT_CONTENT_DEL_FL 
+			   FROM MEMBER_CHAT_MESSAGE M2
+			   WHERE M2.CHAT_ROOM_NO = R.CHAT_ROOM_NO
+			   ORDER BY CHAT_NO DESC
+			 ) 
+			 WHERE ROWNUM = 1) lastMessageDelFl
 			,TO_CHAR(NVL((SELECT MAX(CHAT_SEND_DATE) SEND_TIME 
 					FROM MEMBER_CHAT_MESSAGE M
 					WHERE R.CHAT_ROOM_NO  = M.CHAT_ROOM_NO), CHAT_CREATE_DATE), 
@@ -91,9 +103,22 @@
 	</update>
 	
 	<!-- 채팅 메세지 삽입 -->
-	<insert id="insertMessage">
-		INSERT INTO "MEMBER_CHAT_MESSAGE"
-		VALUES(SEQ_MESSAGE_NO.NEXTVAL, #{senderNo}, #{chatContent}, 'N', SYSDATE, DEFAULT, #{chatRoomNo})
+	<insert id="insertMessage" parameterType="Message">
+	  <selectKey keyProperty="chatNo" resultType="int" order="BEFORE">
+	    SELECT SEQ_MESSAGE_NO.NEXTVAL FROM DUAL
+	  </selectKey>
+	
+	  INSERT INTO "MEMBER_CHAT_MESSAGE"
+	  (CHAT_NO, SENDER_NO, CHAT_CONTENT, CHAT_READ_FL, CHAT_SEND_DATE, CHAT_CONTENT_DEL_FL, CHAT_ROOM_NO)
+	  VALUES (
+	    #{chatNo}, 
+	    #{senderNo}, 
+	    #{chatContent}, 
+	    'N', 
+	    SYSDATE, 
+	    DEFAULT, 
+	    #{chatRoomNo}
+	  )
 	</insert>
 	
 	<!-- 채팅방 나가기 -->

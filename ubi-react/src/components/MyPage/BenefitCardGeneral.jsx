@@ -1,6 +1,6 @@
 import axios from "axios";
 import styles from "../../styles/mypage/BenefitCard.module.css";
-import { stripHtml } from "./striptHtml";
+import { stripHtml } from "../../pages/mypage/striptHtml";
 
 export default function BenefitCard({ benefit, token, onUnfav, onClick }) {
   /* ⭐ 즐겨찾기 토글 */
