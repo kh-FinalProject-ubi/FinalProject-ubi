@@ -99,7 +99,7 @@ export default function FacilityCard({
       </div>
       <WelfareLikeButton
         token={auth.token}
-        facilityName={facility.serviceName}
+        facilityName={facility.facilityName}
         category={facility.category}
         regionCity={selectedCity} // 💡 여기!
         regionDistrict={selectedDistrict} // 💡 여기!

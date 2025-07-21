@@ -354,6 +354,7 @@ export default function FacilitySearchPage() {
               key={key}
               facility={facility}
               selectedCity={selectedCity}
+              selectedDistrict={selectedDistrict}
             />
           );
         })}
