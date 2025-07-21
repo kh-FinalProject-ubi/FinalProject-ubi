@@ -23,21 +23,37 @@ public class WelfareFacilityLikeController {
 
     // ✅ 1. 찜 등록/취소 토글
     @PostMapping
-    public ResponseEntity<?> toggleLike(@RequestBody FacilityLike dto,
+    public ResponseEntity<?> toggleLike(@RequestBody WelfareFacility apiDto,
                                         @AuthenticationPrincipal CustomUser user) {
 
-        Long memberNo = (long) user.getMemberNo(); // ← int → long 변환
-        boolean isLiked = likeService.toggleLike(dto, memberNo);
+        Long memberNo = (long) user.getMemberNo();
+
+        // ✅ 변환: API 응답 DTO → DB Insert용 DTO
+        FacilityLike like = new FacilityLike();
+        like.setMemberNo(memberNo);
+        like.setFacilityName(apiDto.get시설명());
+        like.setRegionCity(apiDto.get시군구명());
+        like.setRegionDistrict(apiDto.get자치구구분());
+        like.setCategory(apiDto.get시설종류명());
+        like.setDescription("정보 없음");
+        like.setAgency("정보 없음");
+        like.setFacilityAddr(apiDto.get주소());
+        like.setLat(apiDto.getLat());
+        like.setLng(apiDto.getLng());
+        like.setFacilityApiServiceId("FAC-" + UUID.randomUUID().toString().substring(0, 8));
+
+        boolean isLiked = likeService.toggleLike(like, memberNo);
         return ResponseEntity.ok(isLiked);
     }
 
+    // ✅ 2. 찜 여부 확인
     @GetMapping("/check")
     public ResponseEntity<Boolean> checkLike(@RequestParam String facilityName,
                                              @RequestParam String regionCity,
                                              @RequestParam String regionDistrict,
                                              @AuthenticationPrincipal CustomUser user) {
 
-        Long memberNo = (long) user.getMemberNo(); // ← int → long 변환
+        Long memberNo = (long) user.getMemberNo();
         boolean liked = likeService.isLiked(facilityName, regionCity, regionDistrict, memberNo);
         return ResponseEntity.ok(liked);
     }
