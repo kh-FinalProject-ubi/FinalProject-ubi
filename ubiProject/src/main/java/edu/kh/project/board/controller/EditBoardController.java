@@ -28,6 +28,7 @@ import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.board.model.service.BoardService;
 import edu.kh.project.board.model.service.EditBoardService;
 import edu.kh.project.common.util.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -220,22 +221,57 @@ public class EditBoardController {
 	}
 
 	 //사진 업로드 메서드
-	 @PostMapping("/image-upload")
-		public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
-			if (file.isEmpty()) {
-				return ResponseEntity.badRequest().body("파일이 없습니다.");
-			}
+//	 @PostMapping("/image-upload")
+//		public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
+//			if (file.isEmpty()) {
+//				return ResponseEntity.badRequest().body("파일이 없습니다.");
+//			}
+//
+//			// 파일 저장 처리
+//			String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+//			File dest = new File("/home/ec2-user/uploadFiles/board/" + fileName);
+//			
+//			try {
+//				file.transferTo(dest);
+//				return ResponseEntity.ok(fileName);
+//			} catch (IOException e) {
+//				return ResponseEntity.status(500).body("파일 업로드 실패");
+//			}
+//		}
+//	 
+//	 
+		
+	  @Value("${my.board.folder-path:C:/uploadFiles/board/}")
+	    private String uploadPath;
 
-			// 파일 저장 처리
-			String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-			File dest = new File("/home/ec2-user/uploadFiles/board/" + fileName);
-			
-			try {
-				file.transferTo(dest);
-				return ResponseEntity.ok(fileName);
-			} catch (IOException e) {
-				return ResponseEntity.status(500).body("파일 업로드 실패");
-			}
-		}
+	  @PostMapping("/image-upload")
+	  public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
+	      if (file.isEmpty()) {
+	          return ResponseEntity.badRequest().body("파일이 없습니다.");
+	      }
+
+	      String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+	      String uploadDir = uploadPath + (uploadPath.endsWith("/") ? "" : "/");
+	      File dest = new File(uploadDir + fileName);
+
+	      try {
+	          File dir = new File(uploadPath);
+	          if (!dir.exists()) dir.mkdirs();
+
+	          file.transferTo(dest);
+
+	          // 배포 주소를 동적으로 만듦 (호스트 주소 + webPath)
+	          String serverUrl = request.getScheme() + "://" + request.getServerName() + 
+	                  (request.getServerPort() == 80 || request.getServerPort() == 443 ? "" : ":" + request.getServerPort());
+
+	          String imageUrl = serverUrl + "/images/board/" + fileName;
+
+	          return ResponseEntity.ok(imageUrl);
+	      } catch (IOException e) {
+	          e.printStackTrace();
+	          return ResponseEntity.status(500).body("파일 업로드 실패");
+	      }
+	  }
+
 
 }
