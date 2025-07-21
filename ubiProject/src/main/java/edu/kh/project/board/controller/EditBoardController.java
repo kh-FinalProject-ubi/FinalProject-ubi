@@ -228,8 +228,8 @@ public class EditBoardController {
 
 			// 파일 저장 처리
 			String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-			File dest = new File("file:///home/ec2-user/uploadFiles/board/" + fileName);
-
+			File dest = new File("/home/ec2-user/uploadFiles/board/" + fileName);
+			
 			try {
 				file.transferTo(dest);
 				return ResponseEntity.ok(fileName);

@@ -22,7 +22,7 @@ const NoticeBoard = () => {
   const { token, role, authority } = useAuthStore();
   const path = location.pathname;
   const boardCode = boardCodeMap[path];
-  const isAdmin = role === "ADMIN";
+  const isAdmin = role === "ADMIN" || authority == "2";
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
