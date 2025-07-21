@@ -24,6 +24,11 @@ public class CustomUser implements UserDetails {
     public String getRole() {
         return role;
     }
+    
+ // 여기 추가
+    public Long getMemberNo() {
+        return (long) id;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
