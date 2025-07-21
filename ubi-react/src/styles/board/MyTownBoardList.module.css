@@ -165,7 +165,7 @@
   height: 12px;
   border-radius: 50%;
   border: 2px solid #ffe56d; /* 노란색 외곽선 */
-  background-color:  #ffe56d; /* ✅ 버튼 자체가 노란색 */
+  background-color: #ffe56d; /* ✅ 버튼 자체가 노란색 */
   margin: 0;
   position: relative;
   cursor: pointer;

@@ -1,8 +1,10 @@
 .carouselWrapper {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(5, 1fr); /* 최대 5개 */
   gap: 24px;
-
+  width: 100%;
+  padding: 0; /* ✅ 좌우 여백 제거 */
+  box-sizing: border-box;
 }
 
 .carouselCard {
@@ -12,17 +14,44 @@
   display: flex;
   flex-direction: column;
   padding: 1rem;
+  transition: transform 0.2s ease;
+}
+.carouselCard:hover {
+  transform: translateY(-4px);
 }
 
-/* 🟡 뱃지 */
+/* 반응형 대응 */
+@media (max-width: 1280px) {
+  .carouselWrapper {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+@media (max-width: 1024px) {
+  .carouselWrapper {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 768px) {
+  .carouselWrapper {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .carouselWrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
 .badge {
   display: inline-block;
   background: var(--yellow, #ffe56d);
   color: var(--gray-800, #2e2e2e);
-  font-size: 0.75rem;
-  padding: 2px 8px;
+  font-size: 0.9rem; /* 🔼 기존 0.75rem → 0.9rem */
+  padding: 4px 12px; /* 🔼 상하/좌우 padding 증가 */
   border-radius: 999px;
-  margin-bottom: 6px;
+  margin-bottom: 8px; /* 🔼 약간의 여백 확대 */
+  font-weight: 600; /* 🔼 텍스트 강조 */
+  letter-spacing: 0.3px; /* 🔼 약간의 자간 */
 }
 
 /* 🟣 버튼 */
@@ -69,42 +98,4 @@
   display: flex;
   align-items: center;
   gap: 4px;
-}
-
-
-/* ✅ 반응형 미디어 쿼리 */
-@media (max-width: 1024px) {
-  .carouselWrapper {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
-  .carouselWrapper {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-  }
-}
-
-@media (max-width: 480px) {
-  .carouselWrapper {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .carouselCard {
-    padding: 0.75rem;
-  }
-
-  .postThumb {
-    height: 140px;
-  }
-
-  .postTitle {
-    font-size: 0.95rem;
-  }
-
-  .postMeta {
-    padding: 0 12px 12px;
-  }
 }

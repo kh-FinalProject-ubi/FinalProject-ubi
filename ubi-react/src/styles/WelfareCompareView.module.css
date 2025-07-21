@@ -1,26 +1,40 @@
-.welfare-compare-table {
+.compareView {
+  margin-top: 2rem;
+}
+
+.toggleShowAll {
+  display: block;
+  margin: 10px 0;
+  font-weight: 500;
+  color: #333;
+}
+
+/* 표 전체 */
+.compareTable {
   width: 100%;
   border-collapse: collapse;
   margin-top: 12px;
 }
 
-.welfare-compare-table th,
-.welfare-compare-table td {
+/* 셀 기본 스타일 */
+.compareTable th,
+.compareTable td {
   border: 1px solid #ddd;
   padding: 12px;
   vertical-align: top;
   text-align: left;
 }
 
-.welfare-compare-table td {
+/* 클릭 가능한 셀 */
+.clickableCell {
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-.welfare-compare-table td:hover {
-  background: #f0f0f0;
-}
-
-.welfare-compare-view h3 {
-  margin-bottom: 10px;
+/* 🟡 hover 효과 */
+.clickableCell:hover {
+  background-color: #f4f8ff;
+  transform: scale(1.01);
+  border: 1px solid #5e60ce40;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
