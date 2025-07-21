@@ -243,78 +243,65 @@ public class MemberController {
 	           : ResponseEntity.status(409).body(Map.of("message", "이미 가입된 이메일입니다."));
 	}
 
+	private Map<String, Object> createLoginResponse(Member member, String suspensionNotice) {
+	    String token = jwtUtil.generateToken(member);
+	    String readableStandard = parseMemberStandard(member.getMemberStandard());
+	    String district = extractDistrict(member.getMemberAddress());
+
+	    Map<String, Object> body = new HashMap<>();
+	    body.put("token", token);
+	    body.put("memberName", member.getMemberNickname());
+	    body.put("address", district);
+	    body.put("memberStandard", readableStandard);
+	    body.put("memberImg", member.getMemberImg());
+	    body.put("memberNo", member.getMemberNo());
+	    body.put("authority", member.getAuthority());
+	    body.put("regionCity", member.getRegionCity());
+	    body.put("regionDistrict", member.getRegionDistrict());
+
+	    if (suspensionNotice != null) {
+	        body.put("suspensionNotice", suspensionNotice);
+	    }
+
+	    return body;
+	}
+	
 	@PostMapping("/kakao-login")
 	public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code) {
-		try {
-			Member member = service.kakaoLogin(code); // 반환 타입을 Member로 가정
+	    try {
+	        Member member = service.kakaoLogin(code); // Kakao 사용자 정보 기반 회원 조회 또는 가입
+	        Map<String, String> suspension = mapper.selectSuspension(member.getMemberNo());
+	        LocalDateTime now = LocalDateTime.now();
 
-			// 1) 회원 정지 정보 조회
-			Map<String, String> suspension = mapper.selectSuspension(member.getMemberNo());
-			LocalDateTime now = LocalDateTime.now();
+	        // 정지된 이력이 있을 경우
+	        if (suspension != null) {
+	            LocalDateTime suspendEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
+	            String suspendStart = suspension.get("START_DATE");
+	            String suspendEndStr = suspension.get("END_DATE");
+	            String notified = suspension.get("NOTIFIED");
 
-			if (suspension != null) {
-				LocalDateTime suspendEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
-				String suspendStart = suspension.get("START_DATE");
-				String suspendEndStr = suspension.get("END_DATE");
-				String notified = suspension.get("NOTIFIED");
+	            if (now.isBefore(suspendEnd)) {
+	                // 정지 기간 내 → 로그인 차단
+	                String period = suspendStart + " ~ " + suspendEndStr;
+	                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+	                        .body(Map.of("message", "회원님의 계정은 정지 중입니다.\n정지 기간: " + period));
+	            } else if ("N".equals(notified)) {
+	                // 정지 기간 종료 후 알림 미표시 상태 → 정지 해제 처리
+	                mapper.updateSuspensionNotified(member.getMemberNo());
+	                mapper.resetReportCount(member.getMemberNo());
+	                mapper.updateReportStatusSuspension(member.getMemberNo());
 
-				if (now.isBefore(suspendEnd)) {
-					// 2) 정지 기간 내 로그인 시도 → 로그인 차단
-					String period = suspendStart + " ~ " + suspendEndStr;
-					return ResponseEntity.status(HttpStatus.FORBIDDEN)
-							.body(Map.of("message", "회원님의 계정은 정지 중입니다.\n정지 기간: " + period));
-				} else {
-					// 3) 정지 기간이 끝났고 아직 알림을 안 띄운 경우
-					if ("N".equals(notified)) {
-						mapper.updateSuspensionNotified(member.getMemberNo());
+	                return ResponseEntity.ok(createLoginResponse(member, "회원님의 정지 기간이 종료되었습니다."));
+	            }
+	        }
 
-						// 🚨 신고 횟수 초기화 및 상태 업데이트
-						mapper.resetReportCount(member.getMemberNo());
-						mapper.updateReportStatusSuspension(member.getMemberNo());
+	        // 일반 로그인 성공
+	        return ResponseEntity.ok(createLoginResponse(member, null));
 
-						// 로그인 성공 + 정지 해제 알림 포함
-						String readableStandard = parseMemberStandard(member.getMemberStandard());
-						String district = extractDistrict(member.getMemberAddress());
-						String token = jwtUtil.generateToken(member);
-
-						Map<String, Object> body = new HashMap<>();
-						body.put("token", token);
-						body.put("memberName", member.getMemberNickname());
-						body.put("address", district);
-						body.put("memberStandard", readableStandard);
-						body.put("memberImg", member.getMemberImg());
-						body.put("memberNo", member.getMemberNo());
-						body.put("authority", member.getAuthority());
-						body.put("regionCity", member.getRegionCity());
-						body.put("regionDistrict", member.getRegionDistrict());
-						body.put("suspensionNotice", "회원님의 정지 기간이 종료되었습니다.");
-
-						return ResponseEntity.ok(body);
-					}
-				}
-			}
-
-			// 4) 정상 로그인 처리
-			String readableStandard = parseMemberStandard(member.getMemberStandard());
-			String district = extractDistrict(member.getMemberAddress());
-			String token = jwtUtil.generateToken(member);
-
-			Map<String, Object> body = new HashMap<>();
-			body.put("token", token);
-			body.put("memberName", member.getMemberNickname());
-			body.put("address", district);
-			body.put("memberStandard", readableStandard);
-			body.put("memberImg", member.getMemberImg());
-			body.put("memberNo", member.getMemberNo());
-			body.put("authority", member.getAuthority());
-			body.put("regionCity", member.getRegionCity());
-			body.put("regionDistrict", member.getRegionDistrict());
-
-			return ResponseEntity.ok(body);
-
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "카카오 로그인 실패"));
-		}
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body(Map.of("message", "카카오 로그인 중 오류가 발생했습니다."));
+	    }
 	}
 
 	private String normalizeSido(String rawSido) {
