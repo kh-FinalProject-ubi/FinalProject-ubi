@@ -22,8 +22,8 @@ const AskBoard = () => {
   const { token, role, memberNo, authority } = useAuthStore();
   const path = location.pathname;
   const boardCode = boardCodeMap[path];
-  const isAdmin = role === "ADMIN";
-  const isUser = role === "USER";
+  const isAdmin = role === "ADMIN" || authority == "2";
+  const isUser = role === "USER" || authority == "1";
 
   console.log(isAdmin);
 
