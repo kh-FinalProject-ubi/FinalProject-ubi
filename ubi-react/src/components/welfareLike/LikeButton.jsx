@@ -87,7 +87,25 @@ const LikeButton = ({
   };
 
   return (
-    <button onClick={handleClick}>{liked ? "💖 찜 취소" : "🤍 찜하기"}</button>
+    <button
+      onClick={handleClick}
+      style={{
+        backgroundColor: liked ? "#FFE56D" : "#ffffff",
+        color: liked ? "#2E2E2E" : "#5E60CE",
+        border: `2px solid ${liked ? "#FFE56D" : "#5E60CE"}`,
+        borderRadius: "24px",
+        padding: "8px 16px",
+        fontWeight: "bold",
+        fontSize: "15px",
+        cursor: "pointer",
+        transition: "all 0.2s ease",
+        boxShadow: liked
+          ? "0 2px 6px rgba(255, 229, 109, 0.4)"
+          : "0 2px 6px rgba(94, 96, 206, 0.3)",
+      }}
+    >
+      {liked ? "💖 찜 취소" : "🤍 찜하기"}
+    </button>
   );
 };
 

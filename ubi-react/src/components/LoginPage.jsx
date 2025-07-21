@@ -4,7 +4,6 @@ import useAuthStore from "../stores/useAuthStore";
 import useModalStore from "../stores/useModalStore";
 import styles from "../styles/common/LoginPage.module.css";
 
-
 // 이메일 유효성 검사
 const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -16,7 +15,12 @@ const formatTime = (seconds) => {
 };
 
 const handleKakaoLogin = () => {
-  window.location.href = "http://localhost:8080/oauth2/authorization/kakao";
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  if (!baseUrl) {
+    alert("카카오 로그인 주소를 불러올 수 없습니다.");
+    return;
+  }
+  window.location.href = `${baseUrl}/oauth2/authorization/kakao`;
 };
 
 const LoginPage = () => {
@@ -30,7 +34,6 @@ const LoginPage = () => {
   const [showNotice, setShowNotice] = useState(false);
 
   const goToMode = (targetMode) => setSearchParams({ mode: targetMode });
-
 
   useEffect(() => {
     if (alertMessage) {
@@ -261,15 +264,15 @@ const FindIdForm = ({ setMode }) => {
       setEmail(""); // 이메일 입력칸 비우기
       return;
     }
-  
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-  
+
     setErrors({});
     setIsLoading(true);
-  
+
     try {
       const res = await fetch(`/api/member/sendCode`, {
         method: "POST",
@@ -280,7 +283,7 @@ const FindIdForm = ({ setMode }) => {
           email,
         }),
       });
-  
+
       if (res.ok) {
         setIsCodeSent(true);
         setTimer(300);
@@ -536,15 +539,15 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
       setEmail(""); // 이메일 입력칸 비우기
       return;
     }
-  
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-  
+
     setErrors({});
     setIsLoading(true);
-  
+
     try {
       const res = await fetch("/api/member/sendCode", {
         method: "POST",
@@ -556,7 +559,7 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
           type: "pw",
         }),
       });
-  
+
       if (res.ok) {
         setIsCodeSent(true);
         setTimer(300);
@@ -675,38 +678,41 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
         </div>
         {isCodeSent && (
           <>
-           <div className={styles.inputWrapper}>
-  <div className={styles.inputGroup} style={{ marginTop: "10px" }}>
-    <input
-      placeholder="인증번호 입력"
-      value={code}
-      onChange={(e) => setCode(e.target.value)}
-      disabled={isCodeVerified}
-      className={
-        isCodeVerified ? styles.authInputFull : styles.authInput
-      }
-    />
-    {!isCodeVerified && (
-      <>
-        <button onClick={handleInlineVerify} className={styles.authBtn}>
-          인증확인
-        </button>
-      </>
-    )}
-  </div>
+            <div className={styles.inputWrapper}>
+              <div className={styles.inputGroup} style={{ marginTop: "10px" }}>
+                <input
+                  placeholder="인증번호 입력"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  disabled={isCodeVerified}
+                  className={
+                    isCodeVerified ? styles.authInputFull : styles.authInput
+                  }
+                />
+                {!isCodeVerified && (
+                  <>
+                    <button
+                      onClick={handleInlineVerify}
+                      className={styles.authBtn}
+                    >
+                      인증확인
+                    </button>
+                  </>
+                )}
+              </div>
 
-    {isTimerActive && (
-      <span className={styles.timer}>{formatTime(timer)}</span>
-    )}
-  <div className={styles.messageWrapper}>
-    {errors.code && (
-      <span className={styles.errorMessage}>{errors.code}</span>
-    )}
-    {successMsg && (
-      <span className={styles.successMessage}>{successMsg}</span>
-    )}
-  </div>
-</div>
+              {isTimerActive && (
+                <span className={styles.timer}>{formatTime(timer)}</span>
+              )}
+              <div className={styles.messageWrapper}>
+                {errors.code && (
+                  <span className={styles.errorMessage}>{errors.code}</span>
+                )}
+                {successMsg && (
+                  <span className={styles.successMessage}>{successMsg}</span>
+                )}
+              </div>
+            </div>
             <button
               onClick={handleFinalVerify}
               className={styles.confirmBtn}
