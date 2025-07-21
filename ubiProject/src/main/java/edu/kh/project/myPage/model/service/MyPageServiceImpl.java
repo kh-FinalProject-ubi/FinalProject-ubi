@@ -236,7 +236,7 @@ public class MyPageServiceImpl implements MyPageService {
 		// 1. 서버에 저장할 파일 경로 만들기
 
 		// 파일이 저장될 서버 폴더 경로
-		String folderPath = "home/ec2-useruploadFiles/test/";
+		String folderPath = "home/ec2-user/uploadFiles/test/";
 
 		// 클라이언트가 파일이 저장된 폴더에 접근할 수 있는 주소(정적리소스 요청 주소)
 		String webPath = "/myPage/file/";
