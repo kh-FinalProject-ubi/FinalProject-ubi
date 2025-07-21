@@ -69,22 +69,12 @@ const InsertBoard = () => {
         ],
         callbacks: {
           onChange: (contents) => {
-            const textLength = $("<div>").html(contents).text().length;
-            if (textLength > 2000) {
-              const trimmed = $("<div>")
-                .html(contents)
-                .text()
-                .substring(0, 2000);
-              $("#summernote").summernote("code", trimmed);
-            } else {
-              setContent(contents);
-            }
+            setContent(contents); 
           },
           onKeydown: (e) => {
-            const textLength = $("<div>")
-              .html($("#summernote").summernote("code"))
-              .text().length;
-            if (textLength >= 2000 && e.key.length === 1) {
+            const plainText = $("<div>").html($("#summernote").summernote("code")).text();
+            const isPrintable = e.key.length === 1; 
+            if (plainText.length >= 2000 && isPrintable) {
               e.preventDefault();
             }
           },
@@ -166,8 +156,8 @@ const InsertBoard = () => {
   const selectClassName = `${styles.postTypeSelect} ${
     postType === "문의" ? styles.postTypeInquiry : ""
   }${postType === "공지" ? styles.postTypeInquiry : ""}${
-    postType === "이벤트" ? styles.postTypeInquiry : ""
-  }${postType === "중요" ? styles.postTypeInquiry : ""} ${
+    postType === "이벤트" ? styles.postTypeEvent : ""
+  }${postType === "중요" ? styles.postTypeReport : ""} ${
     postType === "신고" ? styles.postTypeReport : ""
   }`;
 

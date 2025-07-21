@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styles from "../../styles/comment/Comment.module.css";
 import CommentModal from "./CommentModal";
+import useAuthStore from "../../stores/useAuthStore";
 
-const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
+const CommentSection = ({ boardCode, boardNo, token, loginMemberNo }) => {
   const [comments, setComments] = useState([]);
   const [commentContent, setCommentContent] = useState("");
   const [replyTarget, setReplyTarget] = useState(null);
@@ -16,8 +17,9 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
 
   const [expandedComments, setExpandedComments] = useState(new Set());
+  const { authority } = useAuthStore();
 
-  const isAdmin = role === "ADMIN";
+  const isAdmin = authority === "2";
 
   useEffect(() => {
     if (boardCode && boardNo) loadComments();
@@ -276,7 +278,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
                     </button>
                   )}
               </div>
-              {token  && (isAdmin || isMine) && (
+              {token && (isAdmin || isMine) && (
                 <div className={styles.commentActionsRight}>
                   {editingCommentNo === c.commentNo ? (
                     <>

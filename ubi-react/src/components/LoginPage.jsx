@@ -425,6 +425,7 @@ const FindIdForm = ({ setMode }) => {
               </div>
 
               {/* 3. 메시지들을 inputGroup과 같은 레벨로 이동 */}
+              
               {errors.code && (
                 <span className={`${styles.message} ${styles.errorMessage}`}>
                   {errors.code}

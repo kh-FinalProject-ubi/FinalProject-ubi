@@ -219,23 +219,23 @@ public class EditBoardController {
 		}
 	}
 
-	// 사진 업로드 메서드
-//	   @PostMapping("/image-upload")
-//	    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
-//	        if (file.isEmpty()) {
-//	            return ResponseEntity.badRequest().body("파일이 없습니다.");
-//	        }
-//
-//	        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-//	        File dest = new File(uploadPath + File.separator + fileName);
-//
-//	        try {
-//	            file.transferTo(dest);
-//	            return ResponseEntity.ok(fileName);
-//	        } catch (IOException e) {
-//	            return ResponseEntity.status(500).body("파일 업로드 실패");
-//	        }
-//	    }
-//	
+	 //사진 업로드 메서드
+	 @PostMapping("/image-upload")
+		public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
+			if (file.isEmpty()) {
+				return ResponseEntity.badRequest().body("파일이 없습니다.");
+			}
+
+			// 파일 저장 처리
+			String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+			File dest = new File("C:/uploadFiles/board/" + fileName);
+
+			try {
+				file.transferTo(dest);
+				return ResponseEntity.ok(fileName);
+			} catch (IOException e) {
+				return ResponseEntity.status(500).body("파일 업로드 실패");
+			}
+		}
 
 }

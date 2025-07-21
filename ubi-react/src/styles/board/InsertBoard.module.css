@@ -79,6 +79,11 @@
   background-color: #e53e3e !important; /* 신고: 빨간색 */
   color: white;
 }
+
+.postTypeEvent {
+  background-color: #5e60ce !important; /* 이벤트: 파란색 */
+  color: white !important;
+}
 /* --- --- */
 
 .titleInput {

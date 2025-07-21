@@ -22,7 +22,7 @@ const Signup = () => {
   const [memberTaddress, setMemberTaddress] = useState("");
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [memberStandard, setMemberStandard] = useState("");
+  const [memberStandard, setMemberStandard] = useState("일반");
   const [isDisabled, setIsDisabled] = useState(false);
   const [isPregnant, setIsPregnant] = useState(false);
   const [authCode, setAuthCode] = useState("");
@@ -153,20 +153,29 @@ const [pwMatchMessage, setPwMatchMessage] = useState("");
   };
 
   const getMemberStandardCode = (main, isDisabled, isPregnant) => {
-    if (!main && !isDisabled && !isPregnant) return "0";
-    if (isPregnant && !main && !isDisabled) return "A";
-    if (isPregnant && isDisabled && !main) return "B";
-    if (isPregnant && main === "청년") return "C";
-    if (isPregnant && main === "아동") return "D";
-    if (isPregnant && main === "노인") return "E";
-    if (isPregnant && isDisabled && main === "노인") return "F";
-    if (main === "노인" && isDisabled) return "4";
-    if (main === "청년" && isDisabled) return "5";
-    if (main === "아동" && isDisabled) return "6";
-    if (main === "노인") return "1";
-    if (main === "청년") return "2";
-    if (main === "아동") return "3";
-    if (isDisabled) return "7";
+    // 1. main이 "일반"이면 null로 처리해서 조건에 포함 안 시키기
+    const category = main === "일반" ? null : main;
+  
+    if (!category && !isDisabled && !isPregnant) return "0"; // 일반, 임산부/장애인 없음
+  
+    if (isPregnant && !category && !isDisabled) return "A"; // 임산부 + 일반
+    if (isPregnant && isDisabled && !category) return "B"; // 임산부 + 장애인 + 일반
+  
+    if (isPregnant && category === "청년") return "C";
+    if (isPregnant && category === "아동") return "D";
+    if (isPregnant && category === "노인") return "E";
+    if (isPregnant && isDisabled && category === "노인") return "F";
+  
+    if (category === "노인" && isDisabled) return "4";
+    if (category === "청년" && isDisabled) return "5";
+    if (category === "아동" && isDisabled) return "6";
+  
+    if (category === "노인") return "1";
+    if (category === "청년") return "2";
+    if (category === "아동") return "3";
+  
+    if (isDisabled) return "7"; // 장애인 + 일반(카테고리 없음)
+  
     return "0";
   };
 
@@ -209,7 +218,7 @@ const [pwMatchMessage, setPwMatchMessage] = useState("");
       const data = await res.json();
   
       if (res.ok && data.token) {
-  -     setSignupComplete(data.memberName); 
+
   +     navigate("/signup/success");
         return;
       } else {
@@ -330,26 +339,51 @@ const [pwMatchMessage, setPwMatchMessage] = useState("");
 
 
           {/* 회원 유형 */}
-          <h4 className={styles.memberTypeTitle}>
-  계층 대상
-  {!memberStandard && (
-    <span className={styles.generalNotice}>
-      &nbsp;&nbsp;&nbsp;&nbsp;* 선택하지 않으면 일반 회원으로 등록됩니다.
-    </span>
-  )}
-</h4>
-          
-          <div className={styles.memberTypeBlock}>
-            <div className={styles.radioRow}>
-              {["노인", "청년", "아동", "장애인"].map((label) => (
-                <label key={label} className={`${styles.radioBox} ${memberStandard === label ? styles.selected : ""}`}>
-                  <input type="radio" name="standard" value={label} checked={memberStandard === label} onChange={(e) => setMemberStandard(e.target.value)} />
-                  {label}
-                </label>
-              ))}
-            </div>
-            
-          </div>
+
+<div className={styles.memberTypeBlock}>
+  {/* 계층 선택 */}
+  <h4>계층 대상</h4>
+<div className={styles.memberTypeBlock}>
+  <div className={styles.radioRow}>
+    {["일반", "노인", "청년", "아동"].map((label) => (
+      <label key={label} className={`${styles.radioBox} ${memberStandard === label ? styles.selected : ""}`}>
+        <input 
+          type="radio" 
+          name="standard" 
+          value={label} 
+          checked={memberStandard === label} 
+          onChange={(e) => setMemberStandard(e.target.value)} 
+        />
+        {label}
+      </label>
+    ))}
+  </div>
+
+  <div className={styles.checkRow}>
+  <div className={styles.toggleWrapper}>
+  <label className={styles.toggleSwitch}>
+    <input 
+      type="checkbox" 
+      checked={isPregnant} 
+      onChange={(e) => setIsPregnant(e.target.checked)} 
+    />
+    <span className={styles.slider}></span>
+    <span className={styles.labelText}>임산부</span>
+  </label>
+
+  <label className={`${styles.toggleSwitch} ${styles.disabledToggle}`}>
+    <input 
+      type="checkbox" 
+      checked={isDisabled} 
+      onChange={(e) => setIsDisabled(e.target.checked)} 
+    />
+    <span className={styles.slider}></span>
+    <span className={styles.labelText}>장애인</span>
+  </label>
+</div>
+  </div>
+</div>
+</div>
           
 
           <div className={styles.termsBlock}>
