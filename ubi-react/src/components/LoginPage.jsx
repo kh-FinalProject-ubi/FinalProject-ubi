@@ -15,11 +15,8 @@ const formatTime = (seconds) => {
 };
 
 const handleKakaoLogin = () => {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
-  if (!baseUrl) {
-    alert("카카오 로그인 주소를 불러올 수 없습니다.");
-    return;
-  }
+  const baseUrl = "https://kh-ubi.site"; // 👈 고정값으로 대체
+
   window.location.href = `${baseUrl}/oauth2/authorization/kakao`;
 };
 
@@ -428,7 +425,7 @@ const FindIdForm = ({ setMode }) => {
               </div>
 
               {/* 3. 메시지들을 inputGroup과 같은 레벨로 이동 */}
-              
+
               {errors.code && (
                 <span className={`${styles.message} ${styles.errorMessage}`}>
                   {errors.code}

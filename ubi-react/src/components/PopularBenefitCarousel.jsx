@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import usePopularBenefits from "../hook/welfareService/usePopularBenefits";
 import { normalizeRegion } from "../utils/regionUtils";
@@ -38,16 +38,24 @@ const PopularBenefitCarousel = () => {
           b.regionCity,
           b.regionDistrict
         );
+
         return (
           <article key={b.apiServiceId} className={styles.carouselCard}>
-            <span className="badge">복지</span>
+            <span className={styles.badge}>복지</span>
             <h4>{b.serviceName}</h4>
             <p>{b.category || "분류 없음"}</p>
             <p>
-              📍 {regionCity} {regionDistrict || "지역 정보 없음"}
+              <strong>
+                {regionCity} {regionDistrict || "지역 정보 없음"}
+              </strong>
             </p>
-            <p>🥇 찜 {b.likeCount}회</p>
-            <button className="btn-primary" onClick={() => handleClick(b)}>
+            <p>
+              <strong>찜 {b.likeCount}회</strong>
+            </p>
+            <button
+              className={styles.btnPrimary}
+              onClick={() => handleClick(b)}
+            >
               자세히 보기
             </button>
           </article>
