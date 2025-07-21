@@ -251,8 +251,7 @@ public class EditBoardController {
 	      }
 
 	      String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-	      String uploadDir = uploadPath + (uploadPath.endsWith("/") ? "" : "/");
-	      File dest = new File(uploadDir + fileName);
+	      File dest = new File(uploadPath + fileName);
 
 	      try {
 	          File dir = new File(uploadPath);
