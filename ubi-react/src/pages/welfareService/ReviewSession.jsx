@@ -44,7 +44,7 @@ export default function WelfareReviewSection({ apiServiceId }) {
     boardContent,
     boardDate,
     starCount,
-    memberImage,
+    memberImg,
     memberNickname,
   } = currentReview;
 
@@ -91,12 +91,15 @@ export default function WelfareReviewSection({ apiServiceId }) {
 
         <div className={styles.reviewCard} onClick={goToDetail}>
           <div className={styles.reviewRow}>
-            <img
-              src={memberImage || "/default-profile.png"}
-              alt="프로필"
-              className={styles.profileImg}
-              onError={(e) => (e.currentTarget.src = "/default-profile.png")}
-            />
+<img
+  className={styles.profileImg}
+  src={memberImg || "/default-profile.png"}
+  alt="프로필"
+  onError={(e) => {
+    e.currentTarget.src = "/default-profileerror.png";
+    e.currentTarget.onerror = null;
+  }}
+/>
 
             <div className={styles.reviewCol}>
               <div className={styles.reviewTop}>

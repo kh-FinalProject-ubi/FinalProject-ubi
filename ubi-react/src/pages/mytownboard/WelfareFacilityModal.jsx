@@ -109,6 +109,8 @@ export default function WelfareFacilityModal({
               facility["ADDR"] ||
               facility["주소"] ||
               facility["refineRoadnmAddr"] ||
+               facility["REFINE_ROADNM_ADDR"] ||
+              
               "주소 없음";
 
             return (

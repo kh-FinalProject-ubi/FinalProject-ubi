@@ -63,10 +63,6 @@ const handleKeyDown = (e) => {
     setHashtags(""); // ✅ 입력창에도 표시 안 되도록 바로 초기화
   };
 
-
-
-
-
   const [showFacilityModal, setShowFacilityModal] = useState(false);
   const [showBenefitModal, setShowBenefitModal] = useState(false);
 
@@ -218,7 +214,9 @@ const handleKeyDown = (e) => {
     });
   }, []);
 
-  return (
+const isMobile = window.innerWidth <= 768;
+  
+return (
     <div className={styles.container}>
       <div className={styles.pageHeaderContainer}>
         <div className={styles.subText}>우리 동네 좋아요</div>
@@ -230,6 +228,7 @@ const handleKeyDown = (e) => {
         </div>
       </div>
       {/* 작성 테이블 */}
+
       <div className={styles.filterBox}>
         <table className={styles.filterTable}>
           <tbody>
@@ -358,6 +357,7 @@ const handleKeyDown = (e) => {
           </tbody>
         </table>
       </div>
+      
 {tagLimitMessage && <p className={styles.errorText}>{tagLimitMessage}</p>}
       <br />
 

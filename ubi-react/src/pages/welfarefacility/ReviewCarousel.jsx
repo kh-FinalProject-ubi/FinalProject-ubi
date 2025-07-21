@@ -19,7 +19,7 @@ export default function ReviewCarousel({ reviews }) {
     boardContent,
     boardDate,
     starCount,
-    memberImage,
+    memberImg,
     memberNickname,
   } = currentReview;
 
@@ -65,12 +65,15 @@ export default function ReviewCarousel({ reviews }) {
         <div className={styles.reviewCard} onClick={goToDetail}>
           <div className={styles.reviewRow}>
             {/* 왼쪽: 프로필 */}
-            <img
-              src={memberImage || "/default-profile.png"}
-              alt="프로필"
-              className={styles.profileImg}
-              onError={(e) => (e.currentTarget.src = "/default-profile.png")}
-            />
+<img
+  className={styles.profileImg}
+  src={memberImg || "/default-profile.png"}
+  alt="프로필"
+  onError={(e) => {
+    e.currentTarget.src = "/default-profileerror.png";
+    e.currentTarget.onerror = null;
+  }}
+/>
 
             {/* 오른쪽: 나머지 */}
             <div className={styles.reviewCol}>
