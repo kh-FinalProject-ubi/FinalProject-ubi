@@ -204,7 +204,11 @@ const [selectedMember, setSelectedMember] = useState(null);
                   <div className={styles.stats}>
                     {boardCode === 1 && (
                       <button onClick={handleLike}>
-                        {liked ? "❤️" : "🤍"} {likeCount}
+                        <img
+                                           src="/icons/boardlike.svg"
+                                           alt="좋아요"
+                                           className={styles.iconHeart}
+                                         /> {likeCount}
                       </button>
                     )}
                     <span>조회 {board.boardReadCount}</span>

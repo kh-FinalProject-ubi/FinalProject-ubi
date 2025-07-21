@@ -129,13 +129,15 @@
 .metaContainer {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-top: 1rem;
+  align-items: flex-end;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem; /* ✅ 간격 넓힘 (기존보다 확 넓게) */
 }
+
 
 .userInfo {
   display: flex;
-  align-items: center;
+
   gap: 10px;
 }
 
@@ -149,6 +151,7 @@
 .authorInfo {
   display: flex;
   flex-direction: column;
+  justify-content: flex-end; /* 👈 추가 */
 }
 
 .authorNickname {
@@ -158,6 +161,7 @@
 .boardDate {
   font-size: 0.85rem;
   color: #888;
+    align-self: flex-end;
 }
 
 .stats {
@@ -179,10 +183,44 @@
   padding: 0;
   color: inherit;
   font-size: inherit;
+    align-self: flex-end;
 }
 .stats button:focus {
   outline: none;
 }
+
+/* 좋아요 */
+.likeButton {
+  display: inline-flex;      /*  내부 요소 수평 정렬 */
+  align-items: center;       /*  수직 가운데 정렬 */
+  gap: 3px;                  /*  아이콘과 숫자 간 여백 */
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 1rem;
+  color: inherit;
+}
+
+.iconHeart {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+}
+
+.likeCount {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+
+.readCount {
+  font-size: 0.95rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;   /* ✅ 아이콘이랑 높이 맞춤 */
+}
+
 
 /* --- 게시글 본문 --- */
 .boardContent {
@@ -303,10 +341,49 @@
   margin-bottom: 15px;
 }
 
+
+.reportBtn {
+  all: unset; /* 👈 버튼 기본 스타일 완전 제거 */
+  cursor: pointer; /* 마우스 커서 손모양 */
+  display: inline-flex; /* 이미지 크기만큼 영역 확보 */
+  padding: 0; /* 혹시 남은 여백 제거 */
+}
+
+
 @media (max-width: 768px) {
-  .container {
+    .container {
     min-width: auto;
     padding: 1rem 5%;
   }
 
+  .metaContainer {
+    flex-direction: row !important;    /* ✅ 다시 가로로 */
+    align-items: center !important;    /* ✅ 수직 정렬 맞춤 */
+    gap: 12px;
+    flex-wrap: wrap;                   /* ✅ 너무 작으면 줄바꿈 허용 */
+  }
+
+  .userInfo {
+    flex-direction: row;
+    align-items: center;
+    flex-grow: 1;                      /* ✅ 왼쪽 공간 확보 */
+    gap: 10px;
+  }
+
+  .statColumn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .stats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+  }
+
+  .reportBtn {
+    margin-left: 0; /* 오른쪽 정렬 제거 */
+  }
 }

@@ -155,3 +155,38 @@
   margin-left: 42px; /* ✅ 이 간격만 넓게 */
   flex-shrink: 0;
 }
+
+
+@media (max-width: 1024px) {
+  .reviewCarousel {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+    position: relative;
+  }
+
+  .carouselArrow {
+    position: static; /* 기존 위치 해제 */
+    transform: none;
+    display: inline-flex;
+    background: none;
+    margin: 0 12px;
+  }
+
+  .carouselArrow.left,
+  .carouselArrow.right {
+    position: static;
+  }
+
+  .arrowIcon {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* ✅ 하단 화살표 wrapper 추가 시 사용 */
+  .arrowBottomWrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+  }
+}

@@ -452,3 +452,85 @@
   font-weight: bold;
   cursor: default;
 }
+
+.boardGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* 태블릿: 2개 */
+@media (max-width: 1200px) {
+  .boardGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 모바일: 1개 */
+@media (max-width: 768px) {
+  .boardGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+@media (max-width: 768px) {
+  /* ✅ 필터 테이블 기본 구조 유지 */
+  .filterTable,
+  .filterRow,
+  .filterLabel,
+  .filterContent {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .filterRow {
+    margin-bottom: 1.5rem;
+  }
+
+  .filterLabel {
+    padding: 12px 16px;
+    background-color: #ffe56d;
+    color: #5c3c00;
+    font-weight: bold;
+    font-size: 0.95rem;
+    text-align: left;
+    border: none;
+    border-bottom: 1px solid #eee;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .filterContent {
+    padding: 14px 16px;
+    background-color: #fff;
+    border-radius: 0 0 8px 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 12px;
+  }
+
+  .filterContent select {
+    width: 100%;
+    max-width: 100%;
+    font-size: 1rem;
+  }
+
+  .radioLabel {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .tagButton {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+  }
+
+  .filterTitle {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+
+}
