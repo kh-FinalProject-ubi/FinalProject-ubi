@@ -98,7 +98,11 @@ export default function FacilityCard({
       className={styles.facilityCard}
       onClick={() =>
         navigate("/facility/detail", {
-          state: { facility },
+          state: {
+            facility,
+            regionCity: selectedCity, // 🟢 이 두 줄만 추가
+            regionDistrict: selectedDistrict, // 🟢
+          },
         })
       }
     >
