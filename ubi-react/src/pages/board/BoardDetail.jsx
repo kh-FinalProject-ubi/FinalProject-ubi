@@ -178,7 +178,7 @@ const [selectedMember, setSelectedMember] = useState(null);
                 <div className={styles.metaContainer}>
                   <div className={styles.userInfo}>
                   <img
-  src={board.memberImg ? `http://localhost:8080${board.memberImg}` : "/default-profile.png"}
+  src={board.memberImg ? `https://kh-ubi.site${board.memberImg}` : "/default-profile.png"}
   alt="프로필"
   className={styles.profileImg}
   onClick={(e) => {

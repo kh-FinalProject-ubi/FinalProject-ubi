@@ -239,7 +239,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo }) => {
               <div className={styles.commentAuthorInfo}>
                 <img
                   src={
-                    `http://localhost:8080${c.memberImg}` ||
+                    `https://kh-ubi.site${c.memberImg}` ||
                     "/default-profile.png"
                   }
                   alt="프로필 사진"
