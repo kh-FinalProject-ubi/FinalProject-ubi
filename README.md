@@ -48,10 +48,15 @@ https://kh-ubi.site
 🛠️ 사용 기술
 분야	기술 스택
 Frontend	React, React Router, Zustand, Axios, CSS Modules, Summernote
+
 Backend	Spring Boot, Spring Security, JWT, WebSocket (STOMP), MyBatis
+
 Database	Oracle DB
+
 Infra/DevOps	AWS EC2, Nginx, GitHub
+
 API 활용	공공데이터포털, 서울시 열린데이터광장, 복지로, VWorld 지도 API 등
+
 
 📷 시연 화면
 (스크린샷 위치 예: ![메인페이지](./images/main-page.png))
@@ -68,7 +73,10 @@ npm run dev
 # Backend
 cd ubiProject
 ./gradlew bootRun
+
 ✅ 프로젝트 한 줄 소개
+
 “우리 동네 복지 정보도 한눈에!”
+
 복지 정보의 접근성을 높이고, 지역 주민들이 혜택을 쉽게 찾고 공유할 수 있도록 만든 복지 통합 플랫폼입니다.
 
