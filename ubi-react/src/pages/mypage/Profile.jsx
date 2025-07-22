@@ -269,12 +269,12 @@ const Profile = () => {
   // 내가 작성한 게시글/댓글 목록
   const getBoardData = async () => {
     try {
-      // console.log("작성글 axios 요청 시작");
+      console.log("작성글 axios 요청 시작");
       const res = await axios.get("/api/myPage/board", {
         params: { memberNo: memberNo, contentType: contentType },
       });
-      console.log("작성글 응답 받음:", res);
-      // console.log("작성글 응답 값:", res.data);
+      // console.log("작성글 응답 받음:", res);
+      console.log("작성글 응답 값:", res.data);
 
       if (res.status === 200) {
         setBoard(res.data);
@@ -483,7 +483,7 @@ const Profile = () => {
       {member && (
         <section className={styles.basicInfo}>
           <div style={{ position: "relative" }}>
-            {loading && <LoadingOverlay />}
+            {loading}
             <div className={styles.basicInfoHeader}>
               <h3>기본 정보</h3>
               <div className={styles.categoryTabs}>
@@ -744,6 +744,7 @@ const Profile = () => {
       {/* 혜택 리스트 */}
       <section className={styles.benefitList}>
         <div style={{ position: "relative" }}>
+          {loading}
           {/* ⬇️ 헤더 : 제목 + 카테고리 토글 */}
           <div className={styles.listHeader}>
             <h3>찜 목록 ({benefits.length})</h3>
@@ -813,6 +814,7 @@ const Profile = () => {
       {/* 게시글 목록 */}
       <section className={styles.postList}>
         <div style={{ position: "relative" }}>
+          {loading}
           <div className={styles.listHeader}>
             <h3>
               {contentType === "게시글"
@@ -837,124 +839,137 @@ const Profile = () => {
 
           {contentType === "게시글" && (
             <div>
-              <table className={styles.postTable}>
-                <thead>
-                  <tr>
-                    <th>분류</th>
-                    <th>해시태그</th>
-                    <th className={styles.content}>제목</th>
-                    <th className={styles.content}>내용</th>
-                    <th>작성일</th>
-                    <th>조회수</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pagedBoard.map((b) => (
-                    <tr
-                      key={b.boardNo}
-                      className={styles.clickableRow}
-                      onClick={() => navigate(`/mytownBoard/${b.boardNo}`)}
-                    >
-                      <td>{b.postType}</td>
-                      <td>
-                        {(() => {
-                          if (!b.hashtags) {
-                            return (
-                              <span
-                                className={`${styles.hashtag} ${styles.hashtagNone}`}
-                              >
-                                없음
-                              </span>
-                            );
-                          }
-
-                          const first = b.hashtags.split(",")[0].trim();
-                          const text =
-                            first.length > 3
-                              ? `#${first.slice(0, 3)}...`
-                              : `#${first}`;
-
-                          return <span className={styles.hashtag}>{text}</span>;
-                        })()}
-                      </td>
-                      <td className={styles.content}>
-                        {(() => {
-                          const plainContent = stripHtml(b.boardTitle);
-
-                          if (!plainContent) return "내용 없음";
-
-                          return plainContent.length > 15
-                            ? `${plainContent.slice(0, 15)}...`
-                            : plainContent;
-                        })()}
-                      </td>
-                      <td className={styles.content}>
-                        {(() => {
-                          const plainContent = stripHtml(b.boardContent);
-
-                          if (!plainContent) return "내용 없음";
-
-                          return plainContent.length > 20
-                            ? `${plainContent.slice(0, 20)}...`
-                            : plainContent;
-                        })()}
-                      </td>
-                      <td>{b.boardDate}</td>
-                      <td>{b.boardReadCount}</td>
+              {loading ? (
+                <div className={styles.loadingPlaceholder}>불러오는 중...</div>
+              ) : pagedBoard.length === 0 ? (
+                <p className={styles.emptyMsg}>작성한 게시글이 없습니다.</p>
+              ) : (
+                <table className={styles.postTable}>
+                  <thead>
+                    <tr>
+                      <th>분류</th>
+                      <th>해시태그</th>
+                      <th className={styles.content}>제목</th>
+                      <th className={styles.content}>내용</th>
+                      <th>작성일</th>
+                      <th>조회수</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {pagedBoard.map((b) => (
+                      <tr
+                        key={b.boardNo}
+                        className={styles.clickableRow}
+                        onClick={() => navigate(`/mytownBoard/${b.boardNo}`)}
+                      >
+                        <td>{b.postType}</td>
+                        <td>
+                          {(() => {
+                            if (!b.hashtags) {
+                              return (
+                                <span
+                                  className={`${styles.hashtag} ${styles.hashtagNone}`}
+                                >
+                                  없음
+                                </span>
+                              );
+                            }
+
+                            const first = b.hashtags.split(",")[0].trim();
+                            const text =
+                              first.length > 3
+                                ? `#${first.slice(0, 3)}...`
+                                : `#${first}`;
+
+                            return <span className={styles.hashtag}>{text}</span>;
+                          })()}
+                        </td>
+                        <td className={styles.content}>
+                          {(() => {
+                            const plainContent = stripHtml(b.boardTitle);
+
+                            if (!plainContent) return "내용 없음";
+
+                            return plainContent.length > 15
+                              ? `${plainContent.slice(0, 15)}...`
+                              : plainContent;
+                          })()}
+                        </td>
+                        <td className={styles.content}>
+                          {(() => {
+                            const plainContent = stripHtml(b.boardContent);
+
+                            if (!plainContent) return "내용 없음";
+
+                            return plainContent.length > 20
+                              ? `${plainContent.slice(0, 20)}...`
+                              : plainContent;
+                          })()}
+                        </td>
+                        <td>{b.boardDate}</td>
+                        <td>{b.boardReadCount}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           )}
 
           {contentType === "댓글" && (
             <div>
-              <table className={styles.postTable}>
-                <thead>
-                  <tr>
-                    <th>분류</th>
-                    <th className={styles.content}>제목</th>
-                    <th className={styles.content}>내 댓글</th>
-                    <th>작성일</th>
-                    <th>좋아요</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pagedBoard.map((b) => (
-                    <tr
-                      key={b.commentNo}
-                      onClick={() => navigate(`/mytownBoard/${b.boardNo}`)}
-                    >
-                      <td>{b.postType}</td>
-                      <td className={styles.content}>
-                        {(() => {
-                          const plainContent = stripHtml(b.boardTitle);
-
-                          if (!plainContent) return "내용 없음";
-
-                          return plainContent.length > 15
-                            ? `${plainContent.slice(0, 15)}...`
-                            : plainContent;
-                        })()}
-                      </td>
-                      <td className={styles.content}>
-                        {(() => {
-                          const plainContent = stripHtml(b.commentContent);
-
-                          if (!plainContent) return "내용 없음";
-
-                          return plainContent.length > 20
-                            ? `${plainContent.slice(0, 20)}...`
-                            : plainContent;
-                        })()}
-                      </td>
-                      <td>{b.commentDate}</td>
-                      <td>{b.likeCount != null ? b.likeCount : 0}</td>
+              {loading ? (
+                <div className={styles.loadingPlaceholder}>불러오는 중...</div>
+              ) : pagedBoard.length === 0 ? (
+                <p className={styles.emptyMsg}>작성한 댓글이 없습니다.</p>
+              ) : (
+                <table className={styles.postTable}>
+                  <thead>
+                    <tr>
+                      <th>분류</th>
+                      <th className={styles.content}>제목</th>
+                      <th className={styles.content}>내 댓글</th>
+                      <th>작성일</th>
+                      <th>좋아요</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {pagedBoard.map((b) => (
+                      <tr
+                        key={b.commentNo}
+                        className={styles.clickableRow}
+                        onClick={() => navigate(`/mytownBoard/${b.boardNo}`)}
+                      >
+                        <td>{b.postType}</td>
+                        <td className={styles.content}>
+                          {(() => {
+                            const plainContent = stripHtml(b.boardTitle);
+
+                            if (!plainContent) return "내용 없음";
+
+                            return plainContent.length > 15
+                              ? `${plainContent.slice(0, 15)}...`
+                              : plainContent;
+                          })()}
+                        </td>
+                        <td className={styles.content}>
+                          {(() => {
+                            const plainContent = stripHtml(b.commentContent);
+
+                            if (!plainContent) return "내용 없음";
+
+                            return plainContent.length > 20
+                              ? `${plainContent.slice(0, 20)}...`
+                              : plainContent;
+                          })()}
+                        </td>
+                        <td>{b.commentDate}</td>
+                        <td>{b.likeCount != null ? b.likeCount : 0}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           )}
 
@@ -973,6 +988,7 @@ const Profile = () => {
 
       <section className={styles.postList}>
         <div style={{ position: "relative" }}>
+          {loading}
           <div className={styles.listHeader}>
             <h3>
               {commentContentType === "게시글"
@@ -985,7 +1001,7 @@ const Profile = () => {
                 <button
                   key={cat}
                   onClick={() => setCommentContentType(cat)}
-                  className={setCommentContentType === cat ? styles.active : ""}
+                  className={commentContentType === cat ? styles.active : ""}
                 >
                   {cat}
                 </button>
@@ -997,123 +1013,137 @@ const Profile = () => {
 
           {commentContentType === "게시글" && (
             <div>
-              <table className={styles.postTable}>
-                <thead>
-                  <tr>
-                    <th>분류</th>
-                    <th>해시태그</th>
-                    <th className={styles.content}>제목</th>
-                    <th className={styles.content}>내용</th>
-                    <th>작성자</th>
-                    <th>작성일</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pagedLike.map((l) => (
-                    <tr
-                      key={l.boardNo}
-                      onClick={() => navigate(`/mytownBoard/${l.boardNo}`)}
-                    >
-                      <td>{l.postType}</td>
-                      <td>
-                        {(() => {
-                          if (!l.hashtags) {
-                            return (
-                              <span
-                                className={`${styles.hashtag} ${styles.hashtagNone}`}
-                              >
-                                없음
-                              </span>
-                            );
-                          }
-
-                          const first = l.hashtags.split(",")[0].trim();
-                          const text =
-                            first.length > 3
-                              ? `#${first.slice(0, 3)}...`
-                              : `#${first}`;
-
-                          return <span className={styles.hashtag}>{text}</span>;
-                        })()}
-                      </td>
-                      <td className={styles.content}>
-                        {(() => {
-                          const plainContent = stripHtml(l.boardTitle);
-
-                          if (!plainContent) return "내용 없음";
-
-                          return plainContent.length > 15
-                            ? `${plainContent.slice(0, 15)}...`
-                            : plainContent;
-                        })()}
-                      </td>
-                      <td className={styles.content}>
-                        {(() => {
-                          const plainContent = stripHtml(l.boardContent);
-
-                          if (!plainContent) return "내용 없음";
-
-                          return plainContent.length > 20
-                            ? `${plainContent.slice(0, 20)}...`
-                            : plainContent;
-                        })()}
-                      </td>
-                      <td>{l.memberNickname}</td>
-                      <td>{l.boardDate}</td>
+              {loading ? (
+                <div className={styles.loadingPlaceholder}>불러오는 중...</div>
+              ) : like.length === 0 ? (
+                <p className={styles.emptyMsg}>좋아요 누른 게시글이 없습니다.</p>
+              ) : (
+                <table className={styles.postTable}>
+                  <thead>
+                    <tr >
+                      <th>분류</th>
+                      <th>해시태그</th>
+                      <th className={styles.content}>제목</th>
+                      <th className={styles.content}>내용</th>
+                      <th>작성자</th>
+                      <th>작성일</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {pagedLike.map((l) => (
+                      <tr
+                        key={l.boardNo}
+                        className={styles.clickableRow}
+                        onClick={() => navigate(`/mytownBoard/${l.boardNo}`)}
+                      >
+                        <td>{l.postType}</td>
+                        <td>
+                          {(() => {
+                            if (!l.hashtags) {
+                              return (
+                                <span
+                                  className={`${styles.hashtag} ${styles.hashtagNone}`}
+                                >
+                                  없음
+                                </span>
+                              );
+                            }
+
+                            const first = l.hashtags.split(",")[0].trim();
+                            const text =
+                              first.length > 3
+                                ? `#${first.slice(0, 3)}...`
+                                : `#${first}`;
+
+                            return <span className={styles.hashtag}>{text}</span>;
+                          })()}
+                        </td>
+                        <td className={styles.content}>
+                          {(() => {
+                            const plainContent = stripHtml(l.boardTitle);
+
+                            if (!plainContent) return "내용 없음";
+
+                            return plainContent.length > 15
+                              ? `${plainContent.slice(0, 15)}...`
+                              : plainContent;
+                          })()}
+                        </td>
+                        <td className={styles.content}>
+                          {(() => {
+                            const plainContent = stripHtml(l.boardContent);
+
+                            if (!plainContent) return "내용 없음";
+
+                            return plainContent.length > 20
+                              ? `${plainContent.slice(0, 20)}...`
+                              : plainContent;
+                          })()}
+                        </td>
+                        <td>{l.memberNickname}</td>
+                        <td>{l.boardDate}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           )}
 
           {commentContentType === "댓글" && (
             <div>
-              <table className={styles.postTable}>
-                <thead>
-                  <tr>
-                    <th>분류</th>
-                    <th className={styles.content}>제목</th>
-                    <th className={styles.content}>내 댓글</th>
-                    <th>작성일</th>
-                    <th>좋아요</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {like.map((l) => (
-                    <tr
-                      key={l.commentNo}
-                      onClick={() => navigate(`/mytownBoard/${l.boardNo}`)}
-                    >
-                      <td>{l.postType}</td>
-                      <td className={styles.content}>
-                        {(() => {
-                          const plainContent = stripHtml(l.boardTitle);
+              {loading ? (
+                  <div className={styles.loadingPlaceholder}>불러오는 중...</div>
+                ) : like.length === 0 ? (
+                  <p className={styles.emptyMsg}>작성한 댓글이 없습니다.</p>
+                ) : (
+                  <table className={styles.postTable}>
+                    <thead>
+                      <tr>
+                        <th>분류</th>
+                        <th className={styles.content}>제목</th>
+                        <th className={styles.content}>내 댓글</th>
+                        <th>작성일</th>
+                        <th>좋아요</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {like.map((l) => (
+                        <tr
+                          key={l.commentNo}
+                          className={styles.clickableRow}
+                          onClick={() => navigate(`/mytownBoard/${l.boardNo}`)}
+                        >
+                          <td>{l.postType}</td>
+                          <td className={styles.content}>
+                            {(() => {
+                              const plainContent = stripHtml(l.boardTitle);
 
-                          if (!plainContent) return "내용 없음";
+                              if (!plainContent) return "내용 없음";
 
-                          return plainContent.length > 15
-                            ? `${plainContent.slice(0, 15)}...`
-                            : plainContent;
-                        })()}
-                      </td>
-                      <td className={styles.content}>
-                        {(() => {
-                          const plainContent = stripHtml(l.commentContent);
+                              return plainContent.length > 15
+                                ? `${plainContent.slice(0, 15)}...`
+                                : plainContent;
+                            })()}
+                          </td>
+                          <td className={styles.content}>
+                            {(() => {
+                              const plainContent = stripHtml(l.commentContent);
 
-                          if (!plainContent) return "내용 없음";
+                              if (!plainContent) return "내용 없음";
 
-                          return plainContent.length > 20
-                            ? `${plainContent.slice(0, 20)}...`
-                            : plainContent;
-                        })()}
-                      </td>
-                      <td>{l.commentDate}</td>
-                      <td>{l.likeCount != null ? l.likeCount : 0}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                              return plainContent.length > 20
+                                ? `${plainContent.slice(0, 20)}...`
+                                : plainContent;
+                            })()}
+                          </td>
+                          <td>{l.commentDate}</td>
+                          <td>{l.likeCount != null ? l.likeCount : 0}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
             </div>
           )}
         </div>
