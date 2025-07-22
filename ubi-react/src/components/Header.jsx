@@ -289,7 +289,7 @@ const Header = () => {
                     src={
                       memberImg
                         ? memberImg.startsWith("/") // 서버 상대 경로일 경우만 localhost 붙이기
-                          ? `http://localhost:8080${memberImg}`
+                          ? `https://kh-ubi.site${memberImg}`
                           : memberImg // 절대 경로일 경우 그대로 사용
                         : "/default-profile.png"
                     }
