@@ -88,7 +88,7 @@ const LocalBenefitModal = ({ onSelect, onClose }) => {
             const serviceId = item.apiServiceId || item.servId || item.id;
             const title = item.title || "제목 없음";
             const region =
-             `${item.regionCity} ${item.regionDistrict}` || `${item.regionCity} `;
+             `${item.regionCity} ${item.regionDistrict}` || `${item.regionCity} 전체 `;
             const category = item.category || "기타";
 
             return (

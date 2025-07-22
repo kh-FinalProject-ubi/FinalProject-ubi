@@ -291,11 +291,6 @@
   align-items: center;
 }
 
-/* ✅ 마지막 태그 보라색 적용 */
-.tagPurple {
-  background-color: #5e60ce;
-  color: white;
-}
 
 /* ✅ 삭제 버튼 (x 표시) */
 .tagRemoveBtn {
@@ -330,6 +325,14 @@
   background-color: #5e60ce;
   color: white;
 }
+
+.tagWarning {
+  color: red;
+  font-size: 0.85rem;
+  margin-top: 6px;
+  white-space: pre-wrap;
+}
+
 
 /* ============================ */
 /* ✅ 별점 스타일 */
