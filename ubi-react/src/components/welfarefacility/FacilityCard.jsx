@@ -100,8 +100,8 @@ export default function FacilityCard({
         navigate("/facility/detail", {
           state: {
             facility,
-            regionCity: selectedCity, // 🟢 이 두 줄만 추가
-            regionDistrict: selectedDistrict, // 🟢
+            regionCity: selectedCity,
+            regionDistrict: selectedDistrict,
           },
         })
       }
