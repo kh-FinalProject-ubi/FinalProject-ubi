@@ -1,5 +1,7 @@
 package edu.kh.project.welfare.like.model.service;
 
+
+
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -7,9 +9,11 @@ import org.springframework.stereotype.Service;
 import edu.kh.project.welfare.like.dto.FacilityLike;
 import edu.kh.project.welfare.like.model.mapper.WelfareFacilityLikeMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class WelfareFacilityLikeServiceImpl implements WelfareFacilityLikeService {
 
     private final WelfareFacilityLikeMapper mapper;
@@ -36,6 +40,7 @@ public class WelfareFacilityLikeServiceImpl implements WelfareFacilityLikeServic
         } else {
             // 이미 찜 상태 → 해제 처리
             mapper.deleteLike(dto);
+    
             return false;
         }
     }

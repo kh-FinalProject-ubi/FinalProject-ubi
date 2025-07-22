@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import styles from "../../styles/welfarefacility/FacilityCard.module.css";
 import WelfareLikeButton from "../../components/welfareLike/WelfareLikeButton";
 import useAuthStore from "../../stores/useAuthStore";
+import { useNavigate } from "react-router-dom";
 /**
  * 시설 객체에서 다국어 키(FACLT_NM, 시설명 등)를 탐색해 값을 반환하는 함수
  */
@@ -83,6 +84,7 @@ export default function FacilityCard({
   selectedCity,
   selectedDistrict,
 }) {
+  const navigate = useNavigate(); // 컴포넌트 상단에 위치해야 함
   const auth = useAuthStore();
   const name =
     getField(facility, "facilityName", "시설명", "FACLT_NM", "facilityAddr") ||
@@ -92,28 +94,38 @@ export default function FacilityCard({
   const category = getCategory(facility);
 
   return (
-    <div className={styles.facilityCard}>
+    <div
+      className={styles.facilityCard}
+      onClick={() =>
+        navigate("/facility/detail", {
+          state: { facility },
+        })
+      }
+    >
+      {/* 제목 */}
+      <div className={styles.facilityStatus}>{name}</div>
+
+      {/* 태그 영역 (노인 / 요양시설) */}
       <div className={styles.facilityCardRow}>
         <div className={styles.serviceTarget}>{serviceTarget}</div>
         <div className={styles.category}>{category}</div>
       </div>
-      <WelfareLikeButton
-        token={auth.token}
-        facilityName={facility.facilityName}
-        category={facility.category}
-        regionCity={selectedCity} // 💡 여기!
-        regionDistrict={selectedDistrict} // 💡 여기!
-        description={facility.description}
-        agency={facility.agency}
-        apiUrl={facility.url}
-        imageProfile={facility.imageProfile}
-        lat={facility.lat}
-        lng={facility.lng}
-      />
-      <div className={styles.facilityStatus}>
-        <Link to={{ pathname: "/facility/detail" }} state={{ facility }}>
-          {name}
-        </Link>
+
+      {/* 찜하기 버튼 (우측 정렬, 클릭 전파 차단됨) */}
+      <div className={styles.facilityAction}>
+        <WelfareLikeButton
+          token={auth.token}
+          facilityName={facility.facilityName}
+          category={facility.category}
+          regionCity={selectedCity}
+          regionDistrict={selectedDistrict}
+          description={facility.description}
+          agency={facility.agency}
+          apiUrl={facility.url}
+          imageProfile={facility.imageProfile}
+          lat={facility.lat}
+          lng={facility.lng}
+        />
       </div>
     </div>
   );

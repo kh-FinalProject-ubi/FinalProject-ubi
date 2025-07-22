@@ -26,65 +26,62 @@ export default function useLoginMember() {
   const setAuth = useAuthStore((state) => state.setAuth);
   const auth = useAuthStore(); // Zustand 전체 상태
 
-  useEffect(() => {
-    const fetchMember = async () => {
-      try {
-        // 로컬스토리지에서 token 가져오기
-        const saved = JSON.parse(localStorage.getItem("auth-storage") || "{}");
-        const token = saved?.state?.token || null;
-        const jwtPayload = parseJwt(token);
-        const taddress = jwtPayload?.taddress || null;
+  const fetchMember = async () => {
+    try {
+      setLoading(true);
 
-        // 이미 로그인 되어 있고, 임시 주소가 저장된 경우 → 그대로 사용
-        if (auth?.memberNo && auth?.memberTaddress) {
-          console.log("🧪 Zustand auth (완성):", auth);
-          setMember(auth);
-          setLoading(false);
-          return;
-        }
+      const saved = JSON.parse(localStorage.getItem("auth-storage") || "{}");
+      const token = saved?.state?.token || null;
+      const jwtPayload = parseJwt(token);
+      const taddress = jwtPayload?.taddress || null;
 
-        // 서버에서 회원 정보 조회
-        const res = await axios.get("/api/member/info");
-        console.log("🧩 서버 응답:", res.data);
-
-        // 📌 임시 주소 → 시/군구 정보 추출
-        const { city: tempRegionCity, district: tempRegionDistrict } =
-          extractRegionFromTaddress(taddress || "");
-
-        // ✅ 정식 주소 (내 주소) → 시/군구 정보 추출
-        const { city: regionCity, district: regionDistrict } =
-          extractRegionFromTaddress(
-            `${res.data.memberAddressCity} ${res.data.memberAddressDistrict}`
-          );
-
-        const authData = {
-          token,
-          address: res.data.address,
-          memberImg: res.data.memberImg,
-          memberStandard: res.data.memberStandard,
-          memberNo: res.data.memberNo,
-          authority: res.data.authority,
-          memberNickname: res.data.memberNickname || res.data.memberName,
-          role: res.data.authority === "2" ? "ADMIN" : "USER",
-          regionCity, // ✅ 추출된 시/도
-          regionDistrict, // ✅ 추출된 시/군/구
-          tempRegionCity,
-          tempRegionDistrict,
-          memberTaddress: taddress, // JWT에서 추출
-        };
-
-        setAuth(authData); // Zustand에 저장
-        setMember(authData); // hook 내에서도 세팅
-      } catch (err) {
-        console.warn("⚠️ 로그인 정보 불러오기 실패", err);
-        setMember(null);
-      } finally {
+      if (auth?.memberNo && auth?.memberTaddress) {
+        console.log("🧪 Zustand auth (완성):", auth);
+        setMember(auth);
         setLoading(false);
+        return;
       }
-    };
 
-    fetchMember();
+      const res = await axios.get("/api/member/info");
+      console.log("🧩 서버 응답:", res.data);
+
+      const { city: tempRegionCity, district: tempRegionDistrict } =
+        extractRegionFromTaddress(taddress || "");
+
+      const { city: regionCity, district: regionDistrict } =
+        extractRegionFromTaddress(
+          `${res.data.memberAddressCity} ${res.data.memberAddressDistrict}`
+        );
+
+      const authData = {
+        token,
+        address: res.data.address,
+        memberImg: res.data.memberImg,
+        memberStandard: res.data.memberStandard,
+        memberNo: res.data.memberNo,
+        authority: res.data.authority,
+        memberNickname: res.data.memberNickname || res.data.memberName,
+        role: res.data.authority === "2" ? "ADMIN" : "USER",
+        regionCity,
+        regionDistrict,
+        tempRegionCity,
+        tempRegionDistrict,
+        memberTaddress: taddress,
+      };
+
+      setAuth(authData);
+      setMember(authData);
+    } catch (err) {
+      console.warn("⚠️ 로그인 정보 불러오기 실패", err);
+      setMember(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMember(); // 초기 1회 실행
   }, []);
 
-  return { member, loading };
+  return { member, loading, refetchMember: fetchMember }; // ✅ refetchMember 추가
 }

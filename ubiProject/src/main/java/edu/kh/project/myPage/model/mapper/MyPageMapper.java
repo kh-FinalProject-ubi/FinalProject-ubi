@@ -135,6 +135,8 @@ public interface MyPageMapper {
 	 */
 	int cancelZzim(Map<String, Object> map);
 
+	Member selectMemberByNo(int memberNo);
+
 
 
 
