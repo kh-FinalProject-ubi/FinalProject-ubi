@@ -214,59 +214,48 @@ public class MyPageServiceImpl implements MyPageService {
 		return "/myPage/file/" + uploadFile.getOriginalFilename();
 	}
 
-	// 파일 업로드 테스트 2 (+DB)
 	@Override
 	public int fileUpload2(MultipartFile uploadFile, int memberNo) throws Exception {
 
-		// 업로드된 파일이 없을 때
-		if (uploadFile.isEmpty()) {
-			return 0;
+	    // 업로드된 파일이 없을 때
+	    if (uploadFile.isEmpty()) return 0;
 
-		}
+	    // ✅ 1. 절대 경로 사용 + 디렉토리 구분자 통일
+	    String folderPath = "/home/ec2-user/uploadFiles/test/";
+	    String webPath = "/myPage/file/";
 
-		/*
-		 * DB에 파일 저장이 가능은 하지만 DB 부하를 줄이기 위해서
-		 * 
-		 * 1) DB에는 서버에 저장할 파일 경로를 저장
-		 * 
-		 * 2) DB 삽입 / 수정 성공 후 서버에 파일을 저장
-		 * 
-		 * 3) 만약에 파일 저장 실패 시 -> 예외 발생 -> @Transactional을 이용해서 rollback 수행
-		 * 
-		 */
+	    // ✅ 2. 디렉토리 없으면 생성
+	    File dir = new File(folderPath);
+	    if (!dir.exists()) {
+	        boolean made = dir.mkdirs();
+	        log.info("📂 파일 저장 디렉토리 생성됨? : " + made);
+	    }
 
-		// 1. 서버에 저장할 파일 경로 만들기
+	    // ✅ 3. 파일명에서 경로 제거
+	    String originalFilename = Paths.get(uploadFile.getOriginalFilename()).getFileName().toString();
 
-		// 파일이 저장될 서버 폴더 경로
-		String folderPath = "home/ec2-user/uploadFiles/test/";
+	    // ✅ 4. 저장용 이름 생성
+	    String fileRename = Utility.fileRename(originalFilename);
 
-		// 클라이언트가 파일이 저장된 폴더에 접근할 수 있는 주소(정적리소스 요청 주소)
-		String webPath = "/myPage/file/";
+	    // ✅ 5. DB에 저장할 파일 정보 구성
+	    UploadFile uf = UploadFile.builder()
+	        .memberNO(memberNo)
+	        .filePath(webPath)
+	        .fileOriginalName(originalFilename)
+	        .fileRename(fileRename)
+	        .build();
 
-		// 2. DB에 전달할 데이터를 DTO로 묶기
-		// webPath, memberNo, 원본 파일명, 변경된 파일명
-		String fileRename = Utility.fileRename(uploadFile.getOriginalFilename());
+	    // ✅ 6. DB INSERT
+	    int result = mapper.insertUploadFile(uf);
+	    if (result == 0) return 0;
 
-		// Builder 패턴을 이용해서 UploadFile 객체 생성
-		// 장점 1) 반복되는 참조변수명, set 구문 생략
-		// 장점 2) method chaining을 이용하여 한 줄로 작성 가능
-		// 장점 3) 매개변수 생성자 불필요
-		UploadFile uf = UploadFile.builder().memberNO(memberNo).filePath(webPath)
-				.fileOriginalName(uploadFile.getOriginalFilename()).fileRename(fileRename).build();
+	    // ✅ 7. 서버에 실제 파일 저장
+	    File targetFile = new File(folderPath + fileRename);
+	    uploadFile.transferTo(targetFile);
 
-		// 3. DTO 객체를 DB에 전달하기(INSERT하기)
-		int result = mapper.insertUploadFile(uf);
+	    log.info("✅ 파일 저장 완료: " + targetFile.getAbsolutePath());
 
-		// 4. 삽입 성공 시 파일을 지정된 서버 폴더에 저장
-		if (result == 0)
-			return 0;
-
-		// folderPath경로(home/ec2-useruploadFiles/test/변경된파일명)으로
-		// 파일을 서버 컴퓨터에 저장
-		uploadFile.transferTo(new File(folderPath + fileRename));
-		// home/ec2-useruploadFiles/test/20250424150830_00001.jpg
-
-		return result;
+	    return result;
 	}
 
 	@Override
