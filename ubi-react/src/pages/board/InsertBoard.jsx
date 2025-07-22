@@ -37,7 +37,7 @@ const InsertBoard = () => {
         },
       })
       .then((res) => {
-        const imageUrl = `/images/board/${res.data}`;
+        const imageUrl = res.data;
         $("#summernote").summernote("insertImage", imageUrl, ($image) => {
           $image.css("width", "100%");
         });
@@ -119,7 +119,7 @@ const InsertBoard = () => {
     const formData = new FormData();
     const boardObj = {
       boardTitle: title,
-      boardContent: currentContent,
+      boardContent: currentContent, // 여기에 이미 <img src="..."> 태그가 포함되어 있습니다.
       memberNo: loginMemberNo,
       postType,
       boardCode: numericBoardCode,
@@ -129,8 +129,6 @@ const InsertBoard = () => {
       "board",
       new Blob([JSON.stringify(boardObj)], { type: "application/json" })
     );
-
-    images.forEach((file) => formData.append("images", file));
 
     fetch(`/api/editBoard/${numericBoardCode}`, {
       method: "POST",

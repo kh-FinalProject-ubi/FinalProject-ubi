@@ -39,7 +39,7 @@ const EditBoard = () => {
         },
       })
       .then((res) => {
-        const imageUrl = `/images/board/${res.data}`;
+        const imageUrl = res.data;
         $("#summernote").summernote("insertImage", imageUrl, ($image) => {
           $image.css("width", "100%");
         });
