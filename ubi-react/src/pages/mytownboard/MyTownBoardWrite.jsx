@@ -93,10 +93,12 @@ const MyTownBoardWrite = () => {
       return;
     }
 
-    if (boardContent.length() > 2000) {
-      alert("게시글 내용이 너무 깁니다.");
-      return;
-    }
+
+    if (boardContent.length > 2000) {
+    alert("게시글 내용이 너무 깁니다.");
+        return;
+}
+
 
     if (!textContent && !hasImage) {
       alert("내용을 입력해주세요.");
