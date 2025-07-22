@@ -279,7 +279,7 @@ const CommentModal = ({ member, onClose, position, token }) => {
               src={
                 member.memberImg
                   ? member.memberImg.startsWith("/")
-                    ? `http://localhost:8080${member.memberImg}`
+                    ? `https://kh-ubi.site${member.memberImg}`
                     : member.memberImg
                   : "/default-profile.png"
               }
