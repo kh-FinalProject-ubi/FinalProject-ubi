@@ -31,7 +31,10 @@ const InsertBoard = () => {
     formData.append("file", file);
     axios
       .post("/api/editBoard/image-upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
       })
       .then((res) => {
         const imageUrl = `/images/board/${res.data}`;
@@ -69,11 +72,13 @@ const InsertBoard = () => {
         ],
         callbacks: {
           onChange: (contents) => {
-            setContent(contents); 
+            setContent(contents);
           },
           onKeydown: (e) => {
-            const plainText = $("<div>").html($("#summernote").summernote("code")).text();
-            const isPrintable = e.key.length === 1; 
+            const plainText = $("<div>")
+              .html($("#summernote").summernote("code"))
+              .text();
+            const isPrintable = e.key.length === 1;
             if (plainText.length >= 2000 && isPrintable) {
               e.preventDefault();
             }
