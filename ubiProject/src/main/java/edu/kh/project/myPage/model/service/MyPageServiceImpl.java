@@ -205,7 +205,7 @@ public class MyPageServiceImpl implements MyPageService {
 
 		// 업로드한 파일이 있을 경우
 		// home/ec2-useruploadFiles/test/파일명으로 서버에 저장
-		uploadFile.transferTo(new File("home/ec2-user/uploadFiles/test/" + uploadFile.getOriginalFilename()));
+		uploadFile.transferTo(new File("/home/ec2-user/uploadFiles/test/" + uploadFile.getOriginalFilename()));
 
 		// 웹에서 해당 파일에 접근할 수 있는 경로로 반환
 		// 서버 : home/ec2-useruploadFiles/test/A.jpg
