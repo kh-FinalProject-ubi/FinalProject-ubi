@@ -229,7 +229,7 @@
 
 
 <update id="updateFacilityZzimDelFl" parameterType="map">
-  UPDATE facility
+  UPDATE welfare_facility
   SET jj_del_fl = 'Y'
   WHERE member_no = #{memberNo}
     AND facility_no = #{facilityNo}

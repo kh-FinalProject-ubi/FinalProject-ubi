@@ -33,12 +33,10 @@ import edu.kh.project.myPage.model.mapper.MyPageMapper;
 import edu.kh.project.welfare.benefits.model.dto.Facility;
 import edu.kh.project.welfare.benefits.model.dto.FacilityJob;
 import edu.kh.project.welfare.benefits.model.dto.Welfare;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
 @PropertySource("classpath:/config.properties")
-@Slf4j
 public class MyPageServiceImpl implements MyPageService {
 
 	@Autowired
@@ -200,7 +198,7 @@ public class MyPageServiceImpl implements MyPageService {
 
 		// 업로드한 파일이 있을 경우
 		// home/ec2-useruploadFiles/test/파일명으로 서버에 저장
-		uploadFile.transferTo(new File("/home/ec2-user/uploadFiles/test/" + uploadFile.getOriginalFilename()));
+		uploadFile.transferTo(new File("home/ec2-user/uploadFiles/test/" + uploadFile.getOriginalFilename()));
 
 		// 웹에서 해당 파일에 접근할 수 있는 경로로 반환
 		// 서버 : home/ec2-useruploadFiles/test/A.jpg
@@ -209,48 +207,59 @@ public class MyPageServiceImpl implements MyPageService {
 		return "/myPage/file/" + uploadFile.getOriginalFilename();
 	}
 
+	// 파일 업로드 테스트 2 (+DB)
 	@Override
 	public int fileUpload2(MultipartFile uploadFile, int memberNo) throws Exception {
 
-	    // 업로드된 파일이 없을 때
-	    if (uploadFile.isEmpty()) return 0;
+		// 업로드된 파일이 없을 때
+		if (uploadFile.isEmpty()) {
+			return 0;
 
-	    // ✅ 1. 절대 경로 사용 + 디렉토리 구분자 통일
-	    String folderPath = "/home/ec2-user/uploadFiles/test/";
-	    String webPath = "/myPage/file/";
+		}
 
-	    // ✅ 2. 디렉토리 없으면 생성
-	    File dir = new File(folderPath);
-	    if (!dir.exists()) {
-	        boolean made = dir.mkdirs();
-	        log.info("📂 파일 저장 디렉토리 생성됨? : " + made);
-	    }
+		/*
+		 * DB에 파일 저장이 가능은 하지만 DB 부하를 줄이기 위해서
+		 * 
+		 * 1) DB에는 서버에 저장할 파일 경로를 저장
+		 * 
+		 * 2) DB 삽입 / 수정 성공 후 서버에 파일을 저장
+		 * 
+		 * 3) 만약에 파일 저장 실패 시 -> 예외 발생 -> @Transactional을 이용해서 rollback 수행
+		 * 
+		 */
 
-	    // ✅ 3. 파일명에서 경로 제거
-	    String originalFilename = Paths.get(uploadFile.getOriginalFilename()).getFileName().toString();
+		// 1. 서버에 저장할 파일 경로 만들기
 
-	    // ✅ 4. 저장용 이름 생성
-	    String fileRename = Utility.fileRename(originalFilename);
+		// 파일이 저장될 서버 폴더 경로
+		String folderPath = "home/ec2-user/uploadFiles/test/";
 
-	    // ✅ 5. DB에 저장할 파일 정보 구성
-	    UploadFile uf = UploadFile.builder()
-	        .memberNO(memberNo)
-	        .filePath(webPath)
-	        .fileOriginalName(originalFilename)
-	        .fileRename(fileRename)
-	        .build();
+		// 클라이언트가 파일이 저장된 폴더에 접근할 수 있는 주소(정적리소스 요청 주소)
+		String webPath = "/myPage/file/";
 
-	    // ✅ 6. DB INSERT
-	    int result = mapper.insertUploadFile(uf);
-	    if (result == 0) return 0;
+		// 2. DB에 전달할 데이터를 DTO로 묶기
+		// webPath, memberNo, 원본 파일명, 변경된 파일명
+		String fileRename = Utility.fileRename(uploadFile.getOriginalFilename());
 
-	    // ✅ 7. 서버에 실제 파일 저장
-	    File targetFile = new File(folderPath + fileRename);
-	    uploadFile.transferTo(targetFile);
+		// Builder 패턴을 이용해서 UploadFile 객체 생성
+		// 장점 1) 반복되는 참조변수명, set 구문 생략
+		// 장점 2) method chaining을 이용하여 한 줄로 작성 가능
+		// 장점 3) 매개변수 생성자 불필요
+		UploadFile uf = UploadFile.builder().memberNO(memberNo).filePath(webPath)
+				.fileOriginalName(uploadFile.getOriginalFilename()).fileRename(fileRename).build();
 
-	    log.info("✅ 파일 저장 완료: " + targetFile.getAbsolutePath());
+		// 3. DTO 객체를 DB에 전달하기(INSERT하기)
+		int result = mapper.insertUploadFile(uf);
 
-	    return result;
+		// 4. 삽입 성공 시 파일을 지정된 서버 폴더에 저장
+		if (result == 0)
+			return 0;
+
+		// folderPath경로(home/ec2-useruploadFiles/test/변경된파일명)으로
+		// 파일을 서버 컴퓨터에 저장
+		uploadFile.transferTo(new File(folderPath + fileRename));
+		// home/ec2-useruploadFiles/test/20250424150830_00001.jpg
+
+		return result;
 	}
 
 	@Override
@@ -299,9 +308,9 @@ public class MyPageServiceImpl implements MyPageService {
 		return result1 + result2;
 	}
 
+	// 프로필 이미지 변경 서비스
 	@Override
 	public String profile(int memberNo, MultipartFile profileImg) {
-
 
 		// 프로필 이미지 경로
 		String updatePath = null;
@@ -340,69 +349,13 @@ public class MyPageServiceImpl implements MyPageService {
 		// 수정된 프로필 이미지 경로 + 회원 번호를 저장할 DTO 객체
 		Member member = Member.builder().memberNo(memberNo).memberImg(updatePath).build();
 
-	    log.info("📥 [프로필 업로드 요청] 회원번호: " + memberNo);
-	    if (profileImg == null || profileImg.isEmpty()) {
-	        log.warn("⚠️ 업로드된 파일이 없습니다.");
-	        return null;
-	    }
-
-	    String updatePath = null;
-	    String rename = null;
-
-
-	    try {
-	        // 저장 경로 확보
-	        String folderPath = profileFolderPath;
-	        if (!folderPath.endsWith(File.separator)) {
-	            folderPath += File.separator;
-	        }
-
+		int result = mapper.profile(member);
 
 		if (result > 0) {
 			return updatePath;
 		} else {
 			return null;
 		}
-	}
-
-
-	        File dir = new File(folderPath);
-	        if (!dir.exists()) {
-	            boolean made = dir.mkdirs();
-	            log.info("📂 디렉토리 생성됨? : " + made);
-	        }
-
-	        // 파일명 리네임 및 저장
-	        rename = Utility.fileRename(profileImg.getOriginalFilename());
-	        File targetFile = new File(folderPath + rename);
-
-	        profileImg.transferTo(targetFile);
-	        log.info("✅ 프로필 이미지 저장 완료: " + targetFile.getAbsolutePath());
-
-	        // 웹 경로 구성
-	        updatePath = profileWebPath + rename;
-
-	        // DB 업데이트
-	        Member member = Member.builder()
-	                .memberNo(memberNo)
-	                .memberImg(updatePath)
-	                .build();
-
-	        int result = mapper.profile(member);
-	        if (result > 0) {
-	            return updatePath;
-	        } else {
-	            log.error("❌ DB 업데이트 실패");
-	            return null;
-	        }
-
-	    } catch (IOException | IllegalStateException e) {
-	        log.error("❌ 프로필 이미지 저장 중 예외 발생", e);
-	        return null;
-	    } catch (Exception ex) {
-	        log.error("❌ 알 수 없는 예외 발생", ex);
-	        return null;
-	    }
 	}
 
 	// 프로필 이미지 초기화
