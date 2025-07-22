@@ -132,14 +132,14 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo }) => {
       if (reported === true) {
         alert("신고 성공");
       } else if (reported === false) {
-        alert("신고 취소 완료");
+      
       } else {
         alert("알 수 없는 응답입니다");
       }
       await loadComments();
     } catch (err) {
       console.error("신고 실패:", err.response?.data || err.message);
-      alert("신고 실패");
+   
     }
   };
 
@@ -425,15 +425,9 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo }) => {
           <textarea
             value={commentContent}
             onChange={
-              ((e) => setCommentContent(e.target.value), handleCommentChange)
-            }
-            rows={3}
-            placeholder="댓글을 입력하세요."
-          />
-          <button type="submit">
-            댓글 <br />
-            작성
-          </button>
+              ((e) => setCommentContent(e.target.value), handleCommentChange)}rows={3}
+            placeholder="댓글을 입력하세요."/>
+          <button type="submit">댓글 <br />작성</button>
         </form>
       )}
 
