@@ -5,6 +5,7 @@
   margin-bottom: 16px;
   background-color: white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
   transition: transform 0.2s;
 }
 
@@ -18,8 +19,13 @@
   text-decoration: none;
 }
 
+.facilityCard a {
+  text-decoration: none;
+  color: black; /* 선택적으로 글씨 색도 명시 */
+}
+
 .facilityStatus {
-  margin-top: 18px;
+  margin-top: 5px;
 }
 
 .facilityCardRow {
@@ -28,11 +34,13 @@
   gap: 0px;
   max-height: 54px;
   overflow: hidden;
+  margin-bottom: 15px;
 }
 
 .serviceTarget {
-  padding: 6px 15px;
-  border-radius: 20px;
+  padding: 3px 8px;
+  border-radius: 1rem;
+
   border: 1px solid transparent;
   font-size: 0.7rem;
   background-color: #ffe066;
@@ -41,11 +49,18 @@
 }
 
 .category {
-  padding: 6px 15px;
-  border-radius: 20px;
+  padding: 3px 8px;
+  border-radius: 1rem;
+
   border: 1px solid transparent;
   font-size: 0.7rem;
   background-color: #5e60ce;
   color: white;
   font-weight: 600;
+}
+
+.facilityAction {
+  display: flex;
+  justify-content: flex-end; /* ✅ 오른쪽 정렬 */
+  margin-top: 8px;
 }

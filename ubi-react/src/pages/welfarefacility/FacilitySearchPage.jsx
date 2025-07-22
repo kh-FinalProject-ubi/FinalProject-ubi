@@ -17,13 +17,25 @@ import {
   getFilteredFacilities,
   getCombinedFacilities,
 } from "../../utils/welfarefacilityMap"; // ✅ 공용 유틸 import
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function FacilitySearchPage() {
-  const { member, loading: memberLoading } = useLoginMember();
+  const { member, loading: memberLoading, refetchMember } = useLoginMember();
+  const location = useLocation(); // 🔑 location 필요!
+
   const setAuth = useAuthStore((state) => state.setAuth);
   const auth = useAuthStore();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.state?.refresh === "memberUpdate") {
+      (async () => {
+        console.log("🌀 내정보에서 갱신됨, refetchMember 호출");
+        await refetchMember?.(); // ✅ member가 최신화된 이후
+        handleRegionSourceChange("my"); // 또는 "bookmark"
+      })();
+    }
+  }, [location.state]);
 
   const {
     setSelectedCity: setCityInStore,
@@ -45,7 +57,7 @@ export default function FacilitySearchPage() {
   const [category, setCategory] = useState("전체");
   const [serviceType, setServiceType] = useState("전체");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 25;
+  const itemsPerPage = 24;
 
   const [selectedCity, setSelectedCity] = useState("");
   const [availableDistricts, setAvailableDistricts] = useState([]);
@@ -67,16 +79,24 @@ export default function FacilitySearchPage() {
   });
 
   useEffect(() => {
+    console.log("🚀 memberLoading:", memberLoading);
+    console.log("🧑‍💼 member:", member);
+    console.log("🗺️ selectedCityFromStore:", selectedCityFromStore);
+    console.log("🏷️ regionSource:", regionSource);
+
     if (!memberLoading && regionSource === "default") {
       if (
         selectedCityFromStore &&
         selectedDistrictFromStore &&
         regionMap[selectedCityFromStore]
       ) {
+        console.log("📌 map 지역으로 초기화");
         handleRegionSourceChange("map");
       } else if (member) {
+        console.log("📌 내 주소로 초기화");
         handleRegionSourceChange("my");
       } else {
+        console.log("📌 기본 서울/종로 초기화");
         setSelectedCity("서울특별시");
         setAvailableDistricts(regionMap["서울특별시"]);
         setSelectedDistrict("종로구");
@@ -85,16 +105,13 @@ export default function FacilitySearchPage() {
     }
   }, [memberLoading, member, selectedCityFromStore, selectedDistrictFromStore]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedCity, selectedDistrict]);
-
   const handleRegionSourceChange = (source) => {
     setRegionSource(source);
     let city = "서울특별시";
     let district = "종로구";
 
     if (source === "my") {
+      console.log("🔍 내 주소:", member?.regionCity, member?.regionDistrict);
       city = member?.regionCity || member?.tempRegionCity || city;
       district =
         member?.regionDistrict || member?.tempRegionDistrict || district;
@@ -107,8 +124,21 @@ export default function FacilitySearchPage() {
 
     if (source === "bookmark") {
       const taddress = member?.memberTaddress;
-      if (!taddress) return;
+
+      console.log("📍 즐겨찾기 주소:", taddress); // ✅ 1. 원본 주소 확인
+
+      if (!taddress) {
+        console.warn("❗ 즐겨찾기 주소 없음");
+        return;
+      }
+
       const result = extractRegionFromTaddress(taddress);
+
+      console.log("➡️ 추출된 지역:", result); // ✅ 2. 추출된 시/도, 시/군/구
+
+      console.log("🧭 regionMap keys:", Object.keys(regionMap)); // ✅ 3. 전체 시도 목록
+      console.log("✔️ result.city in regionMap?", regionMap[result.city]); // ✅ 4. 포함 여부 확인
+
       city = result.city;
       district = result.district;
     }

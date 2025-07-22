@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import useModalStore from "../../stores/useModalStore";
 
@@ -36,7 +36,33 @@ const WelfareLikeButton = ({
   const [liked, setLiked] = useState(false);
   const { openLoginModal } = useModalStore();
 
-  const handleClick = async () => {
+  // ✅ 페이지 로딩 시 찜 상태 확인
+  useEffect(() => {
+    if (token && facilityName && regionCity && regionDistrict) {
+      axios
+        .get("/api/welfarefacility/like/check", {
+          params: {
+            facilityName: encodeURIComponent(facilityName), // ← 추가
+            regionCity: encodeURIComponent(regionCity),
+            regionDistrict: encodeURIComponent(regionDistrict),
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((res) => {
+          setLiked(res.data); // true면 💖, false면 🤍
+        })
+        .catch((err) => {
+          console.error("찜 상태 확인 실패", err);
+        });
+    }
+  }, [token, facilityName, regionCity, regionDistrict]);
+
+  const handleClick = async (e) => {
+    e.stopPropagation(); // ✅ 카드 클릭 막기
+
+    // ✅ 로그인 여부 확인
     if (!token) {
       const goLogin = window.confirm(
         "로그인이 필요한 기능입니다. 로그인하시겠습니까?"
@@ -45,51 +71,60 @@ const WelfareLikeButton = ({
       return;
     }
 
-    const parsedCity = regionCity?.trim();
-    const parsedDistrict = regionDistrict?.trim();
+    const parsedCity = regionCity?.trim() || "";
+    const parsedDistrict = regionDistrict?.trim() || "";
 
-    console.log("📍 facilityName:", facilityName);
-    console.log("📍 regionCity:", parsedCity);
-    console.log("📍 regionDistrict:", parsedDistrict);
-    console.log("📍 apiUrl:", apiUrl);
+    const payload = {
+      facilityName,
+      category,
+      regionCity: parsedCity,
+      regionDistrict: parsedDistrict,
+      description,
+      agency: agency ?? "정보 없음",
+      imageProfile,
+      lat,
+      lng,
+    };
 
     try {
-      if (liked) {
-        // 찜 취소 요청
-        await axios.delete(getLikeUrl(parsedCity), {
-          headers: { Authorization: `Bearer ${token}` },
-          data: { apiUrl },
-        });
-      } else {
-        // 찜 등록 요청
-        const payload = {
-          facilityName,
-          category,
-          regionCity: parsedCity,
-          regionDistrict: parsedDistrict,
-          description,
-          agency: agency ?? "정보 없음",
-          imageProfile,
-          lat,
-          lng,
-        };
+      console.log("🔥 찜 요청 payload:", payload);
 
-        console.log("🔥 전송 payload:", payload);
+      const url = getLikeUrl(parsedCity);
+      console.log("📡 요청 URL:", url);
 
-        await axios.post(getLikeUrl(parsedCity), payload, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      }
+      await axios.post(url, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      setLiked(!liked);
+      // ✅ 찜 상태 토글 (현재 상태 반영)
+      setLiked((prev) => !prev);
     } catch (err) {
-      console.error("찜 처리 실패", err);
+      console.error("❌ 찜 처리 실패", err);
       alert("찜 처리에 실패했습니다.");
     }
   };
 
   return (
-    <button onClick={handleClick}>{liked ? "💖 찜 취소" : "🤍 찜하기"}</button>
+    <button
+      onClick={handleClick}
+      style={{
+        backgroundColor: liked ? "#FFE56D" : "#ffffff",
+        color: liked ? "#2E2E2E" : "#5E60CE",
+        border: `2px solid ${liked ? "#FFE56D" : "#5E60CE"}`,
+        borderRadius: "24px",
+        padding: "3px 8px",
+
+        fontWeight: "bold",
+        fontSize: "15px",
+        cursor: "pointer",
+        transition: "all 0.2s ease",
+        boxShadow: liked
+          ? "0 2px 6px rgba(255, 229, 109, 0.4)"
+          : "0 2px 6px rgba(94, 96, 206, 0.3)",
+      }}
+    >
+      {liked ? "💖 찜 취소" : "🤍 찜하기"}
+    </button>
   );
 };
 
