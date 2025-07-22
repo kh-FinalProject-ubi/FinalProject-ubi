@@ -101,7 +101,7 @@ export default function ProfileImgUploader({ onSave }) {
 
   const imageSrc = useMemo(() => {
     if (previewUrl) return previewUrl;
-    if (memberImg) return `http://localhost:8080${memberImg}`;
+    if (memberImg) return `https://kh-ubi.site${memberImg}`;
     return defaultImg;
   }, [previewUrl, memberImg]);
 
