@@ -2,7 +2,7 @@
 
 /* ---------- 공통 ---------- */
 :root {
-  --brand-yellow: #ffd54f;
+  --brand-yellow: #FFE56D;
   --brand-yellow-darker: #fbc02d;
   --gray-100: #fafafa;
   --gray-200: #f5f5f5;
@@ -31,6 +31,10 @@
   font-family: inherit;
 }
 
+.mypageProfile h2 {
+  margin-bottom: 15px;
+}
+
 /* ---------- 기본 정보 ---------- */
 
 .mypageProfile{
@@ -47,7 +51,9 @@
 .line {
   width: 100%;
   height: 1px;
-  background: #6C6C6C;
+  background: #AEB9C4;
+  margin-top: 10px;
+  margin-bottom: 30px;
 }
 
 .basicInfo > div {
@@ -111,6 +117,13 @@
   font-weight: 300;
 }
 
+.profileRight li strong {
+  width: 96px;
+  padding-top: 6px; /* 버튼과 수직 정렬 보정 */
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
 .profileRight.editMode li {
   margin-bottom: 6px;
 }
@@ -150,11 +163,6 @@
   line-height: 1.4;
   white-space: normal;   /* 줄바꿈 허용 */
   word-break: break-word;
-}
-
-.profileRight li strong {
-  width: 96px;          /* 라벨 너비 고정 */
-  font-weight: 600;
 }
 
 .profileRight input {
@@ -236,7 +244,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
 }
 
 /* ---------- 탭 ---------- */
@@ -270,9 +277,6 @@
   color: var(--gray-400);
 }
 
-.categoryTabs button:hover {
-  background: var(--gray-100);
-}
 
 .categoryTabs .active {
   color: var(--brand-yellow-darker);
@@ -363,17 +367,37 @@
   font-size: 14px;
 }
 .postTable thead th {
-  background: var(--gray-100);
+  background: #FFE56D;
   font-weight: 600;
+}
+.postTable td.content,
+.postTable th.content {
+  text-align: left;
 }
 .postTable th,
 .postTable td {
-  padding: 10px 8px;
+  padding: 10px 1rem;
   border-bottom: 1px solid var(--gray-300);
-  text-align: left;
+  text-align: center;
 }
 .clickableRow:hover {
   background: #fffde7;
+}
+
+.hashtag {
+  display: inline-block;
+  padding: 2px 8px;
+  background-color: #695ee8;
+  color: white;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.hashtagNone {
+  background-color: white;
+  color: #666;
+  border: 1px solid var(--gray-400);
 }
 
 .radioGroup,
@@ -446,11 +470,11 @@
 .postcodeInput,
 .baseAddrInput,
 .detailAddrInput {
-  height: 34px;
   padding: 0 10px;
   border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 14px;
+  line-height: 1.6;
 }
 
 .postcodeInput[readonly],
@@ -467,18 +491,34 @@
   .profileLeft {
     margin: 0 auto;
   }
-  .profileRight li strong {
-    width: 100%;
-  }
-  .profileRight li {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .categoryTabs {
-    flex-wrap: wrap;
-  }
 
-  .postcodeInput   { flex: 1 1 100px; }
-  .baseAddrInput   { flex: 1 1 100%;  } /* 줄바꿈 */
-  .detailAddrInput { flex: 1 1 100%;  }
+}
+
+/* 주소 입력 한 줄이 아닌 세 줄 구성 */
+.addressInputsColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.inputRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.addressRow{
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.addressRow > strong {
+  width: 96px;
+  flex-shrink: 0;
+  font-weight: 600;
+  margin: 0;
+  padding: 0;
+  line-height: 34px; /* ✅ 버튼 높이와 맞춰서 한 줄 정렬됨 */
 }
