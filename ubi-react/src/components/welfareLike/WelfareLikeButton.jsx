@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import useModalStore from "../../stores/useModalStore";
 
+const encodeBracket = (str = "") =>
+  str.replace(/\[/g, "%5B").replace(/\]/g, "%5D");
+
 // city를 받아서 URL 결정
 const getLikeUrl = (city) => {
   if (!city) return "/api/welfarefacility/like/seoul";
@@ -39,23 +42,22 @@ const WelfareLikeButton = ({
   // ✅ 페이지 로딩 시 찜 상태 확인
   useEffect(() => {
     if (token && facilityName && regionCity && regionDistrict) {
+      axios.get("/api/welfarefacility/like/check", {
+        params: { facilityName, regionCity, regionDistrict },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const qs = new URLSearchParams({
+        facilityName, // [ ] 포함 → %5B %5D 로 한 번만 인코딩
+        regionCity,
+        regionDistrict,
+      }).toString();
+
       axios
-        .get("/api/welfarefacility/like/check", {
-          params: {
-            facilityName: encodeURIComponent(facilityName), // ← 추가
-            regionCity: encodeURIComponent(regionCity),
-            regionDistrict: encodeURIComponent(regionDistrict),
-          },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        .get(`/api/welfarefacility/like/check?${qs}`, {
+          headers: { Authorization: `Bearer ${token}` },
         })
-        .then((res) => {
-          setLiked(res.data); // true면 💖, false면 🤍
-        })
-        .catch((err) => {
-          console.error("찜 상태 확인 실패", err);
-        });
+        .then((res) => setLiked(res.data))
+        .catch((err) => console.error("찜 상태 확인 실패", err));
     }
   }, [token, facilityName, regionCity, regionDistrict]);
 
