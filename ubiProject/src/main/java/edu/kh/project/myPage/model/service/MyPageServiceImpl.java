@@ -382,4 +382,5 @@ public class MyPageServiceImpl implements MyPageService {
 	public int cancelFacilityZzim(Map<String, Object> map) {
 		return mapper.cancelFacilityZzim(map);
 	}
+   
 }
