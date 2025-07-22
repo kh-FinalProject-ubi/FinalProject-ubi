@@ -33,10 +33,12 @@ import edu.kh.project.myPage.model.mapper.MyPageMapper;
 import edu.kh.project.welfare.benefits.model.dto.Facility;
 import edu.kh.project.welfare.benefits.model.dto.FacilityJob;
 import edu.kh.project.welfare.benefits.model.dto.Welfare;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
 @PropertySource("classpath:/config.properties")
+@Slf4j
 public class MyPageServiceImpl implements MyPageService {
 
 	@Autowired
@@ -313,57 +315,57 @@ public class MyPageServiceImpl implements MyPageService {
 		return result1 + result2;
 	}
 
-	// 프로필 이미지 변경 서비스
 	@Override
-	public String profile(int memberNo, MultipartFile profileImg){
+	public String profile(int memberNo, MultipartFile profileImg) {
 
-		// 프로필 이미지 경로
-		String updatePath = null;
+	    // 프로필 이미지 경로
+	    String updatePath = null;
+	    String rename = null;
 
-		// 변경명 저장
-		String rename = null;
+	    if (!profileImg.isEmpty()) {
+	        // 실제 저장 경로
+	        String folderPath = profileFolderPath;
+	        if (!folderPath.endsWith(File.separator)) {
+	            folderPath += File.separator;
+	        }
 
-		if (!profileImg.isEmpty()) {
-		    String folderPath = profileFolderPath;
-		    if (!folderPath.endsWith("/") && !folderPath.endsWith("\\")) {
-		        folderPath += File.separator;
-		    }
+	        // 폴더 없으면 생성
+	        File dir = new File(folderPath);
+	        if (!dir.exists()) {
+	            boolean made = dir.mkdirs();
+	            log.info("📂 프로필 이미지 폴더 생성됨? : " + made);
+	        }
 
-		    File dir = new File(folderPath);
-		    if (!dir.exists()) {
-		        dir.mkdirs();
-		    }
+	        // 저장 파일명 생성
+	        rename = Utility.fileRename(profileImg.getOriginalFilename());
+	        File targetFile = new File(folderPath + rename);
 
-		    // 파일명 변경 및 저장
-		    rename = Utility.fileRename(profileImg.getOriginalFilename());
-		    File targetFile = new File(folderPath + rename);
-		    
-		    try {
-		    	
-				profileImg.transferTo(targetFile);
-				
-			} catch (IllegalStateException | IOException e) {
-				
-				e.printStackTrace();
-			}
+	        try {
+	            profileImg.transferTo(targetFile);
+	            log.info("✅ 프로필 이미지 저장 완료: " + targetFile.getAbsolutePath());
+	        } catch (IOException | IllegalStateException e) {
+	            log.error("❌ 프로필 이미지 저장 실패", e);
+	            return null; // 저장 실패 → DB 업데이트 중단
+	        }
 
-		    // 클라이언트가 접근할 수 있는 경로 설정 (예: /myPage/profile/파일명)
-		    updatePath = profileWebPath + rename;
-		}
+	        // 웹 경로 저장
+	        updatePath = profileWebPath + rename;
+	    }
 
-		// 수정된 프로필 이미지 경로 + 회원 번호를 저장할 DTO 객체
-		Member member = Member.builder()
-		        .memberNo(memberNo)
-		        .memberImg(updatePath)
-		        .build();
+	    if (updatePath == null) {
+	        log.warn("❗ 이미지 저장 실패 또는 이미지 없음");
+	        return null;
+	    }
 
-		int result = mapper.profile(member);
+	    // DB에 이미지 경로 업데이트
+	    Member member = Member.builder()
+	            .memberNo(memberNo)
+	            .memberImg(updatePath)
+	            .build();
 
-		if (result > 0) {
-		    return updatePath;
-		} else {
-		    return null;
-		}
+	    int result = mapper.profile(member);
+
+	    return result > 0 ? updatePath : null;
 	}
 	
 	// 프로필 이미지 초기화
