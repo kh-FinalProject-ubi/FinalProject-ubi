@@ -19,48 +19,45 @@ const MyTownBoardWrite = () => {
   const postTypeCheckOptions = ["자유", "자랑", "복지시설후기", "복지혜택후기"];
   const [starRating, setStarRating] = useState(0);
 
-    const [hashtags, setHashtags] = useState("");
+  const [hashtags, setHashtags] = useState("");
   const [parsedTags, setParsedTags] = useState([]);
   // 1. 상태 선언
-const [tagLimitMessage, setTagLimitMessage] = useState("");
-
+  const [tagLimitMessage, setTagLimitMessage] = useState("");
 
   const handleHashtagChange = (e) => {
     setHashtags(e.target.value);
   };
 
-const handleKeyDown = (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    const newTag = hashtags.trim().replace(/^#/, "");
-    if (!newTag) return;
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const newTag = hashtags.trim().replace(/^#/, "");
+      if (!newTag) return;
 
-    let messages = [];
+      let messages = [];
 
-    if (newTag.length < 2) {
-      messages.push("두 글자 이상 입력해주세요.");
+      if (newTag.length < 2) {
+        messages.push("두 글자 이상 입력해주세요.");
+      }
+
+      if (parsedTags.length >= 5) {
+        messages.push("해시태그는 최대 5개까지 입력할 수 있습니다.");
+      }
+
+      if (parsedTags.includes(newTag)) return;
+
+      if (messages.length > 0) {
+        // <br>로 줄바꿈
+        setTagLimitMessage(messages.join("<br/>"));
+        return;
+      }
+
+      const updatedTags = [...parsedTags, newTag];
+      setParsedTags(updatedTags);
+      setHashtags("");
+      setTagLimitMessage("");
     }
-
-    if (parsedTags.length >= 5) {
-      messages.push("해시태그는 최대 5개까지 입력할 수 있습니다.");
-    }
-
-    if (parsedTags.includes(newTag)) return;
-
-    if (messages.length > 0) {
-      // <br>로 줄바꿈
-      setTagLimitMessage(messages.join("<br/>"));
-      return;
-    }
-
-    const updatedTags = [...parsedTags, newTag];
-    setParsedTags(updatedTags);
-    setHashtags("");
-    setTagLimitMessage("");
-  }
-};
-
-
+  };
 
   const handleRemoveTag = (indexToRemove) => {
     const newTags = parsedTags.filter((_, i) => i !== indexToRemove);
@@ -91,12 +88,13 @@ const handleKeyDown = (e) => {
     const textContent = tempDiv.textContent.trim();
     const hasImage = tempDiv.querySelector("img") !== null;
 
-        if (!boardTitle.trim()) {
-     alert("제목을 입력해주세요.");
+    if (!boardTitle.trim()) {
+      alert("제목을 입력해주세요.");
       return;
     }
 
-    if (boardContent.length() > 2000) {
+
+    if (boardContent.length > 2000) {
     alert("게시글 내용이 너무 깁니다.");
         return;
 }
@@ -124,7 +122,6 @@ const handleKeyDown = (e) => {
       alert("별점을 선택해주세요.");
       return;
     }
-
 
     const hashtagList = parsedTags;
 
@@ -333,14 +330,14 @@ const handleKeyDown = (e) => {
               <th className={styles.filterLabel}>해시태그</th>
               <td className={styles.filterContent}>
                 <div className={styles.tagInputWrapper}>
-                 <input
-            type="text"
-            className={styles.titleInput}
-            placeholder="#해시태그 입력 후 Enter"
-            value={hashtags}
-            onChange={handleHashtagChange}
-            onKeyDown={handleKeyDown}
-          />
+                  <input
+                    type="text"
+                    className={styles.titleInput}
+                    placeholder="#해시태그 입력 후 Enter"
+                    value={hashtags}
+                    onChange={handleHashtagChange}
+                    onKeyDown={handleKeyDown}
+                  />
                   <div className={styles.tagPreviewWrapper}>
                     {parsedTags.map((tag, idx) => (
                       <span
@@ -366,16 +363,15 @@ const handleKeyDown = (e) => {
           </tbody>
         </table>
       </div>
-      
-{tagLimitMessage && (
-  <div
-    className={styles.tagWarning}
-    dangerouslySetInnerHTML={{ __html: tagLimitMessage }}
-  />
-)}
+
+      {tagLimitMessage && (
+        <div
+          className={styles.tagWarning}
+          dangerouslySetInnerHTML={{ __html: tagLimitMessage }}
+        />
+      )}
 
       <br />
-
 
       {/* 제목 입력 */}
       <div className={styles.inputGroup}>

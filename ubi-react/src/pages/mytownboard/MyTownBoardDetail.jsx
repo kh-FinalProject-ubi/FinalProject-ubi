@@ -122,17 +122,17 @@ function MyTownBoardDetail() {
     <main className={styles.container}>
       <div className={styles.contentWrapper}>
         {/* ✅ 상단 제목 + 작성유형 */}
-       <div className={styles.titleAndTagRow}>
-    <h2 className={styles.pageTitle}>우리 동네 좋아요</h2>
+        <div className={styles.titleAndTagRow}>
+          <h2 className={styles.pageTitle}>우리 동네 좋아요</h2>
 
-    {/* 오른쪽에 subtag */}
-    {board.postType === "복지시설후기" && board.facilityName && (
-      <span className={styles.subtag}>{board.facilityName}</span>
-    )}
-    {board.postType === "복지혜택후기" && board.welfareName && (
-      <span className={styles.subtag}>{board.welfareName}</span>
-    )}
-  </div>
+          {/* 오른쪽에 subtag */}
+          {board.postType === "복지시설후기" && board.facilityName && (
+            <span className={styles.subtag}>{board.facilityName}</span>
+          )}
+          {board.postType === "복지혜택후기" && board.welfareName && (
+            <span className={styles.subtag}>{board.welfareName}</span>
+          )}
+        </div>
 
         <section>
           {/* ✅ 제목 + 수정/삭제 */}
@@ -201,20 +201,27 @@ function MyTownBoardDetail() {
             {/* 작성자 정보 */}
             <div className={styles.userInfo}>
               <img
-                 className={styles.profileImg}
+                className={styles.profileImg}
                 src={board.memberImg || "/default-profile.png"}
                 alt="프로필"
                 onError={(e) => {
-                   e.currentTarget.src = "/default-profileerror.png";
+                  e.currentTarget.src = "/default-profileerror.png";
                   e.currentTarget.onerror = null;
-                  setSelectedMember({
-                    memberNo: board.memberNo,
-                    memberImg: board.memberImg,
-                    memberNickname: board.memberNickname,
-                    role: board.authority === "2" ? "ADMIN" : "USER",
-                  });
-                  setModalPosition({ x: e.clientX + 50, y: e.clientY });
-                  setModalVisible(true);
+                }}
+                onClick={(e) => {
+                  if (
+                    board.memberNo !== loginMemberNo &&
+                    board.authority !== "2"
+                  ) {
+                    setSelectedMember({
+                      memberNo: board.memberNo,
+                      memberImg: board.memberImg,
+                      memberNickname: board.memberNickname,
+                      role: board.authority === "2" ? "ADMIN" : "USER",
+                    });
+                    setModalPosition({ x: e.clientX + 50, y: e.clientY });
+                    setModalVisible(true);
+                  }
                 }}
               />
               <div className={styles.authorInfo}>
@@ -228,32 +235,36 @@ function MyTownBoardDetail() {
             {/* 좋아요 + 조회 + 신고 */}
             <div className={styles.statColumn}>
               {/* 신고 버튼만 위로 */}
-              {token && loginMemberNo !== writerNo && board.authority !== "2" && (
-  <button
-    className={styles.reportBtn}
-    onClick={() => handleReport(board.boardNo)}
-  >
-    <img
-      src={
-        reportedByMe
-          ? "/boardCancleReport.svg"
-          : "/boardReport.svg"
-      }
-      alt="신고 아이콘"
-    />
-  </button>
-)}
+              {token &&
+                loginMemberNo !== writerNo &&
+                board.authority !== "2" && (
+                  <button
+                    className={styles.reportBtn}
+                    onClick={() => handleReport(board.boardNo)}
+                  >
+                    <img
+                      src={
+                        reportedByMe
+                          ? "/boardCancleReport.svg"
+                          : "/boardReport.svg"
+                      }
+                      alt="신고 아이콘"
+                    />
+                  </button>
+                )}
 
               <div className={styles.stats}>
-               <button onClick={handleLike} className={styles.likeButton}>
-  <img
-    src="/icons/boardlike.svg"
-    alt="좋아요"
-    className={styles.iconHeart}
-  />
-  <span className={styles.likeCount}> {likeCount}</span>
-</button>
-     <span className={styles.readCount}>조회 {board.boardReadCount}</span>
+                <button onClick={handleLike} className={styles.likeButton}>
+                  <img
+                    src="/icons/boardlike.svg"
+                    alt="좋아요"
+                    className={styles.iconHeart}
+                  />
+                  <span className={styles.likeCount}> {likeCount}</span>
+                </button>
+                <span className={styles.readCount}>
+                  조회 {board.boardReadCount}
+                </span>
               </div>
             </div>
           </div>

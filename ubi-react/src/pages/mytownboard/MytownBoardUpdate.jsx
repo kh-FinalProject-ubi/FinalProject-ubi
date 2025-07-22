@@ -213,7 +213,16 @@ const handleRemoveTag = (indexToRemove) => {
     if (!tempDiv.textContent.trim() && !tempDiv.querySelector("img")) {
       alert("내용을 입력하세요.");
       return;
+
+      
     }
+
+    if (boardContent.length > 2000) {
+    alert("게시글 내용이 너무 깁니다.");
+        return;
+}
+
+
     // 1. summernote에 삽입된 <img> 순서 기준으로 정렬
     const imgTags = Array.from(tempDiv.querySelectorAll("img"));
     const sortedImageUrls = imgTags.map((img) => img.getAttribute("src"));
