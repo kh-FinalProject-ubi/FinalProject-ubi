@@ -2,11 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="edu.kh.project.welfare.detail.dto.WelfareDetailMapper">
 	
-	    <select id="selectByApiServiceId" resultType="edu.kh.project.welfare.benefits.model.dto.Welfare">
-        SELECT *
-        FROM WELFARE
+<select id="selectByApiServiceId" resultType="edu.kh.project.welfare.benefits.model.dto.Welfare">
+    SELECT *
+    FROM (
+        SELECT * FROM WELFARE
         WHERE API_SERVICE_ID = #{apiServiceId}
-    </select>
+        ORDER BY JJ_TIME DESC NULLS LAST
+    )
+    WHERE ROWNUM = 1
+</select>
 	
 
 	
