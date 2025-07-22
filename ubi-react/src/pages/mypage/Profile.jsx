@@ -90,17 +90,20 @@ const Profile = () => {
   const [like, setlike] = useState([]);
   const [commentContentType, setCommentContentType] = useState("게시글"); // or '댓글'
 
-  const [benefitPage, setBenefitPage] = useState(1); 
+  const [benefitPage, setBenefitPage] = useState(1);
   const PER_PAGE_BENEFIT = 4;
 
   const [postPage, setPostPage] = useState(1);
-  const PER_PAGE_POST = 5; 
+  const PER_PAGE_POST = 5;
 
   const [likePage, setLikePage] = useState(1);
-  const PER_PAGE_LIKE = 5; 
+  const PER_PAGE_LIKE = 5;
 
   const [favorites, setFavorites] = useState(new Set());
-  const mappedBenefits = benefits.map(b => ({ ...b, isFav: favorites.has(b.serviceNo) }));
+  const mappedBenefits = benefits.map((b) => ({
+    ...b,
+    isFav: favorites.has(b.serviceNo),
+  }));
   const totalBenefitPages = Math.ceil(mappedBenefits.length / PER_PAGE_BENEFIT);
   const pagedBenefits = mappedBenefits.slice(
     (benefitPage - 1) * PER_PAGE_BENEFIT,
@@ -119,9 +122,15 @@ const Profile = () => {
     likePage * PER_PAGE_LIKE
   );
 
-  useEffect(() => { setBenefitPage(1); }, [category]);
-  useEffect(() => { setPostPage(1); },    [contentType, board.length]);
-  useEffect(() => { setLikePage(1); },    [commentContentType, like.length]);
+  useEffect(() => {
+    setBenefitPage(1);
+  }, [category]);
+  useEffect(() => {
+    setPostPage(1);
+  }, [contentType, board.length]);
+  useEffect(() => {
+    setLikePage(1);
+  }, [commentContentType, like.length]);
 
   /* contentType 이 바뀌면 1페이지부터 */
   useEffect(() => {
@@ -135,15 +144,15 @@ const Profile = () => {
   useEffect(() => {
     setLikePage(1);
   }, [contentType]);
-  
+
   const handleUnfav = (id) => {
-  setBenefits((prev) =>
-    prev.filter((b) =>
-      b.serviceNo
-        ? b.serviceNo !== id
-        : b.recruitNo
-        ? b.recruitNo !== id
-        : b.facilityNo !== id
+    setBenefits((prev) =>
+      prev.filter((b) =>
+        b.serviceNo
+          ? b.serviceNo !== id
+          : b.recruitNo
+          ? b.recruitNo !== id
+          : b.facilityNo !== id
       )
     );
   };
@@ -204,6 +213,7 @@ const Profile = () => {
 
       const payload = {
         ...member,
+        authority: member.authority,
         memberAddress: fullAddress,
         memberTaddress: fullAddress2,
         memberStandard: code,
@@ -214,6 +224,16 @@ const Profile = () => {
       const res = await axios.post("/api/myPage/update", payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      // ✅ JWT가 함께 반환되었는지 확인하고 localStorage 갱신
+      const newToken = res.data.token;
+      if (newToken) {
+        localStorage.setItem(
+          "auth-storage",
+          JSON.stringify({ state: { token: newToken } })
+        );
+        console.log("✅ 토큰 갱신 완료");
+      }
 
       // 저장 성공 확인
       if (res.status === 200) {
@@ -449,19 +469,23 @@ const Profile = () => {
 
       {member && (
         <section className={styles.basicInfo}>
-          <div style ={{ position: "relative" }}>
+          <div style={{ position: "relative" }}>
             {loading && <LoadingOverlay />}
             <div className={styles.basicInfoHeader}>
               <h3>기본 정보</h3>
-                <div className={styles.categoryTabs}>
-                  {editMode ? (
-                    <button calssName = {styles.save} onClick={saveMemberData}>저장</button>
-                  ) : (
-                    <button calssName = {styles.edit} onClick={handleEdit}>수정</button>
-                  )}
-                </div>
+              <div className={styles.categoryTabs}>
+                {editMode ? (
+                  <button calssName={styles.save} onClick={saveMemberData}>
+                    저장
+                  </button>
+                ) : (
+                  <button calssName={styles.edit} onClick={handleEdit}>
+                    수정
+                  </button>
+                )}
               </div>
-            <div className={styles.line}/>
+            </div>
+            <div className={styles.line} />
             <div className={styles.profileRow}>
               <div className={styles.profileLeft}>
                 <ProfileImgUploader member={member} onSave={onProfileSave} />
@@ -510,7 +534,10 @@ const Profile = () => {
                           type="text"
                           value={member.memberEmail}
                           onChange={(e) =>
-                            setMember({ ...member, memberEmail: e.target.value })
+                            setMember({
+                              ...member,
+                              memberEmail: e.target.value,
+                            })
                           }
                         />
                       </li>
@@ -552,12 +579,9 @@ const Profile = () => {
                       </li>
                       <li>
                         <strong>가입일</strong>
-                        <input
-                          type="text"
-                          value={member.enrollDate}
-                          readOnly
-                        />
+                        <input type="text" value={member.enrollDate} readOnly />
                       </li>
+
                       
                       {/* 내 주소 */}
                       <li className={styles.addressRow}>
@@ -580,6 +604,7 @@ const Profile = () => {
                             />
                           </div>
 
+
                           <input
                             value={baseAddress}
                             readOnly
@@ -596,6 +621,7 @@ const Profile = () => {
                           />
                         </div>
                       </li>
+
 
                       {/* 임시 주소 */}
                       <li className={styles.addressRow}>
@@ -642,7 +668,11 @@ const Profile = () => {
                     <>
                       <li>
                         <strong>아이디</strong> {member.memberId}
-                        <p className={styles.kako}>{member.kakaoId ? "카카오 연동됨 : " + member.kakaoId : null}</p>
+                        <p className={styles.kako}>
+                          {member.kakaoId
+                            ? "카카오 연동됨 : " + member.kakaoId
+                            : null}
+                        </p>
                       </li>
                       <li>
                         <strong>닉네임</strong> {member.memberNickname}
@@ -656,7 +686,9 @@ const Profile = () => {
                       <li className={styles.memberStandardView}>
                         <strong>회원유형</strong>
                         <div className={styles.memberStandardLbels}>
-                          <span className={styles.memberType}>{mainType || "일반"}</span>
+                          <span className={styles.memberType}>
+                            {mainType || "일반"}
+                          </span>
                           {disabled && (
                             <span className={styles.tagDisabled}>장애인</span>
                           )}
@@ -673,7 +705,9 @@ const Profile = () => {
                           <strong>내 주소</strong>
                           <div className={styles.addressBody}>
                             <p className={styles.zipcode}>{`[${zipcode}]`}</p>
-                            <p>{baseAddress} , {detailAddress}</p>
+                            <p>
+                              {baseAddress} , {detailAddress}
+                            </p>
                           </div>
                         </div>
                       </li>
@@ -681,17 +715,19 @@ const Profile = () => {
                         <div className={styles.addressHeader}>
                           <strong>임시 주소</strong>
                           <div className={styles.addressBody}>
-                            <p className={styles.zipcode}>{`[${zipcode2 ? zipcode2 : "없음"}]`}</p>
-                            <p>{baseAddress2 ? baseAddress2 : "없음"} , 
-                               {detailAddress2 ? detailAddress2 : "없음"}</p>
+                            <p className={styles.zipcode}>{`[${
+                              zipcode2 ? zipcode2 : "없음"
+                            }]`}</p>
+                            <p>
+                              {baseAddress2 ? baseAddress2 : "없음"} ,
+                              {detailAddress2 ? detailAddress2 : "없음"}
+                            </p>
                           </div>
                         </div>
                       </li>
                     </>
                   )}
                 </ul>
-
-
               </div>
             </div>
           </div>
@@ -736,7 +772,9 @@ const Profile = () => {
                 pagedBenefits.map((benefit) => (
                   <BenefitCardWrapper
                     key={
-                      benefit.serviceNo || benefit.recruitNo || benefit.facilityNo
+                      benefit.serviceNo ||
+                      benefit.recruitNo ||
+                      benefit.facilityNo
                     }
                     category={category}
                     benefit={benefit}
@@ -748,7 +786,6 @@ const Profile = () => {
               )}
             </motion.div>
           </AnimatePresence>
-
 
           {/* ⬇️ 페이지네이션 – 필요하면 로직 연결 */}
           {totalBenefitPages > 1 && (
@@ -912,7 +949,6 @@ const Profile = () => {
               />
             </div>
           )}
-
         </div>
       </section>
 
@@ -955,8 +991,9 @@ const Profile = () => {
                 </thead>
                 <tbody>
                   {pagedLike.map((l) => (
-                    <tr key={l.boardNo}
-                        onClick={() => navigate(`/mytownBoard/${l.boardNo}`)}
+                    <tr
+                      key={l.boardNo}
+                      onClick={() => navigate(`/mytownBoard/${l.boardNo}`)}
                     >
                       <td>{l.postType}</td>
                       <td>  
@@ -1016,8 +1053,9 @@ const Profile = () => {
                 </thead>
                 <tbody>
                   {like.map((l) => (
-                    <tr key={l.commentNo}
-                        onClick={() => navigate(`/mytownBoard/${l.boardNo}`)}
+                    <tr
+                      key={l.commentNo}
+                      onClick={() => navigate(`/mytownBoard/${l.boardNo}`)}
                     >
                       <td>{l.postType}</td>
                       <td className={styles.content}>
@@ -1052,16 +1090,16 @@ const Profile = () => {
           )}
         </div>
 
-          {/* ⬇️ 페이지네이션 – 필요하면 로직 연결 */}
-          {totalLikePages > 1 && (
-            <div className={styles.paginationWrapper}>
-              <Pagination
-                currentPage={likePage}
-                totalPages={totalLikePages}
-                onPageChange={setLikePage}
-              />
-            </div>
-          )}
+        {/* ⬇️ 페이지네이션 – 필요하면 로직 연결 */}
+        {totalLikePages > 1 && (
+          <div className={styles.paginationWrapper}>
+            <Pagination
+              currentPage={likePage}
+              totalPages={totalLikePages}
+              onPageChange={setLikePage}
+            />
+          </div>
+        )}
       </section>
     </div>
   );

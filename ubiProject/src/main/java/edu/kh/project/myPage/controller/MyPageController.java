@@ -104,43 +104,48 @@ public class MyPageController {
 	 */
 	@PostMapping("update")
 	public ResponseEntity<Object> updateInfo(@RequestBody Member member,
-											 @RequestHeader("Authorization") String authorizationHeader) {
-
-		try {
-			
-		  if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+	                                         @RequestHeader("Authorization") String authorizationHeader) {
+	    try {
+	        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
 	        }
-		  
-		  String token = authorizationHeader.substring(7);
-			
-		  if (!jwtU.validateToken(token)) {
+
+	        String token = authorizationHeader.substring(7);
+
+	        if (!jwtU.validateToken(token)) {
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
 	        }
 
-	        // 3️⃣ 토큰에서 회원 번호 추출
 	        Long memberNoLong = jwtU.extractMemberNo(token);
 	        int memberNo = memberNoLong.intValue();
-	        
 	        member.setMemberNo(memberNo);
-	       
+
 	        if (memberNo == 0) {
-               return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
 	        }
-           
+
 	        int result = service.updateInfo(member);
-           
-	        if(result > 0) {
-        	   return ResponseEntity.status(HttpStatus.OK).body("회원 정보 수정을 완료했습니다!");        	   
+
+	        if (result > 0) {
+	            // ✅ 수정된 회원 정보 다시 조회 (권한 포함)
+	            Member updatedMember = service.selectMemberByNo(memberNo);
+
+	            // ✅ 새로운 토큰 발급
+	            String newToken = jwtU.generateToken(updatedMember);
+
+	            return ResponseEntity.ok(Map.of(
+	                "message", "회원 정보 수정을 완료했습니다!",
+	                "token", newToken
+	            ));
 	        } else {
-	        	return ResponseEntity.badRequest().body("회원 정보 수정을 실패했습니다");	      	   
+	            return ResponseEntity.badRequest().body("회원 정보 수정을 실패했습니다");
 	        }
-           
-       } catch (Exception e) {
-           log.error("내 정보 조회 중 에러 발생", e);
-           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-       }
-	}	
+
+	    } catch (Exception e) {
+	        log.error("내 정보 수정 중 에러 발생", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류");
+	    }
+	}
 
 	
 	// 내가 찜한 혜택 조회
