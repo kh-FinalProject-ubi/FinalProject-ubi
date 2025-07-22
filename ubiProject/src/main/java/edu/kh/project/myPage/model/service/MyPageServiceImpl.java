@@ -307,56 +307,60 @@ public class MyPageServiceImpl implements MyPageService {
 	@Override
 	public String profile(int memberNo, MultipartFile profileImg) {
 
-	    // 프로필 이미지 경로
+	    log.info("📥 [프로필 업로드 요청] 회원번호: " + memberNo);
+	    if (profileImg == null || profileImg.isEmpty()) {
+	        log.warn("⚠️ 업로드된 파일이 없습니다.");
+	        return null;
+	    }
+
 	    String updatePath = null;
 	    String rename = null;
 
-	    if (!profileImg.isEmpty()) {
-	        // 실제 저장 경로
+	    try {
+	        // 저장 경로 확보
 	        String folderPath = profileFolderPath;
 	        if (!folderPath.endsWith(File.separator)) {
 	            folderPath += File.separator;
 	        }
 
-	        // 폴더 없으면 생성
 	        File dir = new File(folderPath);
 	        if (!dir.exists()) {
 	            boolean made = dir.mkdirs();
-	            log.info("📂 프로필 이미지 폴더 생성됨? : " + made);
+	            log.info("📂 디렉토리 생성됨? : " + made);
 	        }
 
-	        // 저장 파일명 생성
+	        // 파일명 리네임 및 저장
 	        rename = Utility.fileRename(profileImg.getOriginalFilename());
 	        File targetFile = new File(folderPath + rename);
 
-	        try {
-	            profileImg.transferTo(targetFile);
-	            log.info("✅ 프로필 이미지 저장 완료: " + targetFile.getAbsolutePath());
-	        } catch (IOException | IllegalStateException e) {
-	            log.error("❌ 프로필 이미지 저장 실패", e);
-	            return null; // 저장 실패 → DB 업데이트 중단
+	        profileImg.transferTo(targetFile);
+	        log.info("✅ 프로필 이미지 저장 완료: " + targetFile.getAbsolutePath());
+
+	        // 웹 경로 구성
+	        updatePath = profileWebPath + rename;
+
+	        // DB 업데이트
+	        Member member = Member.builder()
+	                .memberNo(memberNo)
+	                .memberImg(updatePath)
+	                .build();
+
+	        int result = mapper.profile(member);
+	        if (result > 0) {
+	            return updatePath;
+	        } else {
+	            log.error("❌ DB 업데이트 실패");
+	            return null;
 	        }
 
-	        // 웹 경로 저장
-	        updatePath = profileWebPath + rename;
-	    }
-
-	    if (updatePath == null) {
-	        log.warn("❗ 이미지 저장 실패 또는 이미지 없음");
+	    } catch (IOException | IllegalStateException e) {
+	        log.error("❌ 프로필 이미지 저장 중 예외 발생", e);
+	        return null;
+	    } catch (Exception ex) {
+	        log.error("❌ 알 수 없는 예외 발생", ex);
 	        return null;
 	    }
-
-	    // DB에 이미지 경로 업데이트
-	    Member member = Member.builder()
-	            .memberNo(memberNo)
-	            .memberImg(updatePath)
-	            .build();
-
-	    int result = mapper.profile(member);
-
-	    return result > 0 ? updatePath : null;
 	}
-	
 	// 프로필 이미지 초기화
 	@Override
 	public int deleteProfile(int memberNo) {

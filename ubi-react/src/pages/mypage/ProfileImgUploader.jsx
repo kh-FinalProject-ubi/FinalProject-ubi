@@ -56,7 +56,7 @@ export default function ProfileImgUploader({ onSave }) {
         if (res.status === 200) {
           setAuth({
             ...currentAuth,
-            memberImg: null,
+            memberImg: res.data,
           });
         }
       } catch (err) {
