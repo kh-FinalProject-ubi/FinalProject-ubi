@@ -163,13 +163,12 @@
 
 /* 데스크탑 전용 필터 (table 기반) */
 .filterTitle {
-   display: block;
+  display: block;
   font-weight: bold;
   margin-bottom: 1rem;
 }
 
 .filterBox {
-
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   border-radius: 12px;
   padding: 0;
@@ -347,10 +346,20 @@
   height: 28px;
 }
 
-
-
 /* ✅ 모바일 전용 div 필터 */
 @media (max-width: 768px) {
+  .container {
+    min-width: auto; /* ✅ 모바일에서 min-width 해제 */
+    padding: 1rem 1rem; /* ✅ 좌우 여백 최소화 */
+  }
+  :global(.note-editor.note-frame) {
+    width: 100% !important;
+  }
+
+  :global(.note-editable) {
+    height: 300px !important;
+  }
+
   .filterBlock {
     display: block;
     margin-bottom: 1.5rem;
