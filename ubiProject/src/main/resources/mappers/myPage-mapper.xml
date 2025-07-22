@@ -215,5 +215,18 @@
 	 WHERE MEMBER_NO = #{memberNo}
 	 AND SERVICE_NO = #{serviceNo}
 	</update>
+	
+	<select id="selectMemberByNo" parameterType="int" resultType="Member">
+    SELECT 
+        MEMBER_NO,
+        MEMBER_ID,
+        MEMBER_NAME,
+        MEMBER_ADDRESS,
+        MEMBER_TADDRESS,
+        MEMBER_STANDARD,
+        AUTHORITY
+    FROM MEMBER
+    WHERE MEMBER_NO = #{memberNo}
+</select>
 
 </mapper>

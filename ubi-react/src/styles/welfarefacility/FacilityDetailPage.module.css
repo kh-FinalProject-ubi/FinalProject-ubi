@@ -1,0 +1,52 @@
+.facility-detail {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.fd-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.fd-image img {
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 32px;
+}
+
+.fd-section {
+  margin-bottom: 40px;
+}
+.fd-h3 {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.fd-info-list li {
+  margin: 4px 0;
+}
+
+.fd-description {
+  line-height: 1.6;
+}
+
+.fd-reserve {
+  text-align: center;
+  margin: 32px 0;
+}
+.fd-btn {
+  background: #ffcf37;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 32px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.fd-btn:hover {
+  background: #ffc20a;
+}

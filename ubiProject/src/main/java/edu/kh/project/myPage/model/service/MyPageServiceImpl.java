@@ -377,4 +377,9 @@ public class MyPageServiceImpl implements MyPageService {
 	public int cancelZzim(Map<String, Object> map) {
 		return mapper.cancelZzim(map);
 	}
+	
+	@Override
+	public Member selectMemberByNo(int memberNo) {
+	    return mapper.selectMemberByNo(memberNo); // MyBatis 매퍼 호출
+	}
 }
