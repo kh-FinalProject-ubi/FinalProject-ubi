@@ -53,82 +53,78 @@ public class MyPageServiceImpl implements MyPageService {
 
 	@Value("${my.profile.folder-path}")
 	private String profileFolderPath; // home/ec2-useruploadFiles/profile/
-	
+
 	// 내 기본 정보 조회
 	@Override
 	public Member info(int memberNo) {
 		return mapper.info(memberNo);
 	}
-	
+
 	// 회원 정보 수정
 	@Override
 	public int updateInfo(Member member) {
 		return mapper.updateInfo(member);
 	}
-	
+
 	// 내가 찜한 혜택 조회
 	@Override
 	public List<Welfare> getWelfareBenefits(int memberNo) {
 		return mapper.getWelfareBenefits(memberNo);
 	}
-	
+
 	// 내가 찜한 채용 조회
 	@Override
 	public List<FacilityJob> getRecruitBenefits(int memberNo) {
 		return mapper.getRecruitBenefits(memberNo);
 	}
-	
+
 	// 내가 찜한 시설 조회
 	@Override
 	public List<Facility> getFacilityBenefits(int memberNo) {
 		return mapper.getFacilityBenefits(memberNo);
 	}
-	
-	
+
 	// 작성글 조회
 	@Override
 	public List<Board> baord(int memberNo) {
-		
-		List<Board> board =  mapper.board(memberNo);
-		
-		List<Integer> boardNoList = board.stream()
-	            .map(Board::getBoardNo)
-	            .collect(Collectors.toList());
 
-	        // 3. 게시글 번호로 해시태그 전부 조회 (resultType="map")
-	        List<Map<String, Object>> hashtagRows = mapper.selectHashtagsByBoardNoList(boardNoList);
+		List<Board> board = mapper.board(memberNo);
 
-	        // 4. 게시글 번호 → 해시태그 리스트로 변환
-	        Map<Integer, List<String>> tagMap = new HashMap<>();
-	        for (Map<String, Object> row : hashtagRows) {
-	            Integer boardNo = ((Number) row.get("BOARD_NO")).intValue();
-	            String tag = (String) row.get("HASHTAG_NAME");
-	            tagMap.computeIfAbsent(boardNo, k -> new ArrayList<>()).add(tag);
-	        }
+		List<Integer> boardNoList = board.stream().map(Board::getBoardNo).collect(Collectors.toList());
 
-	        // 5. 게시글에 쉼표로 연결된 해시태그 문자열 세팅
-	        for (Board b : board) {
-	            List<String> tags = tagMap.getOrDefault(b.getBoardNo(), Collections.emptyList());
-	            b.setHashtags(String.join(",", tags));
-	        }
+		// 3. 게시글 번호로 해시태그 전부 조회 (resultType="map")
+		List<Map<String, Object>> hashtagRows = mapper.selectHashtagsByBoardNoList(boardNoList);
 
-	        return board;
-	    }
-	
+		// 4. 게시글 번호 → 해시태그 리스트로 변환
+		Map<Integer, List<String>> tagMap = new HashMap<>();
+		for (Map<String, Object> row : hashtagRows) {
+			Integer boardNo = ((Number) row.get("BOARD_NO")).intValue();
+			String tag = (String) row.get("HASHTAG_NAME");
+			tagMap.computeIfAbsent(boardNo, k -> new ArrayList<>()).add(tag);
+		}
+
+		// 5. 게시글에 쉼표로 연결된 해시태그 문자열 세팅
+		for (Board b : board) {
+			List<String> tags = tagMap.getOrDefault(b.getBoardNo(), Collections.emptyList());
+			b.setHashtags(String.join(",", tags));
+		}
+
+		return board;
+	}
+
 	// 작성 댓글 조회
 	@Override
 	public List<Comment> Comment(int memberNo) {
 		return mapper.Comment(memberNo);
 	}
-	
+
 	// 내가 좋아요를 누른 게시글 조회
 	@Override
-	public List<BoardLike> like (int memberNo) {
-		
+	public List<BoardLike> like(int memberNo) {
+
 		return mapper.like(memberNo);
 	}
-	
-	
+
 	// 내가 좋아요를 누른 댓글 조회
 	@Override
 	public List<Comment> likeComment(int memberNo) {
@@ -154,11 +150,11 @@ public class MyPageServiceImpl implements MyPageService {
 
 		return 1;
 	}
-	
+
 	// 비밀번호 변경
 	@Override
 	public int changePw(String newPw, int memberNo) {
-		
+
 		// 2. 같을 경우
 
 		// 새 비밀번호를 암호화(bcrypt.encode(평문) > 암호화된 비밀번호 반환)
@@ -170,15 +166,14 @@ public class MyPageServiceImpl implements MyPageService {
 		// -> 묶어서 전달 (paramMap 재활용)
 
 		Map<String, String> paramMap = new HashMap<>();
-				
+
 		paramMap.put("memberNo", memberNo + ""); // 1 + "" => 문자열
-		
-		paramMap.put("encPw", encPw );
+
+		paramMap.put("encPw", encPw);
 
 		return mapper.changePw(paramMap);
 	}
 
-	
 	// 회원 탈퇴 서비스
 	@Override
 	public int withdraw(int memberNo) {
@@ -307,6 +302,44 @@ public class MyPageServiceImpl implements MyPageService {
 	@Override
 	public String profile(int memberNo, MultipartFile profileImg) {
 
+
+		// 프로필 이미지 경로
+		String updatePath = null;
+
+		// 변경명 저장
+		String rename = null;
+
+		if (!profileImg.isEmpty()) {
+			String folderPath = profileFolderPath;
+			if (!folderPath.endsWith("/") && !folderPath.endsWith("\\")) {
+				folderPath += File.separator;
+			}
+
+			File dir = new File(folderPath);
+			if (!dir.exists()) {
+				dir.mkdirs();
+			}
+
+			// 파일명 변경 및 저장
+			rename = Utility.fileRename(profileImg.getOriginalFilename());
+			File targetFile = new File(folderPath + rename);
+
+			try {
+
+				profileImg.transferTo(targetFile);
+
+			} catch (IllegalStateException | IOException e) {
+
+				e.printStackTrace();
+			}
+
+			// 클라이언트가 접근할 수 있는 경로 설정 (예: /myPage/profile/파일명)
+			updatePath = profileWebPath + rename;
+		}
+
+		// 수정된 프로필 이미지 경로 + 회원 번호를 저장할 DTO 객체
+		Member member = Member.builder().memberNo(memberNo).memberImg(updatePath).build();
+
 	    log.info("📥 [프로필 업로드 요청] 회원번호: " + memberNo);
 	    if (profileImg == null || profileImg.isEmpty()) {
 	        log.warn("⚠️ 업로드된 파일이 없습니다.");
@@ -316,12 +349,22 @@ public class MyPageServiceImpl implements MyPageService {
 	    String updatePath = null;
 	    String rename = null;
 
+
 	    try {
 	        // 저장 경로 확보
 	        String folderPath = profileFolderPath;
 	        if (!folderPath.endsWith(File.separator)) {
 	            folderPath += File.separator;
 	        }
+
+
+		if (result > 0) {
+			return updatePath;
+		} else {
+			return null;
+		}
+	}
+
 
 	        File dir = new File(folderPath);
 	        if (!dir.exists()) {
@@ -361,20 +404,26 @@ public class MyPageServiceImpl implements MyPageService {
 	        return null;
 	    }
 	}
+
 	// 프로필 이미지 초기화
 	@Override
 	public int deleteProfile(int memberNo) {
 		return mapper.deleteProfile(memberNo);
 	}
-	
+
 	// 찜 취소
 	@Override
 	public int cancelZzim(Map<String, Object> map) {
 		return mapper.cancelZzim(map);
 	}
-	
+
 	@Override
 	public Member selectMemberByNo(int memberNo) {
-	    return mapper.selectMemberByNo(memberNo); // MyBatis 매퍼 호출
+		return mapper.selectMemberByNo(memberNo); // MyBatis 매퍼 호출
+	}
+
+	@Override
+	public int cancelFacilityZzim(Map<String, Object> map) {
+		return mapper.updateFacilityZzimDelFl(map);
 	}
 }

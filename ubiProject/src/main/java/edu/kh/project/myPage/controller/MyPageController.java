@@ -469,6 +469,47 @@ public class MyPageController {
 		
 	}
 	
+	@DeleteMapping("favorite/facility")
+	@ResponseBody
+	public ResponseEntity<Object> cancelZzimFacility(
+	    @RequestHeader("Authorization") String authorizationHeader,
+	    @RequestParam("facilityNo") String facilityNo
+	) {
+	    try {
+	        // 1. 인증 헤더 확인
+	        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
+	        }
+
+	        // 2. JWT 토큰 파싱 및 유효성 검사
+	        String token = authorizationHeader.substring(7);
+	        if (!jwtU.validateToken(token)) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
+	        }
+
+	        // 3. memberNo 추출
+	        Long memberNoLong = jwtU.extractMemberNo(token);
+	        int memberNo = memberNoLong.intValue();
+
+	        // 4. 서비스로 Map 전달
+	        Map<String, Object> map = new HashMap<>();
+	        map.put("memberNo", memberNo);
+	        map.put("facilityNo", facilityNo);
+
+	        // 5. 실제 찜 해제 로직 호출
+	        int result = service.cancelFacilityZzim(map);
+
+	        if (result > 0) {
+	            return ResponseEntity.ok(result);
+	        } else {
+	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("시설 찜 해제 실패");
+	        }
+	    } catch (Exception e) {
+	        log.error("시설 찜 해제 중 에러 발생", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+	    }
+	}
+	
 	
 
 	
@@ -588,6 +629,8 @@ public class MyPageController {
 		
 		return "redirect:/myPage/fileTest";
 	}
+	
+	
 }
 
 
