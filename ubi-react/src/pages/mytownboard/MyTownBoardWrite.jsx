@@ -96,7 +96,7 @@ const handleKeyDown = (e) => {
       return;
     }
 
-    if (boardContent.length() > 2000) {
+    if (boardContent.length > 2000) {
     alert("게시글 내용이 너무 깁니다.");
         return;
 }
