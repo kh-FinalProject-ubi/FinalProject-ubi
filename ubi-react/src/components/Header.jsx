@@ -8,8 +8,6 @@ import useAlertSocket from "../hook/alert/useAlertSocket";
 import styles from "../styles/Header.module.css";
 import ChattingAlarm from "../components/ChattingAlarm";
 
-
-
 // 알림 모달
 const AlertModal = () => {
   const alertMessage = useModalStore((state) => state.alertMessage);
@@ -26,7 +24,6 @@ const AlertModal = () => {
     </div>
   );
 };
-
 
 const Header = () => {
   const {
@@ -48,16 +45,16 @@ const Header = () => {
 
   const [hasNewAlert, setHasNewAlert] = useState(false);
   const dropdownRef = useRef(null);
-  
-  const rooms           = useChatAlertStore((s) => s.rooms);
+
+  const rooms = useChatAlertStore((s) => s.rooms);
   const setSelectedRoom = useChatAlertStore((s) => s.setSelectedRoom);
-  const alarmOpen       = useChatAlertStore((s) => s.alarmOpen);
+  const alarmOpen = useChatAlertStore((s) => s.alarmOpen);
   const openAlarm = useChatAlertStore((state) => state.openAlarm);
-  const closeAlarm      = useChatAlertStore((s) => s.closeAlarm);
-  const unreadMap       = useChatAlertStore((s) => s.unreadMap);
+  const closeAlarm = useChatAlertStore((s) => s.closeAlarm);
+  const unreadMap = useChatAlertStore((s) => s.unreadMap);
 
   const totalUnread = useTotalUnread(); // 상태 변화 반영됨
-  console.log("🔄 header rerender:", totalUnread);  // ✔︎ B‑1
+  console.log("🔄 header rerender:", totalUnread); // ✔︎ B‑1
 
   // 실시간 알림 수신
   useAlertSocket(memberNo, (newAlert) => {
@@ -262,7 +259,9 @@ const Header = () => {
                         <p className={styles.ddEmpty}>새 메시지가 없습니다.</p>
                       ) : (
                         Object.entries(unreadMap).map(([roomNo, cnt]) => {
-                          const roomObj = rooms.find(r => r.chatRoomNo === Number(roomNo));
+                          const roomObj = rooms.find(
+                            (r) => r.chatRoomNo === Number(roomNo)
+                          );
                           return (
                             <div
                               key={roomNo}
@@ -272,7 +271,9 @@ const Header = () => {
                                 if (roomObj) setSelectedRoom(roomObj);
                               }}
                             >
-                              <strong>{roomObj?.targetNickname || `방 #${roomNo}`}</strong>
+                              <strong>
+                                {roomObj?.targetNickname || `방 #${roomNo}`}
+                              </strong>
                               <span className={styles.noticeCnt}>{cnt}</span>
                             </div>
                           );
@@ -287,10 +288,15 @@ const Header = () => {
                     className={styles.profileImg}
                     src={
                       memberImg
-                        ? `http://localhost:8080${memberImg}`
+                        ? memberImg.startsWith("/") // 서버 상대 경로일 경우만 localhost 붙이기
+                          ? `http://localhost:8080${memberImg}`
+                          : memberImg // 절대 경로일 경우 그대로 사용
                         : "/default-profile.png"
                     }
                     alt="프로필"
+                    onError={(e) => {
+                      e.currentTarget.src = "/default-profileerror.png"; // 실패 시 대체 이미지
+                    }}
                   />
                 </Link>
 
