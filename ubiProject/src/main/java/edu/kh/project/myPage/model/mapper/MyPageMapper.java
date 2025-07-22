@@ -139,6 +139,8 @@ public interface MyPageMapper {
 
 	int updateFacilityZzimDelFl(Map<String, Object> map);
 
+	int cancelFacilityZzim(Map<String, Object> map);
+
 
 
 }

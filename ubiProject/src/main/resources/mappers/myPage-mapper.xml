@@ -248,7 +248,7 @@
 </select>
 
 
-<update id="updateFacilityZzimDelFl" parameterType="map">
+<update id="cancelFacilityZzim" parameterType="map">
   UPDATE welfare_facility
   SET jj_del_fl = 'Y'
   WHERE member_no = #{memberNo}
