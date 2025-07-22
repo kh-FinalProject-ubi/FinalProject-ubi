@@ -3,7 +3,6 @@ package edu.kh.project.myPage.model.service;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import edu.kh.project.board.model.dto.Board;
@@ -14,6 +13,7 @@ import edu.kh.project.myPage.model.dto.UploadFile;
 import edu.kh.project.welfare.benefits.model.dto.Facility;
 import edu.kh.project.welfare.benefits.model.dto.FacilityJob;
 import edu.kh.project.welfare.benefits.model.dto.Welfare;
+import edu.kh.project.welfare.facility.dto.WelfareFacility;
 
 public interface MyPageService {
 
@@ -148,6 +148,12 @@ public interface MyPageService {
 	int cancelZzim(Map<String, Object> map);
 
 	Member selectMemberByNo(int memberNo);
+
+	int cancelFacilityZzim(Map<String, Object> map);
+
+
+	
+
 
 
 

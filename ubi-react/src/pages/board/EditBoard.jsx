@@ -33,10 +33,13 @@ const EditBoard = () => {
     formData.append("file", file);
     axios
       .post("/api/editBoard/image-upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`, // ✅ 추가
+        },
       })
       .then((res) => {
-        const imageUrl = `/images/board/${res.data}`;
+        const imageUrl = res.data;
         $("#summernote").summernote("insertImage", imageUrl, ($image) => {
           $image.css("width", "100%");
         });
@@ -184,15 +187,17 @@ const EditBoard = () => {
   if (!board) return <p>로딩 중...</p>;
 
   const typeStyleMap = {
-    "중요": styles.postTypeReport, // 중요 -> postTypeImportant (빨간색)
-    "이벤트": styles.postTypeEvent,   // 이벤트 -> postTypeEvent (파란색)
-    "신고": styles.postTypeReport,     // 신고 -> postTypeReport (빨간색)
-    "문의": styles.postTypeInquiry,    // 문의 -> postTypeInquiry (노란색)
-    "공지": styles.postTypeInquiry,    // 공지 -> postTypeInquiry (노란색)
+    중요: styles.postTypeReport, // 중요 -> postTypeImportant (빨간색)
+    이벤트: styles.postTypeEvent, // 이벤트 -> postTypeEvent (파란색)
+    신고: styles.postTypeReport, // 신고 -> postTypeReport (빨간색)
+    문의: styles.postTypeInquiry, // 문의 -> postTypeInquiry (노란색)
+    공지: styles.postTypeInquiry, // 공지 -> postTypeInquiry (노란색)
   };
-  
+
   // 기본 클래스에 현재 postType에 맞는 스타일을 동적으로 추가
-  const selectClassName = `${styles.postTypeSelect} ${typeStyleMap[postType] || ''}`;
+  const selectClassName = `${styles.postTypeSelect} ${
+    typeStyleMap[postType] || ""
+  }`;
   return (
     <div className={styles.container}>
       <h2 className={styles.pageTitle}>

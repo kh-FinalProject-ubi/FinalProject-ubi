@@ -97,7 +97,6 @@
   margin-left: 10px;
 }
 
-
 /* 768px 이상 화면에서만 이미지 표시 */
 @media (min-width: 768px) {
   .imageBox {
@@ -129,11 +128,11 @@
 /* 🔤 입력 필드 블록 (인풋 + 메시지) */
 .inputBlock {
   margin-bottom: 1.25rem; /* 기존 간격 유지, 필요시 조절 */
-  
+
   /* input + span을 감싸는 블록으로 높이 고정 및 레이아웃 설정 */
   position: relative;
-  min-height: 30px;  /* input 위아래 간격 포함 최소 높이 */
-  padding-top: 5px;  /* span이 위에 5px 띄우도록 기본 패딩 */
+  min-height: 30px; /* input 위아래 간격 포함 최소 높이 */
+  padding-top: 5px; /* span이 위에 5px 띄우도록 기본 패딩 */
   box-sizing: border-box;
 }
 
@@ -249,7 +248,6 @@
   display: none;
 }
 
-
 /* 🟣 최종 제출 버튼 */
 .submitBtn {
   width: 100%;
@@ -330,7 +328,7 @@
   align-items: center;
   gap: 10px; /* 체크박스와 텍스트 사이 간격 */
   font-size: 0.95rem;
-  color: #4A5568;
+  color: #4a5568;
 }
 
 /* 체크박스 커스텀 */
@@ -338,7 +336,7 @@
   appearance: none;
   width: 20px;
   height: 20px;
-  border: 2px solid #CBD5E0;
+  border: 2px solid #cbd5e0;
   border-radius: 4px;
   cursor: pointer;
   position: relative;
@@ -352,7 +350,7 @@
 
 /* 체크박스 체크 표시(v) 만들기 */
 .checkboxBlock input[type="checkbox"]:checked::after {
-  content: '✔';
+  content: "✔";
   font-size: 14px;
   color: white;
   position: absolute;
@@ -363,8 +361,8 @@
 
 /* '자세히 보기' 버튼 */
 .viewTermsBtn {
-  background-color: #F1F5F9;
-  color: #64748B;
+  background-color: #f1f5f9;
+  color: #64748b;
   border: none;
   border-radius: 6px;
   padding: 6px 12px;
@@ -375,10 +373,9 @@
 }
 
 .viewTermsBtn:hover {
-  background-color: #E2E8F0;
+  background-color: #e2e8f0;
 }
-
-
+/* 확인 */
 .completeBox {
   flex: 1;
   display: flex;
@@ -398,13 +395,13 @@
 
 .completeBox p {
   font-size: 1rem;
-  color:#fee500;
+  color: #fee500;
   margin-bottom: 2rem;
 }
 
 /* 완료 화면의 '로그인' 버튼은 secondaryBtn 스타일을 재사용합니다. */
 .completeBox .secondaryBtn {
-    margin-top: 0;
+  margin-top: 0;
 }
 
 .characterImage {
@@ -412,7 +409,6 @@
   height: 250px;
   margin-top: 2rem;
 }
-
 
 .memberTypeTitle {
   font-size: 1.1rem;
@@ -470,4 +466,3 @@
     gap: 10px;
   }
 }
-

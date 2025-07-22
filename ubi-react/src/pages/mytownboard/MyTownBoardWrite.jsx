@@ -19,43 +19,45 @@ const MyTownBoardWrite = () => {
   const postTypeCheckOptions = ["자유", "자랑", "복지시설후기", "복지혜택후기"];
   const [starRating, setStarRating] = useState(0);
 
-    const [hashtags, setHashtags] = useState("");
+  const [hashtags, setHashtags] = useState("");
   const [parsedTags, setParsedTags] = useState([]);
   // 1. 상태 선언
-const [tagLimitMessage, setTagLimitMessage] = useState("");
-
+  const [tagLimitMessage, setTagLimitMessage] = useState("");
 
   const handleHashtagChange = (e) => {
     setHashtags(e.target.value);
   };
 
-const handleKeyDown = (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    const newTag = hashtags.trim().replace(/^#/, "");
-          if (!newTag) return;
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const newTag = hashtags.trim().replace(/^#/, "");
+      if (!newTag) return;
+
+      let messages = [];
 
       if (newTag.length < 2) {
-        setTagLimitMessage("두 글자 이상 입력해주세요.");
+        messages.push("두 글자 이상 입력해주세요.");
+      }
+
+      if (parsedTags.length >= 5) {
+        messages.push("해시태그는 최대 5개까지 입력할 수 있습니다.");
+      }
+
+      if (parsedTags.includes(newTag)) return;
+
+      if (messages.length > 0) {
+        // <br>로 줄바꿈
+        setTagLimitMessage(messages.join("<br/>"));
         return;
       }
 
-    if (!newTag || parsedTags.includes(newTag)) return;
-
-    if (parsedTags.length >= 5) {
-      setTagLimitMessage("해시태그는 최대 5개까지 입력할 수 있습니다.");
-      return;
+      const updatedTags = [...parsedTags, newTag];
+      setParsedTags(updatedTags);
+      setHashtags("");
+      setTagLimitMessage("");
     }
-
-    const updatedTags = [...parsedTags, newTag];
-    setParsedTags(updatedTags);
-    setTimeout(() => {
-      setHashtags(""); // ⭐ setParsedTags 후에 input 초기화 확정
-    }, 0);
-    setTagLimitMessage("");
-  }
-};
-
+  };
 
   const handleRemoveTag = (indexToRemove) => {
     const newTags = parsedTags.filter((_, i) => i !== indexToRemove);
@@ -80,16 +82,23 @@ const handleKeyDown = (e) => {
   const handleSubmit = () => {
     const postType = postTypeCheck.trim();
 
-    if (!boardTitle.trim()) {
-      alert("제목을 입력해주세요.");
-      return;
-    }
-
     // ✅ 내용 체크: 텍스트와 이미지 둘 다 없으면 막기
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = boardContent;
     const textContent = tempDiv.textContent.trim();
     const hasImage = tempDiv.querySelector("img") !== null;
+
+    if (!boardTitle.trim()) {
+      alert("제목을 입력해주세요.");
+      return;
+    }
+
+
+    if (boardContent.length > 2000) {
+    alert("게시글 내용이 너무 깁니다.");
+        return;
+}
+
 
     if (!textContent && !hasImage) {
       alert("내용을 입력해주세요.");
@@ -113,7 +122,6 @@ const handleKeyDown = (e) => {
       alert("별점을 선택해주세요.");
       return;
     }
-
 
     const hashtagList = parsedTags;
 
@@ -214,9 +222,7 @@ const handleKeyDown = (e) => {
     });
   }, []);
 
-const isMobile = window.innerWidth <= 768;
-  
-return (
+  return (
     <div className={styles.container}>
       <div className={styles.pageHeaderContainer}>
         <div className={styles.subText}>우리 동네 좋아요</div>
@@ -324,14 +330,14 @@ return (
               <th className={styles.filterLabel}>해시태그</th>
               <td className={styles.filterContent}>
                 <div className={styles.tagInputWrapper}>
-                 <input
-            type="text"
-            className={styles.titleInput}
-            placeholder="#해시태그 입력 후 Enter"
-            value={hashtags}
-            onChange={handleHashtagChange}
-            onKeyDown={handleKeyDown}
-          />
+                  <input
+                    type="text"
+                    className={styles.titleInput}
+                    placeholder="#해시태그 입력 후 Enter"
+                    value={hashtags}
+                    onChange={handleHashtagChange}
+                    onKeyDown={handleKeyDown}
+                  />
                   <div className={styles.tagPreviewWrapper}>
                     {parsedTags.map((tag, idx) => (
                       <span
@@ -357,10 +363,15 @@ return (
           </tbody>
         </table>
       </div>
-      
-{tagLimitMessage && <p className={styles.errorText}>{tagLimitMessage}</p>}
-      <br />
 
+      {tagLimitMessage && (
+        <div
+          className={styles.tagWarning}
+          dangerouslySetInnerHTML={{ __html: tagLimitMessage }}
+        />
+      )}
+
+      <br />
 
       {/* 제목 입력 */}
       <div className={styles.inputGroup}>

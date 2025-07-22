@@ -137,6 +137,9 @@ public interface MyPageMapper {
 
 	Member selectMemberByNo(int memberNo);
 
+	int updateFacilityZzimDelFl(Map<String, Object> map);
+
+	
 
 
 

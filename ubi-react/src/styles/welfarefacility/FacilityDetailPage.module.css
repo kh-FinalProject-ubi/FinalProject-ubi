@@ -50,3 +50,14 @@
 .fd-btn:hover {
   background: #ffc20a;
 }
+
+.fd-header {
+  display: flex; /* 가로 한 줄 */
+  align-items: center; /* 세로 중앙 정렬 */
+  justify-content: space-between; /* 좌–우 최대 간격 */
+  gap: 8px; /* 필요 시 간격 조정 */
+}
+
+.facilityAction {
+  display: flex; /* 버튼도 flex 내부라 margin 불필요 */
+}

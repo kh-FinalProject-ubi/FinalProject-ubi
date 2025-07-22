@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import useAuthStore from "../../stores/useAuthStore";
 import LikeButton from "../../components/welfareLike/LikeButton";
 import styles from "../../styles/DetailCommon.module.css";
+import GenericDetail from "./GenericDetail"; // ✅ 추가
 
 const safe = (val) => val || "정보 없음";
 
@@ -18,23 +19,37 @@ const SeoulWelfareDetailPage = () => {
   const [searchParams] = useSearchParams();
   const apiServiceId = searchParams.get("apiServiceId");
   const token = useAuthStore((state) => state.token);
-
   const [data, setData] = useState(location.state?.data || null);
 
   useEffect(() => {
     if (!apiServiceId) return;
 
+    // ✅ 1차: DB에서 상세 정보 조회
     fetch(`/api/welfare/detail?apiServiceId=${apiServiceId}`)
       .then((res) => res.json())
       .then((result) => {
-        if (result.detail) setData(result.detail);
+        if (result.detail) {
+          setData(result.detail);
+        } else {
+          // ✅ 2차: 서울시 원본 API에서 직접 조회
+          fetch(`/api/seoul-welfare/detail?apiServiceId=${apiServiceId}`)
+            .then((res) => res.json())
+            .then((result) => {
+              if (result.detail) setData(result.detail);
+              else setData(null);
+            })
+            .catch(() => setData(null));
+        }
       })
-      .catch(() => {
-        setData(null);
-      });
+      .catch(() => setData(null));
   }, [apiServiceId]);
 
   if (!data) return <p>❌ 데이터를 불러올 수 없습니다.</p>;
+
+  // ✅ GenericDetail로 이동해야 하는 경우 (데이터가 단순한 경우)
+  if (!data.serviceName && data.title) {
+    return <GenericDetail data={data} />;
+  }
 
   return (
     <div className={styles.detailContainer}>

@@ -25,63 +25,68 @@ function MytownBoardUpdate() {
   const [initialParsed, setInitialParsed] = useState(false);
 
   
-  // ✅ 기존 DB에서 불러온 해시태그를 parsedTags로만 세팅하고 input엔 안 보이게 유지
-  useEffect(() => {
-    if (!initialParsed && board) {
-      const tagsFromList = Array.isArray(board.hashtagList)
-        ? board.hashtagList
-        : typeof board.hashtags === "string"
-        ? board.hashtags.split(",").map((t) => t.trim())
-        : [];
+// ✅ 기존 DB에서 불러온 해시태그를 parsedTags로만 세팅하고 input엔 안 보이게 유지
+useEffect(() => {
+  if (!initialParsed && board) {
+    const tagsFromList = Array.isArray(board.hashtagList)
+      ? board.hashtagList
+      : typeof board.hashtags === "string"
+      ? board.hashtags.split(",").map((t) => t.trim())
+      : [];
 
-      if (tagsFromList.length > 0) {
-        setParsedTags(tagsFromList);
-        setInitialParsed(true);
-        setHashtags("");
-      }
+    if (tagsFromList.length > 0) {
+      setParsedTags(tagsFromList);
+      setInitialParsed(true);
+      setHashtags("");
     }
-  }, [board, initialParsed]);
+  }
+}, [board, initialParsed]);
 
+// ✅ 입력값 변경
+const handleHashtagChange = (e) => {
+  setHashtags(e.target.value);
+};
 
-  const handleHashtagChange = (e) => {
-    setHashtags(e.target.value);
-  };
+// ✅ Enter 입력 시 해시태그 추가
+const handleKeyDown = (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    const newTag = hashtags.trim().replace(/^#/, "");
+    if (!newTag) return;
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const newTag = hashtags.trim().replace(/^#/, "");
+    let messages = [];
 
-      if (!newTag) return;
-
-      if (newTag.length < 2) {
-        setTagLimitMessage("두 글자 이상 입력해주세요.");
-        return;
-      }
-
-
-      if (!newTag || parsedTags.includes(newTag) || newTag.length < 2) return;
-
-      if (parsedTags.length >= 5) {
-        setTagLimitMessage("해시태그는 최대 5개까지 입력할 수 있습니다.");
-        return;
-      }
-
-      const updatedTags = [...parsedTags, newTag];
-      setParsedTags(updatedTags);
-      setTagLimitMessage("");
-      setTimeout(() => {
-        setHashtags("");
-      }, 0);
+    if (newTag.length < 2) {
+      messages.push("두 글자 이상 입력해주세요.");
     }
-  };
 
-  const handleRemoveTag = (indexToRemove) => {
-    const newTags = parsedTags.filter((_, i) => i !== indexToRemove);
-    setParsedTags(newTags);
-    setHashtags(""); // ✅ 입력창에도 표시 안 되도록 바로 초기화
-    setTagLimitMessage("");
-  };
+    if (parsedTags.length >= 5) {
+      messages.push("해시태그는 최대 5개까지 입력할 수 있습니다.");
+    }
+
+    if (parsedTags.includes(newTag)) return;
+
+    if (messages.length > 0) {
+      setTagLimitMessage(messages.join("<br/>")); // ✅ 줄바꿈 반영
+      return;
+    }
+
+    const updatedTags = [...parsedTags, newTag];
+    setParsedTags(updatedTags);
+    setTagLimitMessage(""); // ✅ 메시지 초기화
+    setTimeout(() => {
+      setHashtags("");
+    }, 0);
+  }
+};
+
+// ✅ 태그 삭제
+const handleRemoveTag = (indexToRemove) => {
+  const newTags = parsedTags.filter((_, i) => i !== indexToRemove);
+  setParsedTags(newTags);
+  setHashtags("");
+  setTagLimitMessage("");
+};
 
 
   const [postTypeCheck, setPostTypeCheck] = useState("");
@@ -208,7 +213,16 @@ function MytownBoardUpdate() {
     if (!tempDiv.textContent.trim() && !tempDiv.querySelector("img")) {
       alert("내용을 입력하세요.");
       return;
+
+      
     }
+
+    if (boardContent.length > 2000) {
+    alert("게시글 내용이 너무 깁니다.");
+        return;
+}
+
+
     // 1. summernote에 삽입된 <img> 순서 기준으로 정렬
     const imgTags = Array.from(tempDiv.querySelectorAll("img"));
     const sortedImageUrls = imgTags.map((img) => img.getAttribute("src"));
@@ -392,7 +406,13 @@ function MytownBoardUpdate() {
         </tbody>
       </table>
       </div>
-      {tagLimitMessage && <p className={styles.errorText}>{tagLimitMessage}</p>}
+     {tagLimitMessage && (
+  <div
+    className={styles.tagWarning}
+    dangerouslySetInnerHTML={{ __html: tagLimitMessage }}
+  />
+)}
+
       <br />
 
             {/* 제목 입력 */}
