@@ -42,12 +42,10 @@
 	
 	<!-- 내가 찜한 시설 조회 -->
 	<select id="getFacilityBenefits">
-		SELECT FACILITY_NO, FACILITY_NAME, FACILITY_KIND_NM, EVENT_TITLE, EVENT_DATE_START, EVENT_DATE_END, 
-			   EVENT_CONTENT, REQUIREMENT, RCPTBGNDT, RCPTENDDT
-		FROM   WELFARE_FACILITY
-		WHERE  MEMBER_NO = #{memberNo}
-		AND	   JJ_DEL_FL = 'N'
-		ORDER BY JJ_TIME
+		  SELECT *
+  FROM welfare_facility
+  WHERE member_no = #{memberNo}
+    AND jj_del_fl = 'N'
 	</select>
 	
 	<!-- 작성글 조회 -->
@@ -228,5 +226,15 @@
     FROM MEMBER
     WHERE MEMBER_NO = #{memberNo}
 </select>
+
+
+<update id="updateFacilityZzimDelFl" parameterType="map">
+  UPDATE facility
+  SET jj_del_fl = 'Y'
+  WHERE member_no = #{memberNo}
+    AND facility_no = #{facilityNo}
+</update>
+
+
 
 </mapper>

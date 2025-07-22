@@ -54,7 +54,6 @@ const parseMemberStandardCode = (code) => {
   }
 };
 
-
 const Profile = () => {
   const { memberNo } = useAuthStore(); // Zustand에서 회원 정보 가져옴
   const { token } = useAuthStore(); // Zustand에서 회원 정보 가져옴
@@ -444,11 +443,25 @@ const Profile = () => {
   }, [location.pathname, memberNo, category, contentType, commentContentType]);
 
   const handleClick = (benefit) => {
+    console.log("카드 클릭!", benefit);
+    // 1. 시설 카테고리는 facilityNo 등으로만 상세 이동
+    if (category === "시설") {
+      // 복지시설 상세로 이동: facility 객체 state로 넘김 (네 상세페이지 구조 기준)
+      console.log("시설 상세페이지 이동!", benefit);
+      navigate("/facility/detail", { state: { facility: benefit } });
+      return;
+    }
+
+    // 2. 혜택/채용/이벤트 등은 apiServiceId 기반 분기
     const { apiServiceId } = benefit;
+    if (!apiServiceId) {
+      alert("상세 데이터 식별자가 없습니다.");
+      return;
+    }
 
     if (apiServiceId.startsWith("bokjiro-")) {
       const servId = apiServiceId.replace("bokjiro-", "");
-      navigate(`/welfareDetail?servId=${servId}`);
+      navigate("/welfarefacility/detail", { state: { facility: benefit } });
     } else if (apiServiceId.startsWith("seoul-")) {
       navigate(`/seoulDetail?apiServiceId=${apiServiceId}`, {
         state: { data: benefit },
@@ -582,7 +595,6 @@ const Profile = () => {
                         <input type="text" value={member.enrollDate} readOnly />
                       </li>
 
-                      
                       {/* 내 주소 */}
                       <li className={styles.addressRow}>
                         <strong>내 주소</strong>
@@ -604,7 +616,6 @@ const Profile = () => {
                             />
                           </div>
 
-
                           <input
                             value={baseAddress}
                             readOnly
@@ -621,7 +632,6 @@ const Profile = () => {
                           />
                         </div>
                       </li>
-
 
                       {/* 임시 주소 */}
                       <li className={styles.addressRow}>
@@ -660,9 +670,6 @@ const Profile = () => {
                           />
                         </div>
                       </li>
-
-
-
                     </>
                   ) : (
                     <>
@@ -752,7 +759,7 @@ const Profile = () => {
               ))}
             </div>
           </div>
-          <div className={styles.line}/>
+          <div className={styles.line} />
 
           <AnimatePresence mode="wait">
             <motion.div
@@ -769,20 +776,23 @@ const Profile = () => {
                   {category === "시설" && "찜한 시설이 없습니다."}
                 </p>
               ) : (
-                pagedBenefits.map((benefit) => (
-                  <BenefitCardWrapper
-                    key={
-                      benefit.serviceNo ||
-                      benefit.recruitNo ||
-                      benefit.facilityNo
-                    }
-                    category={category}
-                    benefit={benefit}
-                    token={token}
-                    onUnfav={handleUnfav}
-                    onClick={handleClick}
-                  />
-                ))
+                pagedBenefits.map((benefit) => {
+                  console.log("💡 카드로 전달되는 benefit:", benefit);
+                  return (
+                    <BenefitCardWrapper
+                      key={
+                        benefit.serviceNo ||
+                        benefit.recruitNo ||
+                        benefit.facilityNo
+                      }
+                      category={category}
+                      benefit={benefit}
+                      token={token}
+                      onUnfav={handleUnfav}
+                      onClick={handleClick}
+                    />
+                  );
+                })
               )}
             </motion.div>
           </AnimatePresence>
@@ -849,11 +859,20 @@ const Profile = () => {
                       <td>
                         {(() => {
                           if (!b.hashtags) {
-                            return <span className={`${styles.hashtag} ${styles.hashtagNone}`}>없음</span>;
+                            return (
+                              <span
+                                className={`${styles.hashtag} ${styles.hashtagNone}`}
+                              >
+                                없음
+                              </span>
+                            );
                           }
 
                           const first = b.hashtags.split(",")[0].trim();
-                          const text = first.length > 3 ? `#${first.slice(0, 3)}...` : `#${first}`;
+                          const text =
+                            first.length > 3
+                              ? `#${first.slice(0, 3)}...`
+                              : `#${first}`;
 
                           return <span className={styles.hashtag}>{text}</span>;
                         })()}
@@ -929,7 +948,7 @@ const Profile = () => {
                             ? `${plainContent.slice(0, 20)}...`
                             : plainContent;
                         })()}
-                        </td>
+                      </td>
                       <td>{b.commentDate}</td>
                       <td>{b.likeCount != null ? b.likeCount : 0}</td>
                     </tr>
@@ -996,14 +1015,23 @@ const Profile = () => {
                       onClick={() => navigate(`/mytownBoard/${l.boardNo}`)}
                     >
                       <td>{l.postType}</td>
-                      <td>  
+                      <td>
                         {(() => {
                           if (!l.hashtags) {
-                            return <span className={`${styles.hashtag} ${styles.hashtagNone}`}>없음</span>;
+                            return (
+                              <span
+                                className={`${styles.hashtag} ${styles.hashtagNone}`}
+                              >
+                                없음
+                              </span>
+                            );
                           }
 
                           const first = l.hashtags.split(",")[0].trim();
-                          const text = first.length > 3 ? `#${first.slice(0, 3)}...` : `#${first}`;
+                          const text =
+                            first.length > 3
+                              ? `#${first.slice(0, 3)}...`
+                              : `#${first}`;
 
                           return <span className={styles.hashtag}>{text}</span>;
                         })()}
@@ -1079,7 +1107,7 @@ const Profile = () => {
                             ? `${plainContent.slice(0, 20)}...`
                             : plainContent;
                         })()}
-                        </td>
+                      </td>
                       <td>{l.commentDate}</td>
                       <td>{l.likeCount != null ? l.likeCount : 0}</td>
                     </tr>
