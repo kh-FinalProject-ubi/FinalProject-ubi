@@ -233,28 +233,26 @@
 		AND SERVICE_NO = #{serviceNo}
 	</update>
 
-	<select id="selectMemberByNo" parameterType="int"
-		resultType="Member">
-		SELECT
-		MEMBER_NO,
-		MEMBER_ID,
-		MEMBER_NAME,
-		MEMBER_ADDRESS,
-		MEMBER_TADDRESS,
-		MEMBER_STANDARD,
-		AUTHORITY
-		FROM MEMBER
-		WHERE MEMBER_NO = #{memberNo}
-	</select>
+	
+	<select id="selectMemberByNo" parameterType="int" resultType="Member">
+    SELECT 
+        MEMBER_NO,
+        MEMBER_ID,
+        MEMBER_NAME,
+        MEMBER_ADDRESS,
+        MEMBER_TADDRESS,
+        MEMBER_STANDARD,
+        AUTHORITY
+    FROM MEMBER
+    WHERE MEMBER_NO = #{memberNo}
+</select>
 
 
-	<update id="updateFacilityZzimDelFl" parameterType="map">
-		UPDATE welfare_facility
-		SET jj_del_fl = 'Y'
-		WHERE member_no = #{memberNo}
-		AND facility_no = #{facilityNo}
-	</update>
-
-
+<update id="updateFacilityZzimDelFl" parameterType="map">
+  UPDATE welfare_facility
+  SET jj_del_fl = 'Y'
+  WHERE member_no = #{memberNo}
+    AND facility_no = #{facilityNo}
+</update>
 
 </mapper>
