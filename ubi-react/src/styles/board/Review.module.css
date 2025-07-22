@@ -19,28 +19,18 @@
   color: gray;
 }
 
+/* 📌 캐러셀 전체 영역 (카드 + 화살표 포함) */
 .reviewCarousel {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  position: relative;
-  /* ✅ 너비 확장 */
   width: 100%;
-  max-width: 1200px; /* 필요 시 더 키워도 됨 */
+  max-width: 1200px;
+  position: relative;
 }
 
-.carouselArrow {
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.arrowIcon {
-  width: 24px;
-  height: 24px;
-}
-
+/* 📌 카드 */
 .reviewCard {
   width: 960px;
   padding: 20px;
@@ -49,8 +39,10 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  box-sizing: border-box;
 }
 
+/* ✅ 카드 내 요소들 */
 .reviewRow {
   display: flex;
   gap: 40px;
@@ -62,7 +54,7 @@
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  margin-top: 6px; /* ✅ 상단 정렬 맞춤 */
+  margin-top: 6px;
 }
 
 .reviewCol {
@@ -83,10 +75,10 @@
   font-weight: bold;
   margin: 0;
   color: #222;
-  width: 620px; /* ✅ 1. 제목 너비 고정 */
-  white-space: nowrap; /* ✅ 2. 줄바꿈 방지 */
+  width: 620px;
+  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* ✅ 2. 줄바뀌기 직전 ... 처리 */
+  text-overflow: ellipsis;
 }
 
 .reviewStar {
@@ -116,10 +108,11 @@
   min-height: 42px;
 }
 
+/* ✅ 본문 이미지들 */
 .inlineImages {
   display: flex;
   margin-top: 10px;
-  min-height: 80px; /* ✅ 이미지 없어도 공간 확보 */
+  min-height: 80px;
 }
 
 .imageRow {
@@ -132,15 +125,13 @@
   height: 80px;
   object-fit: cover;
   border-radius: 6px;
-  margin-right: 6px; /* ✅ 이미지 간격 좁게 */
+  margin-right: 6px;
 }
 
-/* ✅ 마지막 이미지에는 오른쪽 margin 제거 */
 .inlineImage:last-of-type {
   margin-right: 0;
 }
 
-/* ✅ 더보기 아이콘과 마지막 이미지 사이 넓은 간격 */
 .moreImageCircle {
   width: 60px;
   height: 60px;
@@ -152,41 +143,110 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 42px; /* ✅ 이 간격만 넓게 */
+  margin-left: 42px;
   flex-shrink: 0;
 }
 
+/* ✅ 화살표 버튼 공통 */
+.carouselArrow {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
 
+.arrowIcon {
+  width: 24px;
+  height: 24px;
+}
+
+/* ✅ 데스크탑에서 카드 좌우 */
+.desktopArrows {
+  display: flex;
+  align-items: center;
+}
+
+/* ✅ 모바일에서는 아래로 */
+.arrowBottomWrapper {
+  display: none; /* 기본 숨김 */
+}
+
+/*후기 없는경우 메세지*/
+.noReviewMessage {
+  text-align: center;
+  font-size: 0.95rem;
+  color: #777;
+  padding: 2rem 0;
+}
+/* =========================== */
+/* ✅ 반응형 (1024px 이하) */
+/* =========================== */
 @media (max-width: 1024px) {
   .reviewCarousel {
     flex-direction: column;
-    gap: 10px;
-    align-items: stretch;
-    position: relative;
+    align-items: center;
+    gap: 12px;
   }
 
-  .carouselArrow {
-    position: static; /* 기존 위치 해제 */
-    transform: none;
-    display: inline-flex;
-    background: none;
-    margin: 0 12px;
+  .desktopArrows {
+    display: none; /* 모바일에서는 좌우 화살표 숨김 */
   }
 
-  .carouselArrow.left,
-  .carouselArrow.right {
-    position: static;
-  }
-
-  .arrowIcon {
-    width: 24px;
-    height: 24px;
-  }
-
-  /* ✅ 하단 화살표 wrapper 추가 시 사용 */
   .arrowBottomWrapper {
     display: flex;
     justify-content: center;
-    margin-top: 8px;
+    gap: 20px;
+    margin-top: 12px;
+  }
+
+  .reviewCard {
+    width: 100%;
+    padding: 16px;
+    border-radius: 10px;
+  }
+
+  .reviewRow {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .reviewTitle {
+    width: 100%;
+    font-size: 16px;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+
+  .reviewTop {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .reviewCol {
+    gap: 8px;
+  }
+
+  .inlineImage {
+    width: 70px;
+    height: 60px;
+  }
+
+  .moreImageCircle {
+    width: 45px;
+    height: 45px;
+    font-size: 16px;
+    margin-left: 16px;
+  }
+
+  .profileImg {
+    width: 42px;
+    height: 42px;
+    margin-top: 0;
+  }
+
+  .arrowIcon {
+    width: 22px;
+    height: 22px;
   }
 }

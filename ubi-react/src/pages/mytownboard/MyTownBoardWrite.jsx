@@ -33,28 +33,33 @@ const handleKeyDown = (e) => {
   if (e.key === "Enter") {
     e.preventDefault();
     const newTag = hashtags.trim().replace(/^#/, "");
-          if (!newTag) return;
+    if (!newTag) return;
 
-      if (newTag.length < 2) {
-        setTagLimitMessage("두 글자 이상 입력해주세요.");
-        return;
-      }
+    let messages = [];
 
-    if (!newTag || parsedTags.includes(newTag)) return;
+    if (newTag.length < 2) {
+      messages.push("두 글자 이상 입력해주세요.");
+    }
 
     if (parsedTags.length >= 5) {
-      setTagLimitMessage("해시태그는 최대 5개까지 입력할 수 있습니다.");
+      messages.push("해시태그는 최대 5개까지 입력할 수 있습니다.");
+    }
+
+    if (parsedTags.includes(newTag)) return;
+
+    if (messages.length > 0) {
+      // <br>로 줄바꿈
+      setTagLimitMessage(messages.join("<br/>"));
       return;
     }
 
     const updatedTags = [...parsedTags, newTag];
     setParsedTags(updatedTags);
-    setTimeout(() => {
-      setHashtags(""); // ⭐ setParsedTags 후에 input 초기화 확정
-    }, 0);
+    setHashtags("");
     setTagLimitMessage("");
   }
 };
+
 
 
   const handleRemoveTag = (indexToRemove) => {
@@ -80,16 +85,22 @@ const handleKeyDown = (e) => {
   const handleSubmit = () => {
     const postType = postTypeCheck.trim();
 
-    if (!boardTitle.trim()) {
-      alert("제목을 입력해주세요.");
-      return;
-    }
-
     // ✅ 내용 체크: 텍스트와 이미지 둘 다 없으면 막기
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = boardContent;
     const textContent = tempDiv.textContent.trim();
     const hasImage = tempDiv.querySelector("img") !== null;
+
+        if (!boardTitle.trim()) {
+     alert("제목을 입력해주세요.");
+      return;
+    }
+
+    if (boardContent.length() > 2000) {
+    alert("게시글 내용이 너무 깁니다.");
+        return;
+}
+
 
     if (!textContent && !hasImage) {
       alert("내용을 입력해주세요.");
@@ -214,9 +225,7 @@ const handleKeyDown = (e) => {
     });
   }, []);
 
-const isMobile = window.innerWidth <= 768;
-  
-return (
+  return (
     <div className={styles.container}>
       <div className={styles.pageHeaderContainer}>
         <div className={styles.subText}>우리 동네 좋아요</div>
@@ -358,7 +367,13 @@ return (
         </table>
       </div>
       
-{tagLimitMessage && <p className={styles.errorText}>{tagLimitMessage}</p>}
+{tagLimitMessage && (
+  <div
+    className={styles.tagWarning}
+    dangerouslySetInnerHTML={{ __html: tagLimitMessage }}
+  />
+)}
+
       <br />
 
 
