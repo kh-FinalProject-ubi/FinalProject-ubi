@@ -195,17 +195,26 @@ const imageList = uploadedImagesRef.current.map((url, index) => {
       });
   };
 
-  useEffect(() => {
-    $("#summernote").summernote({
-      height: 300,
-      callbacks: {
-        onChange: function (contents) {
-          setContent(contents);
-        },
-        onImageUpload: function (files) {
-          for (let i = 0; i < files.length; i++) {
-            const formData = new FormData();
-            formData.append("image", files[i]);
+useEffect(() => {
+  $("#summernote").summernote({
+    height: 300,
+    callbacks: {
+      onChange: function (contents) {
+        setContent(contents);
+      },
+      onImageUpload: function (files) {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+
+          // ✅ 이미지 크기 제한 (예: 10MB)
+          const maxSize = 10 * 1024 * 1024; // 10MB
+          if (file.size > maxSize) {
+            alert("이미지 크기가 너무 큽니다. 10MB 이하 파일만 업로드 가능합니다.");
+            continue;
+          }
+
+          const formData = new FormData();
+          formData.append("image", file);
 
             fetch("/api/editboard/mytown/uploadImage", {
               method: "POST",
