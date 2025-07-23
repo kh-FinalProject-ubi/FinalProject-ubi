@@ -110,8 +110,10 @@ function MyTownBoardDetail() {
 
   if (!board) return <p>게시글을 불러오는 중입니다...</p>;
 
-  const contentWithImages = board.boardContent;
-
+  const contentWithImages = board.boardContent.replaceAll(
+    /src="\/images\/board\//g,
+    'src="https://kh-ubi.site/images/board/"'
+  );
   console.log("selectedMember:", selectedMember);
   return (
     <main className={styles.container}>
