@@ -79,6 +79,15 @@ export default function FacilitySearchPage() {
   });
 
   useEffect(() => {
+    if (location.state?.refresh === "memberUpdate") {
+      (async () => {
+        await refetchMember?.(); // 최신 회원정보로 업데이트
+        handleRegionSourceChange("bookmark"); // 즐겨찾기 주소로 지역 변경
+      })();
+    }
+  }, [location.state]);
+
+  useEffect(() => {
     console.log("🚀 memberLoading:", memberLoading);
     console.log("🧑‍💼 member:", member);
     console.log("🗺️ selectedCityFromStore:", selectedCityFromStore);

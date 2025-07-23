@@ -176,6 +176,8 @@ const Header = () => {
   const handleLogout = () => {
     clearAuth();
     localStorage.removeItem("kakaoId");
+    localStorage.removeItem("auth-storage"); // JWT/회원정보 저장 key (zustand-persist면 거의 항상 필요)
+    localStorage.removeItem("tempAddress");
     alert("로그아웃되었습니다.");
     navigate("/");
   };
