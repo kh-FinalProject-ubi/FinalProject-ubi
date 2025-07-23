@@ -110,12 +110,7 @@ function MyTownBoardDetail() {
 
   if (!board) return <p>게시글을 불러오는 중입니다...</p>;
 
-  // 이미지 경로가 상대경로인 경우 절대경로로 교체
-  const contentWithImages = board.boardContent.replaceAll(
-    /src="\/images\/board\//g,
-    'src="http://localhost:8080/images/board/'
-  );
-  const tagList = generateTagList(board);
+  const contentWithImages = board.boardContent;
 
   console.log("selectedMember:", selectedMember);
   return (
