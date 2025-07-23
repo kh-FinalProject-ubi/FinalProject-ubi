@@ -259,10 +259,11 @@ const contentWithImages = board.boardContent.replaceAll(
           </div>
 
           {/* ✅ 본문 */}
-          <div
-            className={styles.boardContent}
-            dangerouslySetInnerHTML={{ __html: contentWithImages }}
-          />
+              <div
+                className={styles.boardContent}
+                dangerouslySetInnerHTML={{ __html: board.boardContent }}
+              ></div>
+
 
           {/* ✅ 별점 (후기 유형만 표시) */}
           {/* 별점 라벨 + 별점 박스 */}
