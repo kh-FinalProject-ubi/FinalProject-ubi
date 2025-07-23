@@ -37,4 +37,5 @@ public class Comment {
 	
 	private String boardTitle;
 	private String boardContent;
+	private String postType;
 }
