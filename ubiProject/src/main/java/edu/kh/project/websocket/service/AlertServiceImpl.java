@@ -25,7 +25,7 @@ public class AlertServiceImpl implements AlertService {
     @Override
     public void sendAlert(AlertDto alertDto) {
 
-        // ✅ DB 저장용 Alert 엔티티 생성 (isRead = "N")
+        //  DB 저장용 Alert 엔티티 생성 (isRead = "N")
         Alert alert = Alert.builder()
                 .memberNo(alertDto.getMemberNo())
                 .type(alertDto.getType()) // 문자열로 받음
@@ -35,10 +35,10 @@ public class AlertServiceImpl implements AlertService {
                 .isRead("N")
                 .build();
 
-        // ✅ DB 저장
+        //  DB 저장
         alertMapper.insertAlert(alert);
 
-        // ✅ WebSocket 전송용 AlertDto 구성
+        //  WebSocket 전송용 AlertDto 구성
         AlertDto dto = AlertDto.builder()
                 .alertId(alert.getAlertId())
                 .memberNo(alert.getMemberNo())
@@ -46,14 +46,14 @@ public class AlertServiceImpl implements AlertService {
                 .content(alert.getContent())
                 .targetUrl(alert.getTargetUrl())
                 .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-                .isRead(0) // ✅ false 대신 0
+                .isRead(0) //  false 대신 0
                 .boardNo(alert.getBoardNo())
                 .build();
 
         String destination = "/topic/alert/" + dto.getMemberNo();
         messagingTemplate.convertAndSend(destination, dto);
 
-        log.info("✅ WebSocket 알림 전송 완료 to {}, type = {}", dto.getMemberNo(), dto.getType());
+        log.info(" WebSocket 알림 전송 완료 to {}, type = {}", dto.getMemberNo(), dto.getType());
     }
 
     @Override
@@ -68,7 +68,7 @@ public class AlertServiceImpl implements AlertService {
 
         sendAlert(dto); // 기존 AlertDto 버전 메서드 호출
         
-        log.info("✅ WebSocket 알림 전송 완료 to {}, type = {}", dto.getMemberNo(), dto.getType());
+        log.info(" WebSocket 알림 전송 완료 to {}, type = {}", dto.getMemberNo(), dto.getType());
     }
     
     @Override
