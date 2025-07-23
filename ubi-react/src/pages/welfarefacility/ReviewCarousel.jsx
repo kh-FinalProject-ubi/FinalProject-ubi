@@ -85,15 +85,26 @@ export default function ReviewCarousel({ reviews }) {
       <div className={styles.reviewCard} onClick={goToDetail}>
         <div className={styles.reviewRow}>
           {/* 프로필 이미지 */}
-          <img
-            className={styles.profileImg}
-            src={memberImg || "/default-profile.png"}
-            alt="프로필"
-            onError={(e) => {
-              e.currentTarget.src = "/default-profileerror.png";
-              e.currentTarget.onerror = null;
-            }}
-          />
+         <img
+         src={memberImg ? `https://kh-ubi.site${memberImg}` : "/default-profile.png"}
+         alt="프로필"
+         className={styles.profileImg}
+         onClick={(e) => {
+           e.stopPropagation(); // 상세 페이지 이동 막기 원하면 추가
+           setSelectedMember({
+             memberNo: currentReview.memberNo,
+             memberImg: currentReview.memberImg,
+             memberNickname: currentReview.memberNickname,
+             role: currentReview.authority === "2" ? "ADMIN" : "USER",
+           });
+           setModalPosition({ x: e.clientX + 50, y: e.clientY });
+           setModalVisible(true);
+         }}
+         onError={(e) => {
+           e.currentTarget.src = "/default-profileerror.png";
+           e.currentTarget.onerror = null;
+         }}
+       />
 
           {/* 후기 내용 */}
           <div className={styles.reviewCol}>
