@@ -17,6 +17,10 @@
   background: #fff;
 }
 
+.chat h2 {
+  margin-bottom: 15px;
+}
+
 /* 왼쪽 방목록 */
 .chatRoomList {
   flex: 0 0 260px;      /* ✅ 수축 금지 + 고정폭 */
@@ -37,7 +41,8 @@
 
 .chatRoomItem:hover,
 .chatRoomItem.selected {
-  background: rgba(255, 255, 255, 0.4);  /* 좀 더 밝게 */
+  background: #5E60CE;
+  color: #F9FBFD;
 }
 
 .roomProfile {
@@ -145,10 +150,6 @@
   white-space: nowrap;
   display: flex;
   align-items: center;
-}
-
-.leaveBtn:hover {
-  background: #f7f7f7;
 }
 
 /* 메시지 영역 */

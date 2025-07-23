@@ -203,7 +203,11 @@
 
 .benefitList > div > h3 {
   display: inline-block;
-  margin: 0 0 24px;
+  margin: 0 0 60px;
+}
+
+.benefitList {
+  margin-bottom: 60px;
 }
 
 /* 회원 유형 뱃지 */
@@ -295,6 +299,10 @@
   cursor: pointer;
 }
 
+.postList{
+  margin-bottom: 60px;
+}
+
 .benefitCard {
   position: relative;
   display: flex;
@@ -381,7 +389,7 @@
   text-align: center;
 }
 .clickableRow:hover {
-  background: #fffde7;
+  background: #F9FBFD;
 }
 
 .hashtag {
@@ -437,8 +445,7 @@
 .paginationWrapper {
   display: flex;
   justify-content: center;   /* 가운데 정렬 */
-  margin-top: 24px;          /* 원하는 여백 */
-  margin-bottom: 60px;
+  /* margin-bottom: 60px; */
 }
 
 /* ---------- 주소 입력 라인 ---------- */
@@ -521,4 +528,15 @@
   margin: 0;
   padding: 0;
   line-height: 34px; /* ✅ 버튼 높이와 맞춰서 한 줄 정렬됨 */
+}
+
+.loadingPlaceholder {
+  height: 150px; /* 테이블 높이 느낌 유지 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #777;
+  font-size: 14px;
+  background-color: #fafafa;
+  border-radius: 4px;
 }

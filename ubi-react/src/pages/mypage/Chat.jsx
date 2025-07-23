@@ -473,8 +473,10 @@ const Chat = () => {
 console.log("채팅방 목록 : ", rooms);
 
   return (
-    <div>
-      <div>연결 상태: {isConnected ? "연결됨" : "연결 안 됨"}</div>
+    <div className={styles.chat}>
+      {/* <div>연결 상태: {isConnected ? "연결됨" : "연결 안 됨"}</div> */}
+
+      <h2>채팅</h2>
 
       <div className={styles.chatWrapper}>
         {/* --- 왼쪽 채팅 목록 --- */}
@@ -533,7 +535,7 @@ console.log("채팅방 목록 : ", rooms);
                 <img
                   src={
                     room.targetProfile
-                      ? `http://localhost:8080${room.targetProfile}`
+                      ? `https://kh-ubi.site${room.targetProfile}`
                       : "/default-profile.png"
                   }
                   alt="profile"
@@ -567,7 +569,7 @@ console.log("채팅방 목록 : ", rooms);
                 <img
                   src={
                     selectedRoom.targetProfile
-                      ? `http://localhost:8080${selectedRoom.targetProfile}`
+                      ? `https://kh-ubi.site${selectedRoom.targetProfile}`
                       : "/default-profile.png"
                   }
                   alt="profile"
@@ -594,9 +596,9 @@ console.log("채팅방 목록 : ", rooms);
                   const avatarSrc = isMe
                     ? null
                     : msg.senderProfile
-                    ? `http://localhost:8080${msg.senderProfile}`
+                    ? `https://kh-ubi.site${msg.senderProfile}`
                     : selectedRoom?.targetProfile
-                    ? `http://localhost:8080${selectedRoom.targetProfile}`
+                    ? `https://kh-ubi.site${selectedRoom.targetProfile}`
                     : "/default-profile.png";
 
                   const nick =
@@ -632,34 +634,29 @@ console.log("채팅방 목록 : ", rooms);
                         )}
 
                         <div
-                          className={`${styles.chatMessage} ${
-                            isMe
-                              ? styles.myMessage
-                              : styles.otherMessage
-                          }`}
+                          className={`${styles.chatMessage} ${isMe ? styles.myMessage : styles.otherMessage}`}
                         >
                           {msg.chatContentDelFl === "Y" ? (
-                            <i className={styles.deletedMessage}>
-                              삭제된 메시지입니다.
-                            </i>
+                            <i className={styles.deletedMessage}>삭제된 메시지입니다.</i>
                           ) : (
                             <>
-                              <span>{msg.chatContent}</span>
-                              {isMe && (
-                                <button
-                                  className={styles.deleteButton}
-                                  onClick={() =>
-                                    handleDeleteMessage(msg.chatNo)
-                                  }
-                                >
-                                  🗑️
-                                </button>
-                              )}
+                              <div className={styles.chatText}>{msg.chatContent}</div>
+
+                              <div className={styles.metaWrapper}>
+                                <span className={styles.messageTimestamp}>
+                                  {formatChatTime(msg.chatSendDate)}
+                                </span>
+                                {isMe && (
+                                  <button
+                                    className={styles.deleteButton}
+                                    onClick={() => handleDeleteMessage(msg.chatNo)}
+                                  >
+                                    <img src="/delete.svg" alt="삭제" />
+                                  </button>
+                                )}
+                              </div>
                             </>
                           )}
-                          <div className={styles.messageTimestamp}>
-                            {formatChatTime(msg.chatSendDate)}
-                          </div>
                         </div>
                       </div>
                     </div>
