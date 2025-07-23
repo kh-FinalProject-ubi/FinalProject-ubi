@@ -451,7 +451,8 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo }) => {
         </p>
       )}
 
-      {modalVisible &&
+      {token &&
+        modalVisible &&
         selectedMember &&
         selectedMember.memberRole !== "2" &&
         selectedMember.memberNo !== loginMemberNo && (
