@@ -132,14 +132,12 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo }) => {
       if (reported === true) {
         alert("신고 성공");
       } else if (reported === false) {
-      
       } else {
         alert("알 수 없는 응답입니다");
       }
       await loadComments();
     } catch (err) {
       console.error("신고 실패:", err.response?.data || err.message);
-   
     }
   };
 
@@ -239,11 +237,16 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo }) => {
               <div className={styles.commentAuthorInfo}>
                 <img
                   src={
-                    `https://kh-ubi.site${c.memberImg}` ||
-                    "/default-profile.png"
+                    c.memberImg
+                      ? `https://kh-ubi.site${c.memberImg}`
+                      : "/default-profile.png"
                   }
                   alt="프로필 사진"
                   className={styles.profileImg}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null; // 무한 루프 방지
+                    e.currentTarget.src = "/default-profileerror.png";
+                  }}
                   onClick={(e) => {
                     const modalWidth = 300;
                     const modalHeight = 200;
@@ -253,6 +256,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo }) => {
                       x = window.innerWidth - modalWidth - 10;
                     if (y + modalHeight > window.innerHeight)
                       y = window.innerHeight - modalHeight - 50;
+
                     setSelectedMember({
                       memberNo: c.memberNo,
                       memberImg: c.memberImg,
@@ -425,9 +429,15 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo }) => {
           <textarea
             value={commentContent}
             onChange={
-              ((e) => setCommentContent(e.target.value), handleCommentChange)}rows={3}
-            placeholder="댓글을 입력하세요."/>
-          <button type="submit">댓글 <br />작성</button>
+              ((e) => setCommentContent(e.target.value), handleCommentChange)
+            }
+            rows={3}
+            placeholder="댓글을 입력하세요."
+          />
+          <button type="submit">
+            댓글 <br />
+            작성
+          </button>
         </form>
       )}
 
