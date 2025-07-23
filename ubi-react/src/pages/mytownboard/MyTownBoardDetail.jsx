@@ -111,9 +111,9 @@ function MyTownBoardDetail() {
   if (!board) return <p>게시글을 불러오는 중입니다...</p>;
 
 
-const contentWithImages = board.boardContent.replaceAll(
-  /src=['"]\/images\/board\//g,
-  'src="https://kh-ubi.site/images/board/'
+const contentWithImages = board.boardContent.replace(
+  /src=(['"]?)\/images\/board\//g,
+  'src=$1https://kh-ubi.site/images/board/'
 );
 
     const tagList = generateTagList(board);
@@ -259,10 +259,10 @@ const contentWithImages = board.boardContent.replaceAll(
           </div>
 
           {/* ✅ 본문 */}
-              <div
-                className={styles.boardContent}
-                dangerouslySetInnerHTML={{ __html: board.boardContent }}
-              ></div>
+<div
+  className={styles.boardContent}
+  dangerouslySetInnerHTML={{ __html: contentWithImages }}
+></div>
 
 
           {/* ✅ 별점 (후기 유형만 표시) */}
