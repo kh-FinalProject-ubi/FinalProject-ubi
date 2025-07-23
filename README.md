@@ -1,4 +1,3 @@
-<img width="1905" height="2441" alt="www kh-ubi site_" src="https://github.com/user-attachments/assets/91944fc8-3866-4d8a-937e-e4004e9cd19b" />
 동네 복지 알리미 (UBI)
 지자체에 흩어져 있는 복지 혜택과 시설 정보를 한눈에 확인하고, 비교하고, 공유할 수 있는 복지 통합 플랫폼입니다.
 서울, 경기, 강원, 부산, 인천, 제주 등 전국 주요 지역의 복지 데이터를 통합하여 제공합니다.
@@ -85,4 +84,4 @@ Infra/DevOps | AWS EC2, Nginx, GitHub
 API 활용 | 공공데이터포털, 서울시 열린데이터광장, 복지로, VWorld 지도 API 등
 
 시연 화면
-https://www.notion.so/20fd0745b993801384e5e399ab57ca92?source=copy_link#239d0745b99380b5b60ef85b0292111f
+<img width="1905" height="2441" alt="www kh-ubi site_" src="https://github.com/user-attachments/assets/91944fc8-3866-4d8a-937e-e4004e9cd19b" />
