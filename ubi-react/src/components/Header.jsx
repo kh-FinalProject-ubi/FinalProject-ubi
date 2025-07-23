@@ -162,16 +162,16 @@ const Header = () => {
       .catch((err) => console.error("🔴 알림 읽음 처리 실패:", err));
   };
 
-  // 복지시설 버튼 처리
-  const handleFacilityClick = () => {
-    const city = selectedCity || "서울특별시";
-    const district = selectedDistrict || "종로구";
-    navigate(
-      `/facility/search?city=${encodeURIComponent(
-        city
-      )}&district=${encodeURIComponent(district)}`
-    );
-  };
+  // // 복지시설 버튼 처리
+  // const handleFacilityClick = () => {
+  //   const city = selectedCity || "서울특별시";
+  //   const district = selectedDistrict || "종로구";
+  //   navigate(
+  //     `/facility/search?city=${encodeURIComponent(
+  //       city
+  //     )}&district=${encodeURIComponent(district)}`
+  //   );
+  // };
 
   const handleLogout = () => {
     clearAuth();
