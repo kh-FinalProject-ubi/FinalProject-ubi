@@ -287,15 +287,15 @@ const Header = () => {
                   <img
                     className={styles.profileImg}
                     src={
-                      memberImg
-                        ? memberImg.startsWith("/") // 서버 상대 경로일 경우만 localhost 붙이기
+                      typeof memberImg === "string"
+                        ? memberImg.startsWith("/")
                           ? `https://kh-ubi.site${memberImg}`
-                          : memberImg // 절대 경로일 경우 그대로 사용
+                          : memberImg
                         : "/default-profile.png"
                     }
                     alt="프로필"
                     onError={(e) => {
-                      e.currentTarget.src = "/default-profileerror.png"; // 실패 시 대체 이미지
+                      e.currentTarget.src = "/default-profileerror.png";
                     }}
                   />
                 </Link>
