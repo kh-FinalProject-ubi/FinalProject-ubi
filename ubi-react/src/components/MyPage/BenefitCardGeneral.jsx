@@ -41,11 +41,11 @@ export default function BenefitCard({ benefit, token, onUnfav, onClick }) {
       {/* 태그 영역 */}
       <div className={styles.cardHeader}>
         <div className={styles.tagGroup}>
-          <span className={`${styles.tag} ${styles.tagMain}`}>일반</span>
+          {/* <span className={`${styles.tag} ${styles.tagMain}`}>일반</span>
           <span className={`${styles.tag} ${styles.tagType}`}>보조금</span>
           {benefit.receptionStart && (
             <span className={`${styles.tag} ${styles.tagApply}`}>신청 혜택</span>
-          )}
+          )} */}
         </div>
       </div>
 
