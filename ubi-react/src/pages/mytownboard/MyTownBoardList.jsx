@@ -22,6 +22,11 @@ function MyTownBoard() {
   const [popularTags, setPopularTags] = useState([]);
 
   // ✅ 인기 해시태그 불러오기 useEffect
+
+  const [selectedMember, setSelectedMember] = useState(null);
+const [modalVisible, setModalVisible] = useState(false);
+const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
+
   useEffect(() => {
     fetch("/api/board/popular-tags")
       .then((res) => res.json())
@@ -129,14 +134,12 @@ function MyTownBoard() {
             </div>
           )}
         </div>
-
+   
         <div className={styles.searchBar}>
-          <svg className={styles.searchIcon} viewBox="0 0 24 24">
-            <path
-              fill="currentColor"
-              d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3Z"
-            />
-          </svg>
+           <img src={"/icons/boardsearch.svg"}
+                          alt="검색아이콘"
+                        className={styles.searchIcon}
+                        />
           <input
             type="text"
             placeholder={
@@ -303,11 +306,22 @@ function MyTownBoard() {
                 </div>
                 <div className={styles.metaRow}>
                   <div className={styles.userInfo}>
-                    <img
-                      className={styles.profileImg}
-                      src={board.profileImgImg || "/default-profile.png"}
-                      alt="프로필"
-                    />
+      <img
+               src={board.memberImg ? `https://kh-ubi.site${board.memberImg}` : "/default-profile.png"}
+               alt="프로필"
+               className={styles.profileImg}
+               onClick={(e) => {
+                 setSelectedMember({
+                   memberNo: board.memberNo,
+                   memberImg: board.memberImg,
+                   memberNickname: board.memberNickname,
+                   role: board.authority === "2" ? "ADMIN" : "USER",
+                 });
+                 setModalPosition({ x: e.clientX + 50, y: e.clientY });
+                 setModalVisible(true);
+               }}
+             />
+
                     <span>{board.memberNickname}</span>
                   </div>
                   <div className={styles.iconInfo}>

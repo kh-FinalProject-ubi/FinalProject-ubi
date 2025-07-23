@@ -1,25 +1,37 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from 'axios';
-import useAuthStore from '../../stores/useAuthStore';
-import { AnimatePresence, motion } from 'framer-motion';
-import LoadingOverlay from '../../components/Loading';
+import axios from "axios";
+import useAuthStore from "../../stores/useAuthStore";
+import useChatAlertStore from "../../stores/useChatAlertStore";
+import { AnimatePresence, motion } from "framer-motion";
+import LoadingOverlay from "../../components/Loading";
 import ProfileImgUploader from "./ProfileImgUploader";
-import SockJS from 'sockjs-client';
-import { Client } from '@stomp/stompjs';
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
 import styles from "../../styles/mypage/Chat.module.css";
-
-
+import CommentModal from "../comment/CommentModal";
 
 const Chat = () => {
+  const formatChatTime = (isoString) => {
+    if (!isoString) return "";
+
+    const date = new Date(isoString);
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    const hh = String(date.getHours()).padStart(2, "0");
+    const min = String(date.getMinutes()).padStart(2, "0");
+
+    return `${yyyy}.${mm}.${dd} ${hh}:${min}`;
+  };
   console.log("SockJS 타입:", typeof SockJS);
-  console.log("SockJS 실제 객체:", SockJS); 
+  console.log("SockJS 실제 객체:", SockJS);
 
   const { memberNo, memberName, token } = useAuthStore();
   const stompRef = useRef(null);
 
-  const [rooms, setRooms] = useState([]);
-  const [selectedRoom, setSelectedRoom] = useState(null);
+  // const [rooms, setRooms] = useState([]);
+  // const [selectedRoom, setSelectedRoom] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [showSearch, setShowSearch] = useState(false);
@@ -28,7 +40,20 @@ const Chat = () => {
   const chatMessagesRef = useRef(null);
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [currentTab, setCurrentTab] = useState("list");   // ← 추가
+  const [currentTab, setCurrentTab] = useState("list"); // ← 추가
+
+  const [showReportModal, setShowReportModal] = useState(false); // 효원씨 저예요
+  const [reportTargetMember, setReportTargetMember] = useState(null); // 채팅 신고를 위해 추가합니다:3
+  const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
+
+  const {
+    rooms, // 채팅방 목록 (전역)
+    setRooms, // rooms 갱신 함수
+    selectedRoom, // 선택된 방 (전역)
+    setSelectedRoom, // 선택된 방 설정 함수
+    incrementUnread, // 미읽음 +1
+    clearUnread, // 미읽음 0 으로
+  } = useChatAlertStore();
 
   // ✅ 채팅방 목록 불러오기
   const showChat = async () => {
@@ -37,12 +62,16 @@ const Chat = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (res.status === 200) {
-        const data = res.data;
-        if (Array.isArray(data)) setRooms(data);
-        else if (Array.isArray(data.rooms)) setRooms(data.rooms);
-        else setRooms([]);
-      }
+      console.log("✅ 채팅방 응답 전체:", res.data);
+
+      // ✅ 무조건 배열만 뽑아서 넣기
+      const list = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray(res.data.rooms)
+        ? res.data.rooms
+        : [];
+
+      setRooms(list);
     } catch (error) {
       console.error("채팅 목록 조회 중 예외 발생:", error);
       setRooms([]);
@@ -54,6 +83,12 @@ const Chat = () => {
     showChat();
   }, [memberNo]);
 
+  const selectedRoomRef = useRef(null);
+
+  useEffect(() => {
+    selectedRoomRef.current = selectedRoom;
+  }, [selectedRoom]);
+
   // 채팅내역 조회
   const fetchMessages = async (roomNo) => {
     try {
@@ -62,19 +97,23 @@ const Chat = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.status === 200) return res.data;
+      console.log("채팅내역 : ", res);
     } catch (err) {
       console.error("메시지 조회 실패:", err);
-      return[];
+      return [];
     }
   };
-  
+
   const handleSelectRoom = async (room) => {
     // ① 방 선택 상태 업데이트
+    clearUnread(room.chatRoomNo);
     setSelectedRoom(room);
-    setMessages([]);               // 리스트 비우기(로딩 상태처럼)
+    console.log("✅ 방 선택됨:", room);
+    setMessages([]); // 리스트 비우기(로딩 상태처럼)
 
     try {
       const list = await fetchMessages(room.chatRoomNo);
+      console.log("✅ 메시지 받아옴:", list); // ← 추가
       setMessages(list);
     } catch (e) {
       console.error("메시지 조회 실패:", e);
@@ -86,10 +125,10 @@ const Chat = () => {
   useEffect(() => {
     console.log("[CHAT‑USEEFFECT] 실행됨", { token, memberNo });
     if (!token || !memberNo) return;
-      
+
     const client = new Client({
       webSocketFactory: () => {
-        const sock = new SockJS("http://localhost:8080/ws-chat", null, {
+        const sock = new SockJS("/ws-chat", null, {
           transports: ["websocket"], // ✅ fallback까지 허용
           timeout: 30000,
         });
@@ -103,7 +142,11 @@ const Chat = () => {
 
         setTimeout(() => {
           const status = ["CONNECTING", "OPEN", "CLOSING", "CLOSED"];
-          console.log("🧪 SockJS readyState:", sock.readyState, `(${status[sock.readyState] || "UNKNOWN"})`);
+          console.log(
+            "🧪 SockJS readyState:",
+            sock.readyState,
+            `(${status[sock.readyState] || "UNKNOWN"})`
+          );
         }, 1000);
 
         return sock;
@@ -115,47 +158,63 @@ const Chat = () => {
 
       reconnectDelay: 5000,
 
-      debug: (msg) => console.log("[STOMP]", msg),
+      debug: (msg) => console.log("%c[STOMP]", "color:orange", msg), // 보기 편하게
+      onUnhandledMessage: (frame) => console.warn("⚠️ Unhandled →", frame.body),
+      onUnhandledFrame: (frame) => console.warn("⚠️ UnhandledFrame →", frame),
 
       onConnect: (frame) => {
         console.log("✅ STOMP 연결 성공!", frame);
         setIsConnected(true);
 
-        const destination = `/user/queue/chat/${memberNo}`;
+        const destination = `/queue/chat/${memberNo}`;
         console.log("📍 구독할 경로:", destination);
 
         client.subscribe(destination, (message) => {
           try {
             const body = JSON.parse(message.body);
+            console.log("📥 수신 메시지:", body);
 
-            if (selectedRoom && body.chatRoomNo === selectedRoom.chatRoomNo) {
-              setMessages((prev) => {
-                const updated = [...prev];
+            const { chatRoomNo, senderNo, chatNo, chatContentDelFl } = body;
+            const currentRoom = selectedRoomRef.current;
 
-                const index = updated.findIndex(
-                  (msg) =>
-                    msg.chatContent === body.chatContent &&
-                    msg.senderNo === memberNo &&
-                    msg.chatNo && // 💡 보호 코드
-                    !msg.chatNo.toString().startsWith("srv_")
-                );
+            // 내가 보낸 게 아니면 unread 증가
+            if (senderNo !== memberNo) {
+              console.log("📩 새로운 메시지 수신 → unread 증가:", chatRoomNo);
+              incrementUnread(chatRoomNo);
+            }
 
-                if (index !== -1) {
-                  updated[index] = {
-                    ...body,
-                    chatDelFl: 'N',
-                  };
-                  return updated;
-                }
+            if (chatContentDelFl === "Y") {
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.chatNo === chatNo
+                    ? { ...msg, chatContentDelFl: "Y" }
+                    : msg
+                )
+              );
+              return; // 나머지 처리 필요 없으니 종료
+            }
 
-                return [...prev, { ...body, chatDelFl: 'N' }];
-              });
+            // 지금 열어둔 방이면 채팅창에 추가
+            if (currentRoom && chatRoomNo === currentRoom.chatRoomNo) {
+              setMessages((prev) => [
+                ...prev,
+                { ...body, chatContentDelFl: body.chatContentDelFl || "N" },
+              ]);
+            } else {
+              // 다른 방일 경우 unread 처리 + notReadCount 증가
+              incrementUnread(chatRoomNo);
+              setRooms((prevRooms) =>
+                prevRooms.map((r) =>
+                  r.chatRoomNo === chatRoomNo
+                    ? { ...r, notReadCount: (r.notReadCount || 0) + 1 }
+                    : r
+                )
+              );
             }
           } catch (err) {
             console.error("STOMP 메시지 처리 중 예외 발생:", err);
           }
         });
-
       },
 
       onStompError: (frame) => {
@@ -170,9 +229,9 @@ const Chat = () => {
 
       onWebSocketClose: (event) => {
         console.error("🔌 WebSocket Closed", event);
-        console.error("이유:", event.reason);  // 종료 사유 확인
-        console.error("코드:", event.code);    // 종료 코드 확인
-        console.error("정상 종료 여부:", event.wasClean);  // 정상 종료 여부 확인
+        console.error("이유:", event.reason); // 종료 사유 확인
+        console.error("코드:", event.code); // 종료 코드 확인
+        console.error("정상 종료 여부:", event.wasClean); // 정상 종료 여부 확인
       },
 
       onWebSocketError: (error) => {
@@ -194,35 +253,24 @@ const Chat = () => {
     };
   }, [token, memberNo, selectedRoom]);
 
-
-
-   // 메시지 보내기
+  // 메시지 보내기
   const handleSendMessage = () => {
     if (!input.trim() || !selectedRoom || !isConnected) return;
 
     const payload = {
       chatRoomNo: selectedRoom.chatRoomNo,
       senderNo: memberNo,
-      targetNo: selectedRoom.participant,  // 실제 상대 회원 번호 맞게 바꾸기
+      targetNo: selectedRoom.participant, // 실제 상대 회원 번호 맞게 바꾸기
       chatContent: input,
       sendTime: new Date().toISOString(),
     };
 
     stompRef.current.publish({
-      destination: '/app/chatting/sendMessage',
+      destination: "/app/chatting/sendMessage",
       body: JSON.stringify(payload),
     });
 
-    // 낙관적 UI 업데이트
-    setMessages(prev => [...prev, {
-      chatNo: Date.now(), // ✅ 임시 chatNo로 고유값
-      senderNo: memberNo,
-      chatContent: input,
-      chatSendDate: new Date().toISOString(),
-      chatRoomNo: selectedRoom.chatRoomNo,
-    }]);
-
-    setInput('');
+    setInput("");
   };
 
   const handleKeyPress = (e) => {
@@ -237,9 +285,12 @@ const Chat = () => {
 
     setLoadingSearch(true);
     try {
-      const res = await axios.get(`/api/chatting/searchMember?memberNickname=${searchNickname}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        `/api/chatting/searchMember?memberNickname=${searchNickname}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (res.status === 200) {
         setSearchResults(res.data);
         console.log("멤버넘버 : ", res.data);
@@ -255,19 +306,16 @@ const Chat = () => {
 
   const handleCreateRoom = async (targetMemberNo) => {
     // 이미 채팅방에 있으면 생성 안 함
-    if (rooms.some(room => room.targetNo === targetMemberNo)) {
+    if (rooms.some((room) => room.targetNo === targetMemberNo)) {
       alert("이미 채팅방이 존재합니다.");
       return;
     }
 
     try {
-      const res = await axios.post(
-        "/api/chatting/create", null, 
-        {
-          params: { targetMemberNo },
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const res = await axios.post("/api/chatting/create", null, {
+        params: { targetMemberNo },
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (res.status === 200) {
         setShowSearch(false);
@@ -279,7 +327,7 @@ const Chat = () => {
       console.error("채팅방 생성 실패:", error);
     }
   };
-  
+
   useEffect(() => {
     if (!searchNickname.trim()) {
       setSearchResults([]);
@@ -294,36 +342,30 @@ const Chat = () => {
   }, [searchNickname]);
 
   if (!memberNo) return <div>로그인 정보가 없습니다.</div>;
-  
+
   // 채팅 읽음 표시
   const markAsRead = async (roomNo) => {
-     // ✅ 메시지 UI 업데이트
-    setMessages(prev =>
-      (prev ?? []).map(msg =>
-        msg.senderNo !== memberNo && msg.chatReadFl === 'N'
-          ? { ...msg, chatReadFl: 'Y' }
+    // ✅ 메시지 UI 업데이트
+    setMessages((prev) =>
+      (prev ?? []).map((msg) =>
+        msg.senderNo !== memberNo && msg.chatReadFl === "N"
+          ? { ...msg, chatReadFl: "Y" }
           : msg
       )
     );
 
-    setRooms(prev =>
-      (prev ?? []).map(room =>
-        room.chatRoomNo === roomNo
-          ? { ...room, notReadCount: 0 }
-          : room
-      )
+    const updated = rooms.map((r) =>
+      r.chatRoomNo === roomNo ? { ...r, notReadCount: 0 } : r
     );
+
+    setRooms(updated);
 
     // 2) 서버 PATCH
     try {
-      await axios.post(
-        "/api/chatting/read",
-        null,
-        {
-          params: { chatRoomNo: roomNo },
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await axios.post("/api/chatting/read", null, {
+        params: { chatRoomNo: roomNo },
+        headers: { Authorization: `Bearer ${token}` },
+      });
     } catch (err) {
       console.error("읽음 처리 실패:", err);
       // 필요하면 롤백 로직 추가
@@ -343,7 +385,7 @@ const Chat = () => {
 
       if (res.status === 200) {
         // ✅ 방 목록에서 제거
-        setRooms(prev => prev.filter(room => room.chatRoomNo !== roomNo));
+        setRooms(rooms.filter((r) => r.chatRoomNo !== roomNo));
 
         // ✅ 선택되어 있던 방도 초기화
         if (selectedRoom?.chatRoomNo === roomNo) {
@@ -359,24 +401,36 @@ const Chat = () => {
 
   // 채팅 삭제
   const handleDeleteMessage = async (chatNo) => {
+    if (typeof chatNo === "string" && chatNo.startsWith("temp-")) {
+      alert("이 메시지는 아직 서버에 저장되지 않았습니다.");
+      return;
+    }
+
     const confirmDelete = window.confirm("이 메시지를 삭제하시겠습니까?");
     if (!confirmDelete) return;
 
     console.log("chatNo : ", chatNo);
+    console.log("selectRoom : ", selectedRoom);
+    const targetNo = selectedRoom?.participant || selectedRoom?.targetNo;
+
+    if (!targetNo) {
+      console.error("❌ targetNo를 찾을 수 없습니다.");
+      alert("대상 정보를 찾을 수 없습니다.");
+      return;
+    }
 
     try {
       await axios.post("/api/chatting/deleteMessage", null, {
-        params: { chatNo },
+        params: { chatNo, targetNo },
         headers: { Authorization: `Bearer ${token}` },
       });
 
       // 프론트에서 상태 업데이트 (soft delete 처리)
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.chatNo === chatNo ? { ...msg, chatDelFl: "Y" } : msg
+          msg.chatNo === chatNo ? { ...msg, chatContentDelFl: "Y" } : msg
         )
       );
-
     } catch (err) {
       console.error("메시지 삭제 실패:", err);
       alert("삭제 실패!");
@@ -399,21 +453,36 @@ const Chat = () => {
     scrollToBottom();
   }, [selectedRoom]);
 
+  console.log("채팅방 목록 : ", rooms);
 
+  // 프사 신고하면 모달창
+  const handleProfileClick = (member, e) => {
+    setReportTargetMember(member);
+    setModalPosition({ x: e.clientX, y: e.clientY });
+    setShowReportModal(true);
+  };
 
+  console.log("채팅방 목록 : ", rooms);
 
-
-console.log("채팅방 목록 : ", rooms);
   return (
-    <div>
-      <div>연결 상태: {isConnected ? "연결됨" : "연결 안 됨"}</div>
+    <div className={styles.chat}>
+      {/* <div>연결 상태: {isConnected ? "연결됨" : "연결 안 됨"}</div> */}
+
+      <h2>채팅</h2>
 
       <div className={styles.chatWrapper}>
         {/* --- 왼쪽 채팅 목록 --- */}
         <div className={styles.chatRoomList}>
           <div className={styles.chatListHeader}>
-            <h3>채팅 목록</h3>
-            <button onClick={() => setShowSearch(!showSearch)}>+ 추가</button>
+            <div className={styles.chatListTitle}>
+              <strong>채팅 목록</strong>
+              <button
+                className={styles.addButton}
+                onClick={() => setShowSearch(!showSearch)}
+              >
+                + 추가
+              </button>
+            </div>
           </div>
 
           {showSearch && (
@@ -447,17 +516,6 @@ console.log("채팅방 목록 : ", rooms);
             </div>
           )}
 
-          {/* 채팅 목록 */}
-          <div className={styles.chatSearchTop}>
-            <input
-              type="text"
-              placeholder="Search"
-              value={searchNickname}
-              onChange={(e) => setSearchNickname(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearchMember()}
-            />
-          </div>
-
           {Array.isArray(rooms) &&
             rooms.map((room) => (
               <div
@@ -472,7 +530,7 @@ console.log("채팅방 목록 : ", rooms);
                 <img
                   src={
                     room.targetProfile
-                      ? `http://localhost:8080${room.targetProfile}`
+                      ? `https://kh-ubi.site${room.targetProfile}`
                       : "/default-profile.png"
                   }
                   alt="profile"
@@ -484,7 +542,11 @@ console.log("채팅방 목록 : ", rooms);
 
                 <div className={styles.roomInfo}>
                   <div className={styles.roomName}>{room.targetNickname}</div>
-                  <div className={styles.roomLastMessage}>{room.lastMessage}</div>
+                  <div className={styles.roomLastMessage}>
+                    {room.lastMessageDelFl === "Y"
+                      ? "삭제된 메시지입니다."
+                      : room.lastMessage}
+                  </div>
                 </div>
 
                 <div className={styles.roomMeta}>
@@ -503,7 +565,18 @@ console.log("채팅방 목록 : ", rooms);
             <>
               {/* 탭바 + 나가기 */}
               <div className={styles.chatTopbar}>
-                <div className={`${styles.tab} ${styles.active}`}>채팅 내역</div>
+                <img
+                  src={
+                    selectedRoom.targetProfile
+                      ? `https://kh-ubi.site${selectedRoom.targetProfile}`
+                      : "/default-profile.png"
+                  }
+                  alt="profile"
+                  className={styles.selectedRoomProfile}
+                  onError={(e) => {
+                    e.currentTarget.src = "/default-profile.png";
+                  }}
+                />
                 <div className={styles.tab}>
                   {selectedRoom?.targetNickname || "대화 상대"}
                 </div>
@@ -522,9 +595,9 @@ console.log("채팅방 목록 : ", rooms);
                   const avatarSrc = isMe
                     ? null
                     : msg.senderProfile
-                    ? `http://localhost:8080${msg.senderProfile}`
+                    ? `https://kh-ubi.site${msg.senderProfile}`
                     : selectedRoom?.targetProfile
-                    ? `http://localhost:8080${selectedRoom.targetProfile}`
+                    ? `https://kh-ubi.site${selectedRoom.targetProfile}`
                     : "/default-profile.png";
 
                   const nick =
@@ -534,12 +607,14 @@ console.log("채팅방 목록 : ", rooms);
 
                   return (
                     <div
-                      key={msg.chatNo}
+                      key={
+                        msg.chatNo
+                          ? `${msg.chatRoomNo}-${msg.chatNo}`
+                          : `${msg.chatRoomNo}-temp-${Math.random()}`
+                      }
                       className={isMe ? styles.my : styles.other}
                     >
-                      {!isMe && (
-                        <div className={styles.senderName}>{nick}</div>
-                      )}
+                      {!isMe && <div className={styles.senderName}>{nick}</div>}
 
                       <div
                         className={`${styles.chatLine} ${
@@ -551,44 +626,56 @@ console.log("채팅방 목록 : ", rooms);
                             src={avatarSrc}
                             alt=""
                             className={styles.avatar}
+                            onClick={(e) =>
+                              handleProfileClick(
+                                {
+                                  memberNo: msg.senderNo,
+                                  memberNickname: msg.senderNickname,
+                                  memberImg: msg.senderProfile,
+                                },
+                                e
+                              )
+                            }
                           />
                         )}
 
                         <div
                           className={`${styles.chatMessage} ${
-                            isMe
-                              ? styles.myMessage
-                              : styles.otherMessage
+                            isMe ? styles.myMessage : styles.otherMessage
                           }`}
                         >
-                          {msg.chatDelFl === "Y" ? (
+                          {msg.chatContentDelFl === "Y" ? (
                             <i className={styles.deletedMessage}>
                               삭제된 메시지입니다.
                             </i>
                           ) : (
                             <>
-                              <span>{msg.chatContent}</span>
-                              {isMe && (
-                                <button
-                                  className={styles.deleteButton}
-                                  onClick={() =>
-                                    handleDeleteMessage(msg.chatNo)
-                                  }
-                                >
-                                  🗑️
-                                </button>
-                              )}
+                              <div className={styles.chatText}>
+                                {msg.chatContent}
+                              </div>
+
+                              <div className={styles.metaWrapper}>
+                                <span className={styles.messageTimestamp}>
+                                  {formatChatTime(msg.chatSendDate)}
+                                </span>
+                                {isMe && (
+                                  <button
+                                    className={styles.deleteButton}
+                                    onClick={() =>
+                                      handleDeleteMessage(msg.chatNo)
+                                    }
+                                  >
+                                    <img src="/delete.svg" alt="삭제" />
+                                  </button>
+                                )}
+                              </div>
                             </>
                           )}
-                          <div className={styles.messageTimestamp}>
-                            {msg.chatSendDate}
-                          </div>
                         </div>
                       </div>
                     </div>
                   );
                 })}
-                
               </div>
 
               <div className={styles.chatInput}>
@@ -599,19 +686,28 @@ console.log("채팅방 목록 : ", rooms);
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyPress}
                 />
-                <button onClick={handleSendMessage}>보내기</button>
+                <button
+                  onClick={handleSendMessage}
+                  className={styles.sendButton}
+                ></button>
               </div>
             </>
           ) : (
-            <div className={styles.chatPlaceholder}>
-              채팅방을 선택하세요
-            </div>
+            <div className={styles.chatPlaceholder}>채팅방을 선택하세요</div>
           )}
         </div>
       </div>
+
+      {showReportModal && reportTargetMember && (
+        <CommentModal
+          member={reportTargetMember}
+          onClose={() => setShowReportModal(false)}
+          position={modalPosition}
+          token={token}
+        />
+      )}
     </div>
   );
-
 };
 
 export default Chat;

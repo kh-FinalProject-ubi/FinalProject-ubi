@@ -69,6 +69,7 @@ public class ChattigController {
 		    int memberNo = memberNoLong.intValue();
 		    
 		    List<ChattingRoom> roomList = service.selectRoomList(memberNo);
+		    System.out.println("채팅목록 : " + roomList);
 
 		    if (roomList != null) {
 		        return ResponseEntity.ok(roomList); // 🔹 새 경로 반환
@@ -221,6 +222,7 @@ public class ChattigController {
     		map.put("chatRoomNo", chatRoomNo);
     		
     		List<Message> message = service.selectMessageList(map);
+    		System.out.println("메시지 조회 결과: " + message);
     		
     		if (message != null) {
  		        return ResponseEntity.ok(message); // 새 경로 반환
@@ -310,46 +312,53 @@ public class ChattigController {
 		}
     }
     
-    // 채팅방 나가기
     @PostMapping("/deleteMessage")
     @ResponseBody
-    public ResponseEntity<Object> deleteMessage(@RequestParam ("chatNo") int chatNo,
-											   @RequestHeader("Authorization") String authorizationHeader) {
-    	try {
-    		
-    		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-    			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
-    		}
-    		
-    		String token = authorizationHeader.substring(7);
-    		
-    		if (!jwtU.validateToken(token)) {
-    			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
-    		}
-    		
-    		Long memberNoLong = jwtU.extractMemberNo(token);
-    		int memberNo = memberNoLong.intValue();
-    		
-    		Map<String, Integer> map = new HashMap<String, Integer>();
-    		
-    		System.out.println("chatNo: " + chatNo);
-    		System.out.println("memberNo: " + memberNo);
-    		map.put("memberNo", memberNo);
-    		map.put("chatRoomNo", chatNo);
-    		
-    		int message = service.deleteMessage(map);
-    		
-    		if (message >= 0) {          // ✔︎ 0 row 도 OK
-    		    return ResponseEntity.ok(message);
-    		}
-    		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("삭제 권한이 없습니다");
-    		
-    	}catch (Exception e) {
-    		e.printStackTrace(); // 콘솔에 출력
-    	    log.error("채팅 삭제 실패", e);
-    		
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);    		
-		}
+    public ResponseEntity<Object> deleteMessage(
+            @RequestParam("chatNo") int chatNo,
+            @RequestParam("targetNo") int targetNo,
+            @RequestHeader("Authorization") String authorizationHeader) {
+        try {
+            if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
+            }
+
+            String token = authorizationHeader.substring(7);
+            if (!jwtU.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
+            }
+
+            int memberNo = jwtU.extractMemberNo(token).intValue();
+
+            Map<String, Integer> map = new HashMap<>();
+            map.put("chatNo", chatNo);
+            map.put("memberNo", memberNo);
+
+            int result = service.deleteMessage(map);
+
+            if (result >= 0) {
+                // ✅ 삭제된 메시지 정보를 생성 (DB에서 안 가져옴)
+                Message deletedMsg = new Message();
+                deletedMsg.setChatNo(chatNo);
+                deletedMsg.setSenderNo(memberNo);
+                deletedMsg.setChatContentDelFl("Y");
+
+                log.warn("💬 삭제 메시지: {}", deletedMsg);
+                
+                // 🔔 양쪽에게 전송
+                messagingTemplate.convertAndSend("/queue/chat/" + memberNo, deletedMsg);
+                messagingTemplate.convertAndSend("/queue/chat/" + targetNo, deletedMsg); // 상대방
+
+                return ResponseEntity.ok(result);
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("삭제 실패");
+            }
+
+        } catch (Exception e) {
+            log.error("❌ 메시지 삭제 중 예외 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
+
     
 }

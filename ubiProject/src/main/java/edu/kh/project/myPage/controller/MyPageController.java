@@ -3,6 +3,7 @@ package edu.kh.project.myPage.controller;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.bind.support.SessionStatus;
@@ -102,43 +104,48 @@ public class MyPageController {
 	 */
 	@PostMapping("update")
 	public ResponseEntity<Object> updateInfo(@RequestBody Member member,
-											 @RequestHeader("Authorization") String authorizationHeader) {
-
-		try {
-			
-		  if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+	                                         @RequestHeader("Authorization") String authorizationHeader) {
+	    try {
+	        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
 	        }
-		  
-		  String token = authorizationHeader.substring(7);
-			
-		  if (!jwtU.validateToken(token)) {
+
+	        String token = authorizationHeader.substring(7);
+
+	        if (!jwtU.validateToken(token)) {
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
 	        }
 
-	        // 3️⃣ 토큰에서 회원 번호 추출
 	        Long memberNoLong = jwtU.extractMemberNo(token);
 	        int memberNo = memberNoLong.intValue();
-	        
 	        member.setMemberNo(memberNo);
-	       
+
 	        if (memberNo == 0) {
-               return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 정보가 없습니다.");
 	        }
-           
+
 	        int result = service.updateInfo(member);
-           
-	        if(result > 0) {
-        	   return ResponseEntity.status(HttpStatus.OK).body("회원 정보 수정을 완료했습니다!");        	   
+
+	        if (result > 0) {
+	            // ✅ 수정된 회원 정보 다시 조회 (권한 포함)
+	            Member updatedMember = service.selectMemberByNo(memberNo);
+
+	            // ✅ 새로운 토큰 발급
+	            String newToken = jwtU.generateToken(updatedMember);
+
+	            return ResponseEntity.ok(Map.of(
+	                "message", "회원 정보 수정을 완료했습니다!",
+	                "token", newToken
+	            ));
 	        } else {
-	        	return ResponseEntity.badRequest().body("회원 정보 수정을 실패했습니다");	      	   
+	            return ResponseEntity.badRequest().body("회원 정보 수정을 실패했습니다");
 	        }
-           
-       } catch (Exception e) {
-           log.error("내 정보 조회 중 에러 발생", e);
-           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-       }
-	}	
+
+	    } catch (Exception e) {
+	        log.error("내 정보 수정 중 에러 발생", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류");
+	    }
+	}
 
 	
 	// 내가 찜한 혜택 조회
@@ -413,6 +420,97 @@ public class MyPageController {
 		
 		
 	}
+	
+	/** 찜 삭제
+	 * @param profileImage
+	 * @param memberNo
+	 * @return
+	 * @throws Exception
+	 */
+	@DeleteMapping("favorite")
+	@ResponseBody
+	public ResponseEntity<Object> cancelZzim(@RequestHeader("Authorization") String authorizationHeader,
+											 @RequestParam ("serviceNo") int serviceNo){
+		
+		try {
+			
+			if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
+			}
+			
+			String token = authorizationHeader.substring(7);
+			
+			if (!jwtU.validateToken(token)) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
+			}
+			
+			Long memberNoLong = jwtU.extractMemberNo(token);
+			int memberNo = memberNoLong.intValue();
+			
+			Map<String, Object> map = new HashMap<>();
+			
+			map.put("memberNo", memberNo);
+			map.put("serviceNo", serviceNo);
+			
+			int result = service.cancelZzim(map);
+			
+			if (result > 0) {
+				return ResponseEntity.ok(result);
+			} else {
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("프로필 이미지 초기화 실패");
+			}
+			
+		} catch (Exception e) {
+			
+			log.error("프로필 이미지 초기화 중 에러 발생", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+		
+		
+	}
+	
+	@DeleteMapping("favorite/facility")
+	@ResponseBody
+	public ResponseEntity<Object> cancelZzimFacility(
+	    @RequestHeader("Authorization") String authorizationHeader,
+	    @RequestParam("facilityNo") String facilityNo
+	) {
+	    try {
+	        // 1. 인증 헤더 확인
+	        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 없습니다.");
+	        }
+
+	        // 2. JWT 토큰 파싱 및 유효성 검사
+	        String token = authorizationHeader.substring(7);
+	        if (!jwtU.validateToken(token)) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰이 유효하지 않습니다.");
+	        }
+
+	        // 3. memberNo 추출
+	        Long memberNoLong = jwtU.extractMemberNo(token);
+	        int memberNo = memberNoLong.intValue();
+
+	        // 4. 서비스로 Map 전달
+	        Map<String, Object> map = new HashMap<>();
+	        map.put("memberNo", memberNo);
+	        map.put("facilityNo", facilityNo);
+
+	        // 5. 실제 찜 해제 로직 호출
+	        int result = service.cancelFacilityZzim(map);
+
+	        if (result > 0) {
+	            return ResponseEntity.ok(result);
+	        } else {
+	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("시설 찜 해제 실패");
+	        }
+	    } catch (Exception e) {
+	        log.error("시설 찜 해제 중 에러 발생", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+	    }
+	}
+	
+	
 
 	
 	// ---------------------------------------------------------------------------------------------------------------------
@@ -531,6 +629,8 @@ public class MyPageController {
 		
 		return "redirect:/myPage/fileTest";
 	}
+	
+	
 }
 
 

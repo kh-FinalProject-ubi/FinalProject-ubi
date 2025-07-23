@@ -31,10 +31,13 @@ const InsertBoard = () => {
     formData.append("file", file);
     axios
       .post("/api/editBoard/image-upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
       })
       .then((res) => {
-        const imageUrl = `/images/board/${res.data}`;
+        const imageUrl = res.data;
         $("#summernote").summernote("insertImage", imageUrl, ($image) => {
           $image.css("width", "100%");
         });
@@ -69,22 +72,14 @@ const InsertBoard = () => {
         ],
         callbacks: {
           onChange: (contents) => {
-            const textLength = $("<div>").html(contents).text().length;
-            if (textLength > 2000) {
-              const trimmed = $("<div>")
-                .html(contents)
-                .text()
-                .substring(0, 2000);
-              $("#summernote").summernote("code", trimmed);
-            } else {
-              setContent(contents);
-            }
+            setContent(contents);
           },
           onKeydown: (e) => {
-            const textLength = $("<div>")
+            const plainText = $("<div>")
               .html($("#summernote").summernote("code"))
-              .text().length;
-            if (textLength >= 2000 && e.key.length === 1) {
+              .text();
+            const isPrintable = e.key.length === 1;
+            if (plainText.length >= 2000 && isPrintable) {
               e.preventDefault();
             }
           },
@@ -124,7 +119,7 @@ const InsertBoard = () => {
     const formData = new FormData();
     const boardObj = {
       boardTitle: title,
-      boardContent: currentContent,
+      boardContent: currentContent, // 여기에 이미 <img src="..."> 태그가 포함되어 있습니다.
       memberNo: loginMemberNo,
       postType,
       boardCode: numericBoardCode,
@@ -134,8 +129,6 @@ const InsertBoard = () => {
       "board",
       new Blob([JSON.stringify(boardObj)], { type: "application/json" })
     );
-
-    images.forEach((file) => formData.append("images", file));
 
     fetch(`/api/editBoard/${numericBoardCode}`, {
       method: "POST",
@@ -166,8 +159,8 @@ const InsertBoard = () => {
   const selectClassName = `${styles.postTypeSelect} ${
     postType === "문의" ? styles.postTypeInquiry : ""
   }${postType === "공지" ? styles.postTypeInquiry : ""}${
-    postType === "이벤트" ? styles.postTypeInquiry : ""
-  }${postType === "중요" ? styles.postTypeInquiry : ""} ${
+    postType === "이벤트" ? styles.postTypeEvent : ""
+  }${postType === "중요" ? styles.postTypeReport : ""} ${
     postType === "신고" ? styles.postTypeReport : ""
   }`;
 

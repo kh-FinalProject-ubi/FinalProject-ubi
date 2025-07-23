@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import styles from "../../styles/board/Review.module.css";
 export default function WelfareReviewSection({ apiServiceId }) {
   const [reviews, setReviews] = useState([]);
   const [current, setCurrent] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const currentReview = reviews[current];
+  
 
   useEffect(() => {
     if (!apiServiceId) return;
@@ -27,12 +29,21 @@ export default function WelfareReviewSection({ apiServiceId }) {
   if (loading) return null;
 
   if (!reviews || reviews.length === 0) {
-    return (
-      <section className="facility-section">
-        <h3>📰 이 복지혜택과 관련된 게시글</h3>
-        <p style={{ color: "#666", fontStyle: "italic" }}>관련 후기가 없습니다.</p>
-      </section>
-    );
+     return (
+    <section className={styles.carouselWrapper}>
+      <div className={styles.reviewHeaderRow}>
+        <span className={styles.commentTitle}>후기</span>
+        <span className={styles.commentCount}>(0)</span>
+      </div>
+      <hr />
+
+      <div className={styles.reviewCarousel}>
+        <div className={styles.noReviewMessage}>
+          작성된 후기가 없습니다.
+        </div>
+      </div>
+    </section>
+  );
   }
 
   const {
@@ -41,129 +52,181 @@ export default function WelfareReviewSection({ apiServiceId }) {
     boardContent,
     boardDate,
     starCount,
-    profileImage,
+    memberImg,
     memberNickname,
-    imageList,
-  } = reviews[current];
+  } = currentReview;
 
-  const imageListSafe = Array.isArray(imageList) ? imageList : [];
-
-  const extractFirstImage = (content) => {
-    const match = content?.match(/<img[^>]+src="([^"]+)"[^>]*>/i);
-    return match?.[1] || null;
-  };
-
-  const firstInlineImage = extractFirstImage(boardContent);
-
+  // ✅ 1. 이미지 src 추출 로직 추가
   const goToDetail = () => {
     navigate(`/mytownboard/${boardNo}`);
   };
 
-  return (
-    <section className="facility-section">
-      <h3>📰 이 복지혜택과 관련된 게시글</h3>
-      <p style={{ marginBottom: "10px", fontWeight: "bold" }}>
-        총 {reviews.length}건의 후기
-      </p>
+  const extractImageSources = (html) => {
+    const imgTagRegex = /<img[^>]+src=["']([^"']+)["']/g;
+    const srcList = [];
+    let match;
+    while ((match = imgTagRegex.exec(html)) !== null) {
+      srcList.push(match[1]);
+    }
+    return srcList;
+  };
 
-      <div className="review-carousel">
-        {reviews.length > 1 && (
-          <button className="carousel-arrow left" onClick={() => setCurrent((prev) => (prev - 1 + reviews.length) % reviews.length)}>
-            ◀
-          </button>
-        )}
+  const inlineImages = extractImageSources(boardContent);
 
-        <div className="review-card" onClick={goToDetail}>
-          <div className="review-header">
-            <img
-              src={profileImage || "/default-profile.png"}
-              alt="프로필"
-              className="profile-img"
-            />
-            <div className="review-info">
-              <strong>{memberNickname}</strong>
-              <span className="review-date">
-                {new Date(boardDate).toLocaleDateString()}
-              </span>
-            </div>
-            <div className="review-star">⭐ {starCount}</div>
-          </div>
+ return (
+  <section className={styles.carouselWrapper}>
+    <div className={styles.reviewHeaderRow}>
+      <span className={styles.commentTitle}>후기</span>
+      <span className={styles.commentCount}>({reviews.length})</span>
+    </div>
+    <hr />
 
-          <h4 className="review-title">{boardTitle}</h4>
-          <p
-            className="review-content"
-            dangerouslySetInnerHTML={{
-              __html: boardContent.length > 100
-                ? boardContent.slice(0, 100) + "..."
-                : boardContent,
-            }}
-          />
-
-          <div
-            className="review-images"
-            style={{
-              display: "flex",
-              gap: "8px",
-              marginTop: "10px",
-              flexWrap: "nowrap",
-              alignItems: "center",
-            }}
+    <div className={styles.reviewCarousel}>
+      {/* 📌 데스크탑용 좌우 화살표 */}
+      {reviews.length > 1 && (
+        <div className={styles.desktopArrows}>
+          <button
+            className={`${styles.carouselArrow} ${styles.left}`}
+            onClick={() =>
+              setCurrent((prev) => (prev - 1 + reviews.length) % reviews.length)
+            }
           >
-            {imageListSafe.length > 0 &&
-              imageListSafe.slice(0, 3).map((img, i) => (
-                <img
-                  key={i}
-                  src={img.imagePath}
-                  alt={`첨부 이미지 ${i + 1}`}
-                  style={{
-                    width: "80px",
-                    height: "80px",
-                    objectFit: "cover",
-                    borderRadius: "6px",
-                  }}
-                />
-              ))}
+            <img
+              src="/icons/LeftArrow.svg"
+              alt="이전"
+              className={styles.arrowIcon}
+            />
+          </button>
+        </div>
+      )}
 
-            {imageListSafe.length === 0 && firstInlineImage && (
-              <img
-                src={firstInlineImage}
-                alt="본문 이미지"
-                style={{
-                  width: "80px",
-                  height: "80px",
-                  objectFit: "cover",
-                  borderRadius: "6px",
-                }}
-              />
-            )}
+      {/* 📌 후기 카드 */}
+      <div className={styles.reviewCard} onClick={goToDetail}>
+        <div className={styles.reviewRow}>
+  <img
+  src={memberImg ? `https://kh-ubi.site${memberImg}` : "/default-profile.png"}
+  alt="프로필"
+  className={styles.profileImg}
+  onClick={(e) => {
+    e.stopPropagation(); // 상세 페이지 이동 막기 원하면 추가
+    setSelectedMember({
+      memberNo: currentReview.memberNo,
+      memberImg: currentReview.memberImg,
+      memberNickname: currentReview.memberNickname,
+      role: currentReview.authority === "2" ? "ADMIN" : "USER",
+    });
+    setModalPosition({ x: e.clientX + 50, y: e.clientY });
+    setModalVisible(true);
+  }}
+  onError={(e) => {
+    e.currentTarget.src = "/default-profileerror.png";
+    e.currentTarget.onerror = null;
+  }}
+/>
 
-            {imageListSafe.length > 3 && (
-              <div
-                style={{
-                  backgroundColor: "rgba(0, 0, 0, 0.6)",
-                  color: "white",
-                  padding: "6px 10px",
-                  borderRadius: "6px",
-                  fontSize: "14px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "80px",
-                  minWidth: "50px",
-                }}
-              >
-                +{imageListSafe.length - 3}
+
+
+          <div className={styles.reviewCol}>
+            <div className={styles.reviewTop}>
+              <h4 className={styles.reviewTitle}>{boardTitle}</h4>
+              <div className={styles.reviewStar}>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <img
+                    key={i}
+                    src={
+                      i <= starCount
+                        ? "/icons/boardstar.svg"
+                        : "/icons/boardnostar.svg"
+                    }
+                    alt="별점"
+                    className={styles.iconStar}
+                  />
+                ))}
               </div>
-            )}
+            </div>
+
+            <div className={styles.nickname}>{memberNickname}</div>
+
+            <div className={styles.reviewDate}>
+              {new Date(boardDate).toLocaleDateString()}{" "}
+              {new Date(boardDate).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </div>
+
+            <div className={styles.reviewTextOnly}>
+              {boardContent.replace(/<[^>]*>?/gm, "").slice(0, 100)}...
+            </div>
+
+            <div className={styles.inlineImages}>
+              <div className={styles.imageRow}>
+                {inlineImages.slice(0, 4).map((src, idx) => (
+                  <img
+                    key={idx}
+                    src={src}
+                    alt={`본문 이미지 ${idx + 1}`}
+                    onError={(e) =>
+                      (e.currentTarget.src = "/default-profile.png")
+                    }
+                    className={styles.inlineImage}
+                  />
+                ))}
+                {inlineImages.length > 4 && (
+                  <div className={styles.moreImageCircle}>
+                    +{inlineImages.length - 4}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-
-        {reviews.length > 1 && (
-          <button className="carousel-arrow right" onClick={() => setCurrent((prev) => (prev + 1) % reviews.length)}>
-            ▶
-          </button>
-        )}
       </div>
-    </section>
-  );
+
+      {/* 📌 데스크탑용 오른쪽 화살표 */}
+      {reviews.length > 1 && (
+        <div className={styles.desktopArrows}>
+          <button
+            className={`${styles.carouselArrow} ${styles.right}`}
+            onClick={() => setCurrent((prev) => (prev + 1) % reviews.length)}
+          >
+            <img
+              src="/icons/RightArrow.svg"
+              alt="다음"
+              className={styles.arrowIcon}
+            />
+          </button>
+        </div>
+      )}
+    </div>
+
+    {/* 📌 모바일용 하단 화살표 */}
+    {reviews.length > 1 && (
+      <div className={styles.arrowBottomWrapper}>
+        <button
+          className={`${styles.carouselArrow} ${styles.left}`}
+          onClick={() =>
+            setCurrent((prev) => (prev - 1 + reviews.length) % reviews.length)
+          }
+        >
+          <img
+            src="/icons/LeftArrow.svg"
+            alt="이전"
+            className={styles.arrowIcon}
+          />
+        </button>
+        <button
+          className={`${styles.carouselArrow} ${styles.right}`}
+          onClick={() => setCurrent((prev) => (prev + 1) % reviews.length)}
+        >
+          <img
+            src="/icons/RightArrow.svg"
+            alt="다음"
+            className={styles.arrowIcon}
+          />
+        </button>
+      </div>
+    )}
+  </section>
+);
 }

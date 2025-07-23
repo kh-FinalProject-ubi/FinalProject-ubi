@@ -17,11 +17,30 @@ import {
   getFilteredFacilities,
   getCombinedFacilities,
 } from "../../utils/welfarefacilityMap"; // ✅ 공용 유틸 import
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function FacilitySearchPage() {
-  const { member, loading: memberLoading } = useLoginMember();
+  const { member, loading: memberLoading, refetchMember } = useLoginMember();
+  const location = useLocation(); // 🔑 location 필요!
+
   const setAuth = useAuthStore((state) => state.setAuth);
   const auth = useAuthStore();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.state?.refresh === "memberUpdate") {
+      (async () => {
+        console.log("🌀 내정보에서 갱신됨, refetchMember 호출");
+        await refetchMember?.(); // ✅ member가 최신화된 이후
+        handleRegionSourceChange("my"); // 또는 "bookmark"
+      })();
+    }
+  }, [location.state]);
+
+  const {
+    setSelectedCity: setCityInStore,
+    setSelectedDistrict: setDistrictInStore,
+  } = useSelectedRegionStore();
 
   useEffect(() => {
     if (member && !auth?.memberNo) {
@@ -38,7 +57,7 @@ export default function FacilitySearchPage() {
   const [category, setCategory] = useState("전체");
   const [serviceType, setServiceType] = useState("전체");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 25;
+  const itemsPerPage = 24;
 
   const [selectedCity, setSelectedCity] = useState("");
   const [availableDistricts, setAvailableDistricts] = useState([]);
@@ -60,27 +79,46 @@ export default function FacilitySearchPage() {
   });
 
   useEffect(() => {
+    if (location.state?.refresh === "memberUpdate") {
+      (async () => {
+        await refetchMember?.(); // 최신 회원정보로 업데이트
+        handleRegionSourceChange("bookmark"); // 즐겨찾기 주소로 지역 변경
+      })();
+    }
+  }, [location.state]);
+
+  useEffect(() => {
+    console.log("🚀 memberLoading:", memberLoading);
+    console.log("🧑‍💼 member:", member);
+    console.log("🗺️ selectedCityFromStore:", selectedCityFromStore);
+    console.log("🏷️ regionSource:", regionSource);
+
     if (!memberLoading && regionSource === "default") {
       if (
         selectedCityFromStore &&
         selectedDistrictFromStore &&
         regionMap[selectedCityFromStore]
       ) {
+        console.log("📌 map 지역으로 초기화");
         handleRegionSourceChange("map");
       } else if (member) {
+        console.log("📌 내 주소로 초기화");
         handleRegionSourceChange("my");
       } else {
+        console.log("📌 기본 서울/종로 초기화");
         setSelectedCity("서울특별시");
         setAvailableDistricts(regionMap["서울특별시"]);
         setSelectedDistrict("종로구");
       }
       setRegionSource("initialized");
     }
-  }, [memberLoading, member, selectedCityFromStore, selectedDistrictFromStore]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedCity, selectedDistrict]);
+  }, [
+    regionSource,
+    memberLoading,
+    member,
+    selectedCityFromStore,
+    selectedDistrictFromStore,
+  ]);
 
   const handleRegionSourceChange = (source) => {
     setRegionSource(source);
@@ -88,6 +126,7 @@ export default function FacilitySearchPage() {
     let district = "종로구";
 
     if (source === "my") {
+      console.log("🔍 내 주소:", member?.regionCity, member?.regionDistrict);
       city = member?.regionCity || member?.tempRegionCity || city;
       district =
         member?.regionDistrict || member?.tempRegionDistrict || district;
@@ -100,8 +139,21 @@ export default function FacilitySearchPage() {
 
     if (source === "bookmark") {
       const taddress = member?.memberTaddress;
-      if (!taddress) return;
+
+      console.log("📍 즐겨찾기 주소:", taddress); // ✅ 1. 원본 주소 확인
+
+      if (!taddress) {
+        console.warn("❗ 즐겨찾기 주소 없음");
+        return;
+      }
+
       const result = extractRegionFromTaddress(taddress);
+
+      console.log("➡️ 추출된 지역:", result); // ✅ 2. 추출된 시/도, 시/군/구
+
+      console.log("🧭 regionMap keys:", Object.keys(regionMap)); // ✅ 3. 전체 시도 목록
+      console.log("✔️ result.city in regionMap?", regionMap[result.city]); // ✅ 4. 포함 여부 확인
+
       city = result.city;
       district = result.district;
     }
@@ -114,6 +166,19 @@ export default function FacilitySearchPage() {
         regionMap[city].includes(regionDistrict)
           ? regionDistrict
           : regionMap[city][0]
+      );
+
+      // ✅ 전역 상태 store에도 반영 (Header용)
+      setCityInStore(city);
+      setDistrictInStore(
+        regionMap[city].includes(regionDistrict)
+          ? regionDistrict
+          : regionMap[city][0]
+      );
+      navigate(
+        `/facility/search?city=${encodeURIComponent(
+          city
+        )}&district=${encodeURIComponent(district)}`
       );
     }
   };
@@ -176,13 +241,25 @@ export default function FacilitySearchPage() {
       <div className={styles["filter-bar"]}>
         <div className={styles["filter-row"]}>
           <div className={styles["region-select-row"]}>
+            {/* 시/도 선택 */}
             <select
               value={selectedCity}
               onChange={(e) => {
                 const city = e.target.value;
+                const firstDistrict = regionMap[city]?.[0] || "";
+
                 setSelectedCity(city);
+                setCityInStore(city);
                 setAvailableDistricts(regionMap[city] || []);
-                setSelectedDistrict(regionMap[city]?.[0] || "");
+                setSelectedDistrict(firstDistrict);
+                setDistrictInStore(firstDistrict);
+
+                // ✅ URL 업데이트
+                navigate(
+                  `/facility/search?city=${encodeURIComponent(
+                    city
+                  )}&district=${encodeURIComponent(firstDistrict)}`
+                );
               }}
             >
               <option value="">시도 선택</option>
@@ -193,9 +270,21 @@ export default function FacilitySearchPage() {
               ))}
             </select>
 
+            {/* 시군구 선택 */}
             <select
               value={selectedDistrict}
-              onChange={(e) => setSelectedDistrict(e.target.value)}
+              onChange={(e) => {
+                const district = e.target.value;
+                setSelectedDistrict(district);
+                setDistrictInStore(district);
+
+                // ✅ URL 업데이트
+                navigate(
+                  `/facility/search?city=${encodeURIComponent(
+                    selectedCity
+                  )}&district=${encodeURIComponent(district)}`
+                );
+              }}
               disabled={!selectedCity}
             >
               {availableDistricts.map((district) => (
@@ -305,7 +394,14 @@ export default function FacilitySearchPage() {
             facility["OPEN_FACLT_NM"] ||
             "시설";
           const key = `${name}-${idx}`;
-          return <FacilityCard key={key} facility={facility} />;
+          return (
+            <FacilityCard
+              key={key}
+              facility={facility}
+              selectedCity={selectedCity}
+              selectedDistrict={selectedDistrict}
+            />
+          );
         })}
       </div>
 

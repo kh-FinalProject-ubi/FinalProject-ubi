@@ -215,103 +215,75 @@ public class GwangjuFacilityServiceImpl implements GwangjuFacilityService {
 
 			GwangjuFacility dto = new GwangjuFacility();
 			
-			dto.setFacilityName(getFirst(item, "시설명", "기관명", "시설명칭", "경로당명", "명칭"));		
-			dto.setAddress(getFirst(item, "시설도로명주소", "소재지도로명주소", "소재지지번주소", "도로명주소", "소재지", "주소", "소재지주소"));	
-			dto.setPhone(getFirst(item, "전화번호", "연락처", "기관전화번호"));	
-			dto.setDistrict(districtFilter);	
-			dto.setLatitude(parseDouble(item, "위도", "lat", "LAT"));
-			dto.setLongitude(parseDouble(item, "경도", "lon", "LNG"));
+			dto.setAddress(getFirst(item, "도로명주소", "소재지", "소재지도로명주소", "소재지주소", "소재지지번주소", "시설도로명주소", "시설소재지", "지번주소", "주소"));
+			dto.setAdministrativeDong(getFirst(item, "동명", "법정동명", "행정동", "행정동명"));
+			dto.setArea(getFirst(item, "규격", "면적", "면적(제곱미터)"));
+			dto.setBuildDate(getFirst(item, "등록일자", "설치일자", "조성일자"));
+			dto.setBuildYear(getFirst(item, "건립연도", "설립연도"));
+			dto.setBuildingFloor(getFirst(item, "건축물층수"));
+			dto.setCapacityStatus(getFirst(item, "수용인원", "수용정원", "수용정원_현원(명)", "정원", "정원(명)", "아동정원"));
+			String category = getFirst(item, "구분", "시설구분");
+			if (category != null && !category.startsWith("http")) {
+			    dto.setCategoryType(category);
+			}
+			dto.setClosedDays(getFirst(item, "휴관일"));
+			dto.setCorporationName(getFirst(item, "법인명"));
+			dto.setCreatedYear(getFirst(item, "조성연도"));
+			dto.setDataDate(getFirst(item, "데이터 기준일자", "데이터기준일", "데이터기준일자"));
+			dto.setDayNightCareServiceCount(getFirst(item, "주야간보호서비스"));
+			dto.setDepartment(getFirst(item, "담당부서", "부서"));
+			dto.setDongName(getFirst(item, "동명"));
+			dto.setEmployee(getFirst(item, "종사자", "종사자수"));
+			dto.setEmployeeStatus(getFirst(item, "직원현황"));
+			dto.setEstablishedDate(getFirst(item, "설립일자"));
+			dto.setEventType(getFirst(item, "종목"));
+			dto.setFacilityKind(getFirst(item, "시설종류"));
+			dto.setFacilityName(getFirst(item, "경로당명", "기관명", "명칭", "복지관명", "시설명", "시설명칭", "행정복지센터명"));
+			dto.setFacilityStatus(getFirst(item, "설치시설물", "시설 현황", "이용시설현황", "주요시설"));
+			dto.setFacilityType(getFirst(item, "시설", "시설유형", "시설종류", "유형"));
+			dto.setFaxNumber(getFirst(item, "팩스번호"));
+			dto.setFitnessEquipment(getFirst(item, "체력단련시설"));
+			dto.setForm(getFirst(item, "형태"));
+			dto.setHall(getFirst(item, "당 장"));
+			dto.setHomeBathServiceCount(getFirst(item, "방문목욕서비스"));
+			dto.setHomeCareServiceCount(getFirst(item, "방문요양서비스"));
+			dto.setHomeSupportServiceCount(getFirst(item, "재가노인지원서비스"));
+			dto.setHomepage(getFirst(item, "홈페이지"));
+			dto.setInstructorCount(getFirst(item, "생활지도원(명)"));
+			dto.setLatitude(parseDouble(item, "LAT", "lat", "위도"));
+			dto.setLocation(getFirst(item, "위치"));
+			dto.setLongitude(parseDouble(item, "LNG", "lon", "경도"));
+			dto.setManagingAgency(getFirst(item, "관리기관", "관리기관명", "담당기관", "자치단체명"));
+			dto.setNote(getFirst(item, "바닥재", "비고", "운영내용"));
+			dto.setNursingFacilityCount(getFirst(item, "노인요양시설"));
+			dto.setNursingGroupHomeCount(getFirst(item, "노인요양공동생활가정"));
+			dto.setOperator(getFirst(item, "법인명", "운영주체", "운영주체(대표자)"));
+			dto.setOperatorAddress(getFirst(item, "법인소재지"));
+			dto.setPhone(getFirst(item, "기관전화번호", "연락처", "전화번호"));
+			dto.setRepresentative(getFirst(item, "대표자"));
+			dto.setSecretaryGeneral(getFirst(item, "사무국장(명)"));
+			dto.setSeniorCenterCount(getFirst(item, "경로당"));
+			dto.setSeniorCenterName(getFirst(item, "경로당명"));
+			dto.setSeniorSchoolCount(getFirst(item, "노인교실"));
+			dto.setSeniorWelfareCenterCount(getFirst(item, "노인복지관"));
+			dto.setShortTermCareServiceCount(getFirst(item, "단기보호서비스"));
+			dto.setTotalFloorArea(getFirst(item, "연면적"));
+			String type = getFirst(item, "분류", "종류", "카테고리");
+			if (type != null && !type.startsWith("http")) {
+			    dto.setType(type);
+			}
+			dto.setUserCount(getFirst(item, "인원(이용자)", "이용자수"));
+			dto.setWeekdayEndTime(getFirst(item, "평일 운영 종료시간", "평일운영종료시간"));
+			dto.setWeekdayOperationDays(getFirst(item, "평일 운영요일", "평일운영요일"));
+			dto.setWeekdayStartTime(getFirst(item, "평일 운영 시작시간", "평일운영시작시간"));
+			dto.setWeekendEndTime(getFirst(item, "주말 운영 종료시간", "주말운영종료시간"));
+			dto.setWeekendOperationDays(getFirst(item, "주말 운영요일", "주말운영요일"));
+			dto.setWeekendStartTime(getFirst(item, "주말 운영 시작시간", "주말운영시작시간"));
+			dto.setYear(getFirst(item, "연도"));
+			dto.setWelfareWorkerCount(getFirst(item, "생활복지사(명)"));
 
-			dto.setType(getFirst(item, "종류", "분류", "카테고리"));	
-			dto.setFacilityType(getFirst(item, "시설", "시설유형", "시설종류", "유형"));	
-			dto.setFacilityKind(getFirst(item, "시설종류")); 
-			dto.setCategoryType(getFirst(item, "구분", "시설구분"));	
-
-			dto.setAdministrativeDong(getFirst(item, "행정동명", "행정동", "법정동명", "동명"));	
-			dto.setDongName(getFirst(item, "동명"));	
-
-			dto.setSeniorCenterName(getFirst(item, "경로당명"));	
-			dto.setForm(getFirst(item, "형태"));	
-			dto.setHall(getFirst(item, "당 장"));	
-
-			dto.setArea(getFirst(item, "면적", "면적(제곱미터)"));	
-			dto.setBuildDate(getFirst(item, "조성일자"));	
-			dto.setBuildYear(getFirst(item, "건립연도"));	
-			dto.setFacilityStatus(getFirst(item, "이용시설현황", "시설 현황", "주요시설"));	
-			dto.setCapacityStatus(getFirst(item, "수용정원_현원(명)", "수용정원", "정원", "수용인원"));	
-			dto.setEmployee(getFirst(item, "종사자"));	
-			dto.setNote(getFirst(item, "비고", "운영내용"));	
-
-			dto.setCreatedYear(getFirst(item, "조성연도"));	
-			dto.setFitnessEquipment(getFirst(item, "체력단련시설"));	
-			dto.setLocation(getFirst(item, "위치"));	
-			dto.setDepartment(getFirst(item, "담당부서"));	
-			dto.setOperator(getFirst(item, "운영주체"));	
-			dto.setManagingAgency(getFirst(item, "관리기관명", "담당기관", "자치단체명"));	
-
-			dto.setHomepage(getFirst(item, "홈페이지"));	
 			
-			
-			dto.setEventType(getFirst(item, "종목"));	
-
-			dto.setWeekdayOperationDays(getFirst(item, "평일 운영요일", "평일운영요일"));	
-			dto.setWeekdayStartTime(getFirst(item, "평일 운영 시작시간", "평일운영시작시간"));	
-			dto.setWeekdayEndTime(getFirst(item, "평일 운영 종료시간", "평일운영종료시간"));	
-			dto.setWeekendOperationDays(getFirst(item, "주말 운영요일", "주말운영요일"));	
-			dto.setWeekendStartTime(getFirst(item, "주말 운영 시작시간", "주말운영시작시간"));	
-			dto.setWeekendEndTime(getFirst(item, "주말 운영 종료시간", "주말운영종료시간"));	
-			dto.setClosedDays(getFirst(item, "휴관일"));	
-
-			dto.setBuildingFloor(getFirst(item, "건축물층수"));	
-			dto.setTotalFloorArea(getFirst(item, "연면적"));	
-
-			dto.setDataDate(getFirst(item, "데이터기준일자", "데이터 기준일자"));	
-
-			dto.setYear(getFirst(item, "연도"));	
-			dto.setHomeCareServiceCount(getFirst(item, "방문요양서비스"));	
-			dto.setDayNightCareServiceCount(getFirst(item, "주야간보호서비스"));	
-			dto.setShortTermCareServiceCount(getFirst(item, "단기보호서비스"));	
-			dto.setHomeBathServiceCount(getFirst(item, "방문목욕서비스"));	
-			dto.setHomeSupportServiceCount(getFirst(item, "재가노인지원서비스"));	
-			dto.setSeniorCenterCount(getFirst(item, "경로당"));	
-			dto.setSeniorSchoolCount(getFirst(item, "노인교실"));	
-			dto.setSeniorWelfareCenterCount(getFirst(item, "노인복지관"));	
-			dto.setNursingFacilityCount(getFirst(item, "노인요양시설"));	
-			dto.setNursingGroupHomeCount(getFirst(item, "노인요양공동생활가정"));	
-			
-			dto.setFacilityKind(getFirst(item, "시설종류"));        // 시설의 종류
-			dto.setFacilityName(getFirst(item, "시설명"));          // 시설명
-			dto.setAddress(getFirst(item, "소재지"));               // 주소
-			dto.setCapacityStatus(getFirst(item, "정원"));          // 수용 정원
-			dto.setPhone(getFirst(item, "전화번호"));               // 전화번호
-			dto.setDataDate(getFirst(item, "데이터기준일자"));      // 기준일자
-			
-			dto.setCategoryType(getFirst(item, "시설구분"));                    // 분류/카테고리
-			dto.setFacilityName(getFirst(item, "시설명"));                      // 시설명
-			dto.setAddress(getFirst(item, "지번주소"));                         // 주소 (지번)
-			dto.setArea(getFirst(item, "규격"));                               // 규격 → 면적 필드에 저장
-			dto.setNote(getFirst(item, "바닥재"));                              // 바닥재 → 기타 비고 정보
-			dto.setManagingAgency(getFirst(item, "관리기관"));                 // 관리기관
-			dto.setDataDate(getFirst(item, "데이터기준일", "데이터기준일자"));  // 기준일자
-			
-			dto.setFacilityName(getFirst(item, "시설명"));                // 시설명
-			dto.setRepresentative(getFirst(item, "대표자"));              // 대표자 → 신규 필드
-			
-			dto.setOperator(getFirst(item, "운영주체"));                  // 운영주체
-			dto.setCorporationName(getFirst(item, "법인명"));             // 법인명 → 신규 필드
-			dto.setAddress(getFirst(item, "시설소재지"));                 // 주소
-			dto.setPhone(getFirst(item, "전화번호"));                     // 전화번호
-			dto.setDataDate(getFirst(item, "데이터기준일자"));            // 기준일자
-			
-			dto.setCategoryType(getFirst(item, "구분"));              // 구분 (카테고리 타입)
-			dto.setFacilityName(getFirst(item, "기관명"));            // 기관명
-			dto.setAddress(getFirst(item, "주소"));                  // 주소
-			dto.setPhone(getFirst(item, "전화번호"));                // 전화번호
-			dto.setFaxNumber(getFirst(item, "팩스번호"));            // 팩스번호 → 신규 필드
-			dto.setCapacityStatus(getFirst(item, "정원(명)"));       // 정원
-			dto.setDataDate(getFirst(item, "데이터기준일자"));        // 기준일자
-
-			dto.setCategory(url); // 요청 URL로부터 유추
+			//dto.setCategory(getFirst(item, "url")); // 요청 URL로부터 유추
 
 			
 			result.add(dto);

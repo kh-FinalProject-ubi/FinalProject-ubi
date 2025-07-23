@@ -67,7 +67,8 @@ public class ChattingServiceImpl implements ChattingService{
 	// 채팅 입력
 	@Override
 	public int insertMessage(Message msg) {
-		return mapper.insertMessage(msg);
+	    mapper.insertMessage(msg);       // chatNo가 msg 객체에 주입됨
+	    return msg.getChatNo();  
 	}
 
 	// 채팅방 나가기

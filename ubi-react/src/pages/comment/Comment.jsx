@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import styles from "../../styles/comment/Comment.module.css";
 import CommentModal from "./CommentModal";
+import useAuthStore from "../../stores/useAuthStore";
 
-const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
+const CommentSection = ({ boardCode, boardNo, token, loginMemberNo }) => {
   const [comments, setComments] = useState([]);
   const [commentContent, setCommentContent] = useState("");
   const [replyTarget, setReplyTarget] = useState(null);
@@ -16,8 +17,9 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
 
   const [expandedComments, setExpandedComments] = useState(new Set());
+  const { authority } = useAuthStore();
 
-  const isAdmin = role === "ADMIN";
+  const isAdmin = authority === "2";
 
   useEffect(() => {
     if (boardCode && boardNo) loadComments();
@@ -130,14 +132,12 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
       if (reported === true) {
         alert("신고 성공");
       } else if (reported === false) {
-        alert("신고 취소 완료");
       } else {
         alert("알 수 없는 응답입니다");
       }
       await loadComments();
     } catch (err) {
       console.error("신고 실패:", err.response?.data || err.message);
-      alert("신고 실패");
     }
   };
 
@@ -237,11 +237,16 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
               <div className={styles.commentAuthorInfo}>
                 <img
                   src={
-                    `http://localhost:8080${c.memberImg}` ||
-                    "/default-profile.png"
+                    c.memberImg
+                      ? `https://kh-ubi.site${c.memberImg}`
+                      : "/default-profile.png"
                   }
                   alt="프로필 사진"
                   className={styles.profileImg}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null; // 무한 루프 방지
+                    e.currentTarget.src = "/default-profileerror.png";
+                  }}
                   onClick={(e) => {
                     const modalWidth = 300;
                     const modalHeight = 200;
@@ -251,6 +256,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
                       x = window.innerWidth - modalWidth - 10;
                     if (y + modalHeight > window.innerHeight)
                       y = window.innerHeight - modalHeight - 50;
+
                     setSelectedMember({
                       memberNo: c.memberNo,
                       memberImg: c.memberImg,
@@ -276,7 +282,7 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
                     </button>
                   )}
               </div>
-              {(isAdmin || isMine) && (
+              {token && (isAdmin || isMine) && (
                 <div className={styles.commentActionsRight}>
                   {editingCommentNo === c.commentNo ? (
                     <>
@@ -445,7 +451,8 @@ const CommentSection = ({ boardCode, boardNo, token, loginMemberNo, role }) => {
         </p>
       )}
 
-      {modalVisible &&
+      {token &&
+        modalVisible &&
         selectedMember &&
         selectedMember.memberRole !== "2" &&
         selectedMember.memberNo !== loginMemberNo && (

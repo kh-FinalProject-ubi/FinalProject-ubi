@@ -4,6 +4,7 @@ import axios from "axios";
 import useAuthStore from "../../stores/useAuthStore";
 import CommentSection from "../comment/Comment";
 import styles from "../../styles/board/BoardDetail.module.css";
+import CommentModal from "../comment/CommentModal";
 
 const BoardDetail = () => {
   const navigate = useNavigate();
@@ -15,6 +16,9 @@ const BoardDetail = () => {
   const [board, setBoard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [hasAlerted, setHasAlerted] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
+  const [selectedMember, setSelectedMember] = useState(null);
 
   const boardCodeMap = {
     noticeBoard: 1,
@@ -105,6 +109,11 @@ const BoardDetail = () => {
       return;
     }
 
+    if (!token) {
+      alert("비회원은 좋아요를 누를 수 없습니다.");
+      return;
+    }
+
     try {
       const res = await axios.post(`/api/board/${board.boardNo}/like`, {
         memberNo: loginMemberNo,
@@ -146,7 +155,7 @@ const BoardDetail = () => {
                     <h3 className={styles.boardTitle}>{board.boardTitle}</h3>
                   </div>
                   <div className={styles.buttonContainer}>
-                    {(isWriter || isAdmin) && (
+                    {token && (isWriter || isAdmin) && (
                       <>
                         <button
                           className={styles.editButton}
@@ -168,14 +177,23 @@ const BoardDetail = () => {
                 </div>
                 <div className={styles.metaContainer}>
                   <div className={styles.userInfo}>
-                    <img
-                      src={
-                        `http://localhost:8080${board.memberImg}` ||
-                        "/default-profile.png"
-                      }
-                      alt="프로필"
-                      className={styles.profileImg}
-                    />
+
+                  <img
+  src={board.memberImg ? `https://kh-ubi.site${board.memberImg}` : "/default-profile.png"}
+  alt="프로필"
+  className={styles.profileImg}
+  onClick={(e) => {
+    setSelectedMember({
+      memberNo: board.memberNo,
+      memberImg: board.memberImg,
+      memberNickname: board.memberNickname,
+      role: board.authority === "2" ? "ADMIN" : "USER",
+    });
+    setModalPosition({ x: e.clientX + 50, y: e.clientY });
+    setModalVisible(true);
+  }}
+/>
+
                     <div className={styles.authorInfo}>
                       <span className={styles.authorNickname}>
                         {board.memberNickname}
@@ -188,7 +206,12 @@ const BoardDetail = () => {
                   <div className={styles.stats}>
                     {boardCode === 1 && (
                       <button onClick={handleLike}>
-                        {liked ? "❤️" : "🤍"} {likeCount}
+                        <img
+                          src="/icons/boardlike.svg"
+                          alt="좋아요"
+                          className={styles.iconHeart}
+                        />{" "}
+                        {likeCount}
                       </button>
                     )}
                     <span>조회 {board.boardReadCount}</span>
@@ -222,6 +245,17 @@ const BoardDetail = () => {
             </section>
           </>
         )}
+        {modalVisible &&
+          selectedMember &&
+          selectedMember.role !== "ADMIN" &&
+          selectedMember.memberNo !== loginMemberNo && (
+            <CommentModal
+              member={selectedMember}
+              token={token}
+              position={modalPosition}
+              onClose={() => setModalVisible(false)}
+            />
+          )}
       </div>
     </main>
   );

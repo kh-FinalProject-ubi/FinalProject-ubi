@@ -83,8 +83,8 @@ public class BusanFacilityServiceImpl implements BusanFacilityService {
 					List.of("https://api.odcloud.kr/api/3079406/v1/uddi:cd4d08f6-a100-4042-aa9d-85e4da532194")),
 			entry("동래구|일반복지",
 					List.of("https://api.odcloud.kr/api/15086564/v1/uddi:8f965ba9-e6e6-4c4b-87fd-c954cb6301a9")),
-			entry("남구|장애인복지",
-					List.of("https://api.odcloud.kr/api/15055763/v1/uddi:3125ce4b-b68f-4ede-aba6-bb8f03b0720d")),
+//			entry("남구|장애인복지",
+//					List.of("https://api.odcloud.kr/api/15055763/v1/uddi:3125ce4b-b68f-4ede-aba6-bb8f03b0720d")),
 			entry("남구|아동복지",
 					List.of("https://api.odcloud.kr/api/15047981/v1/uddi:9bd90b5a-34ec-4858-892a-c0799b43161f")),
 			entry("남구|요양시설",
@@ -180,7 +180,7 @@ public class BusanFacilityServiceImpl implements BusanFacilityService {
 							"https://api.odcloud.kr/api/3079406/v1/uddi:cd4d08f6-a100-4042-aa9d-85e4da532194",
 							"https://api.odcloud.kr/api/15086564/v1/uddi:8f965ba9-e6e6-4c4b-87fd-c954cb6301a9")),
 			entry("남구|전체",
-					List.of("https://api.odcloud.kr/api/15055763/v1/uddi:3125ce4b-b68f-4ede-aba6-bb8f03b0720d",
+					List.of(/*"https://api.odcloud.kr/api/15055763/v1/uddi:3125ce4b-b68f-4ede-aba6-bb8f03b0720d",*/
 							"https://api.odcloud.kr/api/15047981/v1/uddi:9bd90b5a-34ec-4858-892a-c0799b43161f",
 							"https://api.odcloud.kr/api/3081417/v1/uddi:0b9ca887-6d94-4c52-be15-d4b02f4135e2",
 							"https://api.odcloud.kr/api/15114872/v1/uddi:810e1c91-904d-4362-b749-f671baf38c00")),
@@ -292,16 +292,16 @@ public class BusanFacilityServiceImpl implements BusanFacilityService {
 	    if (itemsNode.isMissingNode() || !itemsNode.isArray()) return result;
 
 	    for (JsonNode item : itemsNode) {
-	    	String address = getFirst(item, "소재지도로명주소", "소재지지번주소", "주소", "소재지", "도로명주소");
+	    	String address = getFirst(item, "소재지도로명주소", "소재지지번주소", "주소", "소재지", "도로명주소", "소 재 지");
 
 	    	// 실제 주소에 districtFilter 포함 안되면 스킵
 	    	if (address != null && !address.contains(districtFilter)) continue;
 	        BusanFacility dto = new BusanFacility();
 
-	        dto.setFacilityName(getFirst(item, "시설명", "시설명(운영법인)", "기관명", "시설-기관명", "노인복지관명", "경로당명"));
-	        dto.setAddress(getFirst(item, "소재지도로명주소", "소재지지번주소", "주소", "소재지", "도로명주소"));
+	        dto.setFacilityName(getFirst(item, "시 설 명" ,"시설명", "시설명(운영법인)", "기관명", "시설-기관명", "노인복지관명", "경로당명"));
+	        dto.setAddress(getFirst(item, "소재지도로명주소", "소재지지번주소", "주소", "소재지", "도로명주소","소 재 지"));
 	        dto.setPhone(getFirst(item, "전화번호", "연락처", "기관전화번호","facilityName"));
-	        dto.setCategory(url);
+	        // dto.setCategory();
 	        dto.setDistrict(districtFilter);
 	        
 	        dto.setFacilityName(getFirst(item, "facility_name", "시설명", "기관명")); // 영어 응답 필드 포함

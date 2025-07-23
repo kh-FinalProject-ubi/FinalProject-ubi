@@ -31,4 +31,6 @@ public class Facility {
 	private char alaramSentFl;				// 알림 발송 여부
 	private String rcptbgndt;				// 접수일시
 	private String rcptenddt;				// 접수종료일
+	private String regionDistrict;	// 시군구명
+	private String regionCity;		// 시도
 }

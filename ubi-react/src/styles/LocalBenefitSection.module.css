@@ -1,113 +1,163 @@
+/* ===== 팔레트 ===== */
+:root {
+  --primary: #ffe56d; /* 핵심 포인트 */
+  --primary-dark: #e9ce54; /* hover 용 살짝 어둡게 */
+  --accent: #5e60ce; /* 보조(카테고리 등) */
+  --danger: #ff5252;
+  --bg: #f9fbfd;
+  --text: #2e2e2e;
+  --subtext: #6c6c6c;
+}
+
+/* 섹션 여백은 그대로 */
 .section {
   padding: 2rem 20%;
 }
-
 @media (max-width: 768px) {
   .section {
     padding: 2rem 1rem;
   }
 }
 
+/* ─────────────────── 타이틀 & 탭 ─────────────────── */
 .title {
   font-size: 24px;
-  margin-bottom: 15px;
   font-weight: 700;
-  color: #2e2e2e;
+  color: var(--text);
+  margin: 0 0 15px 0;
 }
 
 .addressTab {
   display: flex;
   gap: 12px;
-  margin-bottom: 1.5rem;
+  margin: 0 0 30px 0;
 }
-
 .addressTab button {
-  background-color: #f1f3f5;
-  color: #333;
+  background: var(--bg);
+  color: var(--text);
   padding: 8px 16px;
   border-radius: 20px;
-  border: none;
+  border: 1.5px solid transparent;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: 0.2s;
 }
-
+.addressTab button:hover {
+  background: var(--primary);
+}
 .addressTab button.selected {
-  background-color: #5e60ce;
-  color: white;
+  background: var(--primary);
+  border-color: var(--primary-dark);
 }
 
+/* ─────────────────── 카드 그리드 ─────────────────── */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
+/* 카드 */
 .card {
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
-  padding: 1rem;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  transition: 0.25s;
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  cursor: pointer;
-  overflow: hidden;
 }
-
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 }
 
+/* 썸네일 */
+.thumbnail {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+/* 내부 내용 컨테이너 */
+.inner {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* 헤더(제목 + 카테고리) */
 .cardHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
-
 .cardHeader h3 {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
-  color: #2e2e2e;
+  color: var(--text);
+  flex: 1;
   margin: 0;
+  padding-right: 0.5rem;
+  line-height: 1.3;
 }
-
 .category {
-  font-size: 0.75rem;
-  background-color: #5e60ce;
-  color: white;
-  padding: 4px 10px;
+  background: var(--accent);
+  color: #fff;
+  padding: 3px 8px;
   border-radius: 1rem;
   white-space: nowrap;
 }
 
-.thumbnail {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-  border-radius: 0.75rem;
-  margin-bottom: 0.75rem;
-}
-
+/* 지역 / 설명 */
 .region {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: #333;
-  margin-bottom: 0.5rem;
+  color: var(--subtext);
+  margin-bottom: 0.25rem;
 }
-
 .description {
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: #555;
-  margin-bottom: 1rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--subtext);
+  flex: 1;
 }
 
+/* 푸터 (Like 버튼 자리) */
 .footer {
   display: flex;
   justify-content: flex-end;
   padding-top: 0.5rem;
+}
+
+/* ─────────────────── Like 버튼 기본값을 바꾸고 싶다면 (선택) ───────────────────*/
+.likeBtn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.likeBtn:hover {
+  background: var(--primary-dark);
+}
+
+/* ───────── ♦ 반응형(모바일) ───────── */
+@media (max-width: 768px) {
+  .section {
+    padding: var(--gap-l) var(--gap-s);
+  }
+  .grid {
+    gap: var(--gap-s);
+  }
+  .thumbnail {
+    height: 160px;
+  }
 }

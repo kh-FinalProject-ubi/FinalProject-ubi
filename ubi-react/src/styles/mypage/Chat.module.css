@@ -12,16 +12,22 @@
 /* 레이아웃 */
 .chatWrapper {
   display: flex;
-  height: calc(100vh - 60px);
+  height: calc(70vh - 60px);
   font-family: var(--font);
   background: #fff;
 }
 
+.chat h2 {
+  margin-bottom: 15px;
+}
+
 /* 왼쪽 방목록 */
 .chatRoomList {
-  width: 240px;
+  flex: 0 0 260px;      /* ✅ 수축 금지 + 고정폭 */
+  min-width: 260px;     /* (있어도 OK) */
   background: var(--y-main);
   overflow-y: auto;
+  border-radius: var(--radius) 0 0 var(--radius);
 }
 
 .chatRoomItem {
@@ -34,8 +40,9 @@
 }
 
 .chatRoomItem:hover,
-.selected {
-  background: rgba(0, 0, 0, .05);
+.chatRoomItem.selected {
+  background: #5E60CE;
+  color: #F9FBFD;
 }
 
 .roomProfile {
@@ -44,6 +51,15 @@
   border-radius: 50%;
   object-fit: cover;
   box-shadow: var(--shadow);
+}
+
+.selectedRoomProfile {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: var(--shadow);
+  margin-left: 5%;
 }
 
 .roomInfo {
@@ -79,44 +95,61 @@
 
 /* 오른쪽 채팅창 */
 .chatContainer {
-  flex: 1;
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
+  background: #fcfcfc;
+  border-right: 1px solid #e0e0e0; /* ✅ 왼쪽에 구분선 추가 */
+  overflow: hidden;
+  border-radius: 0 24px 24px 0;  /* ✅ 만약 여기에 radius 준다면 반드시 overflow도 줘야 함 */
 }
 
 /* 상단 탭바 */
 .chatTopbar {
   display: flex;
-  align-items: center;
-  background: var(--y-light);
-  border-radius: var(--radius) var(--radius) 0 0;
-  overflow: hidden;
+  align-items: center;              /* ✅ 수직 정렬 */
+  justify-content: space-between;
+  background: #FFE56D;
+  height: 48px;                     /* ✅ 고정 높이 */
+  border-radius: 0 var(--radius) 0 0;
+  box-shadow: inset 0 -1px 0 #ddd;
+  padding: 0 10px;
+  height: 51px;
 }
 
 .tab {
-  flex: 1;
-  text-align: center;
-  padding: 10px 0;
+  flex: 0 0 auto;
+  padding: 0 12px;
   font-weight: 600;
-  cursor: pointer;
-}
-
-.active {
-  background: var(--y-main);
-}
-
-.leaveBtn {
-  flex: 0 0 110px;
-  font-size: .78rem;
-  border: none;
-  cursor: pointer;
-  background: #fff;
-  border-left: 1px solid #eee;
+  font-size: 0.92rem;
   height: 100%;
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid transparent;
 }
 
-.leaveBtn:hover {
-  background: #f4f4f4;
+.tab.active {
+  background: var(--y-main);
+  border-bottom: 2px solid var(--blue);
+}
+
+.tab:nth-child(2) {
+  flex: 1;
+  justify-content: flex-start;
+}
+
+/* 채팅 나가기 버튼 */
+.leaveBtn {
+  font-size: 0.85rem;
+  height: 100%;
+  padding: 0 12px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-left: 1px solid #ddd;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
 }
 
 /* 메시지 영역 */
@@ -127,34 +160,33 @@
   gap: 20px;
   overflow-y: auto;
   display: flex;
+  border-right: 1px #f7f7f7;
 }
 
 .chatMessage {
-  max-width: 70%;
-  padding: 12px 16px;
-  border-radius: var(--radius);
-  background: var(--y-main);
-  color: #000;
-  word-break: break-word;
-  box-shadow: var(--shadow);
+  max-width: 65%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  position: relative;
 }
 
 .myMessage {
-  align-self: flex-end;
   background: var(--y-main);
-  color: #000;
+  margin-left: auto;
 }
 
 .otherMessage {
-  align-self: flex-start;
   background: #fff;
-  color: #000;
+  margin-right: auto;
+  border: 1px solid #eee;
 }
 
 .messageTimestamp {
-  font-size: .72rem;
-  color: #666;
-  margin-top: 4px;
+  font-size: 0.72rem;
+  color: #999;
+  margin-top: 6px;
   text-align: right;
 }
 
@@ -172,31 +204,44 @@
 
 /* 입력창 */
 .chatInput {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 12px 0;
-  border-top: 1px solid #ddd;
+  position: relative;
+  background: #fff;
 }
 
 .chatInput input {
-  flex: 1;
-  padding: 10px 14px;
+  width: 100%;
+  padding: 10px 10px 10px 14px; /* 오른쪽 여백 확보 */
   border: 1px solid #ccc;
-  border-radius: var(--radius);
+  border-radius: 0 0 var(--radius) 0;
+  font-size: 0.9rem;
+  box-sizing: border-box;
 }
 
-.chatInput button {
-  width: 44px;
-  height: 44px;
+.sendButton {
+  position: absolute;
+  right: 3%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  background: url("/sendBtn.png") no-repeat center / contain;
   border: none;
   cursor: pointer;
-  border-radius: var(--radius);
-  background: var(--blue) url("/icon-arrow-right.svg") center/18px no-repeat;
+  padding: 0;
 }
 
-.chatInput button:hover {
-  filter: brightness(.9);
+.sendButton:hover {
+  filter: brightness(0.95);
+}
+
+.chatPlaceholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  font-size: 1rem;
+  font-weight: 500;
 }
 
 /* 검색 박스 */
@@ -211,7 +256,7 @@
   height: 34px;
   padding: 0 12px;
   border: 1px solid #ccc;
-  border-radius: var(--radius);
+  border-radius: 0px var(--radius)  0px 0px;
   font-size: .85rem;
 }
 
@@ -226,8 +271,36 @@
 
 /* 검색 결과 */
 .chatSearchBox {
-  padding: 10px;
+  padding: 12px 14px;
   background: #fff;
+  border-bottom: 1px solid #eee;
+  position: relative;
+}
+
+.chatSearchBox input {
+  width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #ccc;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+}
+
+.chatSearchBox button {
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border: none;
+  background: var(--y-main);
+  border-radius: var(--radius);
+  cursor: pointer;
+  margin-left: 6px;
+}
+
+.searchResults {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 8px;
 }
 
 .searchResults {
@@ -269,4 +342,55 @@
 
 .my .avatar {
   display: none;
+}
+
+.deleteButton {
+  font-size: 0.85rem;
+  opacity: 0.5;
+}
+
+.deleteButton:hover {
+  opacity: 1;
+  color: var(--danger);
+}
+
+.chatListHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--y-main);
+  border-bottom: 1px solid #ddd;
+
+}
+
+/* 왼쪽: 채팅 목록 + 추가버튼 묶음 */
+.chatListTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+/* 오른쪽: 상대방 닉네임 */
+.chatListUser {
+  font-size: 0.9rem;
+  color: #333;
+  font-weight: 600;
+}
+
+/* + 추가 버튼 스타일 */
+.addButton {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.addButton:hover {
+  background: #f4f4f4;
 }

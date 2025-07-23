@@ -1,0 +1,252 @@
+.carouselWrapper {
+  font-family: "Pretendard", sans-serif;
+}
+
+.reviewHeaderRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.commentTitle {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.commentCount {
+  font-size: 14px;
+  color: gray;
+}
+
+/* 📌 캐러셀 전체 영역 (카드 + 화살표 포함) */
+.reviewCarousel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 1200px;
+  position: relative;
+}
+
+/* 📌 카드 */
+.reviewCard {
+  width: 960px;
+  padding: 20px;
+  background-color: white;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+/* ✅ 카드 내 요소들 */
+.reviewRow {
+  display: flex;
+  gap: 40px;
+}
+
+.profileImg {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.reviewCol {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reviewTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reviewTitle {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
+  color: #222;
+  width: 620px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reviewStar {
+  display: flex;
+  gap: 2px;
+}
+
+.iconStar {
+  width: 20px;
+  height: 20px;
+}
+
+.nickname {
+  font-size: 14px;
+  color: #444;
+}
+
+.reviewDate {
+  font-size: 13px;
+  color: #777;
+}
+
+.reviewTextOnly {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+  min-height: 42px;
+}
+
+/* ✅ 본문 이미지들 */
+.inlineImages {
+  display: flex;
+  margin-top: 10px;
+  min-height: 80px;
+}
+
+.imageRow {
+  display: flex;
+  align-items: center;
+}
+
+.inlineImage {
+  width: 90px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-right: 6px;
+}
+
+.inlineImage:last-of-type {
+  margin-right: 0;
+}
+
+.moreImageCircle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #ffe066;
+  color: #000;
+  font-weight: bold;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 42px;
+  flex-shrink: 0;
+}
+
+/* ✅ 화살표 버튼 공통 */
+.carouselArrow {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.arrowIcon {
+  width: 24px;
+  height: 24px;
+}
+
+/* ✅ 데스크탑에서 카드 좌우 */
+.desktopArrows {
+  display: flex;
+  align-items: center;
+}
+
+/* ✅ 모바일에서는 아래로 */
+.arrowBottomWrapper {
+  display: none; /* 기본 숨김 */
+}
+
+/*후기 없는경우 메세지*/
+.noReviewMessage {
+  text-align: center;
+  font-size: 0.95rem;
+  color: #777;
+  padding: 2rem 0;
+}
+/* =========================== */
+/* ✅ 반응형 (1024px 이하) */
+/* =========================== */
+@media (max-width: 1024px) {
+  .reviewCarousel {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .desktopArrows {
+    display: none; /* 모바일에서는 좌우 화살표 숨김 */
+  }
+
+  .arrowBottomWrapper {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 12px;
+  }
+
+  .reviewCard {
+    width: 100%;
+    padding: 16px;
+    border-radius: 10px;
+  }
+
+  .reviewRow {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .reviewTitle {
+    width: 100%;
+    font-size: 16px;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+
+  .reviewTop {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .reviewCol {
+    gap: 8px;
+  }
+
+  .inlineImage {
+    width: 70px;
+    height: 60px;
+  }
+
+  .moreImageCircle {
+    width: 45px;
+    height: 45px;
+    font-size: 16px;
+    margin-left: 16px;
+  }
+
+  .profileImg {
+    width: 42px;
+    height: 42px;
+    margin-top: 0;
+  }
+
+  .arrowIcon {
+    width: 22px;
+    height: 22px;
+  }
+}

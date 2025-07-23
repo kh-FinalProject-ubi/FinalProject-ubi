@@ -274,7 +274,7 @@
 		WHERE BOARD_NO =
 		B.BOARD_NO
 		), 0) AS LIKE_COUNT,
-
+        M.MEMBER_IMG AS memberImg,
 		M.MEMBER_NICKNAME,
 		M.AUTHORITY,
 
@@ -627,7 +627,7 @@
     B.STAR_COUNT,
     B.MEMBER_NO,
     M.MEMBER_NICKNAME,
-    M.MEMBER_IMG AS PROFILE_IMAGE,
+    M.MEMBER_IMG AS memberImg,
 
     -- 첨부 이미지 목록
     (SELECT LISTAGG(IMAGE_PATH || '/' || IMAGE_NAME, ',')
@@ -654,7 +654,7 @@
         B.POST_TYPE,
         B.API_SERVICE_ID,
         M.MEMBER_NICKNAME,
-        M.MEMBER_IMG AS profileImage,
+        M.MEMBER_IMG AS memberImg,
 
         (SELECT COUNT(*) FROM BOARD_LIKE L WHERE L.BOARD_NO = B.BOARD_NO) AS LIKE_COUNT,
 

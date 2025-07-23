@@ -149,12 +149,13 @@ const LocalBenefitSection = () => {
         )}
 
         {/* 필터 */}
-        <WelfareSearchFilter
-          onFilterChange={setFilterOptions}
-          fixedRegion={region}
-          disabledRegionSelect={!!token}
-        />
-
+        <div className={styles.filterBox}>
+          <WelfareSearchFilter
+            onFilterChange={setFilterOptions}
+            fixedRegion={region}
+            disabledRegionSelect={!!token}
+          />
+        </div>
         {loading && <p>로딩 중...</p>}
         {error && <p>데이터를 불러오는 데 실패했습니다.</p>}
 
@@ -163,54 +164,62 @@ const LocalBenefitSection = () => {
           {currentItems.length > 0
             ? currentItems.map((item) => (
                 <div
+                  key={item.id ?? item.title}
                   className={styles.card}
-                  key={item.id || item.title}
                   onClick={() =>
                     navigate("/welfareService/detail", {
                       state: { data: item },
                     })
                   }
                 >
-                  <div className={styles.cardHeader}>
-                    <h3>{item.title}</h3>
-                    <span className={styles.category}>{item.category}</span>
-                  </div>
+                  {/* ① 썸네일 */}
                   {item.imageUrl && (
                     <img
                       src={item.imageUrl}
-                      alt="복지 이미지"
+                      alt=""
                       className={styles.thumbnail}
                     />
                   )}
-                  <p className={styles.region}>{item.region}</p>
-                  <p className={styles.description}>
-                    {item.description?.slice(0, 80)}...
-                  </p>
-                  <div
-                    className={styles.footer}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <LikeButton
-                      token={token}
-                      apiServiceId={item.apiServiceId}
-                      serviceName={item.title}
-                      category={item.category}
-                      regionCity={item.regionCity}
-                      regionDistrict={item.regionDistrict}
-                      description={item.description}
-                      agency={item.agency}
-                      url={item.url}
-                      receptionStart={item.receptionStart}
-                      receptionEnd={item.receptionEnd}
-                      imageProfile={item.imageProfile}
-                      lat={item.lat}
-                      lng={item.lng}
-                    />
+
+                  {/* ② 내부 컨텐트 */}
+                  <div className={styles.inner}>
+                    <div className={styles.cardHeader}>
+                      <h3>{item.title}</h3>
+                      <span className={styles.category}>{item.category}</span>
+                    </div>
+
+                    <p className={styles.region}>{item.region}</p>
+                    <p className={styles.description}>
+                      {item.description?.slice(0, 80)}...
+                    </p>
+
+                    <div
+                      className={styles.footer}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <LikeButton
+                        token={token}
+                        apiServiceId={item.apiServiceId}
+                        serviceName={item.title}
+                        category={item.category}
+                        regionCity={item.regionCity}
+                        regionDistrict={item.regionDistrict}
+                        description={item.description}
+                        agency={item.agency}
+                        url={item.url}
+                        receptionStart={item.receptionStart}
+                        receptionEnd={item.receptionEnd}
+                        imageProfile={item.imageProfile}
+                        lat={item.lat}
+                        lng={item.lng}
+                      />
+                    </div>
                   </div>
                 </div>
               ))
             : !loading && <p>조건에 맞는 복지 혜택이 없습니다.</p>}
         </div>
+
         {totalPages > 1 && (
           <Pagination
             currentPage={currentPage}

@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../stores/useAuthStore";
+import useChatAlertStore, { useTotalUnread } from "../stores/useChatAlertStore";
 import useSelectedRegionStore from "../hook/welfarefacility/useSelectedRegionStore";
 import useModalStore from "../stores/useModalStore";
 import useAlertSocket from "../hook/alert/useAlertSocket";
 import styles from "../styles/Header.module.css";
+import ChattingAlarm from "../components/ChattingAlarm";
 
 // 알림 모달
 const AlertModal = () => {
@@ -44,6 +46,16 @@ const Header = () => {
   const [hasNewAlert, setHasNewAlert] = useState(false);
   const dropdownRef = useRef(null);
 
+  const rooms = useChatAlertStore((s) => s.rooms);
+  const setSelectedRoom = useChatAlertStore((s) => s.setSelectedRoom);
+  const alarmOpen = useChatAlertStore((s) => s.alarmOpen);
+  const openAlarm = useChatAlertStore((state) => state.openAlarm);
+  const closeAlarm = useChatAlertStore((s) => s.closeAlarm);
+  const unreadMap = useChatAlertStore((s) => s.unreadMap);
+
+  const totalUnread = useTotalUnread(); // 상태 변화 반영됨
+  console.log("🔄 header rerender:", totalUnread); // ✔︎ B‑1
+
   // 실시간 알림 수신
   useAlertSocket(memberNo, (newAlert) => {
     const { type, boardNo, alertId } = newAlert;
@@ -70,6 +82,17 @@ const Header = () => {
 
     setHasNewAlert(true);
   });
+
+  // 채팅모달
+  useEffect(() => {
+    if (!alarmOpen) return;
+    const onClickOutside = (e) => {
+      if (!e.target.closest(`.${styles.chatAlertWrapper}`))
+        useChatAlertStore.getState().closeAlarm();
+    };
+    window.addEventListener("click", onClickOutside);
+    return () => window.removeEventListener("click", onClickOutside);
+  }, [alarmOpen]);
 
   // 알림 목록 불러오기
   useEffect(() => {
@@ -139,22 +162,28 @@ const Header = () => {
       .catch((err) => console.error("🔴 알림 읽음 처리 실패:", err));
   };
 
-  // 복지시설 버튼 처리
-  const handleFacilityClick = () => {
-    const city = selectedCity || "서울특별시";
-    const district = selectedDistrict || "종로구";
-    navigate(
-      `/facility/search?city=${encodeURIComponent(
-        city
-      )}&district=${encodeURIComponent(district)}`
-    );
-  };
+  // // 복지시설 버튼 처리
+  // const handleFacilityClick = () => {
+  //   const city = selectedCity || "서울특별시";
+  //   const district = selectedDistrict || "종로구";
+  //   navigate(
+  //     `/facility/search?city=${encodeURIComponent(
+  //       city
+  //     )}&district=${encodeURIComponent(district)}`
+  //   );
+  // };
 
   const handleLogout = () => {
     clearAuth();
     localStorage.removeItem("kakaoId");
+    localStorage.removeItem("auth-storage"); // JWT/회원정보 저장 key (zustand-persist면 거의 항상 필요)
+    localStorage.removeItem("tempAddress");
     alert("로그아웃되었습니다.");
     navigate("/");
+  };
+
+  const goToChatPage = () => {
+    navigate("/mypage/chat"); // 원하는 채팅 경로로 수정
   };
 
   return (
@@ -217,19 +246,59 @@ const Header = () => {
                 </div>
 
                 {/* ✅ 채팅 아이콘 */}
-                <button className={styles.alarmBtn}>
-                  <img src="/chatting.svg" alt="채팅 아이콘" />
-                </button>
+                <div className={styles.chatAlertWrapper}>
+                  {/* 아이콘 + 배지 */}
+                  <button className={styles.alarmBtn} onClick={goToChatPage}>
+                    <img src="/chatting.svg" alt="채팅" />
+                  </button>
+
+                  {/* 드롭다운 */}
+                  {alarmOpen && (
+                    <div className={styles.dropdown}>
+                      <h4 className={styles.ddTitle}>새 메시지</h4>
+
+                      {Object.keys(unreadMap).length === 0 ? (
+                        <p className={styles.ddEmpty}>새 메시지가 없습니다.</p>
+                      ) : (
+                        Object.entries(unreadMap).map(([roomNo, cnt]) => {
+                          const roomObj = rooms.find(
+                            (r) => r.chatRoomNo === Number(roomNo)
+                          );
+                          return (
+                            <div
+                              key={roomNo}
+                              className={styles.noticeItem}
+                              onClick={() => {
+                                closeAlarm();
+                                if (roomObj) setSelectedRoom(roomObj);
+                              }}
+                            >
+                              <strong>
+                                {roomObj?.targetNickname || `방 #${roomNo}`}
+                              </strong>
+                              <span className={styles.noticeCnt}>{cnt}</span>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 <Link to="/mypage/Profile">
                   <img
                     className={styles.profileImg}
                     src={
-                      memberImg
-                        ? `http://localhost:8080${memberImg}`
+                      typeof memberImg === "string"
+                        ? memberImg.startsWith("/")
+                          ? `https://kh-ubi.site${memberImg}`
+                          : memberImg
                         : "/default-profile.png"
                     }
                     alt="프로필"
+                    onError={(e) => {
+                      e.currentTarget.src = "/default-profileerror.png";
+                    }}
                   />
                 </Link>
 
@@ -298,6 +367,7 @@ const Header = () => {
       </header>
 
       <AlertModal />
+      <ChattingAlarm />
     </>
   );
 };

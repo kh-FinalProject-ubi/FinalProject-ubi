@@ -10,6 +10,7 @@
 
 .loginMainContent {
   display: flex;
+  align-items: flex-start;
   width: 100%;
   max-width: 900px;
   border-radius: 12px;
@@ -58,7 +59,7 @@
 /* 입력 필드 */
 .inputWrapper {
   position: relative;
-  margin-bottom: 30px; /* input 간 간격 일정하게 유지 */
+  margin-bottom: 30px;
 }
 
 .inputWrapper input {
@@ -81,6 +82,31 @@
   font-weight: 200;
 }
 
+.inputMessageWrapper {
+  position: relative;
+}
+
+.inputMessageWrapper input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #6c6c6c;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  margin-bottom: 5px;
+}
+
+.inputMessageWrapper input:focus {
+  outline: none;
+  border-color: #ffe56d;
+  box-shadow: 0 0 0 1px #ffe56d;
+}
+
+.inputMessageWrapper input::placeholder {
+  color: #a3a2a7;
+  font-weight: 200;
+}
+
 /* 메시지 공통 */
 .message {
   position: absolute;
@@ -99,7 +125,11 @@
 
 .successMessage {
   color: #38a169;
+  font-size: 0.85rem;  /* 크기도 통일 */
+  height: 18px;
+  line-height: 18px;
 }
+
 
 .hiddenMessage {
   visibility: hidden;
@@ -107,16 +137,15 @@
 
 /* 타이머 */
 .timer {
-  display: block;
-  margin-top: 5px;
   font-size: 0.85rem;
   color: #e53e3e;
+  margin-left: 370px; /* 오른쪽 끝으로 밀어냄 */
 }
-
 /* 인라인 그룹 */
 .inputGroup {
   display: flex;
   align-items: center;
+  justify-content: space-between; /* 왼쪽-오른쪽 배치 */
 }
 
 .inputGroup input {
@@ -195,6 +224,8 @@
   border: none;
   border-radius: 1000px;
   justify-items: center;
+  padding-right: 8px;
+  padding-left: 8px;
   color: #5e60ce;
   font-size: 0.85rem;
   cursor: pointer;
@@ -299,4 +330,112 @@
   border: none;
   border-radius: 8px;
   cursor: pointer;
+}
+
+.saveIdWrapper > div:first-child {
+  display: flex;
+  align-items: center;
+}
+
+/* 1. 기본 체크박스는 화면에서 숨깁니다 */
+.saveIdWrapper input[type="checkbox"] {
+  display: none;
+}
+
+/* 2. '아이디 저장' 텍스트 라벨에 커서를 올리면 클릭 가능하게 보이도록 함 */
+.saveIdWrapper label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none; /* 텍스트 드래그 방지 */
+}
+
+/* 3. 라벨 앞에 커스텀 체크박스 모양 만들기 (체크 안 됐을 때) */
+.saveIdWrapper label::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px; /* 텍스트와의 간격 */
+  border: 1.5px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  transition: all 0.2s;
+}
+
+/* 4. 체크박스가 선택됐을 때(checked) 커스텀 체크박스 스타일 */
+.saveIdWrapper input[type="checkbox"]:checked + label::before {
+  background-color: #fce500; /* ⭐ 배경을 노란색으로 변경 */
+  border-color: #fce500;
+}
+
+/* 5. 체크 표시(V) 스타일 */
+.saveIdWrapper label::after {
+  /* position을 absolute로 설정하여 위치를 미세 조정 */
+  position: absolute;
+  /* left, top 값은 ::before 스타일에 맞춰 조정 */
+  left: 3.5px; 
+  top: 1px;
+  
+  content: '✔';
+  font-size: 14px;
+  font-weight: bold;
+  color: white; /* ⭐ 체크 표시를 하얀색으로 변경 */
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+/* 6. 체크됐을 때 체크 표시(V)가 나타나도록 함 */
+.saveIdWrapper input[type="checkbox"]:checked + label::after {
+  opacity: 1;
+}
+
+/* 라벨의 position을 relative로 설정하여 ::after의 기준점으로 만듦 */
+.saveIdWrapper label {
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .loginPageContainer {
+    /* 모바일에서는 상단 정렬이 더 자연스럽습니다. */
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  .loginMainContent {
+    /* 모바일에서는 그림자와 둥근 모서리를 제거하여 전체 화면처럼 보이게 합니다. */
+    box-shadow: none;
+    border-radius: 0;
+    max-width: 100%;
+  }
+
+  .formContainer {
+    /* 내부 여백을 줄여 좁은 화면에 맞춥니다. */
+    padding: 2rem 1.5rem;
+  }
+
+  .formTitle {
+    /* 제목 크기를 모바일에 맞게 조정합니다. */
+    font-size: 22px;
+    margin-bottom: 1.5rem;
+  }
+
+  /* 버튼들의 크기를 조정합니다. */
+  .confirmBtn,
+  .kakaoBtn {
+    padding: 12px;
+    font-size: 1rem;
+  }
+
+  .authBtn {
+    padding: 10px 14px;
+  }
+
+  /* '아이디 저장'과 'ID/PW찾기' 링크의 간격을 조정합니다. */
+  .saveIdWrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
 }

@@ -129,6 +129,17 @@ public interface MyPageMapper {
 	 */
 	int profile(Member member);
 
+	/** 찜 취소
+	 * @param map
+	 * @return
+	 */
+	int cancelZzim(Map<String, Object> map);
+
+	Member selectMemberByNo(int memberNo);
+
+	int updateFacilityZzimDelFl(Map<String, Object> map);
+
+	int cancelFacilityZzim(Map<String, Object> map);
 
 
 

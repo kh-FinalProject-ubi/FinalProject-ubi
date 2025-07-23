@@ -40,12 +40,22 @@ public interface MemberService {
 	String findIdByNameAndEmail(String name, String email);
 
 	// 비밀번호 재설정
-	boolean resetPassword(String memberId, String email, String newPassword);
+	boolean resetPassword(String memberId, String newPassword);	
 
 	// 이름, 이메일이 db에 존재하는 지 확인하는 메소드
 	Integer existsByNameAndEmail(String name, String email);
 
 	// 이름, 아이디, 이메일이 db에 존재하는 지 확인하는 메소드
 	Integer existsByNameAndMemberIdAndEmail(String name, String memberId, String email);
+
+	// 정지 여부 확인
+	Object checkSuspension(int targetMemberNo);
+
+	// 정지 시키기
+	boolean suspendMember(int targetMemberNo);
+
+	// 중복된 이메일 확인
+	boolean checkEmailAvailable(String email);
+
 
 }

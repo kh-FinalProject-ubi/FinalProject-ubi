@@ -53,14 +53,37 @@
 }
 
 /* '분류' 태그 스타일 */
-.postTypeTag {
-  display: inline-block;
-  padding: 3px 8px;
-  border: 1px solid #e53e3e;
-  color: #e53e3e;
-  border-radius: 4px;
+.postType {
+  display: inline-block; /* inline-flex 대신 inline-block */
+  height: 24px; /* 높이 고정 */
+  line-height: 24px; /* 텍스트가 세로 중앙에 오도록 */
+  padding: 0 12px; /* 좌우 패딩만 적용 */
+
   font-size: 0.75rem;
   font-weight: 500;
+
+  border-radius: 18px;
+  color: #fff;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+
+  vertical-align: middle; /* 인라인 요소 정렬 보정 */
+}
+
+/* 공지: 회색 배경 */
+.postTypeGray {
+  background-color: rgb(134, 134, 134);
+}
+
+/* 중요/신고: 빨간 배경 */
+.postTypeRed {
+  background-color: #e53e3e;
+}
+
+/* 이벤트: 보라 배경 */
+.postTypePurple {
+  background-color: #5e60ce;
 }
 
 /* 글쓰기 버튼 컨테이너 */
@@ -115,4 +138,29 @@
   color: #5e60ce;
   font-weight: bold;
   cursor: default;
+}
+
+@media (max-width: 768px) {
+  .container {
+    min-width: auto;
+    padding: 1rem 5%;
+  }
+
+  /* 숨길 열의 a머리와 셀을 선택해서 숨김 처리 */
+  /* 번호(1번째), 작성일(5번째), 조회수(7번째) 열 숨기기 */
+  .boardTable th:nth-child(1),
+  .boardTable td:nth-child(1),
+  .boardTable th:nth-child(5),
+  .boardTable td:nth-child(5),
+  .boardTable th:nth-child(7),
+  .boardTable td:nth-child(7) {
+    display: none;
+  }
+
+  /* 남은 열들이 공간을 잘 사용하도록 패딩 조정 */
+  .boardTable th,
+  .boardTable td {
+    padding: 12px 4px;
+    font-size: 0.85rem;
+  }
 }

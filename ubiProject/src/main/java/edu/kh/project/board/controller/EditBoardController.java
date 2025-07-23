@@ -2,42 +2,33 @@ package edu.kh.project.board.controller;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import edu.kh.project.board.model.dto.Board;
-import edu.kh.project.board.model.dto.BoardImage;
 import edu.kh.project.board.model.service.BoardService;
 import edu.kh.project.board.model.service.EditBoardService;
 import edu.kh.project.common.util.JwtUtil;
-import edu.kh.project.member.model.dto.Member;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -58,6 +49,10 @@ public class EditBoardController {
 
 	@Autowired
 	private WebApplicationContext context;
+	
+//	@Value("${my.board.upload-path}")
+//	private String uploadPath;
+
 
 	// 게시글 작성 화면 전환
 	@GetMapping("{boardCode:[0-9]+}")
@@ -225,23 +220,73 @@ public class EditBoardController {
 		}
 	}
 
-	// 사진 업로드 메서드
-	@PostMapping("/image-upload")
-	public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
-		if (file.isEmpty()) {
-			return ResponseEntity.badRequest().body("파일이 없습니다.");
-		}
+	  @Value("${my.board.folder-path}")
+	    private String folderPath;
 
-		// 파일 저장 처리
-		String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-		File dest = new File("C:/uploadFiles/board/" + fileName);
+	    // config.properties에 설정한 웹 접근 경로
+	    @Value("${my.board.web-path}")
+	    private String webPath;
 
-		try {
-			file.transferTo(dest);
-			return ResponseEntity.ok(fileName);
-		} catch (IOException e) {
-			return ResponseEntity.status(500).body("파일 업로드 실패");
-		}
-	}
+	    @PostMapping("/image-upload")
+	    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
+	        if (file.isEmpty()) {
+	            return ResponseEntity.badRequest().body("파일이 없습니다.");
+	        }
+
+	        // 1. 고유한 파일 이름 생성
+	        String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+
+	        // 2. 실제 서버에 파일 저장
+	        File dest = new File(folderPath + fileName);
+	        try {
+	            file.transferTo(dest);
+	        } catch (IOException e) {
+	            // 서버 로그에 에러 기록
+	            // log.error("파일 저장 실패", e);
+	            return ResponseEntity.status(500).body("파일 업로드에 실패했습니다.");
+	        }
+
+	        // 3. 브라우저가 접근할 전체 이미지 경로(URL)를 만들어서 반환
+	        // webPath는 "/images/board/"
+	        String imageUrl = webPath + fileName;
+	        
+	        // Summernote는 이 imageUrl 값을 받아 <img src="/images/board/파일명.jpg"> 를 생성하며,
+	        // 브라우저는 자동으로 http://localhost:8080/images/board/파일명.jpg 로 요청하게 됩니다.
+	        return ResponseEntity.ok(imageUrl);
+	    }
+	
+	 
+		
+//	  @Value("${my.board.folder-path:C:/uploadFiles/board/}")
+//	    private String uploadPath;
+//
+//	  @PostMapping("/image-upload")
+//	  public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
+//	      if (file.isEmpty()) {
+//	          return ResponseEntity.badRequest().body("파일이 없습니다.");
+//	      }
+//
+//	      String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+//	      File dest = new File(uploadPath + fileName);
+//
+//	      try {
+//	          File dir = new File(uploadPath);
+//	          if (!dir.exists()) dir.mkdirs();
+//
+//	          file.transferTo(dest);
+//
+//	          // 배포 주소를 동적으로 만듦 (호스트 주소 + webPath)
+//	          String serverUrl = request.getScheme() + "://" + request.getServerName() + 
+//	                  (request.getServerPort() == 8080 || request.getServerPort() == 443 ? "" : ":" + request.getServerPort());
+//
+//	          String imageUrl = serverUrl + "/images/board/" + fileName;
+//
+//	          return ResponseEntity.ok(imageUrl);
+//	      } catch (IOException e) {
+//	          e.printStackTrace();
+//	          return ResponseEntity.status(500).body("파일 업로드 실패");
+//	      }
+//	  }
+
 
 }

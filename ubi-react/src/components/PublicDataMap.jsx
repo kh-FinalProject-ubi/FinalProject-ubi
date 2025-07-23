@@ -40,13 +40,18 @@ const layerConfig = {
   },
 };
 
-const CrimeSafetyMap = () => {
+const CrimeSafetyMap = ({
+  showHybrid,
+  setShowHybrid,
+  selectedCrime,
+  setSelectedCrime,
+}) => {
   const mapRef = useRef(null);
   const wmsLayerRef = useRef(null);
   const hybridLayerRef = useRef(null);
 
-  const [selectedCrime, setSelectedCrime] = useState("전체");
-  const [showHybrid, setShowHybrid] = useState(true); // ✅ 지명 토글 상태
+  // const [selectedCrime, setSelectedCrime] = useState("전체");
+  // const [showHybrid, setShowHybrid] = useState(true); // ✅ 지명 토글 상태
 
   // 🗺️ 지도 초기화
   useEffect(() => {
@@ -128,13 +133,9 @@ const CrimeSafetyMap = () => {
   }, [selectedCrime]);
 
   return (
-    <div>
-      {/* 타이틀 */}
-      <h3 className={styles.sectionTitle}>범죄지도 히트맵</h3>
-
+    <div className={styles.headerRow}>
       <div className={styles.controls}>
-        {/* ✅ 지명 레이어 토글 */}
-        <label className={styles.labelToggle}>
+        {/* <label className={styles.labelToggle}>
           <input
             type="checkbox"
             checked={showHybrid}
@@ -144,7 +145,6 @@ const CrimeSafetyMap = () => {
           지명 레이어 표시
         </label>
 
-        {/* ✅ 범죄 유형 선택 */}
         <div className={styles.buttonGroup}>
           {Object.keys(layerConfig).map((crime) => (
             <button
@@ -157,7 +157,7 @@ const CrimeSafetyMap = () => {
               {crime}
             </button>
           ))}
-        </div>
+        </div> */}
       </div>
 
       {/* 지도 출력 영역 */}

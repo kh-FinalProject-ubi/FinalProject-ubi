@@ -34,4 +34,8 @@ public class Comment {
 	
 	// 누가 신고했는지 확인
 	private boolean reportedByMe; 
+	
+	private String boardTitle;
+	private String boardContent;
+	private String postType;
 }

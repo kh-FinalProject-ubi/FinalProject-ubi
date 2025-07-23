@@ -14,31 +14,59 @@ const MyTownBoardWrite = () => {
   const [boardTitle, setTitle] = useState("");
   const [boardContent, setContent] = useState("");
   const navigate = useNavigate();
-  const [hashtags, setHashtags] = useState("");
+
   const [postTypeCheck, setPostTypeCheck] = useState("");
   const postTypeCheckOptions = ["자유", "자랑", "복지시설후기", "복지혜택후기"];
   const [starRating, setStarRating] = useState(0);
 
+  const [hashtags, setHashtags] = useState("");
   const [parsedTags, setParsedTags] = useState([]);
-
-  const handleRemoveTag = (removeIndex) => {
-    const newTags = parsedTags.filter((_, idx) => idx !== removeIndex);
-    setParsedTags(newTags);
-    setHashtags(newTags.map((tag) => `#${tag}`).join(" "));
-  };
+  // 1. 상태 선언
+  const [tagLimitMessage, setTagLimitMessage] = useState("");
 
   const handleHashtagChange = (e) => {
-    const input = e.target.value;
-    setHashtags(input);
-    // '#' 기준으로 분할 후 공백/빈값 제거
-    const tags = input
-      .split("#")
-      .map((t) => t.trim())
-      .filter((t) => t.length > 0);
+    setHashtags(e.target.value);
+  };
 
-    setParsedTags(tags);
-    console.log("parsedTags:", parsedTags);
-    console.log("idx:", idx, " / 마지막:", parsedTags.length - 1);
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+
+      const newTag = hashtags.trim().replace(/^#/, "");
+      if (!newTag) return;
+
+      // 한글/영문 포함 길이 체크 (공백 제외 기준)
+      const length = [...newTag].filter((c) => c !== " ").length;
+
+      if (length < 2) {
+        setTagLimitMessage("두 글자 이상 입력해주세요.");
+        setTimeout(() => setHashtags(""), 0);
+        return;
+      }
+
+      if (parsedTags.length >= 5) {
+        setTagLimitMessage("해시태그는 최대 5개까지 입력할 수 있습니다.");
+        setTimeout(() => setHashtags(""), 0);
+        return;
+      }
+
+      if (parsedTags.includes(newTag)) {
+        setTimeout(() => setHashtags(""), 0);
+        return;
+      }
+
+      // 정상 등록
+      setParsedTags([...parsedTags, newTag]);
+      setTagLimitMessage(""); // ✅ 메시지 초기화
+      setTimeout(() => setHashtags(""), 0);
+    }
+  };
+
+  const handleRemoveTag = (indexToRemove) => {
+    const newTags = parsedTags.filter((_, i) => i !== indexToRemove);
+    setParsedTags(newTags);
+    setHashtags("");
+    setTagLimitMessage("");
   };
 
   const [showFacilityModal, setShowFacilityModal] = useState(false);
@@ -58,16 +86,21 @@ const MyTownBoardWrite = () => {
   const handleSubmit = () => {
     const postType = postTypeCheck.trim();
 
-    if (!boardTitle.trim()) {
-      alert("제목을 입력해주세요.");
-      return;
-    }
-
     // ✅ 내용 체크: 텍스트와 이미지 둘 다 없으면 막기
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = boardContent;
     const textContent = tempDiv.textContent.trim();
     const hasImage = tempDiv.querySelector("img") !== null;
+
+    if (!boardTitle.trim()) {
+      alert("제목을 입력해주세요.");
+      return;
+    }
+
+    if (boardContent.length > 2000) {
+      alert("게시글 내용이 너무 깁니다.");
+      return;
+    }
 
     if (!textContent && !hasImage) {
       alert("내용을 입력해주세요.");
@@ -79,11 +112,6 @@ const MyTownBoardWrite = () => {
       return;
     }
 
-    if (hashtags.trim() !== "" && !hashtags.trim().startsWith("#")) {
-      alert("해시태그는 반드시 #으로 시작해야 합니다.");
-      return;
-    }
-
     if (
       (postTypeCheck === "복지시설후기" || postTypeCheck === "복지혜택후기") &&
       starRating === 0
@@ -92,19 +120,29 @@ const MyTownBoardWrite = () => {
       return;
     }
 
-    const hashtagList = hashtags
-      .split("#")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag !== "");
+    const hashtagList = parsedTags;
 
-    const imageList = uploadedImagesRef.current.map((url, index) => {
-      const segments = url.split("/");
-      return {
-        imagePath: "/" + segments.slice(0, -1).join("/"),
-        imageOrder: index,
-        imageName: segments[segments.length - 1],
-      };
-    });
+const imageList = uploadedImagesRef.current.map((url, index) => {
+  const segments = url.split("/");
+  let imageName = segments[segments.length - 1];
+
+  // 파일명 자르기 (200자 제한)
+  if (imageName.length > 200) {
+    const extension = imageName.includes(".")
+      ? imageName.slice(imageName.lastIndexOf("."))
+      : "";
+    const baseName = imageName.replace(extension, "");
+    const trimmedBase = baseName.slice(0, 200 - extension.length);
+    imageName = `${trimmedBase}${extension}`;
+  }
+
+  return {
+    imagePath: "/" + segments.slice(0, -1).join("/"),
+    imageOrder: index,
+    imageName,
+  };
+});
+
 
     fetch("/api/editboard/mytown/write", {
       method: "POST",
@@ -157,17 +195,26 @@ const MyTownBoardWrite = () => {
       });
   };
 
-  useEffect(() => {
-    $("#summernote").summernote({
-      height: 300,
-      callbacks: {
-        onChange: function (contents) {
-          setContent(contents);
-        },
-        onImageUpload: function (files) {
-          for (let i = 0; i < files.length; i++) {
-            const formData = new FormData();
-            formData.append("image", files[i]);
+useEffect(() => {
+  $("#summernote").summernote({
+    height: 300,
+    callbacks: {
+      onChange: function (contents) {
+        setContent(contents);
+      },
+      onImageUpload: function (files) {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+
+          // ✅ 이미지 크기 제한 (예: 10MB)
+          const maxSize = 10 * 1024 * 1024; // 10MB
+          if (file.size > maxSize) {
+            alert("이미지 크기가 너무 큽니다. 10MB 이하 파일만 업로드 가능합니다.");
+            continue;
+          }
+
+          const formData = new FormData();
+          formData.append("image", file);
 
             fetch("/api/editboard/mytown/uploadImage", {
               method: "POST",
@@ -206,6 +253,7 @@ const MyTownBoardWrite = () => {
         </div>
       </div>
       {/* 작성 테이블 */}
+
       <div className={styles.filterBox}>
         <table className={styles.filterTable}>
           <tbody>
@@ -303,10 +351,11 @@ const MyTownBoardWrite = () => {
                 <div className={styles.tagInputWrapper}>
                   <input
                     type="text"
-                    placeholder="#해시태그를 샵(#)으로 구분해 입력"
+                    className={styles.titleInput}
+                    placeholder="#해시태그 입력 후 Enter"
                     value={hashtags}
                     onChange={handleHashtagChange}
-                    className={styles.titleInput}
+                    onKeyDown={handleKeyDown}
                   />
                   <div className={styles.tagPreviewWrapper}>
                     {parsedTags.map((tag, idx) => (
@@ -334,7 +383,15 @@ const MyTownBoardWrite = () => {
         </table>
       </div>
 
+      {tagLimitMessage && (
+        <div
+          className={styles.tagWarning}
+          dangerouslySetInnerHTML={{ __html: tagLimitMessage }}
+        />
+      )}
+
       <br />
+
       {/* 제목 입력 */}
       <div className={styles.inputGroup}>
         <input

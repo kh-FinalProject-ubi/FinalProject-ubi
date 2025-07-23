@@ -303,7 +303,7 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 	                    LocalDateTime now = LocalDateTime.now();
 	                    if (suspension == null) {
 	                        // 신규 정지 등록 (5의 배수일 때)
-	                        LocalDateTime end = now.plusMinutes(5);
+	                    	LocalDateTime end = now.plusDays(7);
 	                        memberMapper.insertSuspensionTest(targetMemberNo, now, end);
 	                    } else {
 	                        // 정지 중이면 정지 기간 연장
@@ -312,7 +312,7 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 	                        memberMapper.extendSuspensionEnd(targetMemberNo, end);
 	                    }
 
-	                    // ▶ 회원 정지 발생 시 신고당한 게시글 및 댓글 삭제 처리
+	                    //회원 정지 발생 시 신고당한 게시글 및 댓글 삭제 처리
 	                    List<Integer> reportedComments = commentMapper.selectAllReportComments(targetMemberNo);
 	                    for (int commentNo : reportedComments) {
 	                        commentMapper.delete(commentNo);
@@ -383,7 +383,7 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 	                        memberMapper.insertSuspensionTest(targetMemberNo, now, end);
 	                    } else {
 	                        LocalDateTime originEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
-	                        LocalDateTime end = originEnd.plusMinutes(5);
+	                        LocalDateTime end = originEnd.plusDays(7);
 	                        memberMapper.extendSuspensionEnd(targetMemberNo, end);
 	                    }
 
@@ -406,7 +406,7 @@ public class MytownBoardServiceImpl implements MytownBoardService {
 	        }
 
 	    } catch (Exception e) {
-	        System.out.println("⛔ reportBoard 트랜잭션 처리 중 예외 발생!");
+	        System.out.println("reportBoard 트랜잭션 처리 중 예외 발생!");
 	        e.printStackTrace();
 	        throw e;
 	    }

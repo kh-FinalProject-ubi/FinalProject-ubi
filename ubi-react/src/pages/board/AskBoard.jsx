@@ -22,8 +22,10 @@ const AskBoard = () => {
   const { token, role, memberNo, authority } = useAuthStore();
   const path = location.pathname;
   const boardCode = boardCodeMap[path];
-  const isAdmin = authority === "2";
-  const isUser = authority === "1";
+  const isAdmin = role === "ADMIN" || authority == "2";
+  const isUser = role === "USER" || authority == "1";
+
+  console.log(isAdmin);
 
   const handleRowClick = (board) => {
     if (!token || !memberNo) {
@@ -106,7 +108,19 @@ const AskBoard = () => {
             >
               <td>{index + 1 + (currentPage - 1) * pagination.limit}</td>
               <td>
-                <span className={styles.postTypeTag}>{board.postType}</span>
+                <span
+                  className={
+                    board.postType === "공지" || board.postType === "문의"
+                      ? `${styles.postType} ${styles.postTypeGray}`
+                      : board.postType === "중요" || board.postType === "신고"
+                      ? `${styles.postType} ${styles.postTypeRed}`
+                      : board.postType === "이벤트"
+                      ? `${styles.postType} ${styles.postTypePurple}`
+                      : styles.postType
+                  }
+                >
+                  {board.postType}
+                </span>
               </td>
 
               <td className={styles.titleCell}>

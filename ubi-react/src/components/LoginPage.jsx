@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import useAuthStore from "../stores/useAuthStore";
+import useModalStore from "../stores/useModalStore";
 import styles from "../styles/common/LoginPage.module.css";
 
 // 이메일 유효성 검사
@@ -14,7 +15,9 @@ const formatTime = (seconds) => {
 };
 
 const handleKakaoLogin = () => {
-  window.location.href = "http://localhost:8080/oauth2/authorization/kakao";
+  const baseUrl = "https://kh-ubi.site"; // 👈 고정값으로 대체
+
+  window.location.href = `${baseUrl}/oauth2/authorization/kakao`;
 };
 
 const LoginPage = () => {
@@ -22,10 +25,32 @@ const LoginPage = () => {
   const mode = searchParams.get("mode") || "login";
   const [resetInfo, setResetInfo] = useState({ memberId: "", email: "" });
 
+  const { suspensionNotice, setSuspensionNotice } = useAuthStore();
+  const { alertMessage, setAlertMessage, clearAlertMessage } = useModalStore(); // ✅ 추가
+
+  const [showNotice, setShowNotice] = useState(false);
+
   const goToMode = (targetMode) => setSearchParams({ mode: targetMode });
+
+  useEffect(() => {
+    if (alertMessage) {
+      setShowNotice(true);
+    }
+  }, [alertMessage]);
 
   return (
     <div className={styles.loginPageContainer}>
+      {/* {showNotice && (
+        <SuspensionNotice
+          message={suspensionNotice || alertMessage}
+          onClose={() => {
+            setSuspensionNotice(null);
+            clearAlertMessage(); // ✅ alertMessage도 초기화
+            setShowNotice(false);
+          }}
+        />
+      )} */}
+
       <main className={styles.loginMainContent}>
         <div className={styles.imageBox}>
           <img src="/default-thumbnail.png" alt="login" />
@@ -59,7 +84,7 @@ const LoginForm = ({ setMode }) => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [saveId, setSaveId] = useState(false);
-  const { setAuth } = useAuthStore();
+  const { setAuth, setSuspensionNotice } = useAuthStore();
   const navigate = useNavigate();
 
   // 이미 기존의 아이디 저장된 거 찾아오기
@@ -73,8 +98,10 @@ const LoginForm = ({ setMode }) => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!memberId || !password)
-      return alert("아이디와 비밀번호를 입력해주세요.");
+    if (!memberId || !password) {
+      alert("아이디와 비밀번호를 입력해주세요.");
+      return;
+    }
     setIsLoading(true);
     try {
       const res = await fetch("/api/member/login", {
@@ -84,16 +111,17 @@ const LoginForm = ({ setMode }) => {
       });
       const data = await res.json();
       if (res.ok) {
-        // 로그인 성공 시 '아이디 저장' 옵션에 따라 localStorage에 저장/삭제
-        if (saveId) {
-          localStorage.setItem("savedMemberId", memberId);
-        } else {
-          localStorage.removeItem("savedMemberId");
-        }
+        if (saveId) localStorage.setItem("savedMemberId", memberId);
+        else localStorage.removeItem("savedMemberId");
+
         setAuth(data);
         navigate("/");
       } else {
-        alert(data.message || "로그인 실패");
+        if (data.suspensionMessage) {
+          setSuspensionNotice(data.suspensionMessage); // 정지 메시지 모달로 띄우기
+        } else {
+          alert(data.message || "로그인 실패");
+        }
         setPassword("");
       }
     } catch {
@@ -110,7 +138,7 @@ const LoginForm = ({ setMode }) => {
       <div className={styles.formContent}>
         <h3 className={styles.formTitle}>Login</h3>
         <form onSubmit={handleLogin}>
-          <div className={`${styles.inputWrapper} ${styles.inputWrapperID}`}>
+          <div className={styles.inputWrapper}>
             <input
               type="text"
               placeholder="아이디"
@@ -118,7 +146,7 @@ const LoginForm = ({ setMode }) => {
               onChange={(e) => setMemberId(e.target.value)}
             />
           </div>
-          <div className={`${styles.inputWrapper} ${styles.inputWrapperPW}`}>
+          <div className={styles.inputMessageWrapper}>
             <input
               type="password"
               placeholder="비밀번호"
@@ -140,11 +168,11 @@ const LoginForm = ({ setMode }) => {
 
             <div className={styles.findAccountLink}>
               <button type="button" onClick={() => setMode("find-id")}>
-                ID
+                ID{"  "}
               </button>
-              <span>/</span>
+              <span>|</span>
               <button type="button" onClick={() => setMode("find-pw")}>
-                PW찾기
+                PW찾기{"  "}
               </button>
             </div>
           </div>
@@ -192,14 +220,20 @@ const FindIdForm = ({ setMode }) => {
 
   useEffect(() => {
     if (email === "") {
-      setErrors((prev) => ({ ...prev, email: "" }));
+      // 이메일이 비었을 때는 메시지를 완전히 제거합니다.
+      setErrors((prev) => ({ ...prev, email: null }));
       return;
     }
+
+    const isValid = validateEmail(email);
     setErrors((prev) => ({
       ...prev,
-      email: validateEmail(email)
-        ? "사용 가능한 이메일 형식입니다."
-        : "이메일 형식이 올바르지 않습니다.",
+      email: {
+        text: isValid
+          ? "사용 가능한 이메일 형식입니다."
+          : "이메일 형식이 올바르지 않습니다.",
+        type: isValid ? "success" : "error", // 'success' 또는 'error' 타입을 추가합니다.
+      },
     }));
   }, [email]);
 
@@ -222,8 +256,11 @@ const FindIdForm = ({ setMode }) => {
     let newErrors = {};
     if (!name) newErrors.name = "이름을 입력해주세요.";
     if (!email) newErrors.email = "이메일을 입력해주세요.";
-    else if (!validateEmail(email))
-      newErrors.email = "이메일 형식이 올바르지 않습니다.";
+    else if (!validateEmail(email)) {
+      alert("이메일 형식이 올바르지 않습니다.");
+      setEmail(""); // 이메일 입력칸 비우기
+      return;
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -238,7 +275,7 @@ const FindIdForm = ({ setMode }) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: "id", // 백엔드에서 이걸로 분기
+          type: "id",
           name,
           email,
         }),
@@ -338,7 +375,7 @@ const FindIdForm = ({ setMode }) => {
           )}
         </div>
 
-        <div className={`${styles.inputWrapper} ${styles.inputWrapperPw}`}>
+        <div className={styles.inputMessageWrapper}>
           <div className={styles.inputGroup}>
             <input
               placeholder="가입한 이메일 입력"
@@ -354,22 +391,29 @@ const FindIdForm = ({ setMode }) => {
               {isLoading ? "로딩중..." : "인증요청"}
             </button>
           </div>
-          {errors.email && (
-            <span className={styles.errorMessage}>{errors.email}</span>
+          {errors.email?.text && (
+            <span
+              className={
+                errors.email.type === "success"
+                  ? styles.successMessage
+                  : styles.errorMessage
+              }
+            >
+              {errors.email.text}
+            </span>
           )}
         </div>
         {isCodeSent && !foundId && (
           <>
-            {/* 수정된 인증번호 입력 그룹 */}
-            <div className={`${styles.inputWrapper} ${styles.inputWrapper3}`}>
-              <div className={styles.verificationGroup}>
+            <div className={styles.inputMessageWrapper}>
+              <div className={styles.inputGroup}>
                 <input
                   placeholder="인증번호 입력"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   disabled={isCodeVerified}
+                  style={{ width: "310px", marginTop: "10px" }}
                 />
-
                 {!isCodeVerified && (
                   <button
                     onClick={handleInlineVerify}
@@ -379,14 +423,23 @@ const FindIdForm = ({ setMode }) => {
                   </button>
                 )}
               </div>
+
+              {/* 3. 메시지들을 inputGroup과 같은 레벨로 이동 */}
+
               {errors.code && (
-                <span className={styles.errorMessage}>{errors.code}</span>
+                <span className={`${styles.message} ${styles.errorMessage}`}>
+                  {errors.code}
+                </span>
               )}
               {successMsg && (
-                <span className={styles.successMessage}>{successMsg}</span>
+                <span className={`${styles.message} ${styles.successMessage}`}>
+                  {successMsg}
+                </span>
               )}
               {isTimerActive && (
-                <span className={styles.timer}>{formatTime(timer)}</span>
+                <span className={`${styles.message} ${styles.timer}`}>
+                  {formatTime(timer)}
+                </span>
               )}
             </div>
 
@@ -394,6 +447,7 @@ const FindIdForm = ({ setMode }) => {
               onClick={handleFinalFindId}
               className={styles.confirmBtn}
               disabled={!isCodeVerified}
+              style={{ marginTop: "30px" }}
             >
               확인
             </button>
@@ -416,14 +470,14 @@ const FindIdForm = ({ setMode }) => {
           <button onClick={() => setMode("login")} className={styles.kakaoBtn}>
             로그인 하러가기
           </button>
-        </div>
-        <div className={styles.findAccountLink}>
-          <button
-            onClick={() => setMode("find-pw")}
-            className={styles.signupLink}
-          >
-            비밀번호 찾기
-          </button>
+          <div className={styles.findAccountLink}>
+            <button
+              onClick={() => setMode("find-pw")}
+              className={styles.signupLink}
+            >
+              비밀번호 찾기
+            </button>
+          </div>
         </div>
       </div>
     </>
@@ -478,27 +532,29 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
     if (!name) newErrors.name = "이름을 입력해주세요.";
     if (!memberId) newErrors.memberId = "아이디를 입력해주세요.";
     if (!email) newErrors.email = "이메일을 입력해주세요.";
-    else if (!validateEmail(email))
-      newErrors.email = "이메일 형식이 올바르지 않습니다.";
+    else if (!validateEmail(email)) {
+      alert("이메일 형식이 올바르지 않습니다.");
+      setEmail(""); // 이메일 입력칸 비우기
+      return;
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
+
     setErrors({});
     setIsLoading(true);
+
     try {
-      // POST 방식으로 변경
       const res = await fetch("/api/member/sendCode", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: name,
-          memberId: memberId,
-          email: email,
-          type: "pw", // 비밀번호 찾기 타입
+          name,
+          memberId,
+          email,
+          type: "pw",
         }),
       });
 
@@ -508,10 +564,7 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
         setIsTimerActive(true);
       } else {
         const errorData = await res.json();
-        alert(
-          errorData.message ||
-            "인증번호 전송에 실패했습니다. 입력 정보를 확인해주세요."
-        );
+        alert(errorData.message || "인증번호 전송에 실패했습니다.");
         setName("");
         setMemberId("");
         setEmail("");
@@ -592,7 +645,7 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
             <span className={styles.errorMessage}>{errors.memberId}</span>
           )}
         </div>
-        <div className={styles.inputWrapper}>
+        <div className={styles.inputMessageWrapper}>
           <div className={styles.inputGroup}>
             <input
               placeholder="가입한 이메일 입력"
@@ -624,26 +677,32 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
         {isCodeSent && (
           <>
             <div className={styles.inputWrapper}>
-              <div className={styles.inputGroup}>
-                <div className={styles.inlineInputs}>
-                  <input
-                    placeholder="인증번호 입력"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    disabled={isCodeVerified}
-                  />
-                  {!isCodeVerified && (
+              <div className={styles.inputGroup} style={{ marginTop: "10px" }}>
+                <input
+                  placeholder="인증번호 입력"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  disabled={isCodeVerified}
+                  className={
+                    isCodeVerified ? styles.authInputFull : styles.authInput
+                  }
+                />
+                {!isCodeVerified && (
+                  <>
                     <button
                       onClick={handleInlineVerify}
                       className={styles.authBtn}
                     >
                       인증확인
                     </button>
-                  )}
-                  {isTimerActive && (
-                    <span className={styles.timer}>{formatTime(timer)}</span>
-                  )}
-                </div>
+                  </>
+                )}
+              </div>
+
+              {isTimerActive && (
+                <span className={styles.timer}>{formatTime(timer)}</span>
+              )}
+              <div className={styles.messageWrapper}>
                 {errors.code && (
                   <span className={styles.errorMessage}>{errors.code}</span>
                 )}
@@ -670,14 +729,14 @@ const FindPwForm = ({ setMode, setResetInfo }) => {
           <button onClick={() => setMode("login")} className={styles.kakaoBtn}>
             로그인 하러가기
           </button>
-        </div>
-        <div className={styles.findAccountLink}>
-          <button
-            onClick={() => setMode("find-id")}
-            className={styles.signupLink}
-          >
-            아이디 찾기
-          </button>
+          <div className={styles.findAccountLink}>
+            <button
+              onClick={() => setMode("find-id")}
+              className={styles.signupLink}
+            >
+              아이디 찾기
+            </button>
+          </div>
         </div>
       </div>
     </>
@@ -726,7 +785,7 @@ const ResetPwForm = ({ setMode, memberId, email }) => {
       if (res.ok) {
         setSubMode("complete");
       } else {
-        alert("비밀번호 재설정 중 오류가 발생했습니다.");
+        alert("비밀번호를 변경할 수 없습니다. 입력 정보를 확인해 주세요.");
       }
       setNewPw("");
       setNewPwCheck("");

@@ -17,6 +17,12 @@ public class CustomUserDetails implements UserDetails {
     public CustomUserDetails(Member member) {
         this.member = member;
     }
+    
+    public Long getMemberNo() {
+    	
+    	 return (long) member.getMemberNo();
+    }
+
 
     @Override
     public String getUsername() {

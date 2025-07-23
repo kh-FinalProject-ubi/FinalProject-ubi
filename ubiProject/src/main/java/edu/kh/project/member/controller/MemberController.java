@@ -112,20 +112,17 @@ public class MemberController {
 				// 3) 정지 기간 종료 후
 
 				if ("N".equals(notified)) {
-					// 알림 안 띄운 상태면 알림 띄우고 notified 업데이트
-					mapper.updateSuspensionNotified(loginMember.getMemberNo());
+				    mapper.updateSuspensionNotified(loginMember.getMemberNo());
+				    mapper.resetReportCount(loginMember.getMemberNo());
+				    mapper.updateReportStatusSuspension(loginMember.getMemberNo());
 
-					// 🔄 신고 횟수 초기화
-					mapper.resetReportCount(loginMember.getMemberNo());
-					mapper.updateReportStatusSuspension(loginMember.getMemberNo());
+				    // 🔥 세션 쓰지 말고 JWT 발급 + 알림 같이 넘기기
+				    Map<String, Object> body = createLoginResponseBody(loginMember);
+				    body.put("suspensionNotice", "회원님의 정지 기간이 종료되었습니다.");
 
-					session.setAttribute("loginMember", loginMember);
-
-					Map<String, Object> body = createLoginResponseBody(loginMember);
-					body.put("suspensionNotice", "회원님의 정지 기간이 종료되었습니다.");
-
-					return ResponseEntity.ok(body);
+				    return ResponseEntity.ok(body);
 				}
+
 			}
 		}
 
@@ -190,21 +187,13 @@ public class MemberController {
 		int result = service.signup(inputMember); // 이 시점에 memberNo가 자동으로 세팅돼야 함
 
 		if (result > 0) {
-			// 4. JWT 토큰 생성
 			String token = jwtUtil.generateToken(inputMember);
-
-			// 5. 응답 데이터 구성
-			Map<String, Object> body = new HashMap<>();
-			body.put("token", token);
-			body.put("memberName", inputMember.getMemberNickname());
-			body.put("address", extractDistrict(inputMember.getMemberAddress()));
-			body.put("memberStandard", parseMemberStandard(inputMember.getMemberStandard()));
-			body.put("memberNo", inputMember.getMemberNo());
-			body.put("authority", inputMember.getAuthority());
-
-			return ResponseEntity.ok(body);
+			return ResponseEntity.ok(Map.of("success", true, "message", "회원가입 완료", "token", token, "memberName",
+					inputMember.getMemberNickname(), "address", extractDistrict(inputMember.getMemberAddress()),
+					"memberStandard", parseMemberStandard(inputMember.getMemberStandard()), "memberNo",
+					inputMember.getMemberNo(), "authority", inputMember.getAuthority()));
 		} else {
-			return ResponseEntity.badRequest().body(Map.of("message", "회원가입 실패"));
+			return ResponseEntity.badRequest().body(Map.of("success", false, "message", "회원가입 실패"));
 		}
 	}
 
@@ -234,11 +223,10 @@ public class MemberController {
 
 	@GetMapping("/checkId")
 	public ResponseEntity<?> checkId(@RequestParam("memberId") String memberId) {
-	    System.out.println("✅ checkId() 호출됨: " + memberId);
-	    boolean isAvailable = service.checkIdAvailable(memberId);
-	    return isAvailable 
-	        ? ResponseEntity.ok().build()
-	        : ResponseEntity.status(409).body(Map.of("message", "이미 사용 중인 아이디입니다."));
+		System.out.println("✅ checkId() 호출됨: " + memberId);
+		boolean isAvailable = service.checkIdAvailable(memberId);
+		return isAvailable ? ResponseEntity.ok().build()
+				: ResponseEntity.status(409).body(Map.of("message", "이미 사용 중인 아이디입니다."));
 	}
 
 	@GetMapping("/checkNickname")
@@ -247,79 +235,73 @@ public class MemberController {
 		return isAvailable ? ResponseEntity.ok().build()
 				: ResponseEntity.status(409).body(Map.of("message", "이미 사용 중인 닉네임입니다.")); // 메시지도 닉네임용으로 변경
 	}
+	
+	@GetMapping("/checkEmail")
+	public ResponseEntity<?> checkEmail(@RequestParam("email") String email) {
+	    boolean isAvailable = service.checkEmailAvailable(email);
+	    return isAvailable ? ResponseEntity.ok().build()
+	           : ResponseEntity.status(409).body(Map.of("message", "이미 가입된 이메일입니다."));
+	}
 
+	private Map<String, Object> createLoginResponse(Member member, String suspensionNotice) {
+	    String token = jwtUtil.generateToken(member);
+	    String readableStandard = parseMemberStandard(member.getMemberStandard());
+	    String district = extractDistrict(member.getMemberAddress());
+
+	    Map<String, Object> body = new HashMap<>();
+	    body.put("token", token);
+	    body.put("memberName", member.getMemberNickname());
+	    body.put("address", district);
+	    body.put("memberStandard", readableStandard);
+	    body.put("memberImg", member.getMemberImg());
+	    body.put("memberNo", member.getMemberNo());
+	    body.put("authority", member.getAuthority());
+	    body.put("regionCity", member.getRegionCity());
+	    body.put("regionDistrict", member.getRegionDistrict());
+
+	    if (suspensionNotice != null) {
+	        body.put("suspensionNotice", suspensionNotice);
+	    }
+
+	    return body;
+	}
+	
 	@PostMapping("/kakao-login")
 	public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code) {
-		try {
-			Member member = service.kakaoLogin(code); // 반환 타입을 Member로 가정
+	    try {
+	        Member member = service.kakaoLogin(code); // Kakao 사용자 정보 기반 회원 조회 또는 가입
+	        Map<String, String> suspension = mapper.selectSuspension(member.getMemberNo());
+	        LocalDateTime now = LocalDateTime.now();
 
-			// 1) 회원 정지 정보 조회
-			Map<String, String> suspension = mapper.selectSuspension(member.getMemberNo());
-			LocalDateTime now = LocalDateTime.now();
+	        // 정지된 이력이 있을 경우
+	        if (suspension != null) {
+	            LocalDateTime suspendEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
+	            String suspendStart = suspension.get("START_DATE");
+	            String suspendEndStr = suspension.get("END_DATE");
+	            String notified = suspension.get("NOTIFIED");
 
-			if (suspension != null) {
-				LocalDateTime suspendEnd = LocalDateTime.parse(suspension.get("END_DATE").replace(" ", "T"));
-				String suspendStart = suspension.get("START_DATE");
-				String suspendEndStr = suspension.get("END_DATE");
-				String notified = suspension.get("NOTIFIED");
+	            if (now.isBefore(suspendEnd)) {
+	                // 정지 기간 내 → 로그인 차단
+	                String period = suspendStart + " ~ " + suspendEndStr;
+	                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+	                        .body(Map.of("message", "회원님의 계정은 정지 중입니다.\n정지 기간: " + period));
+	            } else if ("N".equals(notified)) {
+	                // 정지 기간 종료 후 알림 미표시 상태 → 정지 해제 처리
+	                mapper.updateSuspensionNotified(member.getMemberNo());
+	                mapper.resetReportCount(member.getMemberNo());
+	                mapper.updateReportStatusSuspension(member.getMemberNo());
 
-				if (now.isBefore(suspendEnd)) {
-					// 2) 정지 기간 내 로그인 시도 → 로그인 차단
-					String period = suspendStart + " ~ " + suspendEndStr;
-					return ResponseEntity.status(HttpStatus.FORBIDDEN)
-							.body(Map.of("message", "회원님의 계정은 정지 중입니다.\n정지 기간: " + period));
-				} else {
-					// 3) 정지 기간이 끝났고 아직 알림을 안 띄운 경우
-					if ("N".equals(notified)) {
-						mapper.updateSuspensionNotified(member.getMemberNo());
+	                return ResponseEntity.ok(createLoginResponse(member, "회원님의 정지 기간이 종료되었습니다."));
+	            }
+	        }
 
-						// 🚨 신고 횟수 초기화 및 상태 업데이트
-						mapper.resetReportCount(member.getMemberNo());
-						mapper.updateReportStatusSuspension(member.getMemberNo());
+	        // 일반 로그인 성공
+	        return ResponseEntity.ok(createLoginResponse(member, null));
 
-						// 로그인 성공 + 정지 해제 알림 포함
-						String readableStandard = parseMemberStandard(member.getMemberStandard());
-						String district = extractDistrict(member.getMemberAddress());
-						String token = jwtUtil.generateToken(member);
-
-						Map<String, Object> body = new HashMap<>();
-						body.put("token", token);
-						body.put("memberName", member.getMemberNickname());
-						body.put("address", district);
-						body.put("memberStandard", readableStandard);
-						body.put("memberImg", member.getMemberImg());
-						body.put("memberNo", member.getMemberNo());
-						body.put("authority", member.getAuthority());
-						body.put("regionCity", member.getRegionCity());
-						body.put("regionDistrict", member.getRegionDistrict());
-						body.put("suspensionNotice", "회원님의 정지 기간이 종료되었습니다.");
-
-						return ResponseEntity.ok(body);
-					}
-				}
-			}
-
-			// 4) 정상 로그인 처리
-			String readableStandard = parseMemberStandard(member.getMemberStandard());
-			String district = extractDistrict(member.getMemberAddress());
-			String token = jwtUtil.generateToken(member);
-
-			Map<String, Object> body = new HashMap<>();
-			body.put("token", token);
-			body.put("memberName", member.getMemberNickname());
-			body.put("address", district);
-			body.put("memberStandard", readableStandard);
-			body.put("memberImg", member.getMemberImg());
-			body.put("memberNo", member.getMemberNo());
-			body.put("authority", member.getAuthority());
-			body.put("regionCity", member.getRegionCity());
-			body.put("regionDistrict", member.getRegionDistrict());
-
-			return ResponseEntity.ok(body);
-
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "카카오 로그인 실패"));
-		}
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body(Map.of("message", "카카오 로그인 중 오류가 발생했습니다."));
+	    }
 	}
 
 	private String normalizeSido(String rawSido) {
@@ -515,55 +497,70 @@ public class MemberController {
 		return ResponseEntity.ok().build();
 	}
 
+	// 멤버 정지 여부 확인
+	@GetMapping("/{targetMemberNo}/suspend-status")
+	public ResponseEntity<Object> checkSuspendStatus(@PathVariable("targetMemberNo") int targetMemberNo) {
+		return ResponseEntity.ok(service.checkSuspension(targetMemberNo));
+	}
+
+	// 멤버 정지하는 경우
+	@PostMapping("/{targetMemberNo}/suspend")
+	public ResponseEntity<?> toggleSuspend(@PathVariable("targetMemberNo") int targetMemberNo) {
+		boolean isSuspended = service.suspendMember(targetMemberNo);
+		return ResponseEntity.ok(isSuspended ? "정지됨" : "정지 해제됨");
+	}
+
+	// 인증번호 보내기
 	@PostMapping("/sendCode")
 	public ResponseEntity<?> sendCode(@RequestBody SendCodeRequest req) {
-	    try {
-	        String email = req.getEmail();
-	        String type = req.getType();
+		try {
+			String email = req.getEmail();
+			String type = req.getType();
 
-	        // 아이디 찾기 (name + email)
-	        if ("id".equals(type)) {
-	            Integer exists = service.existsByNameAndEmail(req.getName(), email);
-	            if (Objects.isNull(exists) || exists == 0) {
-	                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-	                        .body(Map.of("message", "입력하신 정보와 일치하는 사용자가 없습니다."));
-	            }
-	        } 
-	        // 비밀번호 찾기 (name + memberId + email)
-	        else if ("pw".equals(type)) {
-	            Integer exists = service.existsByNameAndMemberIdAndEmail(req.getName(), req.getMemberId(), email);
-	            if (Objects.isNull(exists) || exists == 0) {
-	                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-	                        .body(Map.of("message", "입력하신 정보와 일치하는 사용자가 없습니다."));
-	            }
-	        }
+			// 아이디 찾기 (name + email)
+			if ("id".equals(type)) {
+				Integer exists = service.existsByNameAndEmail(req.getName(), email);
+				if (Objects.isNull(exists) || exists == 0) {
+					return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+							.body(Map.of("message", "입력하신 정보와 일치하는 사용자가 없습니다."));
+				}
+			}
+			// 비밀번호 찾기 (name + memberId + email)
+			else if ("pw".equals(type)) {
+				Integer exists = service.existsByNameAndMemberIdAndEmail(req.getName(), req.getMemberId(), email);
+				if (Objects.isNull(exists) || exists == 0) {
+					return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+							.body(Map.of("message", "입력하신 정보와 일치하는 사용자가 없습니다."));
+				}
+			}
 
-	        // 인증 코드 전송
-	        String code = emailService.sendEmail(type, email);
+			// 인증 코드 전송
+			String code = emailService.sendEmail(type, email);
 
-	        if (code != null) {
-	            return ResponseEntity.ok(Map.of("code", code));
-	        } else {
-	            return ResponseEntity.status(500).body(Map.of("message", "이메일 전송 실패"));
-	        }
+			if (code != null) {
+				return ResponseEntity.ok(Map.of("code", code));
+			} else {
+				return ResponseEntity.status(500).body(Map.of("message", "이메일 전송 실패"));
+			}
 
-	    } catch (Exception e) {
-	        return ResponseEntity.status(500).body(Map.of("message", "서버 오류: " + e.getMessage()));
-	    }
+		} catch (Exception e) {
+			return ResponseEntity.status(500).body(Map.of("message", "서버 오류: " + e.getMessage()));
+		}
 	}
-	
+
+	// 인증번호 비교 로직
 	@PostMapping("/verifyCode")
 	public ResponseEntity<?> verifyCode(@RequestBody Map<String, String> paramMap) {
-	    String email = paramMap.get("email");
-	    String code = paramMap.get("code");
+		String email = paramMap.get("email");
+		String code = paramMap.get("code");
 
-	    int result = emailService.checkAuthKey(Map.of("email", email, "authKey", code));
+		int result = emailService.checkAuthKey(Map.of("email", email, "authKey", code));
 
-	    boolean verified = result > 0;
+		boolean verified = result > 0;
 
-	    return ResponseEntity.ok(Map.of("verified", verified));
+		return ResponseEntity.ok(Map.of("verified", verified));
 	}
-	
+
 	// 아이디 찾기
 	@PostMapping("/find-id")
 	public ResponseEntity<?> findId(@RequestBody Map<String, String> paramMap) {
@@ -583,17 +580,16 @@ public class MemberController {
 	@PostMapping("/reset-pw")
 	public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> paramMap) {
 		String memberId = paramMap.get("memberId");
-		String email = paramMap.get("email");
 		String newPassword = paramMap.get("newPassword");
 
-		boolean success = service.resetPassword(memberId, email, newPassword);
+		boolean success = service.resetPassword(memberId, newPassword);
 
 		if (success) {
 			return ResponseEntity.ok(Map.of("message", "비밀번호가 성공적으로 변경되었습니다."));
 		}
 
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "정보가 일치하지 않습니다."));
+		// 실패 시, "비밀번호가 기존과 동일" 또는 "회원 없음" 등의 경우를 포함
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(Map.of("message", "비밀번호를 변경할 수 없습니다. 입력 정보를 확인해 주세요."));
 	}
 }
-
-	

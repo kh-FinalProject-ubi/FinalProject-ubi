@@ -128,24 +128,21 @@ public class SecurityConfig {
                 "/user/**"        // 대상 유저 메시지 처리에 필요
             );
     }
-    
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // 개발 클라이언트 주소
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
-        // WebSocket‑XHR 폴백에 필요한 메서드
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        // Authorization 헤더도 허용
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        // 쿠키·Authorization 헤더를 WebSocket/XHR에 실어 보낼 수 있게
+        config.setAllowedOrigins(List.of(
+            "https://kh-ubi.site",      // ✅ 운영
+            "https://www.kh-ubi.site",  // (서브 도메인)
+            "http://localhost:5173",    // ✅ 로컬
+            "http://localhost:5174"
+        ));
+        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization","Content-Type"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // SockJS가 쓰는 모든 경로 (/ws-chat/**) 에 적용
-        source.registerCorsConfiguration("/ws-chat/**", config);
-        // 그밖에 REST 요청에도 동일 정책 적용하고 싶으면 ↓
         source.registerCorsConfiguration("/**", config);
         return source;
     }

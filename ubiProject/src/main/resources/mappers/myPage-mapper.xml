@@ -27,6 +27,7 @@
 		SELECT SERVICE_NAME, AGENCY, DESCRIPTION, RECEPTION_START, RECEPTION_END, CATEGORY, SERVICE_NO, API_SERVICE_ID
 		FROM   WELFARE
 		WHERE  MEMBER_NO = #{memberNo}
+		AND	   JJ_DEL_FL = 'N'
 		ORDER BY JJ_TIME DESC
 	</select>
 	
@@ -35,16 +36,16 @@
 		SELECT JOB_TITLE, JOB_FACILITY_NAME, JOB_SALARY, JOB_POSITION, JOB_REQUIREMENT, JOB_CONTENT, RCPTBGNDT, RCPTENDDT
 		FROM   WELFARE_FACILITY_JOB
 		WHERE  MEMBER_NO = #{memberNo}
+		AND	   JJ_DEL_FL = 'N'
 		ORDER BY JJ_TIME
 	</select>
 	
 	<!-- 내가 찜한 시설 조회 -->
 	<select id="getFacilityBenefits">
-		SELECT FACILITY_NO, FACILITY_NAME, FACILITY_KIND_NM, EVENT_TITLE, EVENT_DATE_START, EVENT_DATE_END, 
-			   EVENT_CONTENT, REQUIREMENT, RCPTBGNDT, RCPTENDDT
-		FROM   WELFARE_FACILITY
-		WHERE  MEMBER_NO = #{memberNo}
-		ORDER BY JJ_TIME
+		  SELECT *
+  FROM welfare_facility
+  WHERE member_no = #{memberNo}
+    AND jj_del_fl = 'N'
 	</select>
 	
 	<!-- 작성글 조회 -->
@@ -53,7 +54,7 @@
 		  B.BOARD_NO, 
 		  B.BOARD_TITLE, 
 		  B.BOARD_CONTENT, 
-		  B.BOARD_DATE, 
+		  TO_CHAR(b.BOARD_DATE, 'YYYY-MM-DD') AS BOARD_DATE,
 		  B.BOARD_READ_COUNT, 
 		  M.MEMBER_NICKNAME,
 		  B.POST_TYPE,
@@ -62,6 +63,7 @@
 		JOIN MEMBER M ON B.MEMBER_NO = M.MEMBER_NO
 		WHERE B.MEMBER_NO = #{memberNo}
 		AND BOARD_DEL_FL = 'N'
+		ORDER BY B.BOARD_DATE DESC
 	</select>
 	
 	<!-- 작성글에 포함된 해시태그 조회 -->
@@ -89,7 +91,7 @@
 		  C.COMMENT_NO,
 		  B.POST_TYPE, 
 		  B.BOARD_TITLE, 
-		  C.COMMENT_CONTENT, 
+		  TO_CHAR(C.COMMENT_DATE, 'YYYY-MM-DD') AS COMMENT_DATE, 
 		  C.COMMENT_DATE, 
 		  COUNT(CL.COMMENT_NO) AS LIKE_COUNT
 		FROM COMMENTS C
@@ -114,7 +116,7 @@
 		  b.BOARD_NO,
 		  b.BOARD_TITLE,
 		  b.BOARD_CONTENT,
-		  b.BOARD_DATE,
+		  TO_CHAR(b.BOARD_DATE, 'YYYY-MM-DD') AS BOARD_DATE,
 		  m.MEMBER_NICKNAME,
 		  b.POST_TYPE,
 		  LISTAGG(bh.HASHTAG_NAME, ', ') WITHIN GROUP (ORDER BY bh.HASHTAG_NAME) AS HASHTAG
@@ -134,7 +136,7 @@
 		  B.POST_TYPE, 
 		  B.BOARD_TITLE, 
 		  C.COMMENT_CONTENT, 
-		  C.COMMENT_DATE, 
+		  TO_CHAR(C.COMMENT_DATE, 'YYYY-MM-DD') AS COMMENT_DATE,
 		  COUNT(CL2.COMMENT_NO) AS LIKE_COUNT  -- 전체 좋아요 수
 		FROM COMMENT_LIKE CL -- 내가 좋아요 누른 목록에서 시작
 		JOIN COMMENTS C ON CL.COMMENT_NO = C.COMMENT_NO
@@ -203,5 +205,36 @@
 	WHERE "UPLOAD_FILE".MEMBER_NO = #{memberNo}
 	ORDER BY FILE_NO DESC		
 	</select>
+	
+	<!-- 혜택찜 취소 -->
+	<update id="cancelZzim">
+	 UPDATE "WELFARE" SET
+	 JJ_DEL_FL = 'Y'
+	 WHERE MEMBER_NO = #{memberNo}
+	 AND SERVICE_NO = #{serviceNo}
+	</update>
+	
+	<select id="selectMemberByNo" parameterType="int" resultType="Member">
+    SELECT 
+        MEMBER_NO,
+        MEMBER_ID,
+        MEMBER_NAME,
+        MEMBER_ADDRESS,
+        MEMBER_TADDRESS,
+        MEMBER_STANDARD,
+        AUTHORITY
+    FROM MEMBER
+    WHERE MEMBER_NO = #{memberNo}
+</select>
+
+
+<update id="updateFacilityZzimDelFl" parameterType="map">
+  UPDATE welfare_facility
+  SET jj_del_fl = 'Y'
+  WHERE member_no = #{memberNo}
+    AND facility_no = #{facilityNo}
+</update>
+
+
 
 </mapper>

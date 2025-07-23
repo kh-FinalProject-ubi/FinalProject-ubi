@@ -6,7 +6,7 @@
 }
 
 .mainTitle {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 2rem;
 }
@@ -134,7 +134,7 @@
 
 /* ✅ th 설정: 왼쪽으로 완전히 붙고, 텍스트는 세로/가로 모두 가운데 정렬 */
 .filterLabel {
-  background-color: #ffe066;
+  background-color: #ffe56d;
   padding: 32px 32px;
   margin: 0;
   border: none;
@@ -164,8 +164,8 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  border: 2px solid #ffe066; /* 노란색 외곽선 */
-  background-color: #ffe066; /* ✅ 버튼 자체가 노란색 */
+  border: 2px solid #ffe56d; /* 노란색 외곽선 */
+  background-color: #ffe56d; /* ✅ 버튼 자체가 노란색 */
   margin: 0;
   position: relative;
   cursor: pointer;
@@ -226,7 +226,7 @@
   border: 1px solid transparent;
   cursor: pointer;
   font-weight: 500;
-  background-color: #ffe066;
+  background-color: #ffe56d;
   color: #5c3c00;
 }
 
@@ -397,7 +397,7 @@
 
 /* --- 카드 색깔  --- */
 .tagYellow {
-  background-color: #ffe066;
+  background-color: #ffe56d;
   color: #5c3c00;
 }
 
@@ -451,4 +451,86 @@
   color: #5e60ce;
   font-weight: bold;
   cursor: default;
+}
+
+.boardGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* 태블릿: 2개 */
+@media (max-width: 1200px) {
+  .boardGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 모바일: 1개 */
+@media (max-width: 768px) {
+  .boardGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+@media (max-width: 768px) {
+  /* ✅ 필터 테이블 기본 구조 유지 */
+  .filterTable,
+  .filterRow,
+  .filterLabel,
+  .filterContent {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .filterRow {
+    margin-bottom: 1.5rem;
+  }
+
+  .filterLabel {
+    padding: 12px 16px;
+    background-color: #ffe56d;
+    color: #5c3c00;
+    font-weight: bold;
+    font-size: 0.95rem;
+    text-align: left;
+    border: none;
+    border-bottom: 1px solid #eee;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .filterContent {
+    padding: 14px 16px;
+    background-color: #fff;
+    border-radius: 0 0 8px 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 12px;
+  }
+
+  .filterContent select {
+    width: 100%;
+    max-width: 100%;
+    font-size: 1rem;
+  }
+
+  .radioLabel {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .tagButton {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+  }
+
+  .filterTitle {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+
 }

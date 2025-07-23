@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="edu.kh.project.welfare.like.model.mapper.WelfareFacilityLikeMapper">
+
+  <!-- 1. 찜 상태 확인 ('N', 'Y' 또는 null) -->
+  <select id="selectLikeStatus" parameterType="edu.kh.project.welfare.like.dto.FacilityLike" resultType="string">
+    SELECT jj_del_fl
+    FROM welfare_facility
+    WHERE member_no = #{memberNo}
+      AND facility_name = #{facilityName}
+      AND region_city = #{regionCity}
+      AND region_district = #{regionDistrict}
+    FETCH FIRST 1 ROWS ONLY
+  </select>
+
+  <!-- 2. 찜 등록 -->
+  <insert id="insertLike" parameterType="edu.kh.project.welfare.like.dto.FacilityLike">
+    INSERT INTO welfare_facility (
+      facility_no,
+      facility_api_service_id,
+      member_no,
+      facility_name,
+      region_city,
+      region_district,
+      facility_addr,
+      lat,
+      lng,
+      jj_time,
+      jj_del_fl,
+      alarm_sent_fl
+    ) VALUES (
+      welfare_facility_seq.NEXTVAL,
+      #{facilityApiServiceId},
+      #{memberNo},
+      #{facilityName},
+      #{regionCity},
+      #{regionDistrict},
+      #{facilityAddr},
+      #{lat},
+      #{lng},
+      SYSDATE,
+      'N',
+      'N'
+    )
+  </insert>
+
+  <!-- 3. 찜 복구 (해제된 찜을 다시 활성화) -->
+  <update id="reactivateLike" parameterType="edu.kh.project.welfare.like.dto.FacilityLike">
+    UPDATE welfare_facility
+    SET jj_del_fl = 'N',
+        jj_time = SYSDATE
+    WHERE member_no = #{memberNo}
+      AND facility_name = #{facilityName}
+      AND region_city = #{regionCity}
+      AND region_district = #{regionDistrict}
+  </update>
+
+  <!-- 4. 찜 해제 -->
+  <update id="deleteLike" parameterType="edu.kh.project.welfare.like.dto.FacilityLike">
+    UPDATE welfare_facility
+    SET jj_del_fl = 'Y'
+    WHERE member_no = #{memberNo}
+      AND facility_name = #{facilityName}
+      AND region_city = #{regionCity}
+      AND region_district = #{regionDistrict}
+  </update>
+
+</mapper>

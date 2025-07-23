@@ -7,7 +7,7 @@
 		** 동적 SQL ** - 프로그램 수행 중 SQL을 변경하는 기능 (마이바티스의 가장 강력한 기능!) <selectKey> 태그 
 		: INSERT/UPDATE 시 사용할 키(시퀀스)를 조회해서 파라미터의 지정된 필드에 대입 order 속성 : 메인 SQL이 수행되기 
 		전/후에 selectKey가 수행되도록 지정 전 : BEFORE 후 : AFTER keyProperty 속성: selectKey 조회 
-		결과를 저장할 파라미터의 필드명 -->
+		결과를 저장할 파라미터의 필드명 ㅋㅋ-->
 
 	<insert id="boardInsert" useGeneratedKeys="true"
 		parameterType="Board">

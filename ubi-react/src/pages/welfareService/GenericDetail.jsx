@@ -56,12 +56,6 @@ const GenericDetail = ({ data }) => {
           </a>
         </p>
       )}
-
-
-
-    <WelfareReviewSection apiServiceId={data.apiServiceId} />
-
-      
     </div>
   );
 };

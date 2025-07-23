@@ -44,7 +44,7 @@ public class FileConfig implements WebMvcConfigurer {
 	private String profileResourceHandler;  // /myPage/profile/**
 	
 	@Value("${my.profile.resource-location}")
-	private String profileResourceLocation; // file:///C:/uploadFiles/profile/
+	private String profileResourceLocation; // file:///home/ec2-useruploadFiles/profile/
 	
 	// --------------------------------------------
 	
@@ -60,7 +60,7 @@ public class FileConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
     	 registry
          .addResourceHandler(webPath + "**") // ex: /images/board/**
-         .addResourceLocations("file:///" + folderPath); // ex: file:///C:/uploadFiles/board/
+         .addResourceLocations("file:" + folderPath); // ex: file:///home/ec2-useruploadFiles/board/
     	 
  		registry
  		.addResourceHandler(profileResourceHandler)

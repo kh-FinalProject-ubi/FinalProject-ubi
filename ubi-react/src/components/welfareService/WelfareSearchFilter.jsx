@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import styles from "../../styles/WelfareSearchFilter.module.css";
 
 const SERVICE_TYPES = [
   "전체",
@@ -21,21 +22,18 @@ const WelfareSearchFilter = ({ onFilterChange, fixedRegion }) => {
   });
 
   useEffect(() => {
-    if (fixedRegion) {
-      onFilterChange({ ...filterState, region: fixedRegion });
-    }
-  }, [filterState, fixedRegion]);
+    onFilterChange({ ...filterState, region: fixedRegion });
+  }, [filterState, fixedRegion, onFilterChange]);
 
-  const updateFilter = (changes) => {
+  const updateFilter = (changes) =>
     setFilterState((prev) => ({ ...prev, ...changes }));
-  };
 
   return (
-    <div className="welfare-search-filter">
-      <h3>공공 서비스 조회</h3>
+    <div className={styles.filterBox}>
+      <h3 className={styles.filterTitle}>공공 서비스 조회</h3>
 
-      {/* 🔍 검색창 */}
-      <div className="search-bar">
+      {/* 🔍 검색창 + 정렬 버튼 */}
+      <div className={styles.searchWrapper}>
         <input
           type="text"
           placeholder="서비스 이름을 입력하세요"
@@ -43,6 +41,7 @@ const WelfareSearchFilter = ({ onFilterChange, fixedRegion }) => {
           onChange={(e) => updateFilter({ keyword: e.target.value })}
         />
         <button
+          className={styles.sortBtn}
           onClick={() =>
             updateFilter({
               sortOrder:
@@ -54,34 +53,53 @@ const WelfareSearchFilter = ({ onFilterChange, fixedRegion }) => {
         </button>
       </div>
 
-      {/* 🧑‍💼 유형 필터 */}
-      <div className="service-type-buttons">
-        {SERVICE_TYPES.map((type) => (
-          <button
-            key={type}
-            className={filterState.serviceType === type ? "selected" : ""}
-            onClick={() => updateFilter({ serviceType: type })}
-          >
-            {type}
-          </button>
-        ))}
+      {/* 🟡 필터 테이블 (좌측 노란 탭) */}
+      <div className={styles.filterTable}>
+        {/* 서비스 대상 행 */}
+        <div className={styles.filterRow}>
+          <div className={styles.filterLabel}>서비스 대상</div>
+          <div className={styles.filterContent}>
+            {SERVICE_TYPES.map((type) => (
+              <label key={type} className={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="serviceType"
+                  value={type}
+                  checked={filterState.serviceType === type}
+                  onChange={(e) =>
+                    updateFilter({ serviceType: e.target.value })
+                  }
+                />
+                <span className={styles.customRadio}></span>
+                <span className={styles.radioText}>{type}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* 카테고리 행 */}
+        <div className={styles.filterRow}>
+          <div className={styles.filterLabel}>카테고리</div>
+          <div className={styles.filterContent}>
+            {CATEGORIES.map((type) => (
+              <label key={type} className={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="category"
+                  value={type}
+                  checked={filterState.category === type}
+                  onChange={(e) => updateFilter({ category: e.target.value })}
+                />
+                <span className={styles.customRadio}></span>
+                <span className={styles.radioText}>{type}</span>
+              </label>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* 📂 카테고리 필터 */}
-      <div className="category-buttons">
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat}
-            className={filterState.category === cat ? "selected" : ""}
-            onClick={() => updateFilter({ category: cat })}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {/* ✅ 전체 보기 토글 */}
-      <div className="show-all-toggle">
+      {/* ✅ 전체 혜택 보기 체크박스 */}
+      <div className={styles.showAllToggle}>
         <label>
           <input
             type="checkbox"
@@ -92,9 +110,9 @@ const WelfareSearchFilter = ({ onFilterChange, fixedRegion }) => {
         </label>
       </div>
 
-      {/* ✅ 현재 지역 표시 */}
+      {/* ✅ 현재 선택 지역 정보 */}
       {fixedRegion && (
-        <div className="selected-region-info">
+        <div className={styles.selectedRegionInfo}>
           현재 선택 지역:{" "}
           <strong>
             {fixedRegion.city} {fixedRegion.district}

@@ -1,8 +1,8 @@
 /* 🗺️ 지도 박스 전체 컨테이너 */
 .mapContainer {
   position: relative;
-  width: 840px; /* ✅ 너비 조정 */
-  height: 500px; /* ✅ 높이 조정 */
+  width: 1420px; /* ✅ 너비 조정 */
+  height: 420px; /* ✅ 높이 조정 */
   border: 1px solid #ccc;
   border-radius: 8px;
   overflow: hidden;
