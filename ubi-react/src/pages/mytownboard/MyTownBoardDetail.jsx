@@ -110,24 +110,29 @@ function MyTownBoardDetail() {
 
   if (!board) return <p>게시글을 불러오는 중입니다...</p>;
 
-  const contentWithImages = board.boardContent;
+  // 이미지 경로가 상대경로인 경우 절대경로로 교체
+  const contentWithImages = board.boardContent.replaceAll(
+    /src="\/images\/board\//g,
+    'src="http://localhost:8080/images/board/'
+  );
+  const tagList = generateTagList(board);
 
   console.log("selectedMember:", selectedMember);
   return (
     <main className={styles.container}>
       <div className={styles.contentWrapper}>
         {/* ✅ 상단 제목 + 작성유형 */}
-        <div className={styles.titleAndTagRow}>
-          <h2 className={styles.pageTitle}>우리 동네 좋아요</h2>
+       <div className={styles.titleAndTagRow}>
+    <h2 className={styles.pageTitle}>우리 동네 좋아요</h2>
 
-          {/* 오른쪽에 subtag */}
-          {board.postType === "복지시설후기" && board.facilityName && (
-            <span className={styles.subtag}>{board.facilityName}</span>
-          )}
-          {board.postType === "복지혜택후기" && board.welfareName && (
-            <span className={styles.subtag}>{board.welfareName}</span>
-          )}
-        </div>
+    {/* 오른쪽에 subtag */}
+    {board.postType === "복지시설후기" && board.facilityName && (
+      <span className={styles.subtag}>{board.facilityName}</span>
+    )}
+    {board.postType === "복지혜택후기" && board.welfareName && (
+      <span className={styles.subtag}>{board.welfareName}</span>
+    )}
+  </div>
 
         <section>
           {/* ✅ 제목 + 수정/삭제 */}
@@ -195,30 +200,22 @@ function MyTownBoardDetail() {
           <div className={styles.metaContainer}>
             {/* 작성자 정보 */}
             <div className={styles.userInfo}>
-              <img
-                className={styles.profileImg}
-                src={board.memberImg || "/default-profile.png"}
-                alt="프로필"
-                onError={(e) => {
-                  e.currentTarget.src = "/default-profileerror.png";
-                  e.currentTarget.onerror = null;
-                }}
-                onClick={(e) => {
-                  if (
-                    board.memberNo !== loginMemberNo &&
-                    board.authority !== "2"
-                  ) {
-                    setSelectedMember({
-                      memberNo: board.memberNo,
-                      memberImg: board.memberImg,
-                      memberNickname: board.memberNickname,
-                      role: board.authority === "2" ? "ADMIN" : "USER",
-                    });
-                    setModalPosition({ x: e.clientX + 50, y: e.clientY });
-                    setModalVisible(true);
-                  }
-                }}
-              />
+             
+                               <img
+               src={board.memberImg ? `https://kh-ubi.site${board.memberImg}` : "/default-profile.png"}
+               alt="프로필"
+               className={styles.profileImg}
+               onClick={(e) => {
+                 setSelectedMember({
+                   memberNo: board.memberNo,
+                   memberImg: board.memberImg,
+                   memberNickname: board.memberNickname,
+                   role: board.authority === "2" ? "ADMIN" : "USER",
+                 });
+                 setModalPosition({ x: e.clientX + 50, y: e.clientY });
+                 setModalVisible(true);
+               }}
+             />
               <div className={styles.authorInfo}>
                 <span className={styles.authorNickname}>
                   {board.memberNickname}
@@ -230,23 +227,21 @@ function MyTownBoardDetail() {
             {/* 좋아요 + 조회 + 신고 */}
             <div className={styles.statColumn}>
               {/* 신고 버튼만 위로 */}
-              {token &&
-                loginMemberNo !== writerNo &&
-                board.authority !== "2" && (
-                  <button
-                    className={styles.reportBtn}
-                    onClick={() => handleReport(board.boardNo)}
-                  >
-                    <img
-                      src={
-                        reportedByMe
-                          ? "/boardCancleReport.svg"
-                          : "/boardReport.svg"
-                      }
-                      alt="신고 아이콘"
-                    />
-                  </button>
-                )}
+              {token && loginMemberNo !== writerNo && board.authority !== "2" && (
+  <button
+    className={styles.reportBtn}
+    onClick={() => handleReport(board.boardNo)}
+  >
+    <img
+      src={
+        reportedByMe
+          ? "/boardCancleReport.svg"
+          : "/boardReport.svg"
+      }
+      alt="신고 아이콘"
+    />
+  </button>
+)}
 
               <div className={styles.stats}>
                 <button onClick={handleLike} className={styles.likeButton}>
@@ -255,11 +250,9 @@ function MyTownBoardDetail() {
                     alt="좋아요"
                     className={styles.iconHeart}
                   />
-                  <span className={styles.likeCount}> {likeCount}</span>
+                  {likeCount}
                 </button>
-                <span className={styles.readCount}>
-                  조회 {board.boardReadCount}
-                </span>
+                <span>조회 {board.boardReadCount}</span>
               </div>
             </div>
           </div>

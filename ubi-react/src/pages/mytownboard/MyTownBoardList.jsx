@@ -22,6 +22,11 @@ function MyTownBoard() {
   const [popularTags, setPopularTags] = useState([]);
 
   // ✅ 인기 해시태그 불러오기 useEffect
+
+  const [selectedMember, setSelectedMember] = useState(null);
+const [modalVisible, setModalVisible] = useState(false);
+const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
+
   useEffect(() => {
     fetch("/api/board/popular-tags")
       .then((res) => res.json())
@@ -301,15 +306,21 @@ function MyTownBoard() {
                 </div>
                 <div className={styles.metaRow}>
                   <div className={styles.userInfo}>
-<img
-  className={styles.profileImg}
-  src={board.memberImg || "/default-profile.png"}
-  alt="프로필"
-  onError={(e) => {
-    e.currentTarget.src = "/default-profileerror.png";
-    e.currentTarget.onerror = null;
-  }}
-/>
+      <img
+               src={board.memberImg ? `https://kh-ubi.site${board.memberImg}` : "/default-profile.png"}
+               alt="프로필"
+               className={styles.profileImg}
+               onClick={(e) => {
+                 setSelectedMember({
+                   memberNo: board.memberNo,
+                   memberImg: board.memberImg,
+                   memberNickname: board.memberNickname,
+                   role: board.authority === "2" ? "ADMIN" : "USER",
+                 });
+                 setModalPosition({ x: e.clientX + 50, y: e.clientY });
+                 setModalVisible(true);
+               }}
+             />
 
                     <span>{board.memberNickname}</span>
                   </div>
