@@ -122,14 +122,27 @@ const MyTownBoardWrite = () => {
 
     const hashtagList = parsedTags;
 
-    const imageList = uploadedImagesRef.current.map((url, index) => {
-      const segments = url.split("/");
-      return {
-        imagePath: "/" + segments.slice(0, -1).join("/"),
-        imageOrder: index,
-        imageName: segments[segments.length - 1],
-      };
-    });
+const imageList = uploadedImagesRef.current.map((url, index) => {
+  const segments = url.split("/");
+  let imageName = segments[segments.length - 1];
+
+  // 파일명 자르기 (200자 제한)
+  if (imageName.length > 200) {
+    const extension = imageName.includes(".")
+      ? imageName.slice(imageName.lastIndexOf("."))
+      : "";
+    const baseName = imageName.replace(extension, "");
+    const trimmedBase = baseName.slice(0, 200 - extension.length);
+    imageName = `${trimmedBase}${extension}`;
+  }
+
+  return {
+    imagePath: "/" + segments.slice(0, -1).join("/"),
+    imageOrder: index,
+    imageName,
+  };
+});
+
 
     fetch("/api/editboard/mytown/write", {
       method: "POST",
