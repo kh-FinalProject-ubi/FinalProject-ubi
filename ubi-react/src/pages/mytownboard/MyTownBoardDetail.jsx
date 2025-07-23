@@ -116,6 +116,8 @@ function MyTownBoardDetail() {
     'src="https://kh-ubi.site/images/board/"'
   );
 
+    const tagList = generateTagList(board);
+
   console.log("selectedMember:", selectedMember);
   return (
     <main className={styles.container}>
