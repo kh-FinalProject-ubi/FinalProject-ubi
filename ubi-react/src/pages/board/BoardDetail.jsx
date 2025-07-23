@@ -17,8 +17,8 @@ const BoardDetail = () => {
   const [loading, setLoading] = useState(true);
   const [hasAlerted, setHasAlerted] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
-const [selectedMember, setSelectedMember] = useState(null);
+  const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
+  const [selectedMember, setSelectedMember] = useState(null);
 
   const boardCodeMap = {
     noticeBoard: 1,
@@ -108,19 +108,19 @@ const [selectedMember, setSelectedMember] = useState(null);
       alert("본인의 글에는 좋아요를 누를 수 없습니다.");
       return;
     }
-  
+
     if (!token) {
       alert("비회원은 좋아요를 누를 수 없습니다.");
       return;
     }
-  
+
     try {
       const res = await axios.post(`/api/board/${board.boardNo}/like`, {
         memberNo: loginMemberNo,
         writerNo: board.memberNo,
         likeCheck: liked ? 1 : 0,
       });
-  
+
       setLikeCount(res.data.likeCount ?? 0);
       setLiked(res.data.isLiked === 1);
     } catch (err) {
@@ -177,21 +177,25 @@ const [selectedMember, setSelectedMember] = useState(null);
                 </div>
                 <div className={styles.metaContainer}>
                   <div className={styles.userInfo}>
-                  <img
-  src={board.memberImg ? `http://localhost:8080${board.memberImg}` : "/default-profile.png"}
-  alt="프로필"
-  className={styles.profileImg}
-  onClick={(e) => {
-    setSelectedMember({
-      memberNo: board.memberNo,
-      memberImg: board.memberImg,
-      memberNickname: board.memberNickname,
-      role: board.authority === "2" ? "ADMIN" : "USER",
-    });
-    setModalPosition({ x: e.clientX + 50, y: e.clientY });
-    setModalVisible(true);
-  }}
-/>
+                    <img
+                      src={
+                        board.memberImg
+                          ? `http://localhost:8080${board.memberImg}`
+                          : "/default-profile.png"
+                      }
+                      alt="프로필"
+                      className={styles.profileImg}
+                      onClick={(e) => {
+                        setSelectedMember({
+                          memberNo: board.memberNo,
+                          memberImg: board.memberImg,
+                          memberNickname: board.memberNickname,
+                          role: board.authority === "2" ? "ADMIN" : "USER",
+                        });
+                        setModalPosition({ x: e.clientX + 50, y: e.clientY });
+                        setModalVisible(true);
+                      }}
+                    />
                     <div className={styles.authorInfo}>
                       <span className={styles.authorNickname}>
                         {board.memberNickname}
@@ -205,10 +209,11 @@ const [selectedMember, setSelectedMember] = useState(null);
                     {boardCode === 1 && (
                       <button onClick={handleLike}>
                         <img
-                                           src="/icons/boardlike.svg"
-                                           alt="좋아요"
-                                           className={styles.iconHeart}
-                                         /> {likeCount}
+                          src="/icons/boardlike.svg"
+                          alt="좋아요"
+                          className={styles.iconHeart}
+                        />{" "}
+                        {likeCount}
                       </button>
                     )}
                     <span>조회 {board.boardReadCount}</span>
@@ -242,17 +247,17 @@ const [selectedMember, setSelectedMember] = useState(null);
             </section>
           </>
         )}
-              {modalVisible &&
-            selectedMember &&
-            selectedMember.role !== "ADMIN" &&
-            selectedMember.memberNo !== loginMemberNo && (
-              <CommentModal
-                member={selectedMember}
-                token={token}
-                position={modalPosition}
-                onClose={() => setModalVisible(false)}
-              />
-            )}
+        {modalVisible &&
+          selectedMember &&
+          selectedMember.role !== "ADMIN" &&
+          selectedMember.memberNo !== loginMemberNo && (
+            <CommentModal
+              member={selectedMember}
+              token={token}
+              position={modalPosition}
+              onClose={() => setModalVisible(false)}
+            />
+          )}
       </div>
     </main>
   );
