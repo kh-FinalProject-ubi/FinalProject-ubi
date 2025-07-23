@@ -177,25 +177,23 @@ const BoardDetail = () => {
                 </div>
                 <div className={styles.metaContainer}>
                   <div className={styles.userInfo}>
-                    <img
-                      src={
-                        board.memberImg
-                          ? `http://localhost:8080${board.memberImg}`
-                          : "/default-profile.png"
-                      }
-                      alt="프로필"
-                      className={styles.profileImg}
-                      onClick={(e) => {
-                        setSelectedMember({
-                          memberNo: board.memberNo,
-                          memberImg: board.memberImg,
-                          memberNickname: board.memberNickname,
-                          role: board.authority === "2" ? "ADMIN" : "USER",
-                        });
-                        setModalPosition({ x: e.clientX + 50, y: e.clientY });
-                        setModalVisible(true);
-                      }}
-                    />
+
+                  <img
+  src={board.memberImg ? `https://kh-ubi.site${board.memberImg}` : "/default-profile.png"}
+  alt="프로필"
+  className={styles.profileImg}
+  onClick={(e) => {
+    setSelectedMember({
+      memberNo: board.memberNo,
+      memberImg: board.memberImg,
+      memberNickname: board.memberNickname,
+      role: board.authority === "2" ? "ADMIN" : "USER",
+    });
+    setModalPosition({ x: e.clientX + 50, y: e.clientY });
+    setModalVisible(true);
+  }}
+/>
+
                     <div className={styles.authorInfo}>
                       <span className={styles.authorNickname}>
                         {board.memberNickname}
