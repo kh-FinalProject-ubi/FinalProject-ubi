@@ -31,38 +31,42 @@ const MyTownBoardWrite = () => {
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
+
       const newTag = hashtags.trim().replace(/^#/, "");
       if (!newTag) return;
 
-      let messages = [];
+      // 한글/영문 포함 길이 체크 (공백 제외 기준)
+      const length = [...newTag].filter((c) => c !== " ").length;
 
-      if (newTag.length < 2) {
-        messages.push("두 글자 이상 입력해주세요.");
-      }
-
-      if (parsedTags.length >= 5) {
-        messages.push("해시태그는 최대 5개까지 입력할 수 있습니다.");
-      }
-
-      if (parsedTags.includes(newTag)) return;
-
-      if (messages.length > 0) {
-        // <br>로 줄바꿈
-        setTagLimitMessage(messages.join("<br/>"));
+      if (length < 2) {
+        setTagLimitMessage("두 글자 이상 입력해주세요.");
+        setTimeout(() => setHashtags(""), 0);
         return;
       }
 
-      const updatedTags = [...parsedTags, newTag];
-      setParsedTags(updatedTags);
-      setHashtags("");
-      setTagLimitMessage("");
+      if (parsedTags.length >= 5) {
+        setTagLimitMessage("해시태그는 최대 5개까지 입력할 수 있습니다.");
+        setTimeout(() => setHashtags(""), 0);
+        return;
+      }
+
+      if (parsedTags.includes(newTag)) {
+        setTimeout(() => setHashtags(""), 0);
+        return;
+      }
+
+      // 정상 등록
+      setParsedTags([...parsedTags, newTag]);
+      setTagLimitMessage(""); // ✅ 메시지 초기화
+      setTimeout(() => setHashtags(""), 0);
     }
   };
 
   const handleRemoveTag = (indexToRemove) => {
     const newTags = parsedTags.filter((_, i) => i !== indexToRemove);
     setParsedTags(newTags);
-    setHashtags(""); // ✅ 입력창에도 표시 안 되도록 바로 초기화
+    setHashtags("");
+    setTagLimitMessage("");
   };
 
   const [showFacilityModal, setShowFacilityModal] = useState(false);
@@ -93,12 +97,10 @@ const MyTownBoardWrite = () => {
       return;
     }
 
-
     if (boardContent.length > 2000) {
-    alert("게시글 내용이 너무 깁니다.");
-        return;
-}
-
+      alert("게시글 내용이 너무 깁니다.");
+      return;
+    }
 
     if (!textContent && !hasImage) {
       alert("내용을 입력해주세요.");
@@ -107,11 +109,6 @@ const MyTownBoardWrite = () => {
 
     if (!postTypeCheck) {
       alert("작성유형을 선택해주세요.");
-      return;
-    }
-
-    if (hashtags.trim() !== "" && !hashtags.trim().startsWith("#")) {
-      alert("해시태그는 반드시 #으로 시작해야 합니다.");
       return;
     }
 
