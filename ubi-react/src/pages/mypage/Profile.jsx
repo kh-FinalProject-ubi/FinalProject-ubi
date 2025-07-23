@@ -239,6 +239,8 @@ const Profile = () => {
         alert("수정되었습니다.");
         await getMemberData(); // ⬅️ 최신 데이터 다시 가져오기
         setEditMode(false);
+
+        navigate("/facility/search", { state: { refresh: "memberUpdate" } });
       } else {
         alert("수정에 실패했습니다.");
       }
@@ -881,7 +883,9 @@ const Profile = () => {
                                 ? `#${first.slice(0, 3)}...`
                                 : `#${first}`;
 
-                            return <span className={styles.hashtag}>{text}</span>;
+                            return (
+                              <span className={styles.hashtag}>{text}</span>
+                            );
                           })()}
                         </td>
                         <td className={styles.content}>
@@ -985,8 +989,6 @@ const Profile = () => {
           )}
         </div>
       </section>
-
-
     </div>
   );
 };

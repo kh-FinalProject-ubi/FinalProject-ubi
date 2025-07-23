@@ -112,7 +112,13 @@ export default function FacilitySearchPage() {
       }
       setRegionSource("initialized");
     }
-  }, [memberLoading, member, selectedCityFromStore, selectedDistrictFromStore]);
+  }, [
+    regionSource,
+    memberLoading,
+    member,
+    selectedCityFromStore,
+    selectedDistrictFromStore,
+  ]);
 
   const handleRegionSourceChange = (source) => {
     setRegionSource(source);
