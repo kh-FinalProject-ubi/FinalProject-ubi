@@ -40,16 +40,6 @@ const LoginPage = () => {
 
   return (
     <div className={styles.loginPageContainer}>
-      {/* {showNotice && (
-        <SuspensionNotice
-          message={suspensionNotice || alertMessage}
-          onClose={() => {
-            setSuspensionNotice(null);
-            clearAlertMessage(); // ✅ alertMessage도 초기화
-            setShowNotice(false);
-          }}
-        />
-      )} */}
 
       <main className={styles.loginMainContent}>
         <div className={styles.imageBox}>
