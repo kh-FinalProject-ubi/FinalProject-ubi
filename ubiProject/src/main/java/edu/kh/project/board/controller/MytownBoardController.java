@@ -6,16 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import edu.kh.project.board.model.dto.Board;
 import edu.kh.project.board.model.dto.Pagination;
@@ -24,161 +19,158 @@ import edu.kh.project.common.util.JwtUtil;
 
 @RestController
 @RequestMapping("/api/board")
-
+@RequiredArgsConstructor
 public class MytownBoardController {
 
-	@Autowired
-	private MytownBoardService service;
+    private final MytownBoardService service;
+    private final JwtUtil jwtUtil;
 
-	@Autowired
-	private JwtUtil jwtUtil;
+    /** 게시글 목록 (필터 + 페이지네이션) */
+    @GetMapping("/mytownBoard")
+    public ResponseEntity<?> getBoards(
+            @RequestParam(name = "page") int page,
+            @RequestParam(name = "postType", required = false) String postType,
+            @RequestParam(name = "regionCity", required = false) String regionCity,
+            @RequestParam(name = "regionDistrict", required = false) String regionDistrict,
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @RequestParam(name = "tags", required = false) String tags
+    ) {
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("postType", postType);
+        paramMap.put("regionCity", regionCity);
+        paramMap.put("regionDistrict", regionDistrict);
+        paramMap.put("keyword", keyword);
 
-	@GetMapping("/mytownBoard")
-	public ResponseEntity<?> getBoards(
-	    @RequestParam(name = "page") int page,
-	    @RequestParam(name = "postType", required = false) String postType,
-	    @RequestParam(name = "regionCity", required = false) String regionCity,
-	    @RequestParam(name = "regionDistrict", required = false) String regionDistrict,
-	    @RequestParam(name = "keyword", required = false) String keyword,
-	    @RequestParam(name = "tags", required = false) String tags
-	) {
-	    Map<String, Object> paramMap = new HashMap<>();
-	    paramMap.put("postType", postType);
-	    paramMap.put("regionCity", regionCity);
-	    paramMap.put("regionDistrict", regionDistrict);
-	    paramMap.put("keyword", keyword);
-	    paramMap.put("tagList", tags != null && !tags.isEmpty() ? List.of(tags.split(",")) : null);
+        // tags → List<String>
+        List<String> tagList = parseTags(tags);
+        paramMap.put("tagList", tagList.isEmpty() ? null : tagList);
 
-	 // tags를 List<String>으로 변환
-	    if (tags != null && !tags.trim().isEmpty()) {
-	        List<String> tagList = Arrays.stream(tags.split(","))
-	                                     .map(String::trim)
-	                                     .filter(tag -> !tag.isEmpty())
-	                                     .collect(Collectors.toList());
-	        paramMap.put("tagList", tagList);
-	    } else {
-	        paramMap.put("tagList", null);
-	    }
+        // 총 개수 및 페이지네이션
+        int listCount = service.getFilteredBoardCount(paramMap);
+        Pagination pagination = new Pagination(page, listCount);
+        paramMap.put("startRow", (pagination.getCurrentPage() - 1) * pagination.getLimit());
+        paramMap.put("limit", pagination.getLimit());
 
-	    // 게시글 개수 조회
-	    int listCount = service.getFilteredBoardCount(paramMap);
+        // 목록 조회
+        List<Board> boardList = service.getFilteredBoardList(paramMap);
 
-	    // 페이지네이션 객체 생성
-	    Pagination pagination = new Pagination(page, listCount);
-	    paramMap.put("startRow", (pagination.getCurrentPage() - 1) * pagination.getLimit());
-	    paramMap.put("limit", pagination.getLimit());
-	    
-	    
+        return ResponseEntity.ok(Map.of(
+                "boardList", boardList,
+                "pagination", pagination
+        ));
+    }
 
-	    // 게시글 목록 조회
-	    List<Board> boardList = service.getFilteredBoardList(paramMap);
+    /** 게시글 상세 */
+    @GetMapping("/mytownBoard/{boardNo}")
+    public ResponseEntity<Board> getLocalBoardDetail(
+            @PathVariable("boardNo") int boardNo,
+            @RequestHeader(value = "Authorization", required = false) String authHeader
+    ) {
+        Integer memberNo = extractMemberNo(authHeader);
 
-	    return ResponseEntity.ok(Map.of(
-	        "boardList", boardList,
-	        "pagination", pagination
-	    ));
-	}
+        Board board = service.selectLocalBoardDetail(boardNo, memberNo);
+        if (board == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
 
+        // 로그인 사용자라면 좋아요/신고 상태 세팅
+        if (memberNo != null) {
+            board.setLikeCheck(service.checkBoardLike(boardNo, memberNo));
+            board.setReportedByMe(service.checkBoardReportStatus(boardNo, memberNo));
+        } else {
+            board.setLikeCheck(0);
+        }
 
+        return ResponseEntity.ok(board);
+    }
 
+    /** 좋아요 토글 */
+    @PostMapping("/mytownBoard/{boardNo}/like")
+    public ResponseEntity<?> toggleBoardLike(
+            @PathVariable("boardNo") int boardNo,
+            @RequestParam("memberNo") int memberNo,
+            @RequestParam("writerNo") int writerNo
+    ) {
+        if (memberNo == writerNo) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("본인의 글에는 좋아요를 누를 수 없습니다.");
+        }
 
+        boolean alreadyLiked = service.checkBoardLike(boardNo, memberNo) > 0;
+        if (alreadyLiked) {
+            service.deleteBoardLike(boardNo, memberNo);
+            return ResponseEntity.ok("unliked");
+        } else {
+            service.insertBoardLike(boardNo, memberNo);
+            return ResponseEntity.ok("liked");
+        }
+    }
 
-	@GetMapping("/mytownBoard/{boardNo}")
-	public ResponseEntity<Board> getLocalBoardDetail(
-	        @PathVariable("boardNo") int boardNo,
-	        @RequestHeader(value = "Authorization", required = false) String authHeader) {
+    /** 게시글 신고 */
+    @PostMapping("/mytownBoard/{boardNo}/report")
+    public ResponseEntity<Map<String, Object>> reportBoard(
+            @PathVariable("boardNo") int boardNo,
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        Map<String, Object> result = new HashMap<>();
+        Integer memberNo = extractMemberNo(authHeader);
 
-	    Long memberNo = null;
+        if (memberNo == null) {
+            result.put("error", "로그인 정보가 유효하지 않습니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+        }
 
-	    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-	        try {
-	            String token = authHeader.substring(7); // "Bearer " 제거
-	            memberNo = jwtUtil.extractMemberNo(token); // ✅ Long 타입 반환
-	        } catch (Exception e) {
-	            System.out.println("⚠️ JWT 파싱 실패: " + e.getMessage());
-	            // memberNo는 null로 둠 → 비회원 처리
-	        }
-	    }
+        try {
+            boolean reported = service.reportBoard(boardNo, memberNo);
+            result.put("reported", reported);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            result.put("error", "신고 처리 중 오류 발생");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+        }
+    }
 
-	    Board board = service.selectLocalBoardDetail(boardNo, memberNo != null ? memberNo.intValue() : null);
+    /** 특정 시설 후기 목록 */
+    @GetMapping("/mytownBoard/facility/{facilityServiceId}")
+    public ResponseEntity<List<Board>> getPostsByFacility(@PathVariable("facilityServiceId") String facilityServiceId) {
+        return ResponseEntity.ok(service.getBoardListByFacilityServiceId(facilityServiceId));
+    }
 
-	    if (board != null && memberNo != null) {
-	        int likeCheck = service.checkBoardLike(boardNo, memberNo.intValue());
-	        board.setLikeCheck(likeCheck);
-	        String reportStatus = service.checkBoardReportStatus(boardNo, memberNo.intValue());
-	        board.setReportedByMe(reportStatus);
-	    } else if (board != null) {
-	        board.setLikeCheck(0);
-	    }
+    /** 특정 복지혜택 후기 목록 */
+    @GetMapping("/mytownBoard/welfare/{apiServiceId}")
+    public ResponseEntity<List<Board>> getPostsByWelfare(@PathVariable("apiServiceId") String apiServiceId) {
+        return ResponseEntity.ok(service.getBoardListByWelfareServiceId(apiServiceId));
+    }
 
-	    return board != null
-	        ? ResponseEntity.ok(board)
-	        : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-	}
-	@PostMapping("/mytownBoard/{boardNo}/like")
-	public ResponseEntity<?> toggleBoardLike(@PathVariable("boardNo") int boardNo,
-			@RequestParam("memberNo") int memberNo, @RequestParam("writerNo") int writerNo) {
+    /** 인기 해시태그 */
+    @GetMapping("/popular-tags")
+    public ResponseEntity<List<String>> getPopularTags() {
+        return ResponseEntity.ok(service.getPopularTags());
+    }
 
-		// 본인 글인지 확인
-		if (memberNo == writerNo) {
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("본인의 글에는 좋아요를 누를 수 없습니다.");
-		}
+    // =======================
+    // 유틸 메서드
+    // =======================
 
-		int liked = service.checkBoardLike(boardNo, memberNo);
+    /** Authorization 헤더에서 memberNo 추출 (없거나 파싱 실패 시 null) */
+    private Integer extractMemberNo(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) return null;
+        try {
+            String token = authHeader.substring(7);
+            Long memberNo = jwtUtil.extractMemberNo(token);
+            return memberNo != null ? memberNo.intValue() : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
-		if (liked > 0) {
-			service.deleteBoardLike(boardNo, memberNo);
-			return ResponseEntity.ok("unliked");
-		} else {
-			service.insertBoardLike(boardNo, memberNo);
-			return ResponseEntity.ok("liked");
-		}
-	}
-
-	/**
-	 * 신고하기
-	 * 
-	 * @param commentNo
-	 * @param authHeader
-	 * @return
-	 */
-	@PostMapping("/mytownBoard/{boardNo}/report")
-	public ResponseEntity<Map<String, Object>> reportComment(@PathVariable("boardNo") int boardNo,
-			@RequestHeader("Authorization") String authHeader) {
-
-		Map<String, Object> result = new HashMap<>();
-
-		try {
-			String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
-			int memberNo = jwtUtil.extractMemberNo(token).intValue();
-
-			boolean reported = service.reportBoard(boardNo, memberNo);
-			result.put("reported", reported);
-
-			return ResponseEntity.ok(result);
-
-		} catch (Exception e) {
-			result.put("error", "신고 처리 중 오류 발생");
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
-		}
-	}
-	
-	
-	@GetMapping("/mytownBoard/facility/{facilityServiceId}")
-	public List<Board> getPostsByFacility(@PathVariable("facilityServiceId") String facilityServiceId) {
-	    return service.getBoardListByFacilityServiceId(facilityServiceId);
-	}
-	
-	@GetMapping("/mytownBoard/welfare/{apiServiceId}")
-	public List<Board> getPostsByWelfare(@PathVariable("apiServiceId") String apiServiceId) {
-	    return service.getBoardListByWelfareServiceId(apiServiceId);
-	}
-	
-	
-	@GetMapping("/popular-tags")
-	public ResponseEntity<?> getPopularTags() {
-	    List<String> tags = service.getPopularTags();
-	    return ResponseEntity.ok(tags);
-	}
-
+    /** "tag1, tag2, ..." → ["tag1","tag2"] */
+    private List<String> parseTags(String tags) {
+        if (tags == null || tags.isBlank()) return List.of();
+        return Arrays.stream(tags.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .collect(Collectors.toList());
+    }
 }
